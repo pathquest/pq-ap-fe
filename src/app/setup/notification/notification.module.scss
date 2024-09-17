@@ -1,0 +1,11 @@
+.toolbarClassName {
+  padding: 16px;
+  gap: 12px;
+  border-bottom: 1px solid #ccc !important;
+}
+
+.editorClassName {
+  height: calc(100vh - 400px) !important;
+  overflow: scroll !important;
+  padding: 16px !important;
+}
