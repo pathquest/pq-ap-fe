@@ -1,0 +1,601 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+::-webkit-scrollbar {
+  width: 0px;
+}
+
+.react-pdf__Page__canvas {
+  margin: 0 auto;
+  width: 100% !important;
+}
+
+.slide-left {
+  width: 100%;
+  animation: 0.7s slide-left;
+}
+
+@keyframes slide-left {
+  from {
+    margin-left: 100%;
+  }
+
+  to {
+    margin-left: 0%;
+  }
+}
+
+.slideLeft {
+  -webkit-animation: slideLeft 500ms cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+  animation: slideLeft 500ms cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+@-webkit-keyframes slideLeft {
+  0% {
+    -webkit-transform: translateX(100%);
+    transform: translateX(100%);
+  }
+
+  100% {
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
+    opacity: 0;
+  }
+}
+
+@keyframes slideLeft {
+  0% {
+    -webkit-transform: translateX(100%);
+    transform: translateX(100%);
+  }
+
+  100% {
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
+  }
+}
+
+.fileUploadWidth {
+  width: -webkit-fill-available;
+  width: -moz-available;
+  width: -ms-fill-available;
+  width: -o-available;
+}
+
+/* Remove Pedding from Table for Approval table - Bhargav */
+.approvalMain table tr td,
+.billsMain table tr td {
+  height: 60px;
+}
+
+.approvalMain table tr td,
+.approvalMain table tr td:last-child>span,
+.billsMain table tr td,
+.billsMain table tr td:last-child>span {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.approvalMain table tr td:last-child>span,
+.billsMain table tr td:last-child>span {
+  height: 100% !important;
+}
+
+.configurationMain table tr td {
+  height: 56px;
+}
+
+.configurationMain table tr td,
+.configurationMain table tr td:last-child>span {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.configurationMain table tr td:last-child>span {
+  height: 100% !important;
+}
+
+.dashboardMain table tr td {
+  height: 50px;
+}
+
+.dashboardMain table tr td,
+.dashboardMain table tr td:last-child>span {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.dashboardMain table tr td:last-child>span {
+  height: 100% !important;
+}
+
+.processTypeSelection>div>input {
+  font-weight: 700;
+}
+
+.processTypeSelection .bottomAnimation {
+  width: 220px;
+}
+
+.processTypeSelection .bottomAnimation li.active {
+  background: #f6f6f6;
+}
+
+.userCompanyDropdown .bottomAnimation {
+  width: 220px;
+  color: #333333;
+}
+
+.userCompanyDropdown .bottomAnimation li.active {
+  color: #333333;
+}
+
+.DateRangePickerCstmClassBills .relative .bottomAnimation .flex .shadow-md {
+  width: 294px !important;
+}
+
+.DateRangePickerCstmClass .bottomAnimation {
+  min-width: 350px;
+}
+
+.DateRangePickerCstmClass h6 {
+  padding-bottom: 5px;
+}
+
+.chartScrollbar ::-webkit-scrollbar {
+  height: 5px;
+  width: 4px;
+  background: #e6e6e6;
+}
+
+.chartScrollbar ::-webkit-scrollbar-thumb:horizontal {
+  background: #2323434d;
+  border-radius: 10px;
+}
+
+.custom-scroll-PDF::-webkit-scrollbar,
+.custom-scroll-filter::-webkit-scrollbar {
+  height: 5px;
+  width: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  height: 5px;
+  width: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-track,
+.custom-scroll-filter::-webkit-scrollbar-track,
+.custom-scroll-PDF::-webkit-scrollbar-track {
+  background: #e6e6e6;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb,
+.custom-scroll-filter::-webkit-scrollbar-thumb,
+.custom-scroll-PDF::-webkit-scrollbar-thumb {
+  background: #2323434d;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover,
+.custom-scroll-filter::-webkit-scrollbar-thumb:hover,
+.custom-scroll-PDF::-webkit-scrollbar-thumb:hover {
+  background: #2323434d;
+}
+
+.vertical-scroll,
+.column-vertical-scroll {
+  overflow: hidden;
+  overflow-y: auto;
+}
+
+.vertical-scroll {
+  max-height: calc(100vh - 127px);
+}
+
+.column-vertical-scroll {
+  max-height: calc(100vh - 245px);
+}
+
+.vertical-scroll-payment-filter {
+  overflow: hidden;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.custom-bottom-sticky {
+  position: -webkit-sticky;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  background-color: #fff;
+  z-index: 6;
+}
+
+.stickyTable table thead tr {
+  z-index: 3 !important;
+}
+
+.close-btn button:focus,
+.close-btn div:focus {
+  outline: none;
+}
+
+tr.row-disabled {
+  background-color: rgba(236, 240, 241, 0.5);
+  pointer-events: none;
+  width: 100%;
+}
+
+.MuiChip-root {
+  border-radius: 0px !important;
+  background-color: #e9ecef !important;
+  border: 1px solid #ced4da !important;
+  height: 24px !important;
+}
+
+.fieldMappingOptionDropdown>div::before {
+  border-bottom: 1px solid #ced4da !important;
+}
+
+.fieldMappingOptionDropdown>div {
+  min-height: auto;
+}
+
+.fieldMappingOptionDropdown>div:after {
+  border-bottom: 1px solid #02b89d;
+}
+
+.fieldMappingOptionDropdown>div:after:hover {
+  border-bottom-color: 1px solid #02b89d;
+}
+
+/* View columns */
+.th-sr-no {
+  width: 55px;
+}
+
+.th-unit-price {
+  width: 100px;
+}
+
+.th-quantity {
+  width: 100px;
+}
+
+.th-amount {
+  width: 100px;
+}
+
+.th-description {
+  width: 350px;
+}
+
+/* edit columns */
+.th-edit-sr-no {
+  width: 50px;
+}
+
+.th-edit-unit-price {
+  width: 150px;
+}
+
+.th-edit-quantity {
+  width: 150px;
+}
+
+.th-edit-amount {
+  width: 150px;
+}
+
+.th-edit-description {
+  width: 350px;
+}
+
+.th-edit-actions {
+  width: 120px;
+}
+
+.th-edit-common {
+  width: 220px;
+}
+
+.releasetopay-checkbox,
+.billable-checkbox,
+.tax-checkbox,
+.Form1099-checkbox {
+  visibility: hidden;
+  /* width: 0; */
+}
+
+.checkboxRadio {
+  position: relative;
+}
+
+.checkboxRadio input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.checkboxRadio span {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.checkboxRadio span::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 1px solid #7a7a8c;
+  border-radius: 100px;
+  margin-right: 0.3em;
+}
+
+.checkboxRadio span::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: #02b89d;
+  border-radius: 100px;
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: scale(0);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.checkboxRadio input:checked~span::before {
+  border-color: #02b89d;
+}
+
+.checkboxRadio input:checked~span::after {
+  transform: translate(0, -50%) scale(1);
+}
+
+.checkboxRadio input:disabled~span {
+  opacity: 0.5;
+}
+
+.innerTable th:last-child>span {
+  justify-content: flex-end;
+}
+
+/* .mainTable tbody tr td:last-child > span {
+  overflow: hidden;
+} */
+
+.expandableTable>table>thead>tr>th:first-child {
+  width: 50px !important;
+}
+
+.AgingDetailTable>table>tbody>tr>td:first-child>div,
+.AgingDetailTable>table>thead>tr>th:first-child,
+.AgingDetailTable>table>tbody>tr>td:first-child {
+  width: 50px !important;
+}
+
+@keyframes spinner {
+  0% {
+    transform: translate3d(-50%, -50%, 0) rotate(0deg);
+  }
+
+  100% {
+    transform: translate3d(-50%, -50%, 0) rotate(360deg);
+  }
+}
+
+.spin::before {
+  animation: 1.5s linear infinite spinner;
+  animation-play-state: inherit;
+  border: solid 2px #6e6d7a;
+  border-bottom-color: #ccc;
+  border-radius: 50%;
+  content: '';
+  height: 18px;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translate3d(-50%, -50%, 0);
+  width: 18px;
+  will-change: transform;
+}
+
+/* For bill appproval rejected tooltip  */
+.tooltip_text .tooltipText {
+  z-index: 5;
+}
+
+.selectDropdown span.text-defaultRed,
+.lineItemDatepicker span.text-defaultRed {
+  display: none !important;
+}
+
+.textError span.text-defaultRed {
+  display: none !important;
+}
+
+.selectMain #process_selection {
+  font-weight: 700 !important;
+}
+
+.fieldWrapper label,
+.fieldWrapper h6 {
+  word-break: break-all;
+}
+
+.userDataTable tr {
+  height: 60px !important;
+}
+
+.searchPlaceholder::placeholder {
+  font-size: 14px;
+  letter-spacing: 2%;
+}
+
+/* Hide Bills to pay column mapping dropdown Sort icon */
+.hidePaymentSortIcon label .checkbox-checkbox>div {
+  display: none;
+}
+
+.customDatePickerRangeExpandWidth .bottomAnimation {
+  min-width: 590px;
+}
+
+.customDatePickerExpandWidth .bottomAnimation {
+  min-width: 295px;
+}
+
+.customDatePickerYearExpandWidth .bottomAnimation {
+  min-width: 280px;
+}
+
+.billPostingUserAssignDrop .bottomAnimation {
+  width: 250px;
+  z-index: 1;
+}
+
+.billPostingUserAssignDrop .bottomAnimation li>span {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.subTable table thead tr {
+  visibility: collapse !important;
+}
+
+.Reports_DatePicker .relative .bottomAnimation .flex .shadow-md {
+  width: 580px !important;
+}
+
+.mentions__input {
+  padding-bottom: 9px;
+  border: none !important;
+  outline: none !important;
+}
+
+.mentions:focus-within {
+  border: 1.5px solid #02b89d !important;
+  border-radius: 5px !important;
+}
+
+.mentions__suggestions__list {
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  font-size: 10pt;
+}
+
+.mentions__suggestions__item {
+  padding: 5px 15px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.mentions__suggestions__item--focused {
+  background-color: rgb(217, 226, 226);
+}
+
+.mentions__mention {
+  position: relative;
+  z-index: 1;
+  color: #02b89d;
+  text-shadow:
+    -1px -1px 1px white,
+    -1px -1px 1px white,
+    -1px -1px 1px white,
+    -1px -1px 1px white;
+  text-decoration: none;
+  pointer-events: none;
+}
+
+.mentions__input_attachment {
+  border-top: 2px solid #d8d8d8 !important;
+  border-top-left-radius: 4px !important;
+  border-top-right-radius: 4px !important;
+  border-right: 2px solid #d8d8d8 !important;
+  border-left: 2px solid #d8d8d8 !important;
+}
+
+.Reports_Dropdown .relative ul {
+  width: 250px !important;
+}
+
+.AgingDetailTable table tbody tr .border-none {
+  background-color: #f6f6f6 !important;
+  border-bottom: 1px solid #d8d8d8 !important;
+}
+
+.custom-dropdown:hover {
+  box-shadow: 1px 1px 0px #bfbdbd;
+}
+
+/* Bill approval and payment approval view screen main fields */
+.grid.grid-cols-2.px-5.py-2.view_mainFields>div:nth-child(2n) {
+  text-align: right;
+}
+
+.custom-dropdown:active {
+  box-shadow: 1px 1px 0px #bfbdbd inset;
+}
+
+.CompanyList_manageuser .relative div ul {
+  width: 292px !important;
+}
+
+.userList_managecompany .relative div ul {
+  width: 292px;
+  right: 0;
+}
+
+.Filter_DatePickerRange .relative .bottomAnimation .flex .shadow-md {
+  width: 280px !important;
+}
+
+.Filter_DatePickerRange .flex .flex span {
+  padding-top: 7px !important;
+}
+
+#email-content-container ul {
+  list-style: disc;
+  margin: 8px 16px;
+}
+
+#email-content-container ol {
+  list-style: decimal;
+  margin: 8px 16px;
+}
+
+.textareaOutlineNoneEdit .mentions__control {
+  background: transparent !important;
+}
+
+.textareaOutlineNoneEdit {
+  border: 1.5px solid #ccc !important;
+  border-radius: 5px !important;
+  height: 98px;
+}
+
+.textareaOutlineNoneEdit textarea {
+  height: 98px;
+  overflow-y: auto;
+}
+
+.rightDatepicker>div>div.bottomAnimation {
+  right: 0 !important;
+}
+
+.iconWrapper path {
+  fill: #DC3545;
+}
+
+.fileuploadHeaderSelectDrop #processType,
+.fileuploadHeaderSelectDrop #locationSelect {
+  font-weight: 600;
+}

@@ -1,0 +1,47 @@
+.otp-input-fields {
+  margin: auto;
+  max-width: 400px;
+  width: auto;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 10px;
+}
+
+.otp-input-fields input {
+  height: 40px;
+  width: 40px;
+  background-color: transparent;
+  border-radius: 4px;
+  border: 1px solid #b7b8b6;
+  text-align: center;
+  border-width: 2px;
+  outline: none;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.otp-input-fields input::-webkit-outer-spin-button,
+.otp-input-fields input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.otp-input-fields input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.otp-input-fields input:focus {
+  border-width: 2px;
+  border-color: rgb(26, 121, 84);
+  font-size: 20px;
+}
+
+.otp-input-fields input.filled {
+  border-width: 2px;
+  border-color: rgb(44, 175, 158);
+}
+
+.otp-input-fields input.error {
+  border-color: rgb(255, 0, 0);
+}
