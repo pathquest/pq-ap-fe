@@ -624,7 +624,7 @@ const MultipleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
                     <Switch checked={isCreditAvailed} />
                   </span>
                 </div>
-                <div className='!pointer-events-none relative !opacity-80 select-none'>
+                <div className={`${isCreditAvailed ? 'relative' : 'hidden'} !pointer-events-none !opacity-80 select-none`}>
                   <Text
                     label='Credit Availed'
                     id='credit-availed'
@@ -645,12 +645,12 @@ const MultipleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
                   <span className={`absolute left-0 text-sm top-[34px] text-slatyGrey ${creditAvailedError ? 'text-[#FB2424]' : ''}`}>
                     $
                   </span>
-                  <span className={`font-proxima tracking-[0.02em] text-xs text-slatyGrey ${isCreditAvailed ? 'block mt-1' : 'hidden'}`}>
+                  <span className={`font-proxima text-xs text-slatyGrey tracking-[0.02em] block mt-1`}>
                     The available credit is adjusted proportionately among the credit memos on a "First-In, First-out" basis.
                   </span>
                 </div>
               </div>
-              <div className='mt-5'>
+              <div className={`${isCreditAvailed ? 'mt-5' : 'mt-0'}`}>
                 <label className='text-sm font-bold text-darkCharcoal tracking-[0.02em] font-proxima'>AMOUNT TO PAY</label>
                 <div className={`flex mt-5`}>
                   <Radio

@@ -40,13 +40,14 @@ export interface Icons {
   billListsData?: any
   UserId?: number
   IsFromDocuments?: boolean
+  processSelection: any
 }
 
 export interface ActivityDrawerProps {
   isOpen: boolean
   onClose: (key: boolean) => void
   GUID?: string
-  noCommentBox:boolean
+  noCommentBox: boolean
   selectedPayableId: number | null
 }
 
@@ -56,7 +57,9 @@ export interface AssignUserOption {
 }
 export interface BillPostingFilterFormFieldsProps {
   ft_status: string[]
+  ft_overview_status: string[]
   ft_assignee: string
+  ft_process: string
   ft_select_users: any
   ft_vendor: any
   ft_datepicker: string
@@ -84,6 +87,18 @@ export interface DocumentGetListOptions {
   LocationIds: string | null
   ProcessType: number | string
   VendorIds: string | null
+  StartDate: string | null
+  EndDate: string | null
+  PageSize: number
+  PageNumber: number | undefined
+  SortColumn: string | null
+  SortOrder: number | null
+}
+
+export interface DocumentGetOverviewListOptions {
+  Status: any
+  ProcessType: number | string
+  VendorIds: any
   StartDate: string | null
   EndDate: string | null
   PageSize: number
@@ -132,6 +147,11 @@ export interface RemoveDocumentOptionsProps {
 export interface DeleteDocumentOptionsProps {
   IdsDataList: any[]
   StatusId: number
+}
+
+export interface DeleteDocumentOverviewOptionsProps {
+  AccountPayableId: number
+  ActionReason?: string
 }
 
 export interface AssigneeOptionsProps {

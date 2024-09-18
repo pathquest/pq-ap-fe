@@ -1,7 +1,9 @@
 'use client'
 import ChevronLeftIcon from '@/assets/Icons/ChevronLeftIcon'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { processPermissions } from '@/components/Common/Functions/ProcessPermission'
 import { useAppDispatch } from '@/store/configureStore'
+import { setProcessPermissionsMatrix } from '@/store/features/profile/profileSlice'
 import { SaveAssignRoles, getAssignUsertoCompany, userGetManageRights, userListDropdown } from '@/store/features/user/userSlice'
 import { Button, CheckBox, DataTable, Select, Toast, Typography } from 'pq-ap-lib'
 import React, { useEffect, useState } from 'react'
@@ -9,7 +11,7 @@ import React, { useEffect, useState } from 'react'
 interface DrawerProps {
   onOpen: boolean
   onClose: () => void
-  userId: string
+  userId: number
 }
 
 const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
@@ -17,9 +19,11 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
 
   const [users, setUsers] = useState<any>([])
   const [usersId, setUsersId] = useState<any>(userId)
+
   useEffect(() => {
     setUsersId(userId)
   }, [userId])
+
   const [company, setCompany] = useState<any>([])
   const [companyId, setCompanyId] = useState<number>(0)
   const [tableData, setTableData] = useState<any>([])
@@ -130,14 +134,34 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
                       new Object({
                         ...nestedData,
                         ...getCheckBoxes(nestedData),
+                        details:
+                          nestedData?.Children.length > 0 && nestedData?.Children[0].IsShowCheckBox === false ? (
+                            <DataTable
+                              columns={nested1Headers}
+                              sticky
+                              noHeader
+                              expandable
+                              getExpandableData={() => { }}
+                              getRowId={() => { }}
+                              data={
+                                nestedData?.Children?.length > 0
+                                  ? nestedData.Children?.map(
+                                    (innerNestedData: any) =>
+                                      new Object({
+                                        ...innerNestedData,
+                                        ...getCheckBoxes(innerNestedData),
+                                      })
+                                  )
+                                  : []
+                              }
+                            />
+                          ) : '',
                       })
                   )
                   : []
               }
             />
-          ) : (
-            ''
-          ),
+          ) : '',
       })
   )
 
@@ -148,12 +172,14 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
   //User Get Manage Rights Data API
   const getUserManageRights = () => {
     const params = {
-      UserId: usersId,
-      CompanyId: companyId,
+      UserId: Number(usersId),
+      CompanyId: Number(companyId),
     }
     performApiAction(dispatch, userGetManageRights, params, (responseData: any) => {
       setTableData(responseData.List)
       setPermissionList(responseData.PermissionIds)
+      const processedData = processPermissions(responseData);
+      dispatch(setProcessPermissionsMatrix(processedData));
     })
   }
 
@@ -198,8 +224,8 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
   const handleSubmit = (e: any) => {
     e.preventDefault()
     const params = {
-      UserId: usersId,
-      CompanyId: companyId,
+      UserId: Number(usersId),
+      CompanyId: Number(companyId),
       ProcessList: permissionList,
     }
     performApiAction(dispatch, SaveAssignRoles, params, () => {
@@ -230,7 +256,7 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
               name='user'
               label='User Name'
               options={users}
-              defaultValue={usersId}
+              defaultValue={usersId + ""}
               getValue={(value: any) => {
                 setUsersId(value)
               }}
@@ -243,7 +269,7 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
               name='company'
               label='Company'
               options={company.filter((item: any) => item.isChecked)}
-              defaultValue={companyId}
+              defaultValue={companyId + ""}
               getValue={(value: any) => {
                 setCompanyId(value)
               }}

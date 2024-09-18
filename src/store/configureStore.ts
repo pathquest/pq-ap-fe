@@ -16,6 +16,7 @@ import { userSlice } from './features/user/userSlice'
 import { vendorSlice } from './features/vendor/vendorSlice'
 import { dashboardSlice } from './features/dashboard/dashboardSlice'
 import { accountantDashboard } from './features/accountantDashboard/accountDashboardSlice'
+import { profileSlice } from './features/profile/profileSlice'
 
 const persistConfig = {
   key: 'root',
@@ -37,6 +38,7 @@ const reducers = combineReducers({
   global: globalSearch.reducer,
   reports: reportsSlice.reducer,
   files: files.reducer,
+  profile: profileSlice.reducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, reducers)

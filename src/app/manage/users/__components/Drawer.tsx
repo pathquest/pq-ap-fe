@@ -1,21 +1,13 @@
 import EditIcon from '@/assets/Icons/EditIcon'
 import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
-import { useAppDispatch, useAppSelector } from '@/store/configureStore'
+import { useAppDispatch } from '@/store/configureStore'
 import { companyListDropdown } from '@/store/features/company/companySlice'
 import { roleListDropdown } from '@/store/features/role/roleSlice'
-import {
-  cityListDropdown,
-  countryListDropdown,
-  getUserImage,
-  stateListDropdown,
-  timezoneListDropdown,
-  uploadUserImage,
-  userGetDataById,
-  userSaveData,
-} from '@/store/features/user/userSlice'
+import { cityListDropdown, countryListDropdown, getUserImage, stateListDropdown, timezoneListDropdown, uploadUserImage, userGetDataById, userSaveData } from '@/store/features/user/userSlice'
 import { convertStringsToIntegers } from '@/utils'
-import { Avatar, Button, Close, CompanyList, CountrySelect, Email, Select, Text, Toast, Typography } from 'pq-ap-lib'
+import { useSession } from 'next-auth/react'
+import { Avatar, Button, Close, CompanyList, CountrySelect, Email, Select, Text, Toast } from 'pq-ap-lib'
 import { useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -23,14 +15,13 @@ interface DrawerProps {
   onOpen: boolean
   onClose: (value: string) => void
   EditId?: number | null
-  orgId?: number | null
 }
 type SetterFunction = (value: boolean) => void
 
-const UserDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId, orgId }) => {
+const UserDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId }) => {
   // For Dynamic Company Id & AccountingTool
-  const { selectedCompany } = useAppSelector((state) => state.user)
-  const CompanyId = selectedCompany?.value
+  const { data: session } = useSession()
+  const CompanyId = Number(session?.user?.CompanyId)
   const dispatch = useAppDispatch()
 
   const [selectedFile, setSelectedFile] = useState<any>(null)
@@ -185,7 +176,9 @@ const UserDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId, orgId }) =
           setImageName(user_image || '')
           setIsEditStatus(is_Active)
 
-          user_image !== '' && onGetUserImage(user_image)
+          if (user_image) {
+            onGetUserImage(user_image)
+          }
         } else {
           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
         }
@@ -304,7 +297,7 @@ const UserDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId, orgId }) =
         postal_code: '',
         time_zone: timezoneId,
         companyIds: convertStringsToIntegers(companyList),
-        orgid: orgId,
+        OrgId: session?.user?.org_id,
         roleid: newRoleId,
         is_Active: isEditStatus,
       }

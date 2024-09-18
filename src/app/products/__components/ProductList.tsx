@@ -3,6 +3,7 @@ import agent from '@/api/axios'
 import APIcon from '@/assets/Icons/Product Icons/APIcon'
 import BiIcon from '@/assets/Icons/Product Icons/BIIcon'
 import NavBar from '@/components/Navbar'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import {
   Button,
@@ -31,6 +32,7 @@ interface Product {
 }
 const ProductList: React.FC = () => {
   const router = useRouter()
+  const { data: session, update }: any = useSession()
 
   useEffect(() => {
     setClicked(true)
@@ -70,6 +72,15 @@ const ProductList: React.FC = () => {
     try {
       const response = await agent.APIs.getUserConfig()
       if (response.ResponseStatus === 'Success') {
+        await update({
+          ...session.user,
+          org_id: response.ResponseData.OrganizationId,
+          org_name: response.ResponseData.OrganizationName,
+          user_id: response.ResponseData.UserId,
+          is_admin: response.ResponseData.IsAdmin,
+          is_organization_admin: response.ResponseData.IsOrganizationAdmin,
+          role_id: response.ResponseData.RoleId
+        })
         localStorage.setItem('UserId', response.ResponseData.UserId)
         localStorage.setItem('OrgId', response.ResponseData.OrganizationId)
         localStorage.setItem('IsAdmin', response.ResponseData.IsAdmin)
@@ -167,9 +178,8 @@ const ProductList: React.FC = () => {
   const productItems = productData.map((product: any) => {
     return (
       <div
-        className={`h-auto w-auto rounded-lg border ${
-          selectedProduct === product.name ? 'border-primary shadow-lg' : 'border-lightSilver'
-        } group cursor-pointer  hover:border-primary hover:shadow-lg`}
+        className={`h-auto w-auto rounded-lg border ${selectedProduct === product.name ? 'border-primary shadow-lg' : 'border-lightSilver'
+          } group cursor-pointer  hover:border-primary hover:shadow-lg`}
         onClick={() => handleRadioChange(product.name, product.id)}
         key={product.Id}
       >
@@ -216,7 +226,6 @@ const ProductList: React.FC = () => {
   }, [])
 
   const handleRadioId = (e: any) => {
-    console.log(e.target.value)
     if (e.target.value === 'Business') {
       setOrgTypeId(1)
     } else {
@@ -282,7 +291,7 @@ const ProductList: React.FC = () => {
                   name='text'
                   getValue={(e: any) => setOrgName(e)}
                   hasError={orgNameErr}
-                  getError={(e: any) => {}}
+                  getError={(e: any) => { }}
                   value={orgName}
                 ></Text>
               </div>
@@ -298,7 +307,7 @@ const ProductList: React.FC = () => {
                   defaultValue={optionId}
                   getValue={(value: any) => setOptionId(value)}
                   hasError={optionError}
-                  getError={(e: any) => {}}
+                  getError={(e: any) => { }}
                 />
               </div>
             </ModalContent>

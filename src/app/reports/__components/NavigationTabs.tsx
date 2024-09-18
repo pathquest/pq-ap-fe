@@ -5,6 +5,8 @@ import { getHeaderList, setSelectedIndex } from '@/store/features/reports/report
 import { Typography } from 'pq-ap-lib'
 import React, { useEffect, useRef, useState } from 'react'
 import ReportStar from './icons/ReportStar'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
+import { useSession } from 'next-auth/react'
 
 interface NavigationBarProps extends React.InputHTMLAttributes<HTMLInputElement> {
   className?: string
@@ -16,13 +18,34 @@ interface NavigationBarProps extends React.InputHTMLAttributes<HTMLInputElement>
 }
 
 const NavigationTabs: React.FC<NavigationBarProps> = ({ className, getValue, variant, direction = 'row' }) => {
+  const { data: session } = useSession()
+  const CompanyId = Number(session?.user?.CompanyId)
+
   const dispatch = useAppDispatch()
   const { selectedIndex } = useAppSelector((state) => state.reports)
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isReportView = getModulePermissions(processPermissionsMatrix, "Reports") ?? {}
+  const isAPLedgerView = isReportView["AP Ledger"]?.View ?? false;
+  const isBillAnalysisView = isReportView["Bill Analysis"]?.View ?? false;
+  const isBillPaymentsView = isReportView["Bill Payments"]?.View ?? false;
+  const isUnpaidBillsView = isReportView["Unpaid Bills"]?.View ?? false;
+  const isVendorAgingDetailedView = isReportView["Vendor Aging Detailed"]?.View ?? false;
+  const isVendorAgingSummaryView = isReportView["Vendor Aging Summary"]?.View ?? false;
+
+  const flags: any = {
+    "APLedger": isAPLedgerView,
+    "VendorAgingDetailed": isVendorAgingDetailedView,
+    "VendorAgingSummary": isVendorAgingSummaryView,
+    "BillAnalysis": isBillAnalysisView,
+    "UnpaidBills": isUnpaidBillsView,
+    "BillPayments": isBillPaymentsView
+  };
 
   const selectRef = useRef<HTMLDivElement>(null)
   const parentDivRef = useRef<HTMLDivElement>(null)
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const [tabs, setTabs] = useState<any>([])
+  const [newTabs, setNewTabs] = useState<any>([])
   const [currentTab, setCurrentTab] = useState<string>('')
   const [isfavorite, setIsFavorite] = useState(false)
   const [loading, setLoading] = useState<boolean>(false)
@@ -43,15 +66,22 @@ const NavigationTabs: React.FC<NavigationBarProps> = ({ className, getValue, var
     setLoading(true)
     performApiAction(dispatch, getHeaderList, null, (responseData: any) => {
       const sortedTabs = responseData.ReportsHeader.sort(compareIsFavorite)
-      setCurrentTab(responseData.ReportsHeader[0].ReportCode)
-      setTabs(sortedTabs)
+      setNewTabs(sortedTabs)
       setLoading(false)
     })
   }
 
   useEffect(() => {
+    setTabs([])
     getReportHeaderList()
-  }, [])
+  }, [CompanyId])
+
+  useEffect(() => {
+    if (newTabs) {
+      const updatedData = newTabs.filter((report: any) => flags[report.ReportCode])
+      setTabs(updatedData)
+    }
+  }, [newTabs])
 
   useEffect(() => {
     getValue(currentTab + '')
@@ -105,9 +135,8 @@ const NavigationTabs: React.FC<NavigationBarProps> = ({ className, getValue, var
   const tabLabel = (index: number, label: any) => {
     return (
       <Typography
-        className={`uppercase tracking-[0.02em] whitespace-nowrap border-r ${calculateBorderClass(index, tabs.length, direction)} cursor-pointer px-5 ${
-          selectedIndex === index ? 'text-base font-semibold text-primary' : 'text-sm font-medium text-slatyGrey'
-        }`}
+        className={`uppercase tracking-[0.02em] whitespace-nowrap border-r ${calculateBorderClass(index, tabs.length, direction)} cursor-pointer px-5 ${selectedIndex === index ? 'text-base font-semibold text-primary' : 'text-sm font-medium text-slatyGrey'
+          }`}
         type='h6'
       >
         {label}
@@ -116,76 +145,73 @@ const NavigationTabs: React.FC<NavigationBarProps> = ({ className, getValue, var
   }
 
   return (
-    <>
-      <div className={`${className} relative flex items-center py-[10px]`} ref={parentDivRef}>
-        {tabs.map((tab: any, index: number) => {
-          if (index < visibleTabs) {
-            return (
-              <div className=' ' onClick={() => handleTabClick(tab.ReportCode, index)} key={tab.ReportCode}>
-                {variant === 'modal' ? (
-                  <a href={`#${tab.ReportCode}`}>{tabLabel(index, tab.ReportName)}</a>
-                ) : (
-                  tabLabel(index, tab?.ReportName)
-                )}
-              </div>
-            )
-          }
-          return null
-        })}
-        {tabs.length > 4 && (
-          <div ref={selectRef} className='cursor-pointer '>
-            <div onClick={handleToggleOpen} className='flex h-6 w-12  items-center justify-center'>
-              <MoreIcon />
+    <div key={CompanyId} className={`${className} relative flex items-center py-[10px]`} ref={parentDivRef}>
+      {tabs.map((tab: any, index: number) => {
+        if (index < visibleTabs) {
+          return (
+            <div className=' ' onClick={() => handleTabClick(tab.ReportCode, index)} key={tab.ReportCode}>
+              {variant === 'modal' ? (
+                <a href={`#${tab.ReportCode}`}>{tabLabel(index, tab.ReportName)}</a>
+              ) : (
+                tabLabel(index, tab?.ReportName)
+              )}
             </div>
-            <div>
-              <ul
-                className={`custom-scroll-PDF absolute z-[1] overflow-y-auto rounded-md bg-pureWhite shadow-md transition-transform max-[694px]:right-0 max-[694px]:w-full min-[695px]:w-[294px] ${
-                  isOpen
-                    ? 'top-12 max-h-[320px] translate-y-0 opacity-100 transition-opacity duration-500 ease-out'
-                    : 'max-h-0 translate-y-10 opacity-0 transition-opacity duration-500'
+          )
+        }
+        return null
+      })}
+      {tabs.length > 4 && (
+        <div ref={selectRef} className='cursor-pointer '>
+          <div onClick={handleToggleOpen} className='flex h-6 w-12  items-center justify-center'>
+            <MoreIcon />
+          </div>
+          <div>
+            <ul
+              className={`custom-scroll-PDF absolute z-[1] overflow-y-auto rounded-md bg-pureWhite shadow-md transition-transform max-[694px]:right-0 max-[694px]:w-full min-[695px]:w-[294px] ${isOpen
+                ? 'top-12 max-h-[320px] translate-y-0 opacity-100 transition-opacity duration-500 ease-out'
+                : 'max-h-0 translate-y-10 opacity-0 transition-opacity duration-500'
                 }`}
-              >
-                {tabs.map((tab: any, index: number) => (
-                  <div
-                    className='flex cursor-pointer justify-between py-[10px] px-5 text-base font-normal hover:bg-whiteSmoke'
-                    key={tab.ReportCode}
+            >
+              {tabs.map((tab: any, index: number) => (
+                <div
+                  className='flex cursor-pointer justify-between py-[10px] px-5 text-base font-normal hover:bg-whiteSmoke'
+                  key={tab.ReportCode}
+                >
+                  <li
+                    key={tab?.ReportCode}
+                    onClick={() => {
+                      handleTabClick(tab.ReportCode, index)
+                    }}
+                    className=''
                   >
-                    <li
-                      key={tab?.ReportCode}
-                      onClick={() => {
-                        handleTabClick(tab.ReportCode, index)
-                      }}
-                      className=''
-                    >
-                      {variant === 'modal' ? (
-                        <a href={`#${tab.ReportCode}`}>
-                          <Typography type='h6' className='cursor-pointe'>
-                            {tab?.ReportName}
-                          </Typography>
-                        </a>
-                      ) : (
-                        <Typography type='h6' className='cursor-pointer whitespace-nowrap'>
+                    {variant === 'modal' ? (
+                      <a href={`#${tab.ReportCode}`}>
+                        <Typography type='h6' className='cursor-pointe'>
                           {tab?.ReportName}
                         </Typography>
-                      )}
-                    </li>
-                    <ReportStar
-                      isLoading={loading}
-                      data={tab}
-                      isStarClick={(value: any) => {
-                        getReportHeaderList()
-                        setIsFavorite(value)
-                      }}
-                      arrayData={tabs}
-                    />
-                  </div>
-                ))}
-              </ul>
-            </div>
+                      </a>
+                    ) : (
+                      <Typography type='h6' className='cursor-pointer whitespace-nowrap'>
+                        {tab?.ReportName}
+                      </Typography>
+                    )}
+                  </li>
+                  <ReportStar
+                    isLoading={loading}
+                    data={tab}
+                    isStarClick={(value: any) => {
+                      getReportHeaderList()
+                      setIsFavorite(value)
+                    }}
+                    arrayData={tabs}
+                  />
+                </div>
+              ))}
+            </ul>
           </div>
-        )}
-      </div>
-    </>
+        </div>
+      )}
+    </div>
   )
 }
 

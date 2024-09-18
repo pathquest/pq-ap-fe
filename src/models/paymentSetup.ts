@@ -62,6 +62,10 @@ export interface DeactivateBankAccountOptions {
   PaymentSetupId: number
 }
 
+export interface GetAllBankAccountOptions {
+  Type: string
+}
+
 export interface PaymentMethodListOptions {
   ProviderId: string | undefined
 }

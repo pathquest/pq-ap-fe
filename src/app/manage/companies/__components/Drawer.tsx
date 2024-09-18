@@ -5,6 +5,7 @@ import { performApiAction } from '@/components/Common/Functions/PerformApiAction
 import { useAppDispatch } from '@/store/configureStore'
 import { companyGetById, getCompanyImage, saveCompany, uploadCompanyImage } from '@/store/features/company/companySlice'
 import { cityListDropdown, countryListDropdown, setIsRefresh, stateListDropdown } from '@/store/features/user/userSlice'
+import { useSession } from 'next-auth/react'
 import { Avatar, Button, Close, CountrySelect, Email, Select, Text, Toast, Typography } from 'pq-ap-lib'
 import React, { useCallback, useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
@@ -48,12 +49,13 @@ const Drawer: React.FC<DrawerProps> = ({
   IntacctCompanyId,
   IntacctLocationId,
   clearID,
-  orgId,
   recordNo,
   setShowCancelModal,
   isConfirmCancel,
   getCompanyList
 }: any) => {
+  const { data: session } = useSession()
+
   const dispatch = useAppDispatch()
   const [Id, setId] = useState(0)
   const [companyName, setCompanyName] = useState('')
@@ -83,7 +85,7 @@ const Drawer: React.FC<DrawerProps> = ({
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState(false)
   const [emailHasError, setEmailHasError] = useState(false)
-  const [deletedFile, setDeletedFile] = useState<number>(30)
+  const [deletedFile, setDeletedFile] = useState<string>('30')
   const [deletedFileError, setDeletedFileError] = useState(false)
   const [accountToolCompanyId, setAccountToolCompanyId] = useState('')
   const [countryDropDownData, setCountryDropDownData] = useState([])
@@ -95,6 +97,7 @@ const Drawer: React.FC<DrawerProps> = ({
   const [imagePreview, setImagePreview] = useState<string>('')
   const [zipErrorMessage, setZipErrorMessage] = useState<string>('')
   const [addressErrorMessage, setAddressErrorMessage] = useState<string>('')
+  const [deletedFileErrorMessage, setDeletedFileErrorMessage] = useState('');
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [prevGuId, setPrevGuId] = useState<string>('')
@@ -244,6 +247,7 @@ const Drawer: React.FC<DrawerProps> = ({
   // clear form after close the drawer or close button
   const clearData = () => {
     clearID()
+    setDeletedFileErrorMessage('')
     setCompanyName('')
     setCompanyNameError(false)
     setCompanyNameHasError(false)
@@ -272,7 +276,7 @@ const Drawer: React.FC<DrawerProps> = ({
     setEmailError(false)
     setEmailHasError(false)
     setId(0)
-    setDeletedFile(30)
+    setDeletedFile('30')
     setDeletedFileError(false)
     setIsLoading(false)
     onClose()
@@ -294,7 +298,7 @@ const Drawer: React.FC<DrawerProps> = ({
       CityId: city,
       ZipCode: zipCode,
       Phone: phone,
-      OrgId: orgId,
+      OrgId: session?.user?.org_id,
       Email: email,
       AccountingTool: accountingTool,
       AccToolCompanyId: !accountToolCompanyId ? IntacctAccountinToolId : accountToolCompanyId,
@@ -304,20 +308,17 @@ const Drawer: React.FC<DrawerProps> = ({
       IntacctPassword: IntacctPassword,
       IntacctCompanyId: IntacctCompanyId,
       IntacctLocationId: IntacctLocationId,
-      DeleteFilesInDays: deletedFile,
+      DeleteFilesInDays: Number(deletedFile),
       IsActive: true,
       RecordNo: recordNo,
     }
-    setDeletedFile(0)
+    // setDeletedFile(0)
     performApiAction(
       dispatch,
       saveCompany,
       params,
       () => {
-        Toast.success(
-          ` ${Id ? 'Company updated successfully' : 'Master syncing has been done. You can be able to view the data in a while.'
-          } `
-        )
+        Toast.success(`${Id ? 'Company updated successfully' : `Master syncing for the ${companyName} is completed. please complete Manage Configuration and Field Mapping from action button before going ahead.`}`)
         setAccountToolCompanyId('')
         clearData()
         getCompanyList()
@@ -383,8 +384,7 @@ const Drawer: React.FC<DrawerProps> = ({
       stateHasError &&
       cityHasError &&
       phoneHasError &&
-      deletedFile > 0 &&
-      deletedFile < 121
+      !deletedFileError
     ) {
       CompanySave()
     }
@@ -439,14 +439,33 @@ const Drawer: React.FC<DrawerProps> = ({
     onClose()
   }
 
-  let errorMessage = ''
-  if (!deletedFile) {
-    errorMessage = 'This is a required field!'
-  } else if (deletedFile <= 0 || deletedFile > 120) {
-    errorMessage = 'Value should be between 1-120 digits'
-  }
-
   if (!onOpen) return null
+
+  const handleDeleteFileChange = (value: string) => {
+    // Regex pattern to accept values between 1 and 120
+    const numValue = Number(value);
+    if (value == '') {
+      setDeletedFile('');
+      setDeletedFileError(true);
+      setDeletedFileErrorMessage('This field is required');
+    } else {
+      if (/^(0*(?:[1-9]|[1-9][0-9]|1[0-1][0-9]|120))?$/.test(value)) {
+        setDeletedFile(value);
+        setDeletedFileError(false);
+      }
+    }
+    // if (value == '') {
+    //   setDeletedFile('');
+    //   setDeletedFileError(true);
+    //   setDeletedFileErrorMessage('This field is required');
+    // } else if (numValue >= 1 && numValue <= 120) {
+    //   setDeletedFileError(false);
+    //   setDeletedFileErrorMessage('');
+    // } else {
+    //   setDeletedFileError(true);
+    //   setDeletedFileErrorMessage('Value must be between 1 and 120');
+    // }
+  };
 
   return (
     <div
@@ -473,7 +492,7 @@ const Drawer: React.FC<DrawerProps> = ({
           </div>
         </div>
       )}
-      <div className='vertical-scroll custom-scroll-filter mb-12 mt-2 flex-1 overflow-y-scroll px-5'>
+      <div className='vertical-scroll custom-scroll-filter pb-5 pt-2 flex-1 overflow-y-auto px-5'>
         <div className='mt-3 flex'>
           <div className='relative flex'>
             <Avatar variant='large' imageUrl={imagePreview} />
@@ -643,7 +662,7 @@ const Drawer: React.FC<DrawerProps> = ({
           </div>
         </div>
         <div className='py-5 text-base font-proxima tracking-[0.02em] font-bold text-black'>Other Details</div>
-        <div className='flex w-1/2 '>
+        {/* <div className='flex w-1/2 '>
           <Text
             type='number'
             value={deletedFile}
@@ -659,6 +678,21 @@ const Drawer: React.FC<DrawerProps> = ({
             validate
             errorMessage={errorMessage}
             rangeBetween={[1, 120]}
+          />
+        </div> */}
+        <div className='flex w-1/2'>
+          <Text
+            label='Delete File in Days'
+            id='deleteFilesInDays'
+            name='deleteFilesInDays'
+            placeholder='Please enter days between 1 to 120'
+            validate
+            maxLength={3}
+            hasError={deletedFileError}
+            value={deletedFile}
+            errorMessage={deletedFileErrorMessage}
+            getValue={(value: string) => handleDeleteFileChange(value)}
+            getError={() => { }}
           />
         </div>
       </div>

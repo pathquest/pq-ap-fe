@@ -44,6 +44,7 @@ import MultipleVendorMultiplePaymentDetailsModal from './components/payment-deta
 import SinglePaymentDetailsModal from './components/payment-details/SinglePaymentDetailsModal'
 import SingleVendorMultiplePaymentDetailsModal from './components/payment-details/SingleVendorMultiplePaymentDetailsModal'
 import { storageConfig } from '@/components/Common/pdfviewer/config'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
 
 type SortableFieldsType = {
   BillNumber: boolean
@@ -58,6 +59,10 @@ type SortableFieldsType = {
 const PaymentsContent: React.FC = () => {
   const router = useRouter()
   const pathname = usePathname()
+
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isPaymentView = getModulePermissions(processPermissionsMatrix, "Payments") ?? {}
+  const isBillsToPayEdit = isPaymentView["Bills to pay"]?.Edit ?? false;
 
   // For Dynamic Company Id & AccountingTool
   const { data: session } = useSession()
@@ -480,7 +485,7 @@ const PaymentsContent: React.FC = () => {
       case 'Edit Bill':
         // router.push(`/payments/billtopay/edit/${id}`)
         // dispatch(setSelectedStatus(0))
-        router.push(`/bills/edit/${id}`)
+        router.push(`/bills/edit/${id}?module=billsToPay`)
         dispatch(setSelectedStatus(0))
         dispatch(setIsVisibleSidebar(false))
         break
@@ -787,7 +792,7 @@ const PaymentsContent: React.FC = () => {
 
   // Customizing Table Data
   const tableData = paymentList.map((d: any) => {
-    const actionArray = [Number(d.PaymentStatus) === 3 ? "" : 'Mark as Paid', (d.PaymentStatusName == "Unpaid" || Number(d.PaymentStatus) === 3) && 'Edit Bill', Number(d.PaymentStatus) === 3 ? 'Move to Bills to Pay' : 'Move to Bills on Hold', 'Activities'].filter(Boolean)
+    const actionArray = [Number(d.PaymentStatus) === 3 ? "" : 'Mark as Paid', (isBillsToPayEdit && (d.PaymentStatusName == "Unpaid" || Number(d.PaymentStatus) == 3)) && 'Edit Bill', Number(d.PaymentStatus) === 3 ? 'Move to Bills to Pay' : 'Move to Bills on Hold', 'Activities'].filter(Boolean)
 
     const dueDate = new Date(d.DueDate)
     const today = new Date()
@@ -1032,7 +1037,7 @@ const PaymentsContent: React.FC = () => {
   return (
     <Wrapper>
       {/* Navbar */}
-      <div className={`sticky top-0 z-[6] flex !h-[66px] items-center justify-between border-b border-b-lightSilver bg-white sm:px-4 md:px-4 laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5 py-2 ${tableDynamicWidth}`}>
+      <div className={`sticky top-0 z-[6] flex !h-[66px] items-center justify-between border-b border-b-lightSilver bg-white sm:px-4 md:px-4 laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5 ${tableDynamicWidth}`}>
 
         <div className='mx-3 w-[155px]'>
           <VendorsDropdown vendorOption={vendorOptions} />
@@ -1118,18 +1123,18 @@ const PaymentsContent: React.FC = () => {
             )}
           </ul>
         ) : (<>
-          <div className='w-full flex justify-end items-center laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5'>
-            <div className='flex justify-center items-center mt-1' onClick={() => setFilterClicked(true)}>
+          <div className='w-full h-full flex justify-end items-center laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5'>
+            <div className='h-full flex justify-center items-center' onClick={() => setFilterClicked(true)}>
               <Tooltip position='bottom' content='Filter' className='!px-0 !pb-2.5 !font-proxima !text-sm !z-[6]'>
                 <FilterIcon />
               </Tooltip>
             </div>
-            <div className='flex justify-center items-center mt-2 -mr-2' onClick={() => router.push('/payments/billtopay/aging')}>
+            <div className='flex justify-center items-center pt-2 h-full' onClick={() => router.push('/payments/billtopay/aging')}>
               <Tooltip position='bottom' content='Payment Aging' className='!px-0 !pb-2.5 !font-proxima !text-sm !z-[6]'>
                 <PaymentAgingIcon />
               </Tooltip>
             </div>
-            <div className='flex justify-center items-center mt-1'>
+            <div className='flex justify-center items-center h-full pt-0.5'>
               <Download url={`${process.env.API_BILLSTOPAY}/payment/getlist`} params={getPaymentListParams} fileName='Bills_To_Pay' />
             </div>
           </div>
@@ -1181,7 +1186,16 @@ const PaymentsContent: React.FC = () => {
           {isLoading && loaderCounter === 1 && checkLoader && <Loader size='sm' helperText />}
           <div ref={tableBottomRef} />
         </div>
-        <DataLoadingStatus isLoading={isLoading} data={paymentList} />
+        {/* <DataLoadingStatus isLoading={isLoading} data={paymentList} /> */}
+        {paymentList.length === 0 ? (
+          isLoading ?
+            <div className='flex h-[calc(94vh-150px)] w-full items-center justify-center'>
+              <Loader size='md' helperText />
+            </div>
+            : <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
+              No records available at the moment.
+            </div>
+        ) : ''}
       </div>
 
       {isFileModal && ['pdf'].includes(isFileRecord.FileName.split('.').pop().toLowerCase()) && (

@@ -25,10 +25,11 @@ import { Configuration, OpenAIApi } from 'openai'
 
 // store
 import { ActivityList, WatcherOptions, FilterTagDataOptions } from '@/models/activity'
-import { useAppDispatch } from '@/store/configureStore'
+import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { getActivityList, getWatcherList, saveActivityList, saveWatcherList } from '@/store/features/billsToPay/billsToPaySlice'
 import WatcherListDropdown from '../Dropdown/WatcherListDropdown'
 import { performApiAction } from '../Functions/PerformApiAction'
+import { getModulePermissions, hasSpecificPermission } from '../Functions/ProcessPermission'
 
 const extensionToIconMap: any = {
   pdf: <PdfIcon />,
@@ -43,6 +44,15 @@ const extensionToIconMap: any = {
 
 const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId }: ActivityDrawerProps) => {
   const dispatch = useAppDispatch()
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+
+  const isActivityCommentView = getModulePermissions(processPermissionsMatrix, "Activity") ?? {}
+  const isQueriesView = isActivityCommentView["Comments-Queries"]?.View ?? false;
+  const isQueriesCreate = isActivityCommentView["Comments-Queries"]?.Create ?? false;
+
+  const isInformalCreate = isActivityCommentView["Informal"]?.Create ?? false;
+  const isSpeechToTextCreate = isActivityCommentView["Speech to text"]?.Create ?? false;
+  const isSummaryCreate = isActivityCommentView["Summary"]?.Create ?? false;
 
   const [selectedTab, setSelectedTab] = useState('1')
   const [selectedAssignees, setSelectedAssignees] = useState<WatcherOptions[]>([])
@@ -137,10 +147,10 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
   }
 
   const tabBar = [
-    { id: '1', label: 'ALL' },
-    { id: '2', label: 'ACTIVITY' },
-    { id: '3', label: 'COMMENTS' },
-  ]
+    { id: '1', label: 'ALL', isVisible: true },
+    { id: '2', label: 'ACTIVITY', isVisible: true },
+    { id: '3', label: 'COMMENTS', isVisible: isQueriesView },
+  ].filter(item => item.isVisible)
 
   const getTabId = (args: string) => {
     setSelectedTab(args)
@@ -153,7 +163,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
   useEffect(() => {
     if (isOpen) {
       fetchActivityList()
-      fetchWatcherList()
+      !noCommentBox && fetchWatcherList()
     }
   }, [isOpen])
 
@@ -495,7 +505,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
                 <SpinnerIcon bgColor='#6E6D7A' />
               </div>
             ) : (
-              <Tooltip
+              isSummaryCreate && <Tooltip
                 position='bottom'
                 content='Summary'
                 className={`${getList.length > 0 && !isSummaryModalIcon ? 'cursor-pointer' : 'pointer-events-none'
@@ -610,7 +620,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
               />
 
               <div className={`flex h-12 items-center gap-4`}>
-                <Tooltip
+                {isInformalCreate && <Tooltip
                   position='top'
                   content='Informal'
                   className={`${newText !== '' ? 'cursor-pointer' : 'pointer-events-none'
@@ -619,7 +629,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
                   <span onClick={() => handleAIText('Informal'.toLowerCase())}>
                     <InformalIcon />
                   </span>
-                </Tooltip>
+                </Tooltip>}
 
                 <Tooltip
                   position='top'
@@ -632,7 +642,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
                   </label>
                 </Tooltip>
 
-                <span className={`${!listLoader ? 'cursor-pointer' : 'pointer-events-none'}`}>
+                <span className={`${isSpeechToTextCreate ? "block" : "hidden"} ${!listLoader ? 'cursor-pointer' : 'pointer-events-none'}`}>
                   {isRecording ? (
                     <span className='flex' onClick={stopRecording}>
                       <MicrophoneIcon fill='#DC3545' />
@@ -647,7 +657,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
 
                 <Button
                   variant='btn-primary'
-                  className='btn-md rounded-md disabled:opacity-50'
+                  className={`${isQueriesCreate ? "block" : "hidden"} btn-md rounded-md disabled:opacity-50`}
                   onClick={() => handleSubmit(2)}
                   disabled={newText !== '' || fileNames.length > 0 ? (loader ? true : false) : true}
                 >

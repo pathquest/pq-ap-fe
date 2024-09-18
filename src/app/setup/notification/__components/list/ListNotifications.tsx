@@ -7,16 +7,11 @@ import React, { lazy, useEffect, useState } from 'react'
 import VisibilityIcon from '@/assets/Icons/notification/VisibilityIcon'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import { ModuleData, MonthOptions, TableColumn, TransformedTriggerData, days } from '@/data/notification'
-import { useAppDispatch } from '@/store/configureStore'
-import {
-  getNotificationMatrix,
-  getSummaryData,
-  saveNotificationMatrix,
-  saveSummaryData,
-  updateSummaryStatus,
-} from '@/store/features/notification/notificationSlice'
+import { useAppDispatch, useAppSelector } from '@/store/configureStore'
+import { getNotificationMatrix, getSummaryData, saveNotificationMatrix, saveSummaryData, updateSummaryStatus } from '@/store/features/notification/notificationSlice'
 import { useSession } from 'next-auth/react'
 import ViewEmailPreview from '../ViewEmailPreview'
+import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
 
 // import Icons
 const DoubleArrowDown = lazy(() => import('@/assets/Icons/notification/DoubleArrowDown'))
@@ -88,6 +83,8 @@ const ListNotification: React.FC = () => {
   // For Dynamic Company Id & AccountingTool
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isNotificationEdit = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Notification", "Edit");
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isFooterLoader, setIsFooterLoader] = useState<boolean>(false)
@@ -379,7 +376,7 @@ const ListNotification: React.FC = () => {
                     <div className='tooltip_text h-10 cursor-pointer'>
                       {nestedData.Email && !nestedData.EmailDisable && (
                         <div className='flex items-center justify-center gap-2'>
-                          <span onClick={() => handleEditEmail(nestedData.MatrixId)}>
+                          <span className={`${isNotificationEdit ? "flex" : "hidden"}`} onClick={() => handleEditEmail(nestedData.MatrixId)}>
                             <Tooltip position='bottom' content='Edit Email'>
                               <EditIcon />
                             </Tooltip>

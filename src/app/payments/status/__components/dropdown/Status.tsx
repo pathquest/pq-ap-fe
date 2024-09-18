@@ -6,7 +6,7 @@ import { setStatusIdList } from '@/store/features/paymentstatus/paymentStatusSli
 import { Button, CheckBox } from 'pq-ap-lib'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
-const Status: React.FC<StatusType> = ({ statusList }) => {
+const Status: React.FC<StatusType> = ({ statusList, onSuccessApply }) => {
     // For Dynamic Company Id & AccountingTool
     const { selectedCompany } = useAppSelector((state) => state.user)
     const { statusIdList } = useAppSelector((state) => state.paymentStatus)
@@ -130,6 +130,7 @@ const Status: React.FC<StatusType> = ({ statusList }) => {
     const handleApply = () => {
         setIsOpen(false)
         dispatch(setStatusIdList(selectedValues))
+        onSuccessApply(selectedValues)
     };
 
     return (
@@ -151,7 +152,7 @@ const Status: React.FC<StatusType> = ({ statusList }) => {
 
             <ul
                 className={`absolute top-[42px] z-20 flex w-[250px] flex-col gap-1 rounded-md border border-lightSilver bg-white drop-shadow-xl transition-transform overflow-y-auto ease-out ${isOpen
-                    ? 'max-h-[430px] laptop:max-h-[430px] laptopMd:max-h-[430px] lg:max-h-[430px] xl:max-h-[430px] hd:max-h-[598px] 2xl:max-h-[598px] 3xl:max-h-[598px] translate-y-0 opacity-100 transition-opacity duration-300'
+                    ? 'max-h-[430px] laptop:max-h-[430px] laptopMd:max-h-[430px] lg:max-h-[430px] xl:max-h-[430px] hd:max-h-[500px] 2xl:max-h-[598px] 3xl:max-h-[598px] translate-y-0 opacity-100 transition-opacity duration-300'
                     : 'max-h-0 translate-y-20 opacity-0 transition-opacity duration-300'
                     }`}>
                 <li className={`sticky top-0 z-[5] flex cursor-pointer items-center bg-white px-[15px] py-[10px] text-sm font-normal outline-none focus:bg-whiteSmoke`}>

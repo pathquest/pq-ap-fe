@@ -36,6 +36,7 @@
     -webkit-transform: translateX(100%);
     transform: translateX(100%);
   }
+
   100% {
     -webkit-transform: translateX(0);
     transform: translateX(0);
@@ -48,6 +49,7 @@
     -webkit-transform: translateX(100%);
     transform: translateX(100%);
   }
+
   100% {
     -webkit-transform: translateX(0);
     transform: translateX(0);
@@ -77,6 +79,34 @@
 
 .approvalMain table tr td:last-child>span,
 .billsMain table tr td:last-child>span {
+  height: 100% !important;
+}
+
+.configurationMain table tr td {
+  height: 56px;
+}
+
+.configurationMain table tr td,
+.configurationMain table tr td:last-child>span {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.configurationMain table tr td:last-child>span {
+  height: 100% !important;
+}
+
+.dashboardMain table tr td {
+  height: 50px;
+}
+
+.dashboardMain table tr td,
+.dashboardMain table tr td:last-child>span {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.dashboardMain table tr td:last-child>span {
   height: 100% !important;
 }
 
@@ -113,12 +143,13 @@
   padding-bottom: 5px;
 }
 
-.chartScrollbar ::-webkit-scrollbar{
+.chartScrollbar ::-webkit-scrollbar {
   height: 5px;
   width: 4px;
   background: #e6e6e6;
 }
-.chartScrollbar ::-webkit-scrollbar-thumb:horizontal{
+
+.chartScrollbar ::-webkit-scrollbar-thumb:horizontal {
   background: #2323434d;
   border-radius: 10px;
 }

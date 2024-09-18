@@ -988,7 +988,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
                                         onClick={() => {
                                             dispatch(setIsFormDocuments(d.IsFromDocuments))
                                             dispatch(setIsVisibleSidebar(false))
-                                            d.Id && router.push(`/bills/edit/${d.Id}`)
+                                            d.Id && router.push(`/bills/edit/${d.Id}?module=bills`)
                                         }}
                                     >
                                         <DuplicationEditIcon />

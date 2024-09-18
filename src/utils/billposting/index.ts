@@ -53,12 +53,14 @@ const initialBillPostingFilterFormFields: BillPostingFilterFormFieldsProps = {
   ft_status: ['1', '2', '6', '8'],
   ft_assignee: '1',
   ft_select_users: [],
+  ft_process: '1',
+  ft_overview_status: ['1', '2', '3', '4', '5'],
   ft_vendor: null,
   ft_datepicker: `${formattedDate} to ${formattedCurrentDate}`,
   ft_location: null,
 }
 
-const billStatusEditable = [1, 2, 5, 6, 8]
+const billStatusEditable = [1, 2, 5, 6, 8, 10]
 
 function limitString(str: string, limit: number) {
   if (str.length <= limit) {
@@ -117,7 +119,8 @@ const getUpdatedDataFromDetailsResponse = (
   keyValueMainFieldObj: any,
   keyValueLineItemFieldObj: any,
   mainFieldListOptions: any,
-  generateLinetItemFieldsErrorObj: any
+  generateLinetItemFieldsErrorObj: any,
+  vendorGLTermOptions?: any
 ) => {
   let updatedDataObj: any = {}
   let updatedDataErrorObj: any = {}
@@ -125,6 +128,8 @@ const getUpdatedDataFromDetailsResponse = (
   let newLineItemsErrorObj: any = []
 
   if (data) {
+    const selectedVendor = vendorGLTermOptions.find((item: any) => item.value === data['VendorId'])
+
     for (const [key, value] of Object.entries(data)) {
       const filterObject = keyValueMainFieldObj.find((d: any) => d.value === key)
 
@@ -151,7 +156,9 @@ const getUpdatedDataFromDetailsResponse = (
                     : format(currentDate, 'MM/dd/yyyy')
                   : (filterObject.mappedWith === 2 || filterObject.mappedWith === 3 || filterObject.mappedWith === 14 || filterObject.mappedWith === 15) && data['VendorId']
                     ? data['VendorId']
-                    : value,
+                    : (filterObject?.key === 'term' && data['VendorId'] && !data['TermId'])
+                      ? selectedVendor?.Term
+                      : filterObject?.key === 'term' ? Number(value) : value,
         }
 
         const filteredMainFieldObj = mainFieldListOptions?.find((field: any) => field.Name === filterObject.key)
@@ -165,7 +172,9 @@ const getUpdatedDataFromDetailsResponse = (
                 ? true
                 : (filterObject.mappedWith === 2 || filterObject.mappedWith === 3 || filterObject.mappedWith === 14 || filterObject.mappedWith === 15) && data['VendorId']
                   ? true
-                  : false,
+                  : (filterObject?.key === 'term' && data['VendorId'] && !data['TermId'])
+                    ? true
+                    : filterObject?.key === 'term' ? true : false,
           }
         }
       }
@@ -190,9 +199,11 @@ const getUpdatedDataFromDetailsResponse = (
               Id: items?.Id,
               [filterLineItemObject.key]: filterLineItemObject.key === 'releasetopay' && !value
                 ? false
-                : (filterLineItemObject.mappedWith === 11 || filterLineItemObject.mappedWith === 23) && !value
-                  ? data.LocationId.toString()
-                  : value,
+                  : (filterLineItemObject.mappedWith === 11 || filterLineItemObject.mappedWith === 23) && !value && data.LocationId 
+                    ? data.LocationId.toString()
+                    : (filterLineItemObject?.key === 'account' && data['VendorId'] && !items['GLAccount'] && selectedVendor?.GLAccount)
+                      ? selectedVendor?.GLAccount
+                      : (filterLineItemObject?.key === 'account' && value) ? Number(value) : value,
             }
           }
 
@@ -200,67 +211,69 @@ const getUpdatedDataFromDetailsResponse = (
             updatedLineItemErrorObj = {
               ...updatedLineItemErrorObj,
               Index: index + 1,
-              [filterLineItemObject.key]: !value
+              [filterLineItemObject.key]: filterLineItemObject.key === 'releasetopay' && !value
                 ? false
-                : (filterLineItemObject.mappedWith === 11 || filterLineItemObject.mappedWith === 23) && !value
-                  ? false
-                  : true,
+                : (filterLineItemObject.mappedWith === 11 || filterLineItemObject.mappedWith === 23) && !value && data.LocationId
+                  ? true
+                  : (filterLineItemObject?.key === 'account' && data['VendorId'] && !items['GLAccount'] && selectedVendor?.GLAccount)
+                    ? true
+                    : (filterLineItemObject?.key === 'account' && value) ? true : value ? true : false,
             }
           }
         }
-        const { amount, rate, quantity } = updatedLineItemObj;
+        // const { amount, rate, quantity } = updatedLineItemObj;
 
-        if (amount && rate && !quantity) {
-          updatedLineItemObj.quantity = Math.ceil(parseFloat((amount / rate).toFixed(2)));
-          updatedLineItemErrorObj.quantity = true;
-        } else if (amount && quantity && !rate) {
-          updatedLineItemObj.rate = (amount / quantity).toFixed(2);
-          updatedLineItemErrorObj.rate = true;
-        } else if (rate && quantity && !amount) {
-          updatedLineItemObj.amount = (rate * quantity).toFixed(2);
-          updatedLineItemErrorObj.amount = true;
-        } else if (amount && !rate && !quantity) {
-          updatedLineItemObj.quantity = 1; // Default quantity
-          updatedLineItemObj.rate = parseFloat((amount / updatedLineItemObj.quantity).toFixed(2)); 
-          updatedLineItemErrorObj.rate = true;
-          updatedLineItemErrorObj.quantity = true;
-        } else if (rate && !amount && !quantity) {
-          updatedLineItemObj.amount = 0; // Default amount
-          updatedLineItemObj.quantity = 1; // Default quantity
-          updatedLineItemErrorObj.amount = true;
-          updatedLineItemErrorObj.quantity = true;
-        } else if (quantity && !amount && !rate) {
-          updatedLineItemObj.amount = 0; // Default amount
-          updatedLineItemObj.rate = 1; // Default rate
-          updatedLineItemErrorObj.amount = true;
-          updatedLineItemErrorObj.rate = true;
-        } else if (!amount && !rate && !quantity) {
-          updatedLineItemObj.amount = 0;
-          updatedLineItemObj.rate = 0;
-          updatedLineItemObj.quantity = 0;
-          updatedLineItemErrorObj.amount = false;
-          updatedLineItemErrorObj.rate = false;
-          updatedLineItemErrorObj.quantity = false;
-        } else {
-          if (!amount) {
-            updatedLineItemObj.amount = 0;
-            updatedLineItemErrorObj.amount = false;
-          } else {
-            updatedLineItemErrorObj.amount = true;
-          }
-          if (!rate) {
-            updatedLineItemObj.rate = 0;
-            updatedLineItemErrorObj.rate = false;
-          } else {
-            updatedLineItemErrorObj.rate = true;
-          }
-          if (!quantity) {
-            updatedLineItemObj.quantity = 0;
-            updatedLineItemErrorObj.quantity = false;
-          } else {
-            updatedLineItemErrorObj.quantity = true;
-          }
-        }
+        // if (amount && rate && !quantity) {
+        //   updatedLineItemObj.quantity = Math.ceil(parseFloat((amount / rate).toFixed(2)));
+        //   updatedLineItemErrorObj.quantity = true;
+        // } else if (amount && quantity && !rate) {
+        //   updatedLineItemObj.rate = (amount / quantity).toFixed(2);
+        //   updatedLineItemErrorObj.rate = true;
+        // } else if (rate && quantity && !amount) {
+        //   updatedLineItemObj.amount = (rate * quantity).toFixed(2);
+        //   updatedLineItemErrorObj.amount = true;
+        // } else if (amount && !rate && !quantity) {
+        //   updatedLineItemObj.quantity = 1; // Default quantity
+        //   updatedLineItemObj.rate = parseFloat((amount / updatedLineItemObj.quantity).toFixed(2));
+        //   updatedLineItemErrorObj.rate = true;
+        //   updatedLineItemErrorObj.quantity = true;
+        // } else if (rate && !amount && !quantity) {
+        //   updatedLineItemObj.amount = 0; // Default amount
+        //   updatedLineItemObj.quantity = 1; // Default quantity
+        //   updatedLineItemErrorObj.amount = true;
+        //   updatedLineItemErrorObj.quantity = true;
+        // } else if (quantity && !amount && !rate) {
+        //   updatedLineItemObj.amount = 0; // Default amount
+        //   updatedLineItemObj.rate = 1; // Default rate
+        //   updatedLineItemErrorObj.amount = true;
+        //   updatedLineItemErrorObj.rate = true;
+        // } else if (!amount && !rate && !quantity) {
+        //   updatedLineItemObj.amount = 0;
+        //   updatedLineItemObj.rate = 0;
+        //   updatedLineItemObj.quantity = 0;
+        //   updatedLineItemErrorObj.amount = false;
+        //   updatedLineItemErrorObj.rate = false;
+        //   updatedLineItemErrorObj.quantity = false;
+        // } else {
+        //   if (!amount) {
+        //     updatedLineItemObj.amount = 0;
+        //     updatedLineItemErrorObj.amount = false;
+        //   } else {
+        //     updatedLineItemErrorObj.amount = true;
+        //   }
+        //   if (!rate) {
+        //     updatedLineItemObj.rate = 0;
+        //     updatedLineItemErrorObj.rate = false;
+        //   } else {
+        //     updatedLineItemErrorObj.rate = true;
+        //   }
+        //   if (!quantity) {
+        //     updatedLineItemObj.quantity = 0;
+        //     updatedLineItemErrorObj.quantity = false;
+        //   } else {
+        //     updatedLineItemErrorObj.quantity = true;
+        //   }
+        // }
 
         return { updatedLineItemObj, updatedLineItemErrorObj }
       })
@@ -306,15 +319,17 @@ const getViewUpdatedDataFromDetailsResponse = (
       let dropdownValue = ''
       switch (filterObject?.key) {
         case 'vendor':
+          const selectedVendor = value && vendorOptions && vendorOptions?.length > 0 && vendorOptions.find((item: any) => item?.value === Number(value))
           dropdownValue =
             value && vendorOptions && vendorOptions?.length > 0
-              ? vendorOptions.find((item: any) => item?.value === Number(value))?.label
+              ? selectedVendor?.code ? selectedVendor?.code + ' - ' + selectedVendor?.label : selectedVendor?.label
               : ''
           break
         case 'term':
+          const selectedTerm = value && termOptions && termOptions?.length > 0 && termOptions.find((item: any) => item?.value === Number(value))
           dropdownValue =
             value && termOptions && termOptions?.length > 0
-              ? termOptions.find((item: any) => item?.value === Number(value))?.label
+              ? selectedTerm?.code ? selectedTerm?.code + ' - ' + selectedTerm?.label : selectedTerm?.label
               : ''
           break
         case 'pono':
@@ -367,11 +382,15 @@ const getViewUpdatedDataFromDetailsResponse = (
           let dropdownValue = ''
           switch (filterLineItemObject?.key) {
             case 'account':
-              dropdownValue =
-                value &&
+              const selectedAccount = value &&
                 accountOptions &&
                 accountOptions?.length > 0 &&
-                accountOptions.find((item: any) => item?.value === Number(value))?.label
+                accountOptions.find((item: any) => item?.value === Number(value))
+              dropdownValue = value &&
+                accountOptions &&
+                accountOptions?.length > 0
+                ? selectedAccount?.code ? selectedAccount?.code + ' - ' + selectedAccount?.label : selectedAccount?.label
+                : ''
               break
           }
 
@@ -865,7 +884,7 @@ const returnKeyValueObjForFormFields = (MainFieldConfiguration: any, LineItemCon
         })
         return
       case 'Custom11':
-        keyValueMainFieldObj.push({
+        keyValueLineItemFieldObj.push({
           key: item.Name,
           label: item.Label,
           value: 'Custom11',
@@ -874,7 +893,7 @@ const returnKeyValueObjForFormFields = (MainFieldConfiguration: any, LineItemCon
         })
         return
       case 'Custom12':
-        keyValueMainFieldObj.push({
+        keyValueLineItemFieldObj.push({
           key: item.Name,
           label: item.Label,
           value: 'Custom12',
@@ -883,7 +902,7 @@ const returnKeyValueObjForFormFields = (MainFieldConfiguration: any, LineItemCon
         })
         return
       case 'Custom13':
-        keyValueMainFieldObj.push({
+        keyValueLineItemFieldObj.push({
           key: item.Name,
           label: item.Label,
           value: 'Custom13',
@@ -892,7 +911,7 @@ const returnKeyValueObjForFormFields = (MainFieldConfiguration: any, LineItemCon
         })
         return
       case 'Custom14':
-        keyValueMainFieldObj.push({
+        keyValueLineItemFieldObj.push({
           key: item.Name,
           label: item.Label,
           value: 'Custom14',
@@ -901,7 +920,7 @@ const returnKeyValueObjForFormFields = (MainFieldConfiguration: any, LineItemCon
         })
         return
       case 'Custom15':
-        keyValueMainFieldObj.push({
+        keyValueLineItemFieldObj.push({
           key: item.Name,
           label: item.Label,
           value: 'Custom15',
@@ -1206,7 +1225,7 @@ function prepareAccountPayableParams(
       ...accountPayableObj,
       Id: documentId ? parseInt(documentId) : 0,
       CompanyId: Number(CompanyId),
-      ProcessType: Number(processtype) ?? null,
+      ProcessType: Number(processtype) === 4 ? documentDetailByIdData?.ProcessType : Number(processtype) ?? null,
       UserId: Number(userId) ?? null,
       VendorId: formFields?.vendor ?? null,
       BillNumber: formFields.hasOwnProperty('adjustmentnumber') ? formFields?.adjustmentnumber : formFields?.billnumber ?? null,

@@ -1,6 +1,6 @@
 'use server'
 
-import { getProcessDropdown } from '@/api/server/common'
+import { getProcessDropdown, ssoUrl } from '@/api/server/common'
 
 import FileUpload from '@/app/fileupload/__components/FileUpload'
 import { auth } from '@/auth'
@@ -11,7 +11,7 @@ const UploadDocument = async () => {
   const CompanyId = session?.user?.CompanyId
 
   if (!session) {
-    return redirect('/signin')
+    return redirect(`${ssoUrl}/signin`)
   }
 
   const processOptions: any = await getProcessDropdown()

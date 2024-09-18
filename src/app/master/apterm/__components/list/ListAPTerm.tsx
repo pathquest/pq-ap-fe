@@ -5,7 +5,7 @@ import SyncIcon from '@/assets/Icons/SyncIcon'
 import Actions from '@/components/Common/DatatableActions/DatatableActions'
 import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 import Wrapper from '@/components/Common/Wrapper'
-import { useAppDispatch } from '@/store/configureStore'
+import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { aptermGetList, importApTermData, syncApTermMaster, updateTermStatus } from '@/store/features/master/aptermSlice'
 import { Button, DataTable, Loader, SearchBar, Switch, Toast, Tooltip, Typography } from 'pq-ap-lib'
 import APTerm from '../drawer/ApTermDrawer'
@@ -19,6 +19,7 @@ import { performApiAction } from '@/components/Common/Functions/PerformApiAction
 import ImportModal from '@/components/Common/Modals/ImportModal'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
+import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
 
 const ListAPTerm: React.FC = () => {
   // For Dynamic Company Id & AccountingTool
@@ -26,6 +27,8 @@ const ListAPTerm: React.FC = () => {
   const CompanyId = Number(session?.user?.CompanyId)
   const accountingTool = session?.user?.AccountingTool
   const dispatch = useAppDispatch()
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isAPTermSync = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "AP Term", "Sync");
 
   const [apTermList, setApTermList] = useState<any[]>([])
   const [isSyncModalOpen, setIsSyncModalOpen] = useState<boolean>(false)
@@ -360,7 +363,7 @@ const ListAPTerm: React.FC = () => {
               }}
             />
           </div>
-          {accountingTool !== 4 && <Tooltip content={`Sync AP Term`} position='left' className='!z-[6] flex h-8 w-9 justify-center items-center'>
+          {(accountingTool !== 4 && isAPTermSync) && <Tooltip content={`Sync AP Term`} position='left' className='!z-[6] flex h-8 w-9 justify-center items-center'>
             <div className={`${isSyncing && 'animate-spin'}`} onClick={() => setIsSyncModalOpen(true)}>
               <SyncIcon />
             </div>

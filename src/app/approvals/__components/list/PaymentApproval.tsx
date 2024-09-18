@@ -16,9 +16,12 @@ import Download from '@/components/Common/Custom/Download'
 import DrawerOverlay from '@/components/Common/DrawerOverlay'
 import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
 import { formatDate } from '@/components/Common/Functions/FormatDate'
+import { formatFileSize } from '@/components/Common/Functions/FormatFileSize'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import ActivityDrawer from '@/components/Common/Modals/Activitydrawer'
+import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 import usePdfViewer from '@/components/Common/pdfviewer/pdfViewer'
+import Wrapper from '@/components/Common/Wrapper'
 import { FileRecordType } from '@/models/billPosting'
 import { Option } from '@/models/paymentStatus'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
@@ -28,14 +31,11 @@ import { getBankAccountDrpdwnList, getPaymentMethods } from '@/store/features/bi
 import { companyAssignUser } from '@/store/features/company/companySlice'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Badge, CheckBox, DataTable, Loader, Select, Textarea, Toast, BasicTooltip, Typography } from 'pq-ap-lib'
+import { Badge, CheckBox, DataTable, Loader, Select, Textarea, Toast, BasicTooltip, Typography, Breadcrumb } from 'pq-ap-lib'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { ReasonOption, dummyData } from '../data/ApprovalDropdownData'
+import { ReasonOption } from '../data/ApprovalDropdownData'
 import Filter from '../Filter/PaymentFilter'
 import SelectApprovalDropdown from '../SelectApprovalDropdown'
-import { formatFileSize } from '@/components/Common/Functions/FormatFileSize'
-import Wrapper from '@/components/Common/Wrapper'
-import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 
 const PaymentApproval: React.FC = () => {
   const router = useRouter()
@@ -71,7 +71,7 @@ const PaymentApproval: React.FC = () => {
   })
 
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false)
-  const [paymentApprovalList, setPaymentApprovalList] = useState<any>(dummyData)
+  const [paymentApprovalList, setPaymentApprovalList] = useState<any>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isLazyLoading, setIsLazyLoading] = useState<boolean>(false)
   const [refreshTable, setRefreshTable] = useState<boolean>(false)
@@ -79,6 +79,7 @@ const PaymentApproval: React.FC = () => {
   const [isApprovalModalLoader, setIsApprovalModalLoader] = useState<boolean>(false)
 
   const [paymentAmount, setPaymentAmount] = useState<string>('')
+  const [vendorName, setVendorName] = useState<string>('')
   const [paymentVendorName, setPaymentVendorName] = useState<string>('')
 
   const [assignee, setAssignee] = useState<OptionType[]>([])
@@ -117,7 +118,9 @@ const PaymentApproval: React.FC = () => {
 
   const [isOpenMoveTo, setOpenMoveTo] = useState<boolean>(false)
   const [isOpenAttchFile, setOpenAttachFile] = useState<boolean>(false)
+  const [isOpenDetailsView, setOpenDetailsView] = useState<boolean>(false)
   const [bankAccountOption, setBankAccountOption] = useState([])
+  const [vendorDetailsView, setVendorDetailsView] = useState<any>([])
 
   //For Lazy Loading
   const [shouldLoadMore, setShouldLoadMore] = useState<boolean>(true)
@@ -209,7 +212,7 @@ const PaymentApproval: React.FC = () => {
     {
       header: 'BILL NUMBER',
       accessor: 'BillNumber',
-      colStyle: '!pl-[106px] !tracking-[0.02em] !w-[150px]',
+      colStyle: '!pl-[50px] !tracking-[0.02em] !w-[150px]',
     },
     {
       header: 'PAYMENT STATUS',
@@ -534,11 +537,20 @@ const PaymentApproval: React.FC = () => {
               WebkitLineClamp: 1,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+            }}
+            onClick={() => {
+              setVendorDetailsView(d?.BillDetail)
+              setOpenDetailsView(true);
+              setVendorName(d?.VendorName)
             }}>
             {d?.VendorName}
           </label>
         </BasicTooltip>
-        : <label className="font-proxima text-sm">{d?.VendorName}</label>,
+        : <label className="font-proxima text-sm hover:cursor-pointer" onClick={() => {
+          setVendorDetailsView(d?.BillDetail)
+          setOpenDetailsView(true);
+          setVendorName(d?.VendorName)
+        }}>{d?.VendorName}</label>,
       ApprovalStatus: (
         <Typography className='!text-[14px] text-[#333] !flex items-center'>
           {d.ApprovalStatusName}
@@ -621,109 +633,92 @@ const PaymentApproval: React.FC = () => {
           </div>
         </div>
       ),
-      details: (
-        <div className={`custom-scroll stickyTable w-full bg-white overflow-visible `}>
-          <DataTable
-            columns={nestedColumns}
-            isTableLayoutFixed={true}
-            data={
-              d.BillDetail?.length > 0 ?
-                d.BillDetail.map(
-                  (nestedData: any) =>
-                    new Object({
-                      ...nestedData,
-                      BillNumber:
-                        <div className='flex w-full justify-between'>
-                          <label className='!ml-[98px] w-full break-all font-medium cursor-pointer font-proxima !text-[14px] !tracking-[0.02em] text-[#333333]' onClick={() => handleView(nestedData.AccountPayableId)} >{nestedData.BillNumber}</label>
-                          <div className='relative mr-4'>
-                            {nestedData.Attachments?.length > 0 && (
-                              <div className='overflow-y-auto'>
-                                <div className='flex cursor-pointer justify-end' onClick={() => handleOpenAttachFile(nestedData.AccountPayableId)}>
-                                  <div className='absolute left-1 -top-2.5'>
-                                    <Badge badgetype='error' variant='dot' text={nestedData.Attachments.length.toString()} />
-                                  </div>
-                                  <AttachIcon />
-                                </div>
+    })
+  )
 
-                                {isOpenAttchFile && nestedData.AccountPayableId == selectedRowId && (
-                                  <div
-                                    ref={dropdownRef}
-                                    className='absolute !z-[4] flex w-[443px] max-h-64 flex-col rounded-md border border-[#cccccc] bg-white p-5 shadow-md'>
-                                    <div className='overflow-y-auto'>
-                                      <DataTable
-                                        columns={attachfileheaders}
-                                        data={nestedData.Attachments.map(
-                                          (fileData: any) =>
-                                            new Object({
-                                              ...fileData,
-                                              FileName: (
-                                                <div className='flex cursor-pointer items-center gap-1'
-                                                  onClick={() => {
-                                                    handleFileOpen(fileData.FilePath, fileData.FileName)
-                                                    setIsFileRecord({ FileName: fileData.FileName, PageCount: fileData.PageCount, BillNumber: nestedData.BillNumber })
-                                                    setOpenAttachFile(false)
-                                                  }}>
-                                                  <GetFileIcon FileName={fileData.FileName} />
-                                                  <span className='w-52 truncate' title={fileData.FileName}>
-                                                    {fileData.FileName} &nbsp;
-                                                  </span>
-                                                </div>
-                                              ),
-                                              Size: <Typography className='!text-[14px] text-[#333]'>{formatFileSize(fileData.Size)}</Typography>,
-                                            })
-                                        )}
-                                        sticky
-                                        hoverEffect
-                                        getExpandableData={() => { }}
-                                        getRowId={() => { }}
-                                      />
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>,
-                      DueDate: (
-                        <div className='flex items-center gap-4 font-medium'>
-                          <span className='font-proxima !text-sm !tracking-[0.02em]'>{formatDate(nestedData.DueDate)}</span>
-                        </div>
-                      ),
-                      PaymentStautsName: <label className='font-medium !tracking-[0.02em]'>{nestedData.PaymentStautsName}</label>,
-                      PaymentAmount: (
-                        <label className='font-proxima text-sm !font-bold !tracking-[0.02em]'>
-                          ${formatCurrency(nestedData.PaymentAmount)}
-                        </label>
-                      ),
-                      action:
-                        historyHoveredRow === nestedData.AccountPayableId && (
-                          <div className='slideLeft relative flex h-full justify-end'>
-                            <div className='flex w-[76px] cursor-pointer items-center border-l border-[#cccccc] px-4'>
-                              <BasicTooltip position='left' content='History' className='!z-[2] !cursor-pointer'>
-                                <span
+  //DataTable Details Data
+  const approvalDetailsListData = vendorDetailsView && vendorDetailsView?.map((nestedData: any) =>
+    new Object({
+      ...nestedData,
+      BillNumber:
+        <div className='flex w-full justify-between'>
+          <label className='!ml-[50px] w-full break-all font-medium cursor-pointer font-proxima !text-[14px] !tracking-[0.02em] text-[#333333]' onClick={() => handleView(nestedData.AccountPayableId)} >{nestedData.BillNumber}</label>
+          <div className='relative mr-4'>
+            {nestedData.Attachments?.length > 0 && (
+              <div className='overflow-y-auto'>
+                <div className='flex cursor-pointer justify-end' onClick={() => handleOpenAttachFile(nestedData.AccountPayableId)}>
+                  <div className='absolute left-1 -top-2.5'>
+                    <Badge badgetype='error' variant='dot' text={nestedData.Attachments.length.toString()} />
+                  </div>
+                  <AttachIcon />
+                </div>
+
+                {isOpenAttchFile && nestedData.AccountPayableId == selectedRowId && (
+                  <div
+                    ref={dropdownRef}
+                    className='absolute !z-[4] flex w-[443px] max-h-64 flex-col rounded-md border border-[#cccccc] bg-white p-5 shadow-md'>
+                    <div className='overflow-y-auto'>
+                      <DataTable
+                        columns={attachfileheaders}
+                        data={nestedData.Attachments.map(
+                          (fileData: any) =>
+                            new Object({
+                              ...fileData,
+                              FileName: (
+                                <div className='flex cursor-pointer items-center gap-1'
                                   onClick={() => {
-                                    setSelectedHistoryBillId(nestedData.AccountPayableId)
-                                    setOpenDrawer(true)
+                                    handleFileOpen(fileData.FilePath, fileData.FileName)
+                                    setIsFileRecord({ FileName: fileData.FileName, PageCount: fileData.PageCount, BillNumber: nestedData.BillNumber })
+                                    setOpenAttachFile(false)
                                   }}>
-                                  <HistoryIcon />
-                                </span>
-                              </BasicTooltip>
-                            </div>
-                          </div>
-                        )
-                    })
-                ) : []
-            }
-            hoverEffect
-            getExpandableData={() => { }}
-            getRowId={(value: any) => {
-              setHistoryHoveredRow(value?.AccountPayableId)
-            }}
-          />
-          {d.BillDetail?.length > 0 ? "" : <div className='pl-[106px] flex h-[59px] !text-sm !tracking-[0.02em] items-center border-b border-b-[#ccc]'>There is no data available at the moment.</div>}
-          <div className={`mt-[-2px] flex h-1 items-center  border-t border-darkCharcoal`}></div>
+                                  <GetFileIcon FileName={fileData.FileName} />
+                                  <span className='w-52 truncate' title={fileData.FileName}>
+                                    {fileData.FileName} &nbsp;
+                                  </span>
+                                </div>
+                              ),
+                              Size: <Typography className='!text-[14px] text-[#333]'>{formatFileSize(fileData.Size)}</Typography>,
+                            })
+                        )}
+                        sticky
+                        hoverEffect
+                        getExpandableData={() => { }}
+                        getRowId={() => { }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>,
+      DueDate: (
+        <div className='flex items-center gap-4 font-medium'>
+          <span className='font-proxima !text-sm !tracking-[0.02em]'>{formatDate(nestedData.DueDate)}</span>
         </div>
       ),
+      PaymentStautsName: <label className='font-medium !tracking-[0.02em]'>{nestedData.PaymentStautsName}</label>,
+      PaymentAmount: (
+        <label className='font-proxima text-sm !font-bold !tracking-[0.02em]'>
+          ${formatCurrency(nestedData.PaymentAmount)}
+        </label>
+      ),
+      action:
+        historyHoveredRow === nestedData.AccountPayableId && (
+          <div className='slideLeft relative flex h-full justify-end'>
+            <div className='flex w-[76px] cursor-pointer items-center border-l border-[#cccccc] px-4'>
+              <BasicTooltip position='left' content='History' className='!z-[2] !cursor-pointer'>
+                <span
+                  onClick={() => {
+                    setSelectedHistoryBillId(nestedData.AccountPayableId)
+                    setOpenDrawer(true)
+                  }}>
+                  <HistoryIcon />
+                </span>
+              </BasicTooltip>
+            </div>
+          </div>
+        )
     })
   )
 
@@ -857,84 +852,125 @@ const PaymentApproval: React.FC = () => {
     <Wrapper>
       {/* Navbar */}
       <div className='sticky top-0 z-[6] flex h-[66px] w-full items-center justify-between bg-whiteSmoke px-5'>
-        <div>
-          <SelectApprovalDropdown />
-        </div>
-        <div className='flex w-full items-center justify-end'>
-          {selectedRows.length > 0
-            ? <div className="flex gap-10 justify-end items-center">
-              <div className='text-sm tracking-[0.02em] font-proxima'>
-                <label className="pe-2 font-bold text-darkCharcoal">Total Selected :</label> {selectedRows.length} Bills
-              </div>
-              <div className='text-sm tracking-[0.02em] font-proxima'>
-                <label className="pe-2 font-bold text-darkCharcoal">Total Pay :</label> ${TotalAmount}
-              </div>
-              <div className='flex items-center h-full laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5'>
-                <BasicTooltip position='bottom' content='Approve' className='!z-9 !px-0 !py-1'>
-                  <div onClick={() => { setIsApprovalModalOpen(true) }}>
-                    <AcceptIcon />
-                  </div>
-                </BasicTooltip>
-                <BasicTooltip position='bottom' content='Reject' className='!z-9 !px-0 !py-1'>
-                  <div onClick={() => { setIsRejectModalOpen(true) }}>
-                    <RejectIcon />
-                  </div>
-                </BasicTooltip>
-              </div>
+        {isOpenDetailsView ? (
+          <>
+            <Breadcrumb variant='/' items={[
+              { label: 'Payment Approval',goBack: () => setOpenDetailsView(false) },
+              { label: vendorName, url: '#' },
+            ]} />
+          </>
+        ) : (
+          <>
+            <div>
+              <SelectApprovalDropdown />
             </div>
-            : <div className='w-full flex justify-end items-center laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5'>
-              <div className='flex justify-center items-center mt-1' onClick={() => setIsFilterOpen(true)}>
-                <BasicTooltip position='bottom' content='Filter' className='!px-0 !pb-2.5 !font-proxima !text-sm'>
-                  <FilterIcon />
-                </BasicTooltip>
-              </div>
-              <div className='flex justify-center items-center mt-0.5'>
-                <Download url={`${process.env.API_BILLSTOPAY}/paymentapproval/getlist`} params={commonParams} fileName='Payment_approval' />
-              </div>
-            </div>}
-        </div>
+            <div className='flex w-full items-center justify-end'>
+              {selectedRows.length > 0
+                ? <div className="flex gap-10 justify-end items-center">
+                  <div className='text-sm tracking-[0.02em] font-proxima'>
+                    <label className="pe-2 font-bold text-darkCharcoal">Total Selected :</label> {selectedRows.length} Bills
+                  </div>
+                  <div className='text-sm tracking-[0.02em] font-proxima'>
+                    <label className="pe-2 font-bold text-darkCharcoal">Total Pay :</label> ${(TotalAmount).toFixed(2)}
+                  </div>
+                  <div className='flex items-center h-full laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5'>
+                    <BasicTooltip position='bottom' content='Approve' className='!z-9 !px-0 !py-1'>
+                      <div onClick={() => { setIsApprovalModalOpen(true) }}>
+                        <AcceptIcon />
+                      </div>
+                    </BasicTooltip>
+                    <BasicTooltip position='bottom' content='Reject' className='!z-9 !px-0 !py-1'>
+                      <div onClick={() => { setIsRejectModalOpen(true) }}>
+                        <RejectIcon />
+                      </div>
+                    </BasicTooltip>
+                  </div>
+                </div>
+                : <div className='w-full flex justify-end items-center laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5'>
+                  <div className='flex justify-center items-center mt-1' onClick={() => setIsFilterOpen(true)}>
+                    <BasicTooltip position='bottom' content='Filter' className='!px-0 !pb-2.5 !font-proxima !text-sm'>
+                      <FilterIcon />
+                    </BasicTooltip>
+                  </div>
+                  <div className='flex justify-center items-center mt-0.5'>
+                    <Download url={`${process.env.API_BILLSTOPAY}/paymentapproval/getlist`} params={commonParams} fileName='Payment_approval' />
+                  </div>
+                </div>}
+            </div>
+          </>
+
+        )}
       </div>
 
       {/* DataTable */}
-      <div className={`h-[calc(100vh-145px)] custom-scroll approvalMain overflow-auto approvalMain max-[425px]:mx-1 ${tableDynamicWidth}`}>
-        <div className={`expandableTable ${paymentApprovalList.length === 0 ? 'h-11' : 'h-auto'}`}>
-          <DataTable
-            zIndex={5}
-            columns={columns}
-            data={approvalListData ?? []}
-            hoverEffect
-            sticky
-            isExpanded
-            expandOneOnly={false}
-            lazyLoadRows={lazyRows}
-            isTableLayoutFixed={true}
-            expandable
-            getExpandableData={(data: any) => {
-              setSelectedRowId(data.PaymentId)
-            }}
-            getRowId={(value: any) => {
-              if (!isOpenMoveTo) {
-                setHoveredRow(value?.PaymentId)
-                setRejectedReason(value?.Remark)
-                setReassonValue(value?.ReasonType)
-              }
-            }}
-          />
-          {isLazyLoading && !isLoading && (
-            <Loader size='sm' helperText />
-          )}
-          <div ref={tableBottomRef} />
+      {isOpenDetailsView ? (
+        <div className={`h-[calc(100vh-145px)] custom-scroll approvalMain overflow-auto approvalMain max-[425px]:mx-1 ${tableDynamicWidth}`}>
+          <div className={`${vendorDetailsView.length === 0 ? 'h-11' : 'h-auto'}`}>
+            <DataTable
+              zIndex={5}
+              columns={nestedColumns}
+              data={approvalDetailsListData ?? []}
+              hoverEffect
+              sticky
+              getExpandableData={() => { }}
+              getRowId={(value: any) => {
+                setHistoryHoveredRow(value?.AccountPayableId)
+              }}
+            />
+            {isLazyLoading && !isLoading && (
+              <Loader size='sm' helperText />
+            )}
+            <div ref={tableBottomRef} />
+          </div>
+          {vendorDetailsView.length === 0 ? (
+            isLoading ?
+              <div className='flex h-[calc(94vh-150px)] w-full items-center justify-center'>
+                <Loader size='md' helperText />
+              </div>
+              : <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
+                No records available at the moment.
+              </div>
+          ) : ''}
         </div>
-        {paymentApprovalList.length === 0 ? (
-          isLoading ?
-            <div className='flex h-[calc(94vh-150px)] w-full items-center justify-center'>
-              <Loader size='md' helperText />
-            </div>
-            : <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
-              No records available at the moment.
-            </div>
-        ) : ''}
-      </div>
+      ) : (
+        <div className={`h-[calc(100vh-145px)] custom-scroll approvalMain overflow-auto approvalMain max-[425px]:mx-1 ${tableDynamicWidth}`}>
+          <div className={`expandableTable ${paymentApprovalList.length === 0 ? 'h-11' : 'h-auto'}`}>
+            <DataTable
+              zIndex={5}
+              columns={columns}
+              data={approvalListData ?? []}
+              hoverEffect
+              sticky
+              lazyLoadRows={lazyRows}
+              isTableLayoutFixed={true}
+              getExpandableData={(data: any) => {
+                setSelectedRowId(data.PaymentId)
+              }}
+              getRowId={(value: any) => {
+                if (!isOpenMoveTo) {
+                  setHoveredRow(value?.PaymentId)
+                  setRejectedReason(value?.Remark)
+                  setReassonValue(value?.ReasonType)
+                }
+              }}
+            />
+            {isLazyLoading && !isLoading && (
+              <Loader size='sm' helperText />
+            )}
+            <div ref={tableBottomRef} />
+          </div>
+          {paymentApprovalList.length === 0 ? (
+            isLoading ?
+              <div className='flex h-[calc(94vh-150px)] w-full items-center justify-center'>
+                <Loader size='md' helperText />
+              </div>
+              : <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
+                No records available at the moment.
+              </div>
+          ) : ''}
+        </div>
+      )}
+
 
       {/* For Filter Menu */}
       <Filter

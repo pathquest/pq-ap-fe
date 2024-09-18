@@ -12,6 +12,8 @@ import * as TypeOfField from '@/data/fieldMapping'
 
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import { useSession } from 'next-auth/react'
+import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
+import { useRouter } from 'next/navigation'
 
 const DrawerOverlay = lazy(() => import('@/components/Common/DrawerOverlay'))
 
@@ -36,6 +38,11 @@ const { dropdown, date, text, file, checkbox, radio, initialObject } = TypeOfFie
 const ListAPFieldMapping: React.FC = () => {
   const { data: session } = useSession()
   const CompanyId = session?.user?.CompanyId
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isAPFieldMappingEdit = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "AP Field Mapping", "Edit");
+  const isAPFieldMappingSync = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "AP Field Mapping", "Sync");
+  const router = useRouter()
+  const IsFieldMappingSet = localStorage.getItem('IsFieldMappingSet') ?? 'true'
 
   const dispatch = useAppDispatch()
   const toggleRef = useRef<HTMLDivElement>(null)
@@ -332,6 +339,8 @@ const ListAPFieldMapping: React.FC = () => {
         saveFieldMappingData,
         params,
         (responseData: any) => {
+          IsFieldMappingSet === 'false' && router.push('/manage/companies')
+          localStorage.removeItem('IsFieldMappingSet')
           Toast.success('Fields Saved Successfully!')
         },
         (err: any) => {
@@ -750,7 +759,7 @@ const ListAPFieldMapping: React.FC = () => {
                   <DeleteIcon />
                 </div>
               </Tooltip>
-              <Tooltip content='Edit' position='left' className='!px-1.5 !py-0'>
+              {isAPFieldMappingEdit && <Tooltip content='Edit' position='left' className='!px-1.5 !py-0'>
                 <span
                   tabIndex={0}
                   onClick={() => handleEditField(item)}
@@ -762,7 +771,7 @@ const ListAPFieldMapping: React.FC = () => {
                 >
                   <EditIcon />
                 </span>
-              </Tooltip>
+              </Tooltip>}
             </div>
           </div>
         </div>

@@ -21,6 +21,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Tooltip, Typography } from 'pq-ap-lib'
 import { useEffect, useRef, useState } from 'react'
+import { getModulePermissions, hasSpecificPermission, hasViewPermission } from './Functions/ProcessPermission'
 
 interface SidebarProps {
   isMasterSetting?: boolean
@@ -36,15 +37,18 @@ interface SidebarItem {
 //Settings Sidebar Props
 interface SettingsSection {
   heading: string
+  isHeadingVisible: boolean
   items: {
     name: string
     href: string
+    isVisible: boolean
   }[]
 }
 
 const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
   const router = useRouter()
   const pathname = usePathname()
+  const IsFieldMappingSet = localStorage.getItem('IsFieldMappingSet') ?? 'true'
 
   const divRef = useRef<HTMLDivElement>(null)
   const sidebarRef = useRef<HTMLDivElement>(null)
@@ -53,11 +57,36 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
   const dispatch = useAppDispatch()
 
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isPaymentView = getModulePermissions(processPermissionsMatrix, "Payments") ?? {}
+  const isBillsToPayView = isPaymentView["Bills to pay"]?.View ?? false;
+  const isPaymentStatusView = isPaymentView["Payment Status"]?.View ?? false;
+
+  // Master
+  const isDimensionView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "Dimension", "View");
+  const isGLAccountView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "GL Account", "View");
+  const isAPTermView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "AP Term", "View");
+  const isCurrencyView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "Currency", "View");
+  const isTaxRateView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "Tax Rate", "View");
+
+  //Setup
+  const isAPFieldMappingView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "AP Field Mapping", "View");
+  const isNotificationView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Notification", "View");
+  const isCloudConfigurationView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Cloud Configuration", "View");
+  const isAutomationView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Automation", "View");
+  const isPaymentSetupView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Payment Setup", "View");
+
   const [isCollapsed, setCollapse] = useState<boolean>(false)
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const [windowSize, setWindowSize] = useState(0)
   const [selectedOption, setSelectedOption] = useState<string>('')
-  const [topPosition, setTopPosition] = useState<number>(245)
+  const [topPosition, setTopPosition] = useState<number>(65)
+
+  const calculateTopPosition = (index: number) => {
+    const basePosition = 65
+    const incrementPerPosition = 60
+    return basePosition + (index * incrementPerPosition)
+  }
 
   const handleDashboardIconClick = (value: any) => {
     switch (value) {
@@ -76,13 +105,13 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
       case 'Payments':
         setSelectedOption(value)
         break
-      case 'Approvals':
+      case 'Approval':
         router.push('/approvals')
         break
       case 'Reports':
         router.push('/reports')
         break
-      case 'Vendors':
+      case 'Vendor':
         router.push('/vendors')
         break
       default:
@@ -106,8 +135,10 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
   }, [isLeftSidebarCollapsed])
 
   const handleSettingChange = () => {
-    const previousUrl = localStorage.getItem('previousUrl')
-    router.push(`${previousUrl}`)
+    if (IsFieldMappingSet === 'true') {
+      const previousUrl = localStorage.getItem('previousUrl')
+      router.push(`${previousUrl}`)
+    }
   }
 
   //Sidebar Data
@@ -142,7 +173,7 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
       ),
     },
     {
-      name: 'Approvals',
+      name: 'Approval',
       href: '/approvals',
       icon: <ApprovalIcon />,
     },
@@ -152,11 +183,18 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
       icon: <ReportsIcon />,
     },
     {
-      name: 'Vendors',
+      name: 'Vendor',
       href: '/vendors',
       icon: <VendorIcon />,
     }
-  ]
+  ].filter(item => hasViewPermission(processPermissionsMatrix, item.name))
+
+  useEffect(() => {
+    const paymentIndex = sidebarItems.findIndex(item => item.name === 'Payments')
+    if (paymentIndex !== -1) {
+      setTopPosition(calculateTopPosition(paymentIndex))
+    }
+  }, [sidebarItems])
 
   const handlePageRoute = (value: any) => {
     switch (value) {
@@ -216,27 +254,24 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
     return (
       <>
         {sidebarItems.map((item, index) => (
-          <div
-            onClick={() => {
-              localStorage.removeItem('previousUrl')
-              handleDashboardIconClick(item.name)
-            }}
+          <div onClick={() => {
+            localStorage.removeItem('previousUrl')
+            handleDashboardIconClick(item.name)
+          }}
             key={item.name}
             tabIndex={0}
             onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) =>
-              (e.key === 'Enter' || e.key === ' ') && handleDashboardIconClick(item.name)
+              (e.key === 'Enter') && handleDashboardIconClick(item.name)
             }
             // href={item.href}
-            className={`mb-1 flex cursor-pointer items-center whitespace-nowrap ${isCollapsed ? 'pl-4' : 'pl-[27px]'
+            className={`mb-1 outline-none focus:border-primary focus:bg-whiteSmoke flex cursor-pointer items-center whitespace-nowrap ${isCollapsed ? 'pl-4' : 'pl-[27px]'
               } border-l-[4px] hover:border-primary hover:bg-whiteSmoke
        ${(pathname.includes('bills') && item.name === 'Bills') || (pathname.includes('payments') && item.name === 'Payments')
                 ? 'border-primary bg-whiteSmoke'
                 : pathname === item.href
                   ? 'border-primary bg-whiteSmoke'
                   : 'border-pureWhite'
-              }
-       `}
-          >
+              }`}>
             {isCollapsed ? (
               <span className='pt-[16px] pb-[13.5px] pl-[10.5px]'>
                 <Tooltip position='right' content={item.name} className='!py-0 !pl-0'>
@@ -261,35 +296,43 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
   const settings_data: SettingsSection[] = [
     {
       heading: 'MASTER',
+      isHeadingVisible: (isDimensionView || isGLAccountView || isAPTermView || true) ? true : false,
       items: [
         {
           name: 'Dimensions',
           href: '/master/dimension',
+          isVisible: isDimensionView
         },
         {
           name: 'GL Account',
           href: '/master/glaccount',
+          isVisible: isGLAccountView
         },
         {
           name: 'AP Term',
           href: '/master/apterm',
+          isVisible: isAPTermView
         },
         {
           name: 'Product & Service',
           href: '/master/productservice',
+          isVisible: true
         },
       ],
     },
     {
       heading: 'PAYMENT SETTING',
+      isHeadingVisible: (isCurrencyView || isTaxRateView || isPaymentSetupView) ? true : false,
       items: [
         {
           name: 'Currency',
           href: '/paymentsetting/currency',
+          isVisible: isCurrencyView
         },
         {
           name: 'Tax Rate',
           href: '/paymentsetting/taxrate',
+          isVisible: isTaxRateView
         },
         // {
         //   name: 'Payment Method',
@@ -298,27 +341,33 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
         {
           name: 'Payment Setup',
           href: '/paymentsetting/paymentsetup',
+          isVisible: isPaymentSetupView
         },
       ],
     },
     {
       heading: 'SETUP',
+      isHeadingVisible: (isAPFieldMappingView || isNotificationView || isCloudConfigurationView || isAutomationView) ? true : false,
       items: [
         {
           name: 'AP Field Mapping',
           href: '/setup/apfieldmapping',
+          isVisible: isAPFieldMappingView
         },
         {
           name: 'Notification',
           href: '/setup/notification',
+          isVisible: isNotificationView
         },
         {
           name: 'Cloud Configuration',
           href: '/setup/cloudconfiguration',
+          isVisible: isCloudConfigurationView
         },
         {
           name: 'Automation',
           href: '/setup/automation',
+          isVisible: isAutomationView
         },
       ],
     },
@@ -329,7 +378,7 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
     return (
       <>
         {settings_data.map((item, index) => (
-          <div key={item.heading}>
+          <div className={`${item.isHeadingVisible ? "block" : "hidden"}`} key={item.heading}>
             <Typography
               type='h6'
               className={`flex items-start pl-[20px] !font-bold !tracking-[0.02em] ${index > 0 ? 'pb-[5px] pt-[20px]' : 'pb-[5px] pt-[13px]'
@@ -344,10 +393,10 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
               const paddingClasses = isAutomation ? 'pt-[10px] pb-[20px]' : 'py-[10px]'
               const hoverClasses = 'hover:border-primary hover:bg-whiteSmoke hover:text-primary'
               const borderColorClasses = isActive ? 'border-primary bg-whiteSmoke text-primary' : 'border-pureWhite'
-              const className = `flex items-center border-l-2 border-white ${paddingClasses} pl-[20px] ${hoverClasses} ${borderColorClasses}`
+              const className = `${subItem.isVisible ? "flex" : "hidden"} flex items-center border-l-2 border-white ${IsFieldMappingSet === 'true' ? 'cursor-pointer' : 'cursor-default'} ${paddingClasses} pl-[20px] ${hoverClasses} ${borderColorClasses}`
               return (
-                <Link href={`${subItem.href}`} className={className} key={subItem.name}>
-                  <Typography type='h6' className={` cursor-pointer !tracking-[0.02em]`}>
+                <Link href={`${IsFieldMappingSet === 'true' ? subItem.href : ''}`} className={className} key={subItem.name}>
+                  <Typography type='h6' className={`${IsFieldMappingSet === 'true' ? 'cursor-pointer' : 'cursor-default'} !tracking-[0.02em]`}>
                     {subItem.name}
                   </Typography>
                 </Link>
@@ -411,9 +460,11 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
                 {isMasterSetting ? (
                   <>
                     <div className={`sticky flex py-3 ${windowSize <= 1023 ? '' : 'top-[64px]'} justify-start pl-[20px]`}>
-                      <span className=' mr-2.5 cursor-pointer' onClick={handleSettingChange}>
-                        <ChevronLeftIcon bgColor='whiteSmoke' />
-                      </span>
+                      {IsFieldMappingSet === 'true' && (
+                        <span className={`cursor-pointer mr-2.5`} onClick={handleSettingChange}>
+                          <ChevronLeftIcon bgColor='whiteSmoke' />
+                        </span>
+                      )}
                       <Typography type='h6' className='flex items-center justify-center text-center !font-bold'>
                         Configuration
                       </Typography>
@@ -432,9 +483,11 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
           ) : isMasterSetting ? (
             <>
               <div className='sticky top-[64px] flex justify-start bg-white py-3 pl-[20px]'>
-                <span className=' mr-2.5 cursor-pointer' onClick={handleSettingChange}>
-                  <ChevronLeftIcon bgColor='whiteSmoke' />
-                </span>
+                {IsFieldMappingSet === 'true' && (
+                  <span className={`cursor-pointer mr-2.5`} onClick={handleSettingChange}>
+                    <ChevronLeftIcon bgColor='whiteSmoke' />
+                  </span>
+                )}
                 <Typography type='h6' className='flex items-center justify-center text-center !font-bold !tracking-widest'>
                   Configuration
                 </Typography>
@@ -453,18 +506,17 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
         {windowSize >= 992 && !isMasterSetting && (
           <span
             tabIndex={0}
-            className={`sticky bottom-0 bg-white py-[30px] pl-[29px] ${isLeftSidebarCollapsed ? 'pr-[50px]' : 'pr-[174px]'
+            className={`!h-[66px] outline-none sticky bottom-0 focus:bg-whiteSmoke bg-white py-[30px] pl-[29px] ${isLeftSidebarCollapsed ? 'pr-[50px]' : 'pr-[174px]'
               } cursor-pointer  border-t border-[#E6E6E6]`}
             onClick={handelSidebarCollaped}
             onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) =>
-              (e.key === 'Enter' || e.key === ' ') && handelSidebarCollaped()
+              (e.key === 'Enter') && handelSidebarCollaped()
             }
           >
             <MenuIcon />
           </span>
         )}
       </div>
-
       <div
         ref={divRef}
         className={`${selectedOption === 'Payments' ? 'overflow-y-clip' : 'overflow-y-auto'} ${selectedOption == 'Payments' ? 'translate-x-0' : '!z-[-10] translate-x-1/2 opacity-0'
@@ -474,22 +526,19 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
       >
         <div className='absolute left-[-7px] top-[18px] h-[13px] w-[13px] rotate-45 border-b border-l border-lightSilver bg-white ' />
         <div className='w-full  border-b border-lightSilver px-6 py-[12.5px]'>Payments</div>
-        <div
-          className={`transition-height w-full duration-[400ms] ease-in-out ${selectedOption == 'Payments' ? 'h-[95px] delay-[350ms]' : 'h-0 delay-0 '
-            }`}
-        >
+        <div className={` transition-height w-full duration-[400ms] ease-in-out ${selectedOption == 'Payments' ? `${(isBillsToPayView && isPaymentStatusView) ? "h-[95px]" : "h-[50px]"}  delay-[350ms]` : 'h-0 delay-0 '}`}>
           <div
             tabIndex={selectedOption == 'Payments' ? 0 : -1}
-            className='flex cursor-pointer py-[10px] hover:text-primary'
+            className={`${isBillsToPayView ? "flex" : "hidden"} cursor-pointer py-[10px] hover:text-primary`}
             onClick={() => handlePageRoute('BillsToPay')}
             onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) =>
-              (e.key === 'Enter' || e.key === ' ') && handlePageRoute('BillsToPay')
+              (e.key === 'Enter') && handlePageRoute('BillsToPay')
             }
           >
             <span className='pl-[27px] pr-5'>
               <BillsToPayIcon />
             </span>
-            Bill to pay
+            Bills to pay
           </div>
           {/* <div
             tabIndex={selectedOption == 'Payments' ? 0 : -1}
@@ -502,13 +551,12 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
           </div> */}
           <div
             tabIndex={selectedOption == 'Payments' ? 0 : -1}
-            className='flex cursor-pointer py-[10px] hover:text-primary'
+            className={`${isPaymentStatusView ? "flex" : "hidden"} cursor-pointer py-[10px] hover:text-primary`}
             onClick={() => handlePageRoute('Status')}
             onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) =>
-              (e.key === 'Enter' || e.key === ' ') && handlePageRoute('Status')
+              (e.key === 'Enter') && handlePageRoute('Status')
             }
           >
-            {' '}
             <span className='pl-[27px] pr-5'>
               <PaymentStatusIcon />
             </span>

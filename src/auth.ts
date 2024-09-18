@@ -16,7 +16,6 @@ export const {
       return Promise.resolve(true)
     },
     async jwt({ token, user, trigger, session }: any) {
-      
       if (trigger === 'update' && session) {
         token = { ...user, ...session }
         return token
@@ -31,6 +30,11 @@ export const {
         token.CompanyId = user.CompanyId || 0
         token.CompanyName = user.CompanyName || ''
         token.AccountingTool = user.AccountingTool || 0
+        token.org_id = user.org_id || 0
+        token.org_name = user.org_name || ''
+        token.user_id = user.user_id || 0
+        token.is_admin = user.is_admin || false
+        token.is_organization_admin = user.is_organization_admin || false
         return token
       }
 
@@ -79,6 +83,11 @@ export const {
         session.user.CompanyId = token.CompanyId || 0
         session.user.CompanyName = token.CompanyName || ''
         session.user.AccountingTool = token.AccountingTool || 0
+        session.user.org_id = token.org_id || 0
+        session.user.org_name = token.org_name || ''
+        session.user.user_id = token.user_id || 0
+        session.user.is_admin = token.is_admin || false
+        session.user.is_organization_admin = token.is_organization_admin || false
       }
       return session
     },

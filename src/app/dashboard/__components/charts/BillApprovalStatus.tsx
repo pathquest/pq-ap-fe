@@ -13,7 +13,7 @@ import React, { useEffect, useState } from 'react';
 import ChartTypeDropdown from '../modal/ChartType';
 import DashboardFilter from '../modal/DashboardFilter';
 import ExpandModal from '../modal/ExpandModal';
-import { Typography } from 'pq-ap-lib';
+import { Loader, Typography } from 'pq-ap-lib';
 
 const BillApprovalStatus: React.FC<any> = ({ LocationOption }) => {
     const { data: session } = useSession()
@@ -34,6 +34,7 @@ const BillApprovalStatus: React.FC<any> = ({ LocationOption }) => {
     const [chartLabel, setChartLabel] = useState<string>('Pie')
     const [isStacked, setIsStacked] = useState<boolean>(false);
     const [isMonthWise, setIsMonthWise] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false)
 
     const getBillApprovalDashboard = (newFilterFields: any) => {
         const startDate = new Date(newFilterFields?.StartDate);
@@ -41,6 +42,7 @@ const BillApprovalStatus: React.FC<any> = ({ LocationOption }) => {
         const dayDifference = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
         const isMonthWiseData = dayDifference > 31;
         setIsMonthWise(isMonthWiseData);
+        setIsLoading(true)
 
         const params = {
             IsMonthWise: isMonthWiseData,
@@ -60,6 +62,9 @@ const BillApprovalStatus: React.FC<any> = ({ LocationOption }) => {
             });
             const totalBills = totalBillApprovalPending + totalBillApproved + totalBillRejected;
             setChartData(responseData);
+            setIsLoading(false)
+        }, () => {
+            setIsLoading(false)
         })
     }
 
@@ -87,6 +92,8 @@ const BillApprovalStatus: React.FC<any> = ({ LocationOption }) => {
             BillEndDate: filterFields.EndDate,
             StartDueDate: '',
             EndDueDate: '',
+            Assignee: '1',
+            LocationIds: filterFields?.LocationIds.length != 0 ? filterFields?.LocationIds.map(Number) : []
         }));
         router.push(`/approvals?approvalId=1`);
     }
@@ -479,7 +486,11 @@ const BillApprovalStatus: React.FC<any> = ({ LocationOption }) => {
                 </div>
             </div>
             <div key={chartType} className='place-content-center md:h-[75vh] laptop:h-[75vh] laptopMd:h-[75vh] lg:h-[75vh] xl:h-[75vh] hd:h-[80vh] 2xl:h-[66vh] overflow-x-auto overflow-y-hidden custom-scroll chartScrollbar'>
-                <HighchartsReact highcharts={Highcharts} options={chartType == 'pie' ? getPieChartOptions(false) : getColumnChartOptions()} />
+                {isLoading
+                    ? <div className='h-full w-full flex justify-center'>
+                        <Loader size='md' helperText/>
+                    </div>
+                    : <HighchartsReact highcharts={Highcharts} options={chartType == 'pie' ? getPieChartOptions(false) : getColumnChartOptions()} />}
             </div>
 
             {isExpandChartOpen && <ExpandModal

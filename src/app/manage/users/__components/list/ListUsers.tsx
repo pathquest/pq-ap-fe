@@ -8,7 +8,7 @@ import DataLoadingStatus from '@/components/Common/Functions/DataLoadingStatus'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 import WrapperManage from '@/components/Common/WrapperManage'
-import { useAppDispatch } from '@/store/configureStore'
+import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { companyListDropdown } from '@/store/features/company/companySlice'
 import { assignCompanyToUser, deleteUser, getAssignUsertoCompany, userGetList, userUpdateStatus } from '@/store/features/user/userSlice'
 import { convertStringsToIntegers } from '@/utils'
@@ -16,6 +16,7 @@ import { Button, DataTable, Loader, MultiSelectChip, SaveCompanyDropdown, Switch
 import React, { useEffect, useRef, useState } from 'react'
 import Drawer from '../Drawer'
 import RoleDrawer from '../RoleDrawer'
+import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
 
 interface UserData {
   id: number
@@ -33,6 +34,10 @@ interface UserData {
 }
 
 const ListUsers: React.FC = () => {
+  const { orgPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isManageUserCreate = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Users", "Create");
+  const isManageUserEdit = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Users", "Edit");
+
   const [companyList, setCompanyList] = useState([])
   const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false)
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false)
@@ -59,6 +64,7 @@ const ListUsers: React.FC = () => {
     company: [],
     status: [],
   })
+  const [isSwitchClicked, setIsSwitchClicked] = useState<boolean>(false)
 
   // For Dynamic Company Id & AccountingTool
   const dispatch = useAppDispatch()
@@ -176,6 +182,9 @@ const ListUsers: React.FC = () => {
     performApiAction(dispatch, userUpdateStatus, params, (responseData: any) => {
       Toast.success('Status updated successfully.')
       setRefreshTable(!refreshTable)
+      setIsSwitchClicked(false)
+    }, () => {
+      setIsSwitchClicked(false)
     })
   }
 
@@ -300,6 +309,7 @@ const ListUsers: React.FC = () => {
   const onReset = () => {
     setSelectedFilterdCompany([])
     setSelectedFilterdStatus([])
+    setStatusFilterValue(null)
     checkIfFiltersChanged({ company: [], status: [] })
   }
 
@@ -385,10 +395,11 @@ const ListUsers: React.FC = () => {
         role: e?.roleName,
         status: (
           <div
-            className={`${e?.id == Number(userId) || e?.IsOrgAdmin === true ? 'pointer-events-none' : ''}`}
+            className={`${isSwitchClicked ? "pointer-events-none cursor-default" : " cursor-pointer"} ${e?.id == Number(userId) || e?.IsOrgAdmin === true ? 'pointer-events-none' : ''}`}
             onClick={() => {
               setRowId(e?.id)
               updateStatus(e?.id, e?.is_Active)
+              setIsSwitchClicked(true)
             }}
           >
             <Switch checked={e.is_Active} disabled={isUserDisabled(e)} />
@@ -401,7 +412,7 @@ const ListUsers: React.FC = () => {
                 id={e?.id}
                 actions={[
                   'Manage Rights',
-                  'Edit',
+                  isManageUserEdit && 'Edit',
                   Number(userId) !== rowId ? e?.IsOrgAdmin === false && 'Remove' : false,
                 ].filter(Boolean)}
                 actionRowId={() => handleIdGet(e?.id)}
@@ -427,8 +438,6 @@ const ListUsers: React.FC = () => {
     setOrgId(data?.orgId)
   }
 
-  const dynamicClass = isFilterOpen ? `absolute right-[120px] translate-x-0` : 'fixed right-0 translate-x-full'
-
   return (
     <>
       <WrapperManage onData={globalData}>
@@ -446,7 +455,7 @@ const ListUsers: React.FC = () => {
                   </div>
                 </Tooltip>
               </div>
-              <Button className='rounded-full !h-9 laptop:px-6 laptopMd:px-6 lg:px-6 xl:px-6 hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px]' variant='btn-primary' onClick={handleToggleChange}>
+              <Button className={`${isManageUserCreate ? "block" : "hidden"} rounded-full !h-9 laptop:px-6 laptopMd:px-6 lg:px-6 xl:px-6 hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px]`} variant='btn-primary' onClick={handleToggleChange}>
                 <div className='flex justify-center items-center font-bold'>
                   <span className='mr-[8px]'>
                     <PlusIcon color={'#FFF'} />
@@ -530,7 +539,7 @@ const ListUsers: React.FC = () => {
         <RoleDrawer
           onOpen={isManageRightsOpen}
           onClose={() => setIsManageRightsOpen(false)}
-          userId={editId ? editId.toString() : '0'}
+          userId={editId ? editId : 0}
         />
 
         {/* Data Table */}
@@ -565,7 +574,7 @@ const ListUsers: React.FC = () => {
         />
 
         {/*  Drawer */}
-        <Drawer onOpen={isOpenDrawer} orgId={orgId} onClose={(value: string) => handleDrawerClose(value)} EditId={editId} />
+        <Drawer onOpen={isOpenDrawer} onClose={(value: string) => handleDrawerClose(value)} EditId={editId} />
 
         {/* Drawer Overlay */}
         <DrawerOverlay isOpen={isOpenDrawer} onClose={undefined} />

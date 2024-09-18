@@ -21,6 +21,8 @@ interface ApprovalState {
     BillEndDate: string,
     StartDueDate: string,
     EndDueDate: string,
+    Assignee: string,
+    LocationIds: string[],
   },
   approvalDropdownFields: any
 }
@@ -31,7 +33,7 @@ const initialState: ApprovalState = {
     VendorIds: [],
     BankAccountIds: [],
     ApprovalStatusIds: ['0'],
-    PaymentMethodIds:[],
+    PaymentMethodIds: [],
     MinAmount: '',
     MaxAmount: '',
   },
@@ -45,6 +47,8 @@ const initialState: ApprovalState = {
     BillEndDate: '',
     StartDueDate: '',
     EndDueDate: '',
+    Assignee: '1',
+    LocationIds: [],
   },
 }
 

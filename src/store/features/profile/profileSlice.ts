@@ -3,9 +3,19 @@ import agent from '@/api/axios'
 import { ProfileFormFieldsProps } from '@/models/formFields'
 import { GetUserImage } from '@/models/user'
 
-interface ProfileState {}
+interface ProfileState {
+  organizationName: string,
+  processPermissionsMatrix: any[]
+  orgPermissionsMatrix: any[]
+  RoleId: number
+}
 
-const initialState: ProfileState = {}
+const initialState: ProfileState = {
+  organizationName: '',
+  processPermissionsMatrix: [],
+  orgPermissionsMatrix: [],
+  RoleId: 0
+}
 
 export const getUserProfile = createAsyncThunk('profile/getUserProfile', async (_, thunkAPI) => {
   try {
@@ -86,7 +96,19 @@ export const profileSlice = createSlice({
     setData: (state, action) => {
       // state.data = action.payload
     },
+    setOrganizationName: (state, action) => {
+      state.organizationName = action.payload
+    },
+    setProcessPermissionsMatrix: (state, action) => {
+      state.processPermissionsMatrix = action.payload
+    },
+    setOrgPermissionsMatrix: (state, action) => {
+      state.orgPermissionsMatrix = action.payload
+    },
+    setRoleId: (state, action) => {
+      state.RoleId = action.payload
+    },
   },
 })
 
-export const { setData } = profileSlice.actions
+export const { setData, setOrganizationName, setProcessPermissionsMatrix, setOrgPermissionsMatrix, setRoleId } = profileSlice.actions

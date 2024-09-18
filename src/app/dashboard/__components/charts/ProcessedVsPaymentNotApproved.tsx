@@ -13,7 +13,7 @@ import React, { useEffect, useState } from 'react';
 import ChartTypeDropdown from '../modal/ChartType';
 import DashboardFilter from '../modal/DashboardFilter';
 import ExpandModal from '../modal/ExpandModal';
-import { Typography } from 'pq-ap-lib';
+import { Loader, Typography } from 'pq-ap-lib';
 
 const ProcessedVsPaymentNotApproved: React.FC<any> = ({ LocationOption }) => {
   const { data: session } = useSession()
@@ -28,6 +28,7 @@ const ProcessedVsPaymentNotApproved: React.FC<any> = ({ LocationOption }) => {
   const [chartType, setChartType] = useState<string>('column');
   const [isStacked, setIsStacked] = useState<boolean>(false);
   const [isMonthWise, setIsMonthWise] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const getProcessedVsPaymentDashboard = (newFilterFields: any) => {
     const startDate = new Date(newFilterFields?.StartDate);
@@ -35,6 +36,7 @@ const ProcessedVsPaymentNotApproved: React.FC<any> = ({ LocationOption }) => {
     const dayDifference = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
     const isMonthWiseData = dayDifference > 31;
     setIsMonthWise(isMonthWiseData);
+    setIsLoading(true)
 
     const params = {
       IsMonthWise: isMonthWiseData,
@@ -45,6 +47,9 @@ const ProcessedVsPaymentNotApproved: React.FC<any> = ({ LocationOption }) => {
     }
     performApiAction(dispatch, getProcessedVsPaymentNotApproved, params, (responseData: any) => {
       setChartData(responseData)
+      setIsLoading(false)
+    }, () => {
+      setIsLoading(false)
     })
   }
 
@@ -167,7 +172,7 @@ const ProcessedVsPaymentNotApproved: React.FC<any> = ({ LocationOption }) => {
                     EndDate: filterFields.EndDate
                   }))
                 } else if (this.series.name === 'Payment Not Approved') {
-                  router.push(`/approvals?approvalId=2`);
+                  // router.push(`/approvals?approvalId=2`);
                 }
               }
             }
@@ -266,9 +271,12 @@ const ProcessedVsPaymentNotApproved: React.FC<any> = ({ LocationOption }) => {
         </div>
       </div>
       <div className='main_chart w-full'>
-        <HighchartsReact highcharts={Highcharts} options={getChartOptions()} />
+        {isLoading
+          ? <div className='h-[400px] w-full flex justify-center'>
+            <Loader size='md' helperText/>
+          </div>
+          : <HighchartsReact highcharts={Highcharts} options={getChartOptions()} />}
       </div>
-
       <ExpandModal
         onOpen={isExpandChartOpen}
         onClose={() => setIsExpandChartOpen(false)}

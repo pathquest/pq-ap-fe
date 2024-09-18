@@ -3,13 +3,14 @@ import ImportIcon from '@/assets/Icons/ImportIcon'
 import PlusIcon from '@/assets/Icons/PlusIcon'
 import SyncIcon from '@/assets/Icons/SyncIcon'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
 import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 import ImportModal from '@/components/Common/Modals/ImportModal'
 import Wrapper from '@/components/Common/Wrapper'
-import { useAppDispatch } from '@/store/configureStore'
+import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { importDimensionData, syncDimensionMaster } from '@/store/features/master/dimensionSlice'
 import { useSession } from 'next-auth/react'
-import { Button, NavigationBar, SearchBar, Toast, Tooltip, Typography } from 'pq-ap-lib'
+import { Button, NavigationBar, SearchBar, Toast, Tooltip } from 'pq-ap-lib'
 import React, { useEffect, useState } from 'react'
 import { useMediaQuery } from 'react-responsive'
 import Class from '../content/ClassContent'
@@ -23,6 +24,8 @@ const ListDimentions: React.FC = () => {
   const CompanyId = Number(session?.user?.CompanyId)
   const accountingTool = session?.user?.AccountingTool
   const dispatch = useAppDispatch()
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isDimensionSync = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "Dimension", "Sync");
 
   const [tab, setTab] = useState<string>('class')
   const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false)
@@ -153,7 +156,7 @@ const ListDimentions: React.FC = () => {
               }}
             />
           </div>
-          {accountingTool !== 4 && <Tooltip content={`Sync ${tab}`} position='bottom' className='!z-[6] flex h-8 w-9 justify-center items-center'>
+          {(accountingTool !== 4 && isDimensionSync) && <Tooltip content={`Sync ${tab}`} position='bottom' className='!z-[6] flex h-8 w-9 justify-center items-center'>
             <div className={`${isSyncing && 'animate-spin'}`} onClick={() => setIsSyncModalOpen(true)}>
               <SyncIcon />
             </div>
