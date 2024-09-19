@@ -5,7 +5,9 @@ import FolderIcon from '@/assets/Icons/FolderIcon'
 import GoogleDriveIcon from '@/assets/Icons/GoogleDriveIcon'
 import MoreOptionsIcon from '@/assets/Icons/MoreOptionsIcon'
 import PlusIcon from '@/assets/Icons/PlusIcon'
+import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
 import Wrapper from '@/components/Common/Wrapper'
+import { useAppSelector } from '@/store/configureStore'
 import Dropdown from '@mui/joy/Dropdown'
 import Menu from '@mui/joy/Menu'
 import MenuButton from '@mui/joy/MenuButton'
@@ -16,12 +18,15 @@ import React, { useEffect, useState } from 'react'
 
 const ListCloudConfiguration: React.FC = () => {
   const { data: session } = useSession()
-  const CompanyId = session?.user?.CompanyId 
+  const CompanyId = session?.user?.CompanyId
 
   const [visibleFolderModal, setVisibleFolderModal] = useState(false)
   const [selectedFolder, setSelectedFolder] = useState('account_payable')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [cloudConfigList, setCloudConfigList] = useState<any>([])
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isCloudConfigurationEdit = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Cloud Configuration", "Edit");
+  const isCloudConfigurationCreate = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Cloud Configuration", "Create");
 
   const options = [
     {
@@ -73,7 +78,7 @@ const ListCloudConfiguration: React.FC = () => {
     window.location.href = url
   }
 
-  const onClose = () => {}
+  const onClose = () => { }
 
   return (
     <Wrapper masterSettings={true}>
@@ -83,7 +88,7 @@ const ListCloudConfiguration: React.FC = () => {
           <Typography type='h5' className='flex items-center justify-center text-center !font-bold'>
             Cloud Configuration
           </Typography>
-          <div className='cursor-pointer rounded-full border border-solid border-[#6E6D7A] p-0.5'>
+          <div className={`${isCloudConfigurationCreate ? "block" : "hidden"} cursor-pointer rounded-full border border-solid border-[#6E6D7A] p-0.5`}>
             <PlusIcon color={'#6E6D7A'} />
           </div>
         </div>
@@ -94,11 +99,11 @@ const ListCloudConfiguration: React.FC = () => {
           <div className='flex items-center justify-between'>
             <div className='h-[16px] w-[16px] rounded-full bg-[#02B89D]' />
             <Dropdown>
-              <MenuButton className={'!border-none !bg-transparent !outline-black'} onClick={() => {}}>
+              <MenuButton className={'!border-none !bg-transparent !outline-black'} onClick={() => { }}>
                 <MoreOptionsIcon />
               </MenuButton>
               <Menu className={`!z-[6] !-ml-4 !-mt-2 !w-[168px]`}>
-                <MenuItem key={'open'} className='!font-proxima !font-normal !text-black !outline-black' onClick={() => {}}>
+                <MenuItem key={'open'} className='!font-proxima !font-normal !text-black !outline-black' onClick={() => { }}>
                   <Typography type='h6' className='!font-normal'>
                     Open
                   </Typography>
@@ -118,7 +123,7 @@ const ListCloudConfiguration: React.FC = () => {
               variant={'btn-outline-primary'}
               className='btn-md w-[100px] rounded-full'
               disabled={false}
-              onClick={() => {}}
+              onClick={() => { }}
               tabIndex={0}
             >
               <Typography className='!text-[14px] font-semibold uppercase'>DISABLE</Typography>
@@ -174,7 +179,7 @@ const ListCloudConfiguration: React.FC = () => {
           <Button
             className='btn-sm mx-2 my-3 !h-[36px] !w-32 rounded-full font-semibold'
             variant={`btn-primary`}
-            onClick={() => {}}
+            onClick={() => { }}
           >
             SET FOLDER
           </Button>

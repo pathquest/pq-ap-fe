@@ -401,9 +401,8 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
             : null,
       EndDate:
         reportPeriodValue === 8
-          ? dateRangeVal[1]?.trim() === ''
-            ? convertStringsDateToUTC(dateRangeVal[1]?.trim())
-            : null
+          ? dateRangeVal[1]?.trim() === '' 
+            ? null : convertStringsDateToUTC(dateRangeVal[1]?.trim()) ?? null
           : reportPeriod !== ''
             ? convertStringsDateToUTC(reportPeriod)
             : null,
@@ -577,6 +576,7 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
               columns={ApLedgercolumns}
               data={table_Data}
               sticky
+              zIndex={2}
               hoverEffect
               expandable
               isExpanded

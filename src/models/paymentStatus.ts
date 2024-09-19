@@ -78,10 +78,12 @@ export interface ColumnFilterDropdownProps {
   columnId?: number
   getMappingListData?: any
   moduleType: number
+  setMapColId?: any
 }
 
 export interface StatusType {
   statusList: Option[];
+  onSuccessApply:any
 }
 export interface StatusListData {
   label: string

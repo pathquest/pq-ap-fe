@@ -41,7 +41,6 @@ const ProfileForm = ({ profileData, handleEdit }: any) => {
     city_id: 0,
     postal_code: '',
     time_zone: 0,
-    guid: '',
     user_image: '',
   })
 
@@ -73,7 +72,6 @@ const ProfileForm = ({ profileData, handleEdit }: any) => {
       city_id: profileData?.city_id ?? 0,
       postal_code: profileData?.postal_code ?? '',
       time_zone: profileData?.time_zone ?? 0,
-      guid: profileData?.guid ?? '',
       user_image: profileData?.user_image && onGetUserImage(profileData?.user_image),
     })
 
@@ -148,8 +146,7 @@ const ProfileForm = ({ profileData, handleEdit }: any) => {
     const response = await dispatch(
       saveUserProfile({
         ...formFields,
-        id: profileData.id,
-        guid: handleEdit !== undefined ? profileData.guid : imageGuId,
+        id: String(profileData.id),
         user_image: imageName,
         is_active: true,
         is_verified: true,
@@ -224,7 +221,7 @@ const ProfileForm = ({ profileData, handleEdit }: any) => {
       const file = e.target.files[0]
       setSelectedFile(file)
       const userImageName = `${handleEdit !== undefined
-          ? `${formFields?.guid}.${file.name.split('.').pop()}`
+          ? `${file.name.split('.').pop()}`
           : `${imageGuId}.${file.name.split('.').pop()}`
         }`
 

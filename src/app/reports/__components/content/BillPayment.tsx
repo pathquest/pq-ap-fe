@@ -427,6 +427,7 @@ function BillPayment({ vendorOptions, locationOptions, setBillPaymentParams }: a
         >
           <div className={`mainTable ${billPaymentsData.length !== 0 && 'h-0'}`}>
             <DataTable
+              zIndex={2}
               columns={columns}
               data={table_Data}
               sticky

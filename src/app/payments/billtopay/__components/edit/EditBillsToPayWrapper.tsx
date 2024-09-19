@@ -273,21 +273,21 @@ const EditBillsToPayWrapper = ({
   }
 
   const saveAccountPayable = async (params: any, postSaveAs: any) => {
-    // const index = billLists.findIndex((object: any) => {
-    //   return object.Id == activeBill
-    // })
+    const index = billLists.findIndex((object: any) => {
+      return object.Id == activeBill
+    })
 
-    // let nextBillId: any
+    let nextBillId: any
 
-    // if (billLists.length === 1) {
-      // router.push(`/payments/billtopay`)
-    // } else if (billLists.length === index + 1) {
-    //   nextBillId = billLists[0].Id
-    // } else {
-    //   nextBillId = billLists[index + 1].Id
-    // }
+    if (billLists.length === 1) {
+      router.push(`/payments/billtopay`)
+    } else if (billLists.length === index + 1) {
+      nextBillId = billLists[0].Id
+    } else {
+      nextBillId = billLists[index + 1].Id
+    }
 
-    // const findNextBill = billLists.find((value: any) => (value.Id === nextBillId ? value : null))
+    const findNextBill = billLists.find((value: any) => (value.Id === nextBillId ? value : null))
 
     try {
       const response = await agent.APIs.accountPayableSave(params)
@@ -296,14 +296,14 @@ const EditBillsToPayWrapper = ({
         if (!formFields?.attachment) {
           setLoaderState(postSaveAs, loader, setLoader)
 
-          // dispatch(setIsFormDocuments(findNextBill.IsFromDocuments))
-          // setActiveBill(nextBillId)
+          dispatch(setIsFormDocuments(findNextBill.IsFromDocuments))
+          setActiveBill(nextBillId)
           setIsNewWindowUpdate(true)
           setIsRefreshList(true)
           setLineItemsFieldsData([])
           showSuccessMessage(postSaveAs)
 
-          // window.history.replaceState(null, '', `/payments/billtopay/edit/${nextBillId}`)
+          window.history.replaceState(null, '', `/payments/billtopay/edit/${nextBillId}`)
 
           router.push('/payments/billtopay')
           return
@@ -328,14 +328,14 @@ const EditBillsToPayWrapper = ({
               setPostaspaidModal(false)
             }
 
-            // dispatch(setIsFormDocuments(findNextBill.IsFromDocuments))
-            // setActiveBill(nextBillId)
+            dispatch(setIsFormDocuments(findNextBill.IsFromDocuments))
+            setActiveBill(nextBillId)
             setIsNewWindowUpdate(true)
             setIsRefreshList(true)
             setLineItemsFieldsData([])
             showSuccessMessage(postSaveAs)
 
-            // window.history.replaceState(null, '', `/payments/billtopay/edit/${nextBillId}`)
+            window.history.replaceState(null, '', `/payments/billtopay/edit/${nextBillId}`)
           }
           router.push('/payments/billtopay')
           return

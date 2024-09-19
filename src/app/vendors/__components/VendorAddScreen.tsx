@@ -1,3 +1,4 @@
+import InfoIcon from '@/assets/Icons/infoIcon'
 import BackArrow from '@/assets/Icons/payments/BackArrow'
 import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
@@ -8,9 +9,8 @@ import { GLAccountDropdown } from '@/store/features/master/glAccountSlice'
 import { cityListDropdown, countryListDropdown, stateListDropdown } from '@/store/features/user/userSlice'
 import { accountClassification, saveVendor, vendorGetById } from '@/store/features/vendor/vendorSlice'
 import { useSession } from 'next-auth/react'
-import { BasicTooltip, Button, CheckBox, Email, Select, Text,Uploader, Toast, Typography } from 'pq-ap-lib'
+import { BasicTooltip, Button, CheckBox, Email, Select, Text, Toast, Typography, Uploader } from 'pq-ap-lib'
 import React, { useEffect, useState } from 'react'
-import InfoIcon from '@/assets/Icons/infoIcon'
 
 interface DrawerProps {
     isOpen: boolean

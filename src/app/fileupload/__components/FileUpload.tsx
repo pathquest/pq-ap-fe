@@ -416,7 +416,7 @@ const FileUpload = ({ processOptions }: any) => {
     if (fileIndexStatus.filter((file: number) => file === 3).length > 0 && isUploading === false && isToast === true) {
       handleOcrFile()
       setTimeout(() => {
-        Toast.success(`${succesCount + 1} file(s) uploaded successfully and assigned according to the automation rules.`)
+        Toast.success(`${succesCount + 1} file(s) uploaded successfully and moved for automation processing`)
       }, 1500)
       setIsToast(false)
     }
@@ -597,7 +597,7 @@ const FileUpload = ({ processOptions }: any) => {
           </div>
           <div>
             {fileData.length > 0 ? (
-              <div className='h-[calc(100vh-282px)] overflow-auto max-[425px]:mx-1 custom-scroll'>
+              <div className='h-[calc(100vh-275px)] overflow-auto max-[425px]:mx-1 custom-scroll'>
                 <div className={`${fileData.length === 0 ? 'h-11' : 'h-auto'}`}>
                   <DataTable
                     getExpandableData={() => { }}
@@ -647,7 +647,7 @@ const FileUpload = ({ processOptions }: any) => {
                 </div>
               </div>
             )}
-            <div className='h-[73px] fileUploadWidth absolute bottom-0 box-border flex items-center justify-end border-t  border-lightSilver bg-white p-5 gap-5'>
+            <div className='h-[66px] fileUploadWidth absolute bottom-0 box-border flex items-center justify-end border-t  border-lightSilver bg-white p-5 gap-5'>
               <Button
                 className={`btn-sm !h-9 rounded-full !w-[94px]`}
                 variant={`${isUploading ? "btn-outline" : 'btn-outline-primary'}`}

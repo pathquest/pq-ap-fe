@@ -10,12 +10,13 @@ import { performApiAction } from "@/components/Common/Functions/PerformApiAction
 import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal';
 import ImportModal from '@/components/Common/Modals/ImportModal';
 import Wrapper from '@/components/Common/Wrapper';
-import { useAppDispatch } from '@/store/configureStore';
+import { useAppDispatch, useAppSelector } from '@/store/configureStore';
 import { glAccountGetList, importGLAccountData, syncGLAccountMaster, updateAccountStatus } from '@/store/features/master/glAccountSlice';
 import { useSession } from "next-auth/react";
 import { Badge, Button, DataTable, Loader, SearchBar, Switch, Toast, Tooltip, Typography } from 'pq-ap-lib';
 import React, { useEffect, useRef, useState } from 'react';
 import GLAccount from "../drawer/GLAccountDrawer";
+import { hasSpecificPermission } from "@/components/Common/Functions/ProcessPermission";
 
 interface AccountListProps {
   name: string
@@ -29,6 +30,8 @@ const ListGLAccount: React.FC = () => {
   const CompanyId = Number(session?.user?.CompanyId)
   const accountingTool = Number(session?.user?.AccountingTool)
   const dispatch = useAppDispatch()
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isGLAccountSync = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "GL Account", "Sync");
 
   const [accountList, setAccountList] = useState<AccountListProps[]>([])
   const [isSyncModalOpen, setIsSyncModalOpen] = useState<boolean>(false)
@@ -69,7 +72,7 @@ const ListGLAccount: React.FC = () => {
       header: 'ACCOUNT NUMBER',
       accessor: 'accountId',
       sortable: false,
-      colalign:'right'
+      colalign: 'right'
     },
     {
       header: 'ACCOUNT TYPE',
@@ -376,7 +379,7 @@ const ListGLAccount: React.FC = () => {
               }}
             />
           </div>
-          {accountingTool !== 4 && <Tooltip content={`Sync GL Account`} position='left' className='!z-[6] flex h-8 w-9 justify-center items-center'>
+          {(accountingTool !== 4 && isGLAccountSync) && <Tooltip content={`Sync GL Account`} position='left' className='!z-[6] flex h-8 w-9 justify-center items-center'>
             <div className={`${isSyncing && 'animate-spin'}`} onClick={() => setIsSyncModalOpen(true)}>
               <SyncIcon />
             </div>

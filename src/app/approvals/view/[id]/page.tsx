@@ -1,5 +1,6 @@
 'use server'
 
+import { ssoUrl } from '@/api/server/common'
 import ViewApprovals from '@/app/approvals/__components/view/ViewApprovals'
 import { auth } from '@/auth'
 import { store } from '@/store/configureStore'
@@ -9,7 +10,7 @@ const ViewApprovalsPage = async ({ params }: { params: { id: string } }) => {
   const session = await auth()
 
   if (!session) {
-    return redirect('/signin')
+    return redirect(`${ssoUrl}/signin`)
   }
 
   const { bill } = store.getState()

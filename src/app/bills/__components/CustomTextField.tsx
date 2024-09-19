@@ -88,9 +88,9 @@ const CustomTextField = ({
                     return {
                       ...currentRowObj,
                       [fieldName]: err,
-                      amount: (currentRowObj.qty || err) && (currentRowObj.rate || err) ? true : false,
-                      taxamount: currentRowObj.taxrate || err ? true : false,
-                      total: (currentRowObj.qty || err) && (currentRowObj.rate || err) ? true : false,
+                      // amount: (currentRowObj.qty || err) && (currentRowObj.rate || err) ? true : false,
+                      // taxamount: currentRowObj.taxrate || err ? true : false,
+                      // total: (currentRowObj.qty || err) && (currentRowObj.rate || err) ? true : false,
                     }
                   }
                   return itemErrors

@@ -23,7 +23,7 @@ import {
 } from '@/utils/billposting'
 import dynamic from 'next/dynamic'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { Badge, DataTable, Toast, BasicTooltip, Typography } from 'pq-ap-lib'
+import { Badge, DataTable, Toast, BasicTooltip, Typography, Loader } from 'pq-ap-lib'
 import { Resizable } from 're-resizable'
 import { useEffect, useRef, useState } from 'react'
 import GetFileIcon from '../GetFileIcon'
@@ -113,6 +113,7 @@ const ViewBillPosting = () => {
 
   const [isNewWindowUpdate, setIsNewWindowUpdate] = useState(false)
   const [currentWindow, setCurrentWindow] = useState<any>(null)
+  const [isFormFieldsChanged, setIsFormFieldsChanged] = useState<boolean>(false)
 
   const [isResetFilter, setIsResetFilter] = useState<boolean>(false)
   const [localFilterFormFields, setLocalFilterFormFields] = useState<BillPostingFilterFormFieldsProps>(filterFormFields)
@@ -134,7 +135,7 @@ const ViewBillPosting = () => {
     }
   }
 
-  const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any) => {
+  const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any, vendorOptions: any, termOptions: any, accountOptions: any) => {
     try {
       const response = await agent.APIs.getDocumentDetails({
         Id: Number(activeBill as string),
@@ -153,9 +154,10 @@ const ViewBillPosting = () => {
           termOptions,
           accountOptions
         )
-
+        
         setLineItemsFieldsData(newLineItems)
         setFormFields(updatedDataObj)
+        setIsFormFieldsChanged(true)
 
         await getPDFUrl(
           responseData?.FilePath,
@@ -181,53 +183,60 @@ const ViewBillPosting = () => {
         mainFieldListOptions,
         lineItemFieldListOptions
       )
-      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj)
+      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, vendorOptions, termOptions, accountOptions)
     }
   }, [activeBill])
 
-  useEffect(() => {
-    const fetchFieldMappingData = async () => {
-      setIsLoading(true)
-      const {
-        vendorOptions,
-        termOptions,
-        accountOptions,
-        fieldMappingConfigurations,
-        lineItemFieldColumns,
-      } = await fetchAPIsData(processtype, AccountingTool as number, 'view', CompanyId as number)
+  const fetchFieldMappingData = async () => {
+    setIsLoading(true)
+    const {
+      vendorOptions,
+      termOptions,
+      accountOptions,
+      fieldMappingConfigurations,
+      lineItemFieldColumns,
+    } = await fetchAPIsData(processtype, AccountingTool as number, 'view', CompanyId as number)
 
-      setVendorOptions(vendorOptions)
-      setTermOptions(termOptions)
-      setAccountOptions(accountOptions)
-      setLineItemFieldColumns(lineItemFieldColumns)
+    setVendorOptions(vendorOptions)
+    setTermOptions(termOptions)
+    setAccountOptions(accountOptions)
+    setLineItemFieldColumns(lineItemFieldColumns)
 
-      const mainFieldConfiguration = [
-        ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.DefaultList,
-        ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.CustomList,
-      ]
-      const lineItemConfiguration = [
-        ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.DefaultList,
-        ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.CustomList,
-      ]
+    const mainFieldConfiguration = [
+      ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.DefaultList,
+      ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.CustomList,
+    ]
+    const lineItemConfiguration = [
+      ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.DefaultList,
+      ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.CustomList,
+    ]
 
-      const { keyValueMainFieldObj, keyValueLineItemFieldObj } = returnKeyValueObjForFormFields(
-        mainFieldConfiguration,
-        lineItemConfiguration
-      )
+    const { keyValueMainFieldObj, keyValueLineItemFieldObj } = returnKeyValueObjForFormFields(
+      mainFieldConfiguration,
+      lineItemConfiguration
+    )
 
-      setMainFieldListOptions(mainFieldConfiguration)
-      setLineItemFieldListOptions(lineItemConfiguration)
+    setMainFieldListOptions(mainFieldConfiguration)
+    setLineItemFieldListOptions(lineItemConfiguration)
 
-      if (id) {
-        getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj)
-      }
-
-      setIsLoading(false)
+    if (activeBill) {
+      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, vendorOptions, termOptions, accountOptions)
     }
+
+    setIsLoading(false)
+  }
+
+  useEffect(() => {
     if (CompanyId) {
       fetchFieldMappingData()
     }
   }, [CompanyId])
+
+  useEffect(() => {
+    if (isFormFieldsChanged) {
+      fetchFieldMappingData()
+    }
+  }, [isFormFieldsChanged])
 
   useEffect(() => {
     const updateBoxWidth = () => {
@@ -303,7 +312,6 @@ const ViewBillPosting = () => {
             let updatedData = []
             if (pageIndex === 1) {
               updatedData = [...newList]
-              setIsLoading(false)
               setShouldLoadMore(true)
             } else {
               updatedData = [...billLists, ...newList]
@@ -350,7 +358,6 @@ const ViewBillPosting = () => {
           let updatedData = []
           if (pageIndex === 1) {
             updatedData = [...newList]
-            setIsLoading(false)
             setShouldLoadMore(true)
           } else {
             updatedData = [...billLists, ...newList]
@@ -436,7 +443,7 @@ const ViewBillPosting = () => {
     setIsNewWindowUpdate(true)
 
     dispatch(setIsFormDocuments(nextBillFormDocuments))
-    window.history.replaceState(null, '', `/bills/edit/${nextBillId}`)
+    window.history.replaceState(null, '', `/bills/edit/${nextBillId}?module=bills`)
   }
 
   const onHandleBackword = (activeBill: any) => {
@@ -453,7 +460,7 @@ const ViewBillPosting = () => {
     setIsNewWindowUpdate(true)
 
     dispatch(setIsFormDocuments(previousBillFormDocuments))
-    window.history.replaceState(null, '', `/bills/edit/${previousBillId}`)
+    window.history.replaceState(null, '', `/bills/edit/${previousBillId}?module=bills`)
   }
 
   const onChangeSelectedBillItem = (activeBill: any) => {
@@ -466,7 +473,7 @@ const ViewBillPosting = () => {
     setActiveBill(activeBillObj?.Id)
     setIsNewWindowUpdate(true)
 
-    window.history.replaceState(null, '', `/bills/edit/${activeBillObj?.Id}`)
+    window.history.replaceState(null, '', `/bills/edit/${activeBillObj?.Id}?module=bills`)
   }
 
   const onToggleLeftSidebar = () => {
@@ -593,6 +600,8 @@ const ViewBillPosting = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
+  if (Object.keys(formFields).length === 0) return null
+
   return (
     <ViewWrapper
       billLists={billLists}
@@ -628,198 +637,207 @@ const ViewBillPosting = () => {
       setIsVisibleLeftSidebar={(value: boolean) => setIsVisibleLeftSidebar(value)}
       isLoading={isLoading}
     >
-      <div className='mb-5 border-solid border-[#D8D8D8] md:flex'>
-        <div className='flex h-full w-full pt-5'>
-          {!isOpenInNewWindow && (
-            <Resizable
-              className='border-r-2 border-[#888] pr-2'
-              minWidth={'20%'}
-              maxWidth={'70%'}
-              enable={{
-                top: false,
-                right: true,
-                bottom: false,
-                left: false,
-                topRight: false,
-                bottomRight: false,
-                bottomLeft: false,
-                topLeft: false,
-              }}
-              onResize={handleResize}
-              defaultSize={{
-                width: '50%',
-                height: '100%',
-              }}
-            >
-              <span className='pl-5 text-[16px] font-bold font-proxima tracking-[0.02em]'>Document</span>
-              <div className='group relative mt-[15px] border-b border-r border-t border-[#D8D8D8]'>
-                {!documentDetailByIdData?.FilePath ? (
-                  <span className='flex h-[100vh] w-full items-center justify-center border-r border-lightSilver'>
-                    <ImageIcon />
-                  </span>
-                ) : (
-                  <>
-                    {imgUrl !== '' ? (
-                      <img src={`${imgUrl}`} alt='abc' className='h-[100vh]' />
+      {
+        isLoading || !isFormFieldsChanged ? (
+          <div className='flex h-full w-full items-center justify-center'>
+            <Loader size='md' helperText />
+          </div>
+        ) : (
+          <div className='mb-5 border-solid border-[#D8D8D8] md:flex'>
+            <div className='flex h-full w-full pt-5'>
+              {!isOpenInNewWindow && (
+                <Resizable
+                  className='border-r-2 border-[#888] pr-2'
+                  minWidth={'20%'}
+                  maxWidth={'70%'}
+                  enable={{
+                    top: false,
+                    right: true,
+                    bottom: false,
+                    left: false,
+                    topRight: false,
+                    bottomRight: false,
+                    bottomLeft: false,
+                    topLeft: false,
+                  }}
+                  onResize={handleResize}
+                  defaultSize={{
+                    width: '50%',
+                    height: '100%',
+                  }}
+                >
+                  <span className='pl-5 text-[16px] font-bold font-proxima tracking-[0.02em]'>Document</span>
+                  <div className='group relative mt-[15px] border-b border-r border-t border-[#D8D8D8]'>
+                    {!documentDetailByIdData?.FilePath ? (
+                      <span className='flex h-[100vh] w-full items-center justify-center border-r border-lightSilver'>
+                        <ImageIcon />
+                      </span>
                     ) : (
-                      <PDFViewer
-                        isVisibleLeftSidebar={isVisibleLeftSidebar}
-                        pdfFile={pdfUrl}
-                        onOpen={() => setIsOpenDrawer(true)}
-                        heightClass='h-[100vh]'
-                        documentDetailByIdData={documentDetailByIdData}
-                        billNumber={
-                          Array.isArray(id)
-                            ? id
-                              .map((value) => billLists.find((item: any) => item.Id === parseInt(value))?.BillNumber || '')
-                              .join(', ')
-                            : billLists.find((value: any) => value.Id === parseInt(id))?.BillNumber || ''
-                        }
-                        getNumberOfPages={onSetNumberOfPages}
-                        fileName={documentDetailByIdData?.FileName}
-                        fileBlob={fileBlob}
-                        isPdfLoading={isPdfLoading}
-                        openInNewWindow={openInNewWindow}
-                      />
+                      <>
+                        {imgUrl !== '' ? (
+                          <img src={`${imgUrl}`} alt='abc' className='h-[100vh]' />
+                        ) : (
+                          <PDFViewer
+                            key={isVisibleLeftSidebar + ""}
+                            isVisibleLeftSidebar={isVisibleLeftSidebar}
+                            pdfFile={pdfUrl}
+                            onOpen={() => setIsOpenDrawer(true)}
+                            heightClass='h-[100vh]'
+                            defaultScale={isVisibleLeftSidebar ? 0.6 : 0.8}
+                            documentDetailByIdData={documentDetailByIdData}
+                            billNumber={
+                              Array.isArray(id)
+                                ? id
+                                  .map((value) => billLists.find((item: any) => item.Id === parseInt(value))?.BillNumber || '')
+                                  .join(', ')
+                                : billLists.find((value: any) => value.Id === parseInt(id))?.BillNumber || ''
+                            }
+                            getNumberOfPages={onSetNumberOfPages}
+                            fileName={documentDetailByIdData?.FileName}
+                            fileBlob={fileBlob}
+                            isPdfLoading={isPdfLoading}
+                            openInNewWindow={openInNewWindow}
+                          />
+                        )}
+                      </>
                     )}
-                  </>
-                )}
 
-                <SplitDrawer
-                  billNumber={documentDetailByIdData?.BillNumber}
-                  numberOfPages={numberOfPages}
-                  fileName={documentDetailByIdData?.FileName}
-                  id={id}
-                  pdfFile={pdfUrl}
-                  onOpen={isOpenDrawer}
-                  onClose={() => setIsOpenDrawer(false)}
-                  fileBlob={fileBlob}
-                />
-                {!checkActivityStatus && (
-                  <div
-                    className={`absolute left-0 top-[50%] z-[4] translate-y-1/2 cursor-pointer rounded-r-md bg-[#E6E6E6] px-2 py-3.5 opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
-                    onClick={onToggleLeftSidebar}
-                  >
-                    {isVisibleLeftSidebar ? <LeftDoubleArrowIcon /> : <RightDoubleArrowIcon />}
+                    <SplitDrawer
+                      billNumber={documentDetailByIdData?.BillNumber}
+                      numberOfPages={numberOfPages}
+                      fileName={documentDetailByIdData?.FileName}
+                      id={id}
+                      pdfFile={pdfUrl}
+                      onOpen={isOpenDrawer}
+                      onClose={() => setIsOpenDrawer(false)}
+                      fileBlob={fileBlob}
+                    />
+                    {processSelection !== '4' && !checkActivityStatus && (
+                      <div
+                        className={`absolute left-0 top-[50%] z-[4] translate-y-1/2 cursor-pointer rounded-r-md bg-[#E6E6E6] px-2 py-3.5 opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
+                        onClick={onToggleLeftSidebar}
+                      >
+                        {isVisibleLeftSidebar ? <LeftDoubleArrowIcon /> : <RightDoubleArrowIcon />}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </Resizable>
-          )}
-          <div className='ml-[34px] mr-[11px] w-full flex-grow overflow-auto'>
-            <span className='text-[16px] font-bold font-proxima tracking-[0.02em]'>Document edited</span>
+                </Resizable>
+              )}
+              <div className='ml-[34px] mr-[11px] w-full flex-grow overflow-auto'>
+                <span className='text-[16px] font-bold font-proxima tracking-[0.02em]'>Document edited</span>
 
-            <div ref={rightBoxRef} className='mt-[15px] flex h-auto flex-col overflow-hidden border border-[#D8D8D8]'>
-              <div className='flex border-b border-[#D8D8D8] px-5 py-[14px]'>
-                <BasicTooltip position='right' content='Bill Number' className='!py-0 !pl-0 !pr-1 !font-proxima !text-[14px]'>
-                  <span className='text-[16px] font-proxima tracking-[0.02em]'>BILL INFO : </span>
-                  <span className='break-all pl-[18px] text-[16px] font-bold font-proxima tracking-[0.02em]'>{documentDetailByIdData?.BillNumber}</span>
-                </BasicTooltip>
-              </div>
+                <div ref={rightBoxRef} className='mt-[15px] flex h-auto flex-col overflow-hidden border border-[#D8D8D8]'>
+                  <div className='flex border-b border-[#D8D8D8] px-5 py-[14px]'>
+                    <div className='!py-0 !pl-0 !pr-1 !font-proxima !text-[14px]'>
+                      <span className='text-[16px] font-proxima tracking-[0.02em]'>BILL INFO : </span>
+                      <span className='break-all pl-[18px] text-[16px] font-bold font-proxima tracking-[0.02em]'>{documentDetailByIdData?.BillNumber}</span>
+                    </div>
+                  </div>
 
-              <div className='custom-scroll h-[92vh] w-full overflow-auto '>
-                <div className='view_mainFields grid grid-cols-2 px-5 py-2'>
-                  {Object.entries(formFields).map(([key, value], index) => {
-                    const fieldLabel = mainFieldListOptions?.find((item: any) => item?.Name === key)?.Label ?? ''
+                  <div className='custom-scroll h-[92vh] w-full overflow-auto '>
+                    <div className='view_mainFields grid grid-cols-2 px-5 py-2'>
+                      {Object.entries(formFields).map(([key, value], index) => {
+                        const fieldLabel = mainFieldListOptions?.find((item: any) => item?.Name === key)?.Label ?? ''
 
-                    return <div key={key} className='py-3'>
-                      <div className={`text-sm text-darkCharcoal font-proxima tracking-[0.02em] ${key == "attachment" ? `flex ${(index === 0 || (index % 2 === 0)) ? 'justify-start' : 'justify-end'}` : ""}`}>
-                        {fieldLabel ? fieldLabel : key} : {key == "attachment" ? (
-                          <div className='relative flex items-center'>
-                            {value !== null && (
-                              <>
-                                <span className='absolute -top-3 left-2'>
-                                  <Badge badgetype='error' variant='dot' text={value.length.toString()} />
-                                </span>
-                                <span className='cursor-pointer' onClick={() => handleOpenAttachFile(value?.Id)}>
-                                  <AttachIcon />
-                                </span>
+                        return <div key={key} className='py-3'>
+                          <div className={`text-sm text-darkCharcoal font-proxima tracking-[0.02em] ${key == "attachment" ? `flex ${(index === 0 || (index % 2 === 0)) ? 'justify-start' : 'justify-end'}` : ""}`}>
+                            {fieldLabel ? fieldLabel : key} : {key == "attachment" ? (
+                              <div className='relative flex items-center'>
+                                {value !== null && (
+                                  <>
+                                    <span className='absolute -top-3 left-2'>
+                                      <Badge badgetype='error' variant='dot' text={value.length.toString()} />
+                                    </span>
+                                    <span className='cursor-pointer' onClick={() => handleOpenAttachFile(value?.Id)}>
+                                      <AttachIcon />
+                                    </span>
 
-                                {isOpenAttchFile && value?.Id === rowIds[0] && (
-                                  <div
-                                    ref={dropdownRef}
-                                    className={`absolute ${(index === 0 || (index % 2 === 0)) ? '-left-10' : 'right-0'} top-6 !z-[99] flex w-[400px] flex-col rounded-md border border-[#cccccc] bg-white p-5 shadow-md`}
-                                  >
-                                    <DataTable
-                                      getExpandableData={() => { }}
-                                      columns={attachfileheaders}
-                                      data={value.map(
-                                        (d: any) =>
-                                          new Object({
-                                            ...d,
-                                            FileName: (
-                                              <div
-                                                className='flex cursor-pointer items-center gap-1'
-                                                onClick={() => {
-                                                  handleFileOpen(d.FilePath, d.FileName)
-                                                  setIsFileRecord({
-                                                    FileName: d.FileName,
-                                                    PageCount: d.PageCount,
-                                                    BillNumber: value?.BillNumber,
-                                                  })
-                                                  setOpenAttachFile(false)
-                                                }}
-                                              >
-                                                <GetFileIcon FileName={d.FileName} />
-                                                <span className='w-52 truncate' title={d.FileName}>
-                                                  {d.FileName} &nbsp;
-                                                </span>
-                                              </div>
-                                            ),
-                                            Size: <Typography className='!text-[14px] text-[#333]'>{formatFileSize(d.Size)}</Typography>,
-                                          })
-                                      )}
-                                      sticky
-                                      hoverEffect
-                                      getRowId={() => { }}
-                                    />
-                                  </div>
+                                    {isOpenAttchFile && value?.Id === rowIds[0] && (
+                                      <div
+                                        ref={dropdownRef}
+                                        className={`absolute ${(index === 0 || (index % 2 === 0)) ? '-left-10' : 'right-0'} top-6 !z-[99] flex w-[400px] flex-col rounded-md border border-[#cccccc] bg-white p-5 shadow-md`}
+                                      >
+                                        <DataTable
+                                          getExpandableData={() => { }}
+                                          columns={attachfileheaders}
+                                          data={value.map(
+                                            (d: any) =>
+                                              new Object({
+                                                ...d,
+                                                FileName: (
+                                                  <div
+                                                    className='flex cursor-pointer items-center gap-1'
+                                                    onClick={() => {
+                                                      handleFileOpen(d.FilePath, d.FileName)
+                                                      setIsFileRecord({
+                                                        FileName: d.FileName,
+                                                        PageCount: d.PageCount,
+                                                        BillNumber: value?.BillNumber,
+                                                      })
+                                                      setOpenAttachFile(false)
+                                                    }}
+                                                  >
+                                                    <GetFileIcon FileName={d.FileName} />
+                                                    <span className='w-52 truncate' title={d.FileName}>
+                                                      {d.FileName} &nbsp;
+                                                    </span>
+                                                  </div>
+                                                ),
+                                                Size: <Typography className='!text-[14px] text-[#333]'>{formatFileSize(d.Size)}</Typography>,
+                                              })
+                                          )}
+                                          sticky
+                                          hoverEffect
+                                          getRowId={() => { }}
+                                        />
+                                      </div>
+                                    )}
+                                  </>
                                 )}
-                              </>
-                            )}
+                              </div>
+                            ) : value}
                           </div>
-                        ) : value}
+                        </div>
+                      })}
+                    </div>
+
+                    {lineItemsFieldsData && lineItemsFieldsData.length > 0 && (
+                      <div className={`custom-scroll !z-0 overflow-auto w-full`}>
+                        <DataTable
+                          getExpandableData={() => { }}
+                          columns={lineItemFieldColumns}
+                          data={lineItemsFieldsData}
+                          sticky
+                          hoverEffect
+                          isTableLayoutFixed={true}
+                          userClass='!z-0'
+                          getRowId={() => { }}
+                        />
+                      </div>
+                    )}
+
+                    <div className='flex flex-col items-end px-5 pb-[40px] pt-[30px]'>
+                      <div className='mb-2 flex w-60 flex-row justify-between'>
+                        <span className='text-sm font-proxima tracking-[0.02em]'>Sub Total</span>
+                        <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${formattedTotalAmountValue}</span>
+                      </div>
+                      {AccountingTool === 3 && (
+                        <div className='mb-2 flex w-60 flex-row justify-between'>
+                          <span className='text-sm font-proxima tracking-[0.02em]'>Tax Total</span>
+                          <span className='w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${formattedTotalTaxAmountValue}</span>
+                        </div>
+                      )}
+                      <div className='mb-2 flex w-60 flex-row justify-between'>
+                        <span className={`text-sm font-proxima tracking-[0.02em]`}>Total Amount</span>
+                        <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${formattedTotalAmountValue}</span>
                       </div>
                     </div>
-                  })}
-                </div>
-
-                {lineItemsFieldsData && lineItemsFieldsData.length > 0 && (
-                  <div className={`custom-scroll !z-0 overflow-auto w-full`}>
-                    <DataTable
-                      getExpandableData={() => { }}
-                      columns={lineItemFieldColumns}
-                      data={lineItemsFieldsData}
-                      sticky
-                      hoverEffect
-                      isTableLayoutFixed={true}
-                      userClass='!z-0'
-                      getRowId={() => { }}
-                    />
-                  </div>
-                )}
-
-                <div className='flex flex-col items-end px-5 pb-[40px] pt-[30px]'>
-                  <div className='mb-2 flex w-60 flex-row justify-between'>
-                    <span className='text-sm font-proxima tracking-[0.02em]'>Sub Total</span>
-                    <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${formattedTotalAmountValue}</span>
-                  </div>
-                  {AccountingTool === 3 && (
-                    <div className='mb-2 flex w-60 flex-row justify-between'>
-                      <span className='text-sm font-proxima tracking-[0.02em]'>Tax Total</span>
-                      <span className='w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${formattedTotalTaxAmountValue}</span>
-                    </div>
-                  )}
-                  <div className='mb-2 flex w-60 flex-row justify-between'>
-                    <span className={`text-sm font-proxima tracking-[0.02em]`}>Total Amount</span>
-                    <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${formattedTotalAmountValue}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        )}
       {isFileModal && ['pdf'].includes(isFileRecord.FileName.split('.').pop().toLowerCase()) && (
         <FileModal
           isFileRecord={isFileRecord}

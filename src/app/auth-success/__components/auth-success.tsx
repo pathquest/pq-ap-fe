@@ -1,6 +1,7 @@
 'use client'
 
 import agent, { invalidateSessionCache } from '@/api/axios'
+import { ssoUrl } from '@/api/server/common'
 import { handleLoginError } from '@/utils'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -44,7 +45,7 @@ const AuthSuccess = ({ session }: any) => {
           hasProduct()
         } else {
           handleLoginError(dataMessage)
-          router.push('/signin')
+          router.push(`${ssoUrl}/signin`)
         }
       } catch (error) {
         setLoader(false)
@@ -58,8 +59,18 @@ const AuthSuccess = ({ session }: any) => {
     const response = await agent.APIs.getUserConfig()
 
     if (response?.ResponseStatus === 'Success') {
-      const { UserId, OrganizationId, IsAdmin, IsOrganizationAdmin } = response.ResponseData
+      const { UserId, OrganizationId, IsAdmin, IsOrganizationAdmin, OrganizationName, RoleId } = response.ResponseData
       const isMapped = response?.ResponseData.products.some((product: any) => product.is_mapped)
+
+      await update({
+        ...user,
+        org_id: OrganizationId,
+        org_name: OrganizationName,
+        user_id: UserId,
+        is_admin: IsAdmin,
+        is_organization_admin: IsOrganizationAdmin,
+        role_id: RoleId
+      })
 
       localStorage.setItem('UserId', UserId)
       localStorage.setItem('OrgId', OrganizationId)

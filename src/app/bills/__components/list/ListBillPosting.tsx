@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
-import { AvatarSelect, Badge, CheckBox, DataTable, Loader, Select, Toast, Tooltip, Typography } from 'pq-ap-lib'
+import { AvatarSelect, Badge, BasicTooltip, CheckBox, DataTable, Loader, Select, Toast, Typography } from 'pq-ap-lib'
 
 import AttachIcon from '@/assets/Icons/billposting/AttachIcon'
 import CreateIcon from '@/assets/Icons/billposting/CreateIcon'
@@ -25,43 +25,87 @@ import View from '@/app/bills/__components/View'
 import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 import Wrapper from '@/components/Common/Wrapper'
 import { attachfileheaders, moveToOptions } from '@/data/billPosting'
-import {
-  AssignUserOption,
-  BillPostingFilterFormFieldsProps,
-  FileRecordType,
-  IntermediateType,
-  VisibilityMoveToDropDown,
-} from '@/models/billPosting'
+import { AssignUserOption, BillPostingFilterFormFieldsProps, FileRecordType, IntermediateType, VisibilityMoveToDropDown } from '@/models/billPosting'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import {
-  assignDocumentsToUser,
-  deleteDocument,
-  documentGetList,
-  getAssigneeList,
-  getColumnMappingList,
-  processTypeChangeByDocumentId,
-  setFilterFormFields,
-  setIsFormDocuments,
-  setIsVisibleSidebar,
-  setSelectedProcessTypeFromList,
-} from '@/store/features/bills/billSlice'
+import { assignDocumentsToUser, deleteDocument, deleteOverviewDocument, documentBillsOverviewList, documentGetList, getAssigneeList, getColumnMappingList, getColumnMappingOverviewList, processTypeChangeByDocumentId, setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 import { format, parseISO } from 'date-fns'
 
+import { getLocationDropdown, getVendorDropdown } from '@/api/server/common'
 import FileModal from '@/app/bills/__components/FileModal'
 import GetFileIcon from '@/app/bills/__components/GetFileIcon'
+import BillDuplicationIcon from '@/assets/Icons/BillDuplicationIcon'
+import ActivityIcon from '@/assets/Icons/billposting/ActivityIcon'
+import EditIcon from '@/assets/Icons/notification/EditIcon'
 import SortIcon from '@/assets/Icons/SortIcon'
+import Download from '@/components/Common/Custom/Download'
+import DrawerOverlay from '@/components/Common/DrawerOverlay'
+import { formatDate } from '@/components/Common/Functions/FormatDate'
+import { formatFileSize } from '@/components/Common/Functions/FormatFileSize'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
+import ActivityDrawer from '@/components/Common/Modals/Activitydrawer'
 import DeleteWithReason from '@/components/Modals/DeleteWithReason'
 import { setSearchSelectedModule } from '@/store/features/globalSearch/globalSearchSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { billStatusEditable, getPDFUrl, getTimeDifference, initialBillPostingFilterFormFields } from '@/utils/billposting'
 import { useSession } from 'next-auth/react'
-import { formatDate } from '@/components/Common/Functions/FormatDate'
-import BillDuplicationIcon from '@/assets/Icons/BillDuplicationIcon'
-import { formatFileSize } from '@/components/Common/Functions/FormatFileSize'
+import ColumnFilterOverview from '../ColumnFilterOverview'
 
-const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, processOptions }: any) => {
+const ListBillPosting = ({ statusOptions, processOptions }: any) => {
   const { data: session } = useSession()
   const CompanyId = session?.user?.CompanyId
+  const router = useRouter()
+  const dispatch = useAppDispatch()
+  const { selectedProcessTypeInList, filterFormFields } = useAppSelector((state) => state.bill)
+  const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
+
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isBillsView = getModulePermissions(processPermissionsMatrix, "Bills") ?? {}
+
+  // File Upload
+  const isFileUploadView = isBillsView["File Upload"]?.Create ?? false;
+
+  // Account Payable
+  const isAccountPayableView = isBillsView["Accounts Payable"]?.View ?? false;
+  const isAccountPayableCreate = isBillsView["Accounts Payable"]?.Create ?? false;
+  const isAccountPayableEdit = isBillsView["Accounts Payable"]?.Edit ?? false;
+  const isAccountPayableSync = isBillsView["Accounts Payable"]?.Sync ?? false;
+  const isAccountPayableImport = isBillsView["Accounts Payable"]?.Import ?? false;
+
+  // Account Adjustment
+  const isAccountAdjustmentView = isBillsView["Accounts Adjustment"]?.View ?? false;
+  const isAccountAdjustmentCreate = isBillsView["Accounts Adjustment"]?.Create ?? false;
+  const isAccountAdjustmentEdit = isBillsView["Accounts Adjustment"]?.Edit ?? false;
+  const isAccountAdjustmentSync = isBillsView["Accounts Adjustment"]?.Sync ?? false;
+  const isAccountAdjustmentImport = isBillsView["Accounts Adjustment"]?.Import ?? false;
+
+  // Bills Overview
+  const isBillsOverviewView = isBillsView["Bills Overview"]?.View ?? false;
+  const isBillsOverviewSync = isBillsView["Bills Overview"]?.Sync ?? false;
+  const isBillsOverviewEdit = isBillsView["Bills Overview"]?.Edit ?? false;
+
+  const accountOptions = [
+    {
+      label: 'Account Payable',
+      value: '1',
+      isHidden: !isAccountPayableView,
+    },
+    {
+      label: 'Account Adjustment',
+      value: '2',
+      isHidden: !isAccountAdjustmentView,
+    },
+    {
+      label: 'Other',
+      value: '3',
+      isHidden: false,
+    },
+    {
+      label: 'Bills Overview',
+      value: '4',
+      isHidden: !isBillsOverviewView,
+    },
+  ].filter(option => !option.isHidden)
+
   const [isOpen, setOpen] = useState<boolean>(false)
   const [isOpenAttchFile, setOpenAttachFile] = useState<boolean>(false)
   const [isVisibleTextValue, setVisibleTextValue] = useState<boolean>(false)
@@ -73,21 +117,32 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState<boolean>(false)
   const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false)
   const [isFileModal, setFileModal] = useState<boolean>(false)
+  const [openDrawer, setOpenDrawer] = useState<boolean>(false)
+  const [selectedPayableId, setSelectedPayableId] = useState<number | null>(null)
   const [isDeleteModal, setDeleteModal] = useState<boolean>(false)
   const [isFilterApplyChange, setIsFilterApplyChange] = useState<boolean>(true)
   const [isOpenAssignUserDropDown, setIsOpenAssignUserDropDown] = useState<boolean>(false)
+  const [isOverFlowVisible, setIsOverFlowVisible] = useState<boolean>(false)
 
-  const [processSelection, setProcessSelection] = useState<string>('1')
+  const [vendorOptions, setVendorOptions] = useState<any>([])
+  const [locationOptions, setLocationOptions] = useState<any>([])
+
+  const [processSelection, setProcessSelection] = useState<string>(selectedProcessTypeInList.toString())
   const [assigneeValueRow, setAssigneeValueRow] = useState<string[]>([])
   const [billLists, setBillLists] = useState<any>([])
+  const [billsOverviewList, setBillsOverviewList] = useState<any>([])
   const [deleteId, setDeleteId] = useState(-1)
+  const [deleteOverviewId, setDeleteOverviewId] = useState(0)
   const [deleteIds, setDeleteIds] = useState([])
   const [filterRowsAssignee, setFilterRowsAssignee] = useState([])
   const [filterRowsMoveTo, setFilterRowsMoveTo] = useState([])
   const [getMapColId, setMapColId] = useState(-1)
+  const [getOverviewMapColId, setOverviewMapColId] = useState(-1)
 
   const [sortOrder, setSortOrder] = useState<number | null>(1)
   const [filterName, setFilterName] = useState<string | null>(null)
+
+  const [billsOverviewParams, setBillsOverviewParams] = useState<any>([])
 
   const [isRestoreFields, setIsRestoreFields] = useState<any>({
     id: 0,
@@ -108,6 +163,7 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
   const [inProcessCount, setInProcessCount] = useState(0)
 
   const [headersDropdown, setHeadersDropdown] = useState<any>([])
+  const [headersOverviewDropdown, setHeadersOverviewDropdown] = useState<any>([])
   const [hoveredRow, setHoveredRow] = useState<any>({})
   const [selectedStates, setSelectedStates] = useState<AssignUserOption[]>([])
 
@@ -132,6 +188,7 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
   const [rowId, setRowId] = useState<number>(0)
 
   const [columnListVisible, setColumnListVisible] = useState<any>([])
+  const [columnListOverviewVisible, setColumnOverviewListVisible] = useState<any>([])
 
   const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
   const [isResetFilter, setIsResetFilter] = useState<boolean>(false)
@@ -142,22 +199,24 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
   const [fileBlob, setFileBlob] = useState<string | Blob>('')
   const [isPdfLoading, setIsPdfLoading] = useState<boolean>(false)
   const [isApplyFilter, setIsApplyFilter] = useState<boolean>(false)
+  const [overviewBillscolumns, setOverviewBillscolumns] = useState<Object[]>([])
 
   const [currentWindow, setCurrentWindow] = useState<any>(null)
   const [isNewWindowUpdate, setIsNewWindowUpdate] = useState(false)
   const [duplicateBillCount, setDuplicateBillCount] = useState<number | null>(null)
 
-  const router = useRouter()
-  const dispatch = useAppDispatch()
-  const { selectedProcessTypeInList, filterFormFields } = useAppSelector((state) => state.bill)
-  const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
-
   const [localFilterFormFields, setLocalFilterFormFields] = useState<BillPostingFilterFormFieldsProps>(filterFormFields)
   const [shouldLoadMore, setShouldLoadMore] = useState(true)
+  const [shouldLoadMoreOverview, setShouldLoadMoreOverview] = useState(true)
   const [isLazyLoading, setIsLazyLoading] = useState<boolean>(false)
+  const [isOptionsFetched, setIsOptionsFetched] = useState(false);
+  const [isLazyLoadingOverview, setIsLazyLoadingOverview] = useState<boolean>(false)
 
   const [itemsLoaded, setItemsLoaded] = useState(0)
+  const [itemsLoadedOverview, setItemsLoadedOverview] = useState(0)
   const [apiDataCount, setApiDataCount] = useState(0)
+  const [apiDataCountOverview, setApiDataCountOverview] = useState(0)
+
   const [sortOrders, setSortOrders] = useState<{ [key: string]: null | 'asc' | 'desc' }>({
     BillNumber: null,
     BillDate: null,
@@ -167,9 +226,13 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
   })
 
   let nextPageIndex: number = 1
+  let nextPageIndexOverview: number = 1
+  const billOverviewStatus = ['Posted']
 
   const lazyRows = 10
+  const lazyRowsOverview = 10
   const tableBottomRef = useRef<HTMLDivElement>(null)
+  const tableBottomRefOverview = useRef<HTMLDivElement>(null)
   const userId = localStorage.getItem('UserId')
 
   const otherProcessColumn = [
@@ -222,6 +285,50 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
   const isRowSelected = (id: any) => selectedRows.indexOf(id) !== -1
 
   useEffect(() => {
+    const fetchOptionsData = async () => {
+      try {
+        const vendorOptions: any = await getVendorDropdown(Number(CompanyId));
+        const locationOptions: any = await getLocationDropdown(Number(CompanyId));
+
+        setVendorOptions(vendorOptions);
+        setLocationOptions(locationOptions);
+
+        setIsOptionsFetched(true);
+      } catch (error) {
+        console.error('Error fetching options data:', error);
+      }
+    };
+
+    fetchOptionsData();
+    // dispatch(
+    //   setFilterFormFields({
+    //     ...initialBillPostingFilterFormFields,
+    //   })
+    // );
+  }, [CompanyId]);
+
+  useEffect(() => {
+    const dateRangeVal = filterFormFields.ft_datepicker.split('to')
+    const params = {
+      Status: filterFormFields.ft_overview_status && filterFormFields.ft_overview_status.length > 0
+        ? filterFormFields.ft_overview_status.map((status: any) => parseInt(status, 10)) // Convert each status to an integer
+        : [],
+      ProcessType: parseInt(`${filterFormFields.ft_process}`, 10),
+      VendorIds: filterFormFields.ft_vendor && filterFormFields.ft_vendor.length > 0
+        ? filterFormFields.ft_vendor.map((id: any) => parseInt(id, 10))
+        : vendorOptions.map((option: any) => option.value),
+      StartDate: convertStringsDateToUTC(dateRangeVal[0].trim()) ?? null,
+      EndDate: convertStringsDateToUTC(dateRangeVal[1].trim()) ?? null,
+      SortColumn: filterName ?? 'CreatedOn',
+      SortOrder: sortOrder,
+      PageNumber: 1 || nextPageIndexOverview,
+      PageSize: lazyRowsOverview,
+      IsDownload: false
+    };
+    setBillsOverviewParams(params)
+  }, [filterFormFields])
+
+  useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !isLazyLoading && shouldLoadMore && (itemsLoaded % lazyRows === 0) && apiDataCount > 0) {
@@ -242,18 +349,41 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
   }, [shouldLoadMore, itemsLoaded, tableBottomRef.current])
 
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLazyLoadingOverview && shouldLoadMoreOverview && (itemsLoadedOverview % lazyRowsOverview === 0) && apiDataCountOverview > 0) {
+          fetchBillsOverviewData()
+        }
+      },
+      { threshold: 0 }
+    )
+
+    if (tableBottomRefOverview.current) {
+      observer.observe(tableBottomRefOverview.current)
+      nextPageIndexOverview = Math.ceil(itemsLoadedOverview / lazyRowsOverview) + 1
+    }
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [shouldLoadMoreOverview, itemsLoadedOverview, tableBottomRefOverview.current])
+
+  useEffect(() => {
     dispatch(setSearchSelectedModule('2'))
   }, [])
 
   useEffect(() => {
-    fetchBillsData(1)
-  }, [selectedProcessTypeInList, sortOrder, CompanyId])
+   setIsLoading(true)
+    if (isOptionsFetched) {
+      selectedProcessTypeInList === '4' ? fetchBillsOverviewData(1) : fetchBillsData(1);
+    }
+  }, [selectedProcessTypeInList, sortOrder, CompanyId, isOptionsFetched]);
 
   useEffect(() => {
     if (isApplyFilter) {
-      fetchBillsData(1)
+      processSelection === '4' ? fetchBillsOverviewData(1) : fetchBillsData(1)
     }
-  }, [isApplyFilter])
+  }, [isApplyFilter, processSelection])
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
@@ -536,10 +666,10 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
                   Uploaded Date<SortIcon order={sortOrders['CreatedOn']}></SortIcon>
                 </span>
               )
-            } else if (label === 'Bill No.' || label === 'Adjustment Number') {
+            } else if (label === 'Bill No.' || label === 'Adjustment No.') {
               headerContent = (
                 <span className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em] font-proxima' onClick={() => handelColumn('BillNumber')}>
-                  {label === 'Bill No.' ? 'Bill No.' : label === 'Adjustment Number' && 'Adjustment Number'}
+                  {label === 'Bill No.' ? 'Bill No.' : label === 'Adjustment No.' && 'Adjustment No.'}
 
                   <SortIcon order={sortOrders['BillNumber']}></SortIcon>
                 </span>
@@ -551,9 +681,9 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
             return {
               header: headerContent,
               accessor:
-                label === 'Adjustment Number' || label === 'Bill No.' ? 'BillNumber' : label === 'Status' ? 'StatusName' : label.split(' ').join(''),
+                label === 'Adjustment No.' || label === 'Bill No.' ? 'BillNumber' : label === 'Status' ? 'StatusName' : label.split(' ').join(''),
               visible: value,
-              sortable: label === 'Adjustment Number' ? false : sortable,
+              sortable: label === 'Adjustment No.' ? false : sortable,
               colalign: 'left',
               colStyle: `${columnStyle} !uppercase !tracking-[0.02em] font-proxima`,
             }
@@ -574,6 +704,171 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
             })
           setColumnListVisible(Arr)
           setHeadersDropdown(data)
+        } else {
+          Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
+        }
+      } else {
+        Toast.error(`${payload?.status} : ${payload?.statusText}`)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+
+  const fetchBillsOverviewData = async (pageIndex?: number) => {
+    if (pageIndex === 1) {
+      setBillsOverviewList([])
+      setItemsLoadedOverview(0)
+      setIsLoading(true)
+    }
+    if (CompanyId) {
+      const dateRangeVal = filterFormFields.ft_datepicker.split('to')
+      const params = {
+        Status: filterFormFields.ft_overview_status && filterFormFields.ft_overview_status.length > 0
+          ? filterFormFields.ft_overview_status.map((status: any) => parseInt(status, 10)) // Convert each status to an integer
+          : [],
+        ProcessType: parseInt(`${filterFormFields.ft_process}`, 10),
+        VendorIds: filterFormFields.ft_vendor && filterFormFields.ft_vendor.length > 0
+          ? filterFormFields.ft_vendor.map((id: any) => parseInt(id, 10))
+          : vendorOptions.map((option: any) => option.value),
+        StartDate: convertStringsDateToUTC(dateRangeVal[0].trim()) ?? null,
+        EndDate: convertStringsDateToUTC(dateRangeVal[1].trim()) ?? null,
+        SortColumn: filterName ?? 'CreatedOn',
+        SortOrder: sortOrder,
+        PageNumber: pageIndex || nextPageIndexOverview,
+        PageSize: lazyRowsOverview,
+        IsDownload: false
+      };
+
+      try {
+        setIsLazyLoadingOverview(true)
+        const { payload, meta } = await dispatch(documentBillsOverviewList(params))
+        const dataMessage = payload?.Message
+
+        if (meta?.requestStatus === 'fulfilled') {
+          if (payload?.ResponseStatus === 'Success') {
+
+            const responseData = payload?.ResponseData
+            const newListOverview = responseData?.List || []
+            const newTotalCount = responseData?.TotalCount || 0
+            setApiDataCountOverview(newTotalCount)
+
+            let updatedDataOverview = []
+            if (pageIndex === 1) {
+              updatedDataOverview = [...newListOverview]
+              setIsLoading(false)
+              setIsLazyLoadingOverview(false)
+              setShouldLoadMoreOverview(true)
+            } else {
+              updatedDataOverview = [...billsOverviewList, ...newListOverview]
+            }
+            setBillsOverviewList(updatedDataOverview)
+            setItemsLoadedOverview(updatedDataOverview.length)
+            setIsLazyLoadingOverview(false)
+
+            setIsApplyFilter(false)
+            setIsResetFilter(false)
+            setIsLoading(false)
+
+            if (itemsLoadedOverview >= newTotalCount) {
+              setShouldLoadMoreOverview(false);
+            }
+          } else {
+            // responseFailure()
+            Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
+          }
+        } else {
+          // responseFailure()
+          Toast.error(`${payload?.status} : ${payload?.statusText}`)
+        }
+      } catch (error) {
+        // responseFailure()
+        console.error(error)
+      } finally {
+        setIsLoading(false)
+        setIsLazyLoadingOverview(false)
+      }
+    }
+  }
+
+  const getMappingOverviewListData = async () => {
+    const params = {
+      UserId: parseInt(userId!),
+      ProcessType: parseInt(filterFormFields.ft_process),
+    }
+
+    try {
+      const { payload, meta } = await dispatch(getColumnMappingOverviewList(params))
+      const dataMessage = payload?.Message
+      if (meta?.requestStatus === 'fulfilled') {
+        if (payload?.ResponseStatus === 'Success') {
+          setOverviewMapColId(payload?.ResponseData?.Id)
+          const obj = JSON.parse(payload?.ResponseData?.ColumnList)
+          const data = Object.entries(obj).map(([label, value]: any) => {
+            let columnStyle = ''
+            let colalign = ''
+            let sortable = true
+            switch (label) {
+              case 'Bill Number':
+                columnStyle = '!w-[150px]'
+                break
+              case 'Bill Date':
+                columnStyle = '!w-[150px]'
+                break
+              case 'Uploaded Date':
+                columnStyle = '!w-[150px]'
+                break
+              case 'Vendor Name':
+                columnStyle = '!w-[150px]'
+                break
+              case 'Amount':
+                columnStyle = '!w-[150px]'
+                break
+              case 'Bill Status':
+                columnStyle = 'w-[140px]'
+                break
+              case 'Last Updated On':
+                columnStyle = 'w-[160px]'
+                break
+              case 'Last Updated By':
+                columnStyle = 'w-[160px]'
+                break
+              default:
+                break
+            }
+
+            let headerOverviewContent
+
+            if (label.props !== undefined) {
+              headerOverviewContent = <span onClick={() => handelColumn(label.props.children)}>{label.props.children}</span>
+            } else if (label === 'Bill Number' || label === 'Adjustment Number') {
+              headerOverviewContent = (
+                <span className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em] font-proxima' onClick={() => handelColumn('BillNumber')}>
+                  {label === 'Bill Number' ? 'Bill Number' : label === 'Adjustment Number' && 'Adjustment Number'}
+
+                  <SortIcon order={sortOrders['BillNumber']}></SortIcon>
+                </span>
+              )
+            } else {
+              headerOverviewContent = label
+            }
+
+            return {
+              header: label,
+              accessor:
+                label === 'Adjustment Number' ? 'BillNumber' : label.split(' ').join(''),
+              visible: value,
+              sortable: sortable,
+              colalign: colalign,
+              colStyle: `${columnStyle} !tracking-[0.02em] !uppercase`,
+            }
+          })
+
+          const dataVisible = data.filter((h) => h.visible === true)
+          const Arr = dataVisible ? dataVisible.map((item) => item) : []
+          setColumnOverviewListVisible(Arr)
+          setHeadersOverviewDropdown(data)
         } else {
           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
         }
@@ -619,6 +914,11 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
     }
   }
 
+  const handleColumnFilter = () => {
+    const filteredColumns = columnListOverviewVisible.filter((column: any) => column !== undefined)
+    setOverviewBillscolumns(filteredColumns)
+  }
+
   useEffect(() => {
     fetchAssigneData()
   }, [])
@@ -643,8 +943,8 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
   }
 
   useEffect(() => {
-    getMappingListData()
-  }, [processSelection, assigneeValueRow, CompanyId])
+    processSelection === '4' ? getMappingOverviewListData() : getMappingListData()
+  }, [processSelection, filterFormFields.ft_process, assigneeValueRow, CompanyId])
 
   useEffect(() => {
     if (selectedRows?.length > 0 && billLists?.length === selectedRows?.length) {
@@ -679,6 +979,11 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
     setFilterRowsAssignee(filteredAssigneeRecords)
     setFilterRowsMoveTo(filteredMoveToRecords)
   }, [selectedRows, billLists])
+
+
+  useEffect(() => {
+    handleColumnFilter()
+  }, [columnListOverviewVisible, billsOverviewList])
 
   useEffect(() => {
     const newArr =
@@ -810,9 +1115,29 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
       accessor: 'actions',
       sortable: false,
       colalign: 'right',
-      colStyle: '!w-[290px]',
+      colStyle: '!w-[310px]',
     },
   ];
+
+  const billsOverviewColumns: any = [
+    ...overviewBillscolumns,
+    {
+      header: (
+        <ColumnFilterOverview
+          headers={headersOverviewDropdown.map((h: any) => (h?.header.props ? h?.header?.props?.children : h?.header))}
+          visibleHeaders={overviewBillscolumns.map((h: any) => (h?.header.props ? h?.header?.props?.children : h?.header))}
+          columnId={getOverviewMapColId}
+          moduleType={0}
+          getMappingListData={getMappingOverviewListData}
+          setMapColId={() => setOverviewMapColId(-1)}
+        />
+      ),
+      accessor: 'actions',
+      sortable: false,
+      colalign: 'right',
+      colStyle: '!w-[300px]',
+    },
+  ]
 
   const handleOpenAttachFile = (Id: number) => {
     setOpenView(false)
@@ -846,7 +1171,7 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
           <div className='!z-0 flex w-full justify-between'>
             <Typography className='!text-sm text-darkCharcoal '>{timeDifference.value}&nbsp;</Typography>
             {timeDifference.TATStatus !== NORMAL && (
-              <Tooltip
+              <BasicTooltip
                 position='right'
                 content={`${timeDifference.TATStatus === TATOVER ? 'TAT Over' : 'TAT 25% remaining'}`}
                 className='!z-9 !font-proxima !text-sm'
@@ -855,7 +1180,7 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
                   className={`flex !h-[6px] !w-[6px] rounded-full ${timeDifference.TATStatus === TATOVER ? 'bg-[#FB2424]' : 'bg-[#FDB663]'
                     }`}
                 ></span>
-              </Tooltip>
+              </BasicTooltip>
             )}
           </div>
         ),
@@ -972,13 +1297,13 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
         LastUpdatedBy: <Typography className='!text-sm text-darkCharcoal'>{updatedByName && updatedByName?.label}</Typography>,
         Location: <Typography className='!text-sm text-darkCharcoal'>{locationName && locationName?.label}</Typography>,
         actions: hoveredRow?.Id === d.Id && (
-          <div className='overflow-hidden h-full w-full'>
+          <div className={`${isOverFlowVisible ? "overflow-visible" : "overflow-hidden"} h-full w-full`}>
             <div className='slideLeft relative flex h-full justify-end'>
               <div
                 className={`z-0 flex items-center border-l ${d.Status !== 3 && d.Status !== 4 && d.Status !== 7 ? 'border-r' : ''
                   } border-[#cccccc] px-4`}
               >
-                <Tooltip position='left' content='View bill' className='!z-10 !font-proxima !text-sm'>
+                <BasicTooltip position='left' content='View bill' className='!z-10 !font-proxima !text-sm'>
                   <div
                     className='cursor-pointer'
                     onClick={() => {
@@ -989,28 +1314,31 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
                   >
                     <ViewModeIcon height={'21'} width={'23'} />
                   </div>
-                </Tooltip>
+                </BasicTooltip>
               </div>
 
               {billStatusEditable.includes(d.Status) && (
-                <div className='flex h-full cursor-pointer items-center justify-center border-r border-[#cccccc] px-4'>
+                <div className='flex h-full cursor-pointer items-center justify-center border-r border-[#cccccc] px-4'
+                  onMouseEnter={() => setIsOverFlowVisible(true)}
+                  onMouseLeave={() => setIsOverFlowVisible(false)}
+                >
                   <div
                     className='!z-0 flex items-center justify-center'
-                    onClick={() =>
+                    onClick={() => {
                       setIsOpenMoveToDropDown({
                         isShow: true,
                         index: i,
                       })
-                    }
+                    }}
                   >
-                    <Tooltip position='left' content='Move To' className='!z-10 !font-proxima !text-sm'>
+                    <BasicTooltip position='left' content='Move To' className='!z-10 !font-proxima !text-sm'>
                       <div className='flex items-center'>
                         <TabMoveIcon />
                         <span className='!z-0 pl-1.5'>
                           <DropdownIcon />
                         </span>
                       </div>
-                    </Tooltip>
+                    </BasicTooltip>
                   </div>
                 </div>
               )}
@@ -1023,11 +1351,11 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
                     setDeleteModal(true)
                   }}
                 >
-                  <Tooltip position='left' content='Delete' className='!z-10 !font-proxima !text-sm'>
+                  <BasicTooltip position='left' content='Delete' className='!z-10 !font-proxima !text-sm'>
                     <div>
                       <DeleteIcon />
                     </div>
-                  </Tooltip>
+                  </BasicTooltip>
                 </div>
               )}
 
@@ -1043,16 +1371,18 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
                     })
                   }}
                 >
-                  <Tooltip position='left' content='Restore' className='!z-10 !font-proxima !text-sm'>
+                  <BasicTooltip position='left' content='Restore' className='!z-10 !font-proxima !text-sm'>
                     <RestoreIcon />
-                  </Tooltip>
+                  </BasicTooltip>
                 </div>
               )}
 
               {isOpenMoveToDropDown.isShow && isOpenMoveToDropDown.index === i && (
                 <div
+                  onMouseEnter={() => setIsOverFlowVisible(true)}
+                  onMouseLeave={() => setIsOverFlowVisible(false)}
                   ref={dropdownMoveToRef}
-                  className='absolute right-20 top-6 !z-10 flex h-auto w-[210px]  flex-col rounded-md border border-[#cccccc] bg-white shadow-lg'
+                  className='absolute right-[88px] top-11 !z-10 flex h-auto w-[210px] flex-col rounded-md border border-[#cccccc] bg-white shadow-lg'
                 >
                   <div className='flex flex-col items-start justify-start'>
                     {moveToOptions &&
@@ -1071,7 +1401,7 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
                         .map((item, index) => {
                           return (
                             <span
-                              className='flex w-full cursor-pointer items-center justify-start px-[15px] py-[11px] !text-sm hover:bg-blue-50'
+                              className='rounded-md flex w-full cursor-pointer items-center justify-start px-[15px] py-[11px] !text-sm hover:bg-whiteSmoke'
                               onClick={() => rowMoveCategory(item.value, index, d.Id)}
                               key={`${item.value}`}
                             >
@@ -1082,6 +1412,149 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        )
+      }
+    })
+
+
+  const OverviewTable_Data: Object[] =
+    billsOverviewList &&
+    billsOverviewList.map((d: any, i: number) => {
+      return {
+        ...d,
+        BillNumber: (
+          <>
+            <div className='flex w-full justify-between'>
+              <div
+                className='w-4/5 cursor-pointer'
+                onClick={() => {
+                  dispatch(setIsFormDocuments(d.IsFromDocuments))
+                  dispatch(setIsVisibleSidebar(false))
+                  d.Id && router.push(`/bills/view/${d.Id}`)
+                }}
+              >
+                <Typography className='pl-0 !text-sm text-darkCharcoal'>{d.BillNumber ? d.BillNumber : ''}</Typography>
+              </div>
+
+              <div className='relative mr-4 w-1/5'>
+                {d.Attachments?.length > 0 && (
+                  <div className=''>
+                    <div className='flex cursor-pointer justify-end' onClick={() => handleOpenAttachFile(d.Id)}>
+                      <div className='absolute -right-2 -top-3'>
+                        <Badge badgetype='error' variant='dot' text={d.Attachments.length.toString()} />
+                      </div>
+                      <AttachIcon />
+                    </div>
+
+                    {isOpenAttchFile && d.Id === rowId && (
+                      <div
+                        ref={dropdownRef}
+                        className='absolute !z-[4] flex w-[443px] flex-col rounded-md border border-[#cccccc] bg-white p-5 shadow-md'
+                      >
+                        <DataTable
+                          getExpandableData={() => { }}
+                          columns={attachfileheaders}
+                          data={d.Attachments.map(
+                            (e: any) =>
+                              new Object({
+                                ...d,
+                                FileName: (
+                                  <div
+                                    className='flex cursor-pointer items-center gap-1'
+                                    onClick={() => {
+                                      handleFileOpen(e.FilePath, e.FileName)
+                                      setIsFileRecord({ FileName: e.FileName, PageCount: e.PageCount, BillNumber: d.BillNumber })
+                                      setOpenAttachFile(false)
+                                    }}
+                                  >
+                                    <GetFileIcon FileName={e.FileName} />
+                                    <span className='w-52 truncate' title={e.FileName}>
+                                      {e.FileName} &nbsp;
+                                    </span>
+                                  </div>
+                                ),
+                                Size: <Typography className='!text-sm text-darkCharcoal'>{formatFileSize(e.Size)}</Typography>,
+                              })
+                          )}
+                          sticky
+                          hoverEffect
+                          getRowId={() => { }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        ),
+        BillDate: <Typography className='!text-sm text-darkCharcoal'>{d?.BillDate !== null ? format(d.BillDate, 'MM/dd/yyyy') : null}</Typography>,
+        UploadedDate: <Typography className='!text-sm text-darkCharcoal'>{d?.UploadedDate !== null ? format(d.UploadedDate, 'MM/dd/yyyy') : null}</Typography>,
+        VendorName: <Typography className='!text-sm text-darkCharcoal'>{d.VendorName ?? ''}</Typography>,
+        BillStatus: <Typography className='!text-sm text-darkCharcoal'>{d.Status ?? ''}</Typography>,
+        Amount: (
+          <Typography className='!text-sm !font-bold text-darkCharcoal'>{`${d?.Amount ? `$${parseFloat(d?.Amount).toFixed(2) ?? '0.00'}` : '$0.00'}`}</Typography>
+        ),
+        LastUpdatedOn: (
+          <Typography className='!text-sm text-darkCharcoal'>
+            {d?.LastUpdatedOn !== null ? format(d.LastUpdatedOn, 'MM/dd/yyyy') : null}
+          </Typography>
+        ),
+        LastUpdatedBy: <Typography className='!text-sm text-darkCharcoal'>{d.LastUpdatedBy ?? ''}</Typography>,
+        actions: hoveredRow?.Id === d.Id && (
+          <div className={`${isOverFlowVisible ? "overflow-visible" : "overflow-hidden"} h-full w-full`}>
+            <div className='slideLeft relative flex h-full justify-end'>
+              {billOverviewStatus.includes(d.Status) && (
+                <div
+                  className={`z-0 flex items-center border-l ${d.Status !== 3 && d.Status !== 4 && d.Status !== 7 ? 'border-r' : ''
+                    } border-[#cccccc] px-4`}
+                >
+                  <BasicTooltip position='left' content='Edit bill' className='!z-10 !font-proxima !text-sm'>
+                    <div
+                      className='cursor-pointer'
+                      onClick={() => {
+                        dispatch(setIsFormDocuments(d.IsFromDocuments))
+                        dispatch(setIsVisibleSidebar(false))
+                        d.Id && router.push(`/bills/edit/${d.Id}?module=bills`)
+                      }}
+                    >
+                      <EditIcon />
+                    </div>
+                  </BasicTooltip>
+                </div>
+              )}
+              {billOverviewStatus.includes(d.Status) && (
+                <div
+                  className='z-0 flex cursor-pointer items-center border-r border-[#cccccc] px-4'
+                  onClick={() => {
+                    setDeleteOverviewId(d.Id)
+                    setDeleteModal(true)
+                  }}
+                >
+                  <BasicTooltip position='left' content='Delete' className='!z-10 !font-proxima !text-sm'>
+                    <div>
+                      <DeleteIcon />
+                    </div>
+                  </BasicTooltip>
+                </div>
+              )}
+              <div className='flex h-full cursor-pointer items-center justify-center border-[#cccccc] px-4'
+              >
+                <div
+                  className='!z-0 flex items-center justify-center'
+                  onClick={() => {
+                    setSelectedPayableId(d?.Id)
+                    setOpenDrawer(true)
+                  }}
+                >
+                  <BasicTooltip position='left' content='Activities' className='!font-proxima !px-0 !text-[14px]'>
+                    <ActivityIcon />
+                  </BasicTooltip>
+                </div>
+              </div>
+
             </div>
           </div>
         )
@@ -1269,17 +1742,67 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
     setIsRestoreModalOpen(false)
   }
 
+  const handleDeleteOverview = async (deleteId: any) => {
+    if (isVisibleTextValue) {
+      if (isHandleErrorValue) {
+        if (!!deleteId) {
+          const params = {
+            AccountPayableId: parseInt(deleteId),
+            ActionReason: editedValues?.reason,
+          }
+          try {
+            const { payload, meta } = await dispatch(deleteOverviewDocument(params))
+            const dataMessage = payload?.Message
+
+            if (meta?.requestStatus === 'fulfilled') {
+              if (payload?.ResponseStatus === 'Success') {
+                setVisibleTextValue(false)
+                setDeleteModal(false)
+                setDeleteOverviewId(0)
+                fetchBillsOverviewData(1)
+                Toast.success('Successfully item deleted!!')
+              } else {
+                setDeleteModal(false)
+                Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
+              }
+            } else {
+              setDeleteModal(false)
+              Toast.error(`${payload?.status} : ${payload?.statusText}`)
+            }
+          } catch (error) {
+            console.error(error)
+          }
+        }
+      } else {
+        setEditedValues({
+          reason: editedValues.reason,
+        })
+      }
+    }
+  }
+
   const handleDelete = async (removeDocId: any, deleteDocIds: any[]) => {
+    let selectedListWithDocuments;
     if (isVisibleTextValue) {
       if (isHandleErrorValue) {
         if (removeDocId !== -1) {
-          const selectedListWithDocuments = billLists
-            .map((item: any) => {
-              if (removeDocId === item.Id) {
-                return item.Id
-              }
-            })
-            .filter(Boolean)
+          if (processSelection !== '4') {
+            selectedListWithDocuments = billLists
+              .map((item: any) => {
+                if (removeDocId === item.Id) {
+                  return item.Id
+                }
+              })
+              .filter(Boolean)
+          } else {
+            selectedListWithDocuments = billsOverviewList
+              .map((item: any) => {
+                if (removeDocId === item.Id) {
+                  return item.Id
+                }
+              })
+              .filter(Boolean)
+          }
 
           const params = {
             IdsDataList: selectedListWithDocuments,
@@ -1297,6 +1820,7 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
                 setDeleteId(0)
                 setDeleteIds([])
                 fetchBillsData(1)
+                processSelection === '4' && fetchBillsOverviewData(1)
                 Toast.success('Successfully item deleted!!')
               } else {
                 setDeleteModal(false)
@@ -1570,6 +2094,28 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
     noDataContent = ''
   }
 
+  let overviewNoDataContent
+
+  if (OverviewTable_Data.length === 0) {
+    if (isLoading) {
+      overviewNoDataContent = (
+        <div className='flex h-full w-full items-center justify-center'>
+          <Loader size='md' helperText />
+        </div>
+      )
+    } else {
+      overviewNoDataContent = (
+        <div className='fixed flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]'>
+          No records available at the moment.
+        </div>
+      )
+    }
+  } else {
+    overviewNoDataContent = ''
+  }
+
+  // Toast.success(`${inProcessCount} file(s) uploaded successfully and assigned according to the automation rules.`)
+
   return (
     <>
       <Wrapper masterSettings={false}>
@@ -1579,7 +2125,7 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
               <div className='selectMain'>
                 <Select
                   id={'process_selection'}
-                  options={processOptions}
+                  options={accountOptions}
                   defaultValue={processSelection}
                   value={processSelection}
                   getValue={(value) => {
@@ -1600,188 +2146,208 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
                 />
               </div>
 
-              <ul className='flex items-center gap-5'>
-                {processSelection !== '3' && (<>
-                  <label className={`text-sm font-proxima tracking-[0.02em] text-darkCharcoal ${inProcessCount == 0 ? "hidden" : "block"}`}>{inProcessCount} Files is in automation.</label>
-                  <li className={`mt-1.5`} tabIndex={0}>
-                    <Tooltip position='bottom' content='Sync' className='!z-10 !font-proxima !text-sm !px-0'>
-                      <div className={`${inProcessCount > 0 && 'animate-spin'}`}>
-                        <SyncIcon />
-                      </div>
-                    </Tooltip>
-                  </li>
-                </>)}
-
-                <li className={`mt-1.5 relative`} tabIndex={0} onClick={handlePossibleDuplication}>
-                  <Tooltip position='bottom' content='Possible Duplication' className='!z-10 !font-proxima !text-sm'>
-                    <BillDuplicationIcon />
-                  </Tooltip>
-                  {(duplicateBillCount && duplicateBillCount > 0) ? <div className='cursor-pointer absolute right-1 top-0 z-10' onClick={handlePossibleDuplication}>
-                    <Badge badgetype='error' variant='dot' text={`${duplicateBillCount}`} effect={duplicateBillCount != 0 ? true : false} />
-                  </div> : null}
-                </li>
-
-                {selectedRows.length > 1 ? (
-                  <>
-                    {filterRowsAssignee.length === selectedRows.length && selectedProcessTypeInList !== '3' && (
-                      <li
-                        className='mt-1.5'
-                        tabIndex={0}
-                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setIsOpenAssignUserDropDown(true)}
-                      >
-                        <Tooltip position='bottom' content='Assignee' className='!z-10 !font-proxima !text-sm !px-0'>
-                          <AssignUser
-                            width={60}
-                            selectedStates={selectedStates}
-                            setSelectedStates={handleSetValue}
-                            userData={assignList}
-                            // setValue={(value) => handleSetValue(value)}
-                            // getData={(value) => handleAssignValue(value)}
-                            dropdownAssignUserRef={dropdownAssignUserRef}
-                            isOpenAssignUserDropDown={isOpenAssignUserDropDown}
-                            setIsOpenAssignUserDropDown={setIsOpenAssignUserDropDown}
-                            right={0}
-                          />
-                        </Tooltip>
-                      </li>
-                    )}
-
-                    {filterRowsMoveTo.length === selectedRows.length && (
-                      <li
-                        className='flex cursor-pointer items-center justify-center p-1'
-                        onClick={onClickMoveToDropdown}
-                        tabIndex={0}
-                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClickMoveToDropdown()}
-                      >
-                        <Tooltip position='bottom' content='Move To' className='!z-[6] !m-0 !font-proxima !text-sm'>
-                          <TabMoveIcon />
-                        </Tooltip>
-                        <span className='pl-2'>
-                          <DropdownIcon />
-                        </span>
-                      </li>
-                    )}
-
-                    <div
-                      className='cursor-pointer mt-1.5'
-                      onClick={onClickDeleteMultipleBills}
-                      tabIndex={0}
-                      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClickDeleteMultipleBills()}
-                    >
-                      <Tooltip position='bottom' content='Delete' className='!z-[6] !m-0 !px-0 !font-proxima !text-sm'>
-                        <DeleteIcon />
-                      </Tooltip>
-                    </div>
-
-                    {isOpenMoveToDropDown.isShow && isOpenMoveToDropDown.index === null && (
-                      <div
-                        ref={dropdownMoveToRef}
-                        className='absolute right-20 top-12 !z-10 flex h-auto w-[180px]  flex-col rounded-md bg-white shadow-lg'
-                      >
-                        <div className='flex flex-col items-start justify-start'>
-                          {moveToOptions &&
-                            moveToOptions
-                              .filter((m) => {
-                                if (parseInt(processSelection) === 1) {
-                                  return m.value !== 1
-                                } else if (parseInt(processSelection) === 2) {
-                                  return m.value !== 2
-                                } else if (parseInt(processSelection) === 3) {
-                                  return m.value !== 3
-                                } else {
-                                  return true
-                                }
-                              })
-                              .map((item, index) => {
-                                return (
-                                  <span
-                                    className='flex w-full cursor-pointer items-center justify-start px-[15px] py-[11px] !text-sm hover:bg-blue-50'
-                                    onClick={() => {
-                                      onSelectCategory(item.value)
-                                    }}
-                                    key={`${item.value}`}
-                                  >
-                                    <Typography>{item?.label}</Typography>
-                                  </span>
-                                )
-                              })}
+              {processSelection !== '4' ? (
+                <ul className='flex items-center gap-5'>
+                  {processSelection !== '3' && (<>
+                    <li className={`mt-1.5 flex items-center gap-3 ${((processSelection == "1" && isAccountPayableSync) || (processSelection == "2" && isAccountAdjustmentSync) || (processSelection == "4" && isBillsOverviewSync)) ? "flex" : "hidden"}`} tabIndex={0}>
+                      <label className={`text-sm font-proxima tracking-[0.02em] text-darkCharcoal ${inProcessCount == 0 ? "hidden" : "block"}`}>{inProcessCount} Files is in automation.</label>
+                      <BasicTooltip position='bottom' content='Sync' className='!z-10 !font-proxima !text-sm !px-0'>
+                        <div className={`${inProcessCount > 0 && 'animate-spin'}`}>
+                          <SyncIcon />
                         </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <li
-                      onClick={handleFilterIconOpen}
-                      className='mt-1.5'
-                      tabIndex={0}
-                      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleFilterIconOpen()}
-                    >
-                      <Tooltip position='bottom' content='Filter' className='!z-[6] !font-proxima !text-sm !px-0'>
-                        <FilterIcon />
-                      </Tooltip>
+                      </BasicTooltip>
                     </li>
-                    {processSelection !== '3' && (
-                      <li
-                        onClick={() => router.push('/fileupload')}
-                        className='mt-1.5'
-                        tabIndex={0}
-                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && router.push('/fileupload')}
-                      >
-                        <Tooltip position='bottom' content='File Upload' className='!z-[6] !font-proxima !text-sm !px-0'>
-                          <UploadIcon height={'24'} width={'24'} />
-                        </Tooltip>
-                      </li>
-                    )}
-                    <li
-                      onClick={handleCreateIconOpen}
-                      className='mt-[7px]'
-                      tabIndex={0}
-                      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleCreateIconOpen()}
-                    >
-                      <Tooltip position='bottom' content='Create' className='!z-[6] !font-proxima !text-sm !px-0'>
-                        <CreateIcon />
-                      </Tooltip>
-                      {isOpenCreate && (
-                        <div
-                          ref={dropdownCreateRef}
-                          className='absolute right-20 top-12 !z-[999] flex h-auto flex-col rounded-md bg-white shadow-lg'
+                  </>)}
+
+                  <li className={`mt-1.5 relative`} tabIndex={0} onClick={handlePossibleDuplication}>
+                    <BasicTooltip position='bottom' content='Possible Duplication' className='!z-10 !font-proxima !text-sm'>
+                      <BillDuplicationIcon />
+                    </BasicTooltip>
+                    {(duplicateBillCount && duplicateBillCount > 0) ? <div className='cursor-pointer absolute right-1 top-0 z-10' onClick={handlePossibleDuplication}>
+                      <Badge badgetype='error' variant='dot' text={`${duplicateBillCount}`} effect={duplicateBillCount != 0 ? true : false} />
+                    </div> : null}
+                  </li>
+
+                  {selectedRows.length > 1 ? (
+                    <>
+                      {filterRowsAssignee.length === selectedRows.length && selectedProcessTypeInList !== '3' && (
+                        <li
+                          className='mt-1.5'
+                          tabIndex={0}
+                          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setIsOpenAssignUserDropDown(true)}
                         >
-                          <Create />
+                          <BasicTooltip position='bottom' content='Assignee' className='!z-10 !font-proxima !text-sm !px-0'>
+                            <AssignUser
+                              width={60}
+                              selectedStates={selectedStates}
+                              setSelectedStates={handleSetValue}
+                              userData={assignList}
+                              // setValue={(value) => handleSetValue(value)}
+                              // getData={(value) => handleAssignValue(value)}
+                              dropdownAssignUserRef={dropdownAssignUserRef}
+                              isOpenAssignUserDropDown={isOpenAssignUserDropDown}
+                              setIsOpenAssignUserDropDown={setIsOpenAssignUserDropDown}
+                              right={0}
+                            />
+                          </BasicTooltip>
+                        </li>
+                      )}
+
+                      {filterRowsMoveTo.length === selectedRows.length && (
+                        <li
+                          className='flex cursor-pointer items-center justify-center p-1'
+                          onClick={onClickMoveToDropdown}
+                          tabIndex={0}
+                          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClickMoveToDropdown()}
+                        >
+                          <BasicTooltip position='bottom' content='Move To' className='!z-[6] !m-0 !font-proxima !text-sm'>
+                            <TabMoveIcon />
+                          </BasicTooltip>
+                          <span className='pl-2'>
+                            <DropdownIcon />
+                          </span>
+                        </li>
+                      )}
+
+                      <div
+                        className='cursor-pointer mt-1.5'
+                        onClick={onClickDeleteMultipleBills}
+                        tabIndex={0}
+                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClickDeleteMultipleBills()}
+                      >
+                        <BasicTooltip position='bottom' content='Delete' className='!z-[6] !m-0 !px-0 !font-proxima !text-sm'>
+                          <DeleteIcon />
+                        </BasicTooltip>
+                      </div>
+
+                      {isOpenMoveToDropDown.isShow && isOpenMoveToDropDown.index === null && (
+                        <div
+                          ref={dropdownMoveToRef}
+                          className='absolute right-20 top-12 !z-10 flex h-auto w-[180px]  flex-col rounded-md bg-white shadow-lg'
+                        >
+                          <div className='flex flex-col items-start justify-start'>
+                            {moveToOptions &&
+                              moveToOptions
+                                .filter((m) => {
+                                  if (parseInt(processSelection) === 1) {
+                                    return m.value !== 1
+                                  } else if (parseInt(processSelection) === 2) {
+                                    return m.value !== 2
+                                  } else if (parseInt(processSelection) === 3) {
+                                    return m.value !== 3
+                                  } else {
+                                    return true
+                                  }
+                                })
+                                .map((item, index) => {
+                                  return (
+                                    <span
+                                      className='flex w-full cursor-pointer items-center justify-start px-[15px] py-[11px] !text-sm hover:bg-blue-50'
+                                      onClick={() => {
+                                        onSelectCategory(item.value)
+                                      }}
+                                      key={`${item.value}`}
+                                    >
+                                      <Typography>{item?.label}</Typography>
+                                    </span>
+                                  )
+                                })}
+                          </div>
                         </div>
                       )}
-                    </li>
-                    {selectedProcessTypeInList !== '3' && billLists.length > 0 && (
+                    </>
+                  ) : (
+                    <>
                       <li
-                        onClick={handleViewIconOpen}
-                        className='mt-[7px]'
+                        onClick={handleFilterIconOpen}
+                        className='mt-1.5'
                         tabIndex={0}
-                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleViewIconOpen()}
+                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleFilterIconOpen()}
                       >
-                        <Tooltip position='bottom' content='Mode' className='!z-[6] !font-proxima !text-sm !px-0'>
-                          <ViewIcon />
-                        </Tooltip>
-                        {isOpenView && (
+                        <BasicTooltip position='bottom' content='Filter' className='!z-[6] !font-proxima !text-sm !px-0'>
+                          <FilterIcon />
+                        </BasicTooltip>
+                      </li>
+                      {(processSelection !== '3' && isFileUploadView) && (
+                        <li
+                          onClick={() => router.push('/fileupload')}
+                          className='mt-1.5'
+                          tabIndex={0}
+                          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && router.push('/fileupload')}
+                        >
+                          <BasicTooltip position='bottom' content='File Upload' className='!z-[6] !font-proxima !text-sm !px-0'>
+                            <UploadIcon height={'24'} width={'24'} />
+                          </BasicTooltip>
+                        </li>
+                      )}
+                      <li
+                        onClick={handleCreateIconOpen}
+                        className={`mt-[7px] ${((processSelection == "1" && isAccountPayableCreate) || (processSelection == "2" && isAccountAdjustmentCreate)) ? "flex" : "hidden"}`}
+                        tabIndex={0}
+                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleCreateIconOpen()}
+                      >
+                        <BasicTooltip position='bottom' content='Create' className='!z-[6] !font-proxima !text-sm !px-0'>
+                          <CreateIcon />
+                        </BasicTooltip>
+                        {isOpenCreate && (
                           <div
-                            ref={dropdownViewRef}
-                            className='absolute right-6 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                            ref={dropdownCreateRef}
+                            className={`absolute ${(selectedProcessTypeInList !== '3' && billLists.length > 0) ? "right-14" : "right-3"} top-13 !z-[999] flex h-auto flex-col rounded-md bg-white shadow-lg`}
                           >
-                            <View
-                              Id={billLists[0]?.Id}
-                              IsFromDocuments={billLists[0]?.IsFromDocuments}
-                              Status={billLists[0]?.Status}
-                              UserId={billLists[0]?.UserId}
-                              billListsData={billLists}
-                              selectedRow={selectedRows}
-                              onClose={() => { }}
-                            />
+                            <Create />
                           </div>
                         )}
                       </li>
-                    )}
-                  </>
-                )}
-              </ul>
+                      {selectedProcessTypeInList !== '3' && billLists.length > 0 && (
+                        <li
+                          onClick={handleViewIconOpen}
+                          className='mt-[7px]'
+                          tabIndex={0}
+                          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleViewIconOpen()}
+                        >
+                          <BasicTooltip position='bottom' content='Mode' className='!z-[6] !font-proxima !text-sm !px-0'>
+                            <ViewIcon />
+                          </BasicTooltip>
+                          {isOpenView && (
+                            <div
+                              ref={dropdownViewRef}
+                              className='absolute right-6 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                            >
+                              <View
+                                Id={billLists[0]?.Id}
+                                IsFromDocuments={billLists[0]?.IsFromDocuments}
+                                Status={billLists[0]?.Status}
+                                UserId={billLists[0]?.UserId}
+                                billListsData={billLists}
+                                selectedRow={selectedRows}
+                                onClose={() => { }}
+                                processSelection={processSelection}
+                              />
+                            </div>
+                          )}
+                        </li>
+                      )}
+                    </>
+                  )}
+                </ul>
+              ) : (
+                <ul className='flex items-center gap-5'>
+                  <li
+                    onClick={handleFilterIconOpen}
+                    className='mt-1.5'
+                    tabIndex={0}
+                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleFilterIconOpen()}
+                  >
+                    <BasicTooltip position='bottom' content='Filter' className='!z-[6] !font-proxima !text-sm !px-0'>
+                      <FilterIcon />
+                    </BasicTooltip>
+                  </li>
+                  <li className={`mt-1.5 flex items-center gap-3`} tabIndex={0}>
+                    <Download url={`${process.env.API_FILEUPLOAD}/billsoverview/getlist`} params={billsOverviewParams} fileName={'BillsOverview'} isPdfDownload={false} />
+                  </li>
+                </ul>
+              )}
+
             </div>
             <FilterPopover
               filterApplyChange={isFilterApplyChange}
@@ -1810,32 +2376,60 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
             />
           </div>
 
-          <div className={`custom-scroll h-[calc(100vh-145px)] overflow-auto ${tableDynamicWidth}`}>
-            <div className={`mainTable ${billLists.length !== 0 && 'h-0'}`}>
-              <DataTable
-                zIndex={5}
-                getExpandableData={() => { }}
-                getRowId={(value: any) => {
-                  if (!isOpenMoveTo) {
-                    setHoveredRow(value)
-                  }
-                }}
-                columns={columns}
-                data={(billPostingHeaders.length > 0 && billLists.length > 0) ? table_Data : []}
-                sticky
-                hoverEffect
-                isTableLayoutFixed={true}
-                userClass='innerTable sticky'
-                lazyLoadRows={lazyRows}
-              />
-              {isLazyLoading && !isLoading && (
-                <Loader size='sm' helperText />
-              )}
-              <div ref={tableBottomRef} />
+          {processSelection !== '4' ? (
+            <div className={`custom-scroll h-[calc(100vh-145px)] overflow-auto ${tableDynamicWidth}`}>
+              <div className={`mainTable ${billLists.length !== 0 && 'h-0'}`}>
+                <DataTable
+                  zIndex={5}
+                  getExpandableData={() => { }}
+                  getRowId={(value: any) => {
+                    if (!isOpenMoveTo) {
+                      setHoveredRow(value)
+                    }
+                  }}
+                  columns={columns}
+                  data={(billPostingHeaders.length > 0 && billLists.length > 0) ? table_Data : []}
+                  sticky
+                  hoverEffect
+                  isTableLayoutFixed={true}
+                  userClass='innerTable sticky'
+                  lazyLoadRows={lazyRows}
+                />
+                {isLazyLoading && !isLoading && (
+                  <Loader size='sm' helperText />
+                )}
+                <div ref={tableBottomRef} />
+              </div>
+              {noDataContent}
             </div>
-            {noDataContent}
-          </div>
+          ) : (
+            <div className={`custom-scroll h-[calc(100vh-145px)] overflow-auto ${tableDynamicWidth}`}>
+              <div className={`mainTable ${billsOverviewList.length !== 0 && 'h-0'}`}>
+                <DataTable
+                  zIndex={5}
+                  getExpandableData={() => { }}
+                  getRowId={(value: any) => {
+                    if (!isOpenMoveTo) {
+                      setHoveredRow(value)
+                    }
+                  }}
+                  columns={billsOverviewColumns}
+                  data={(overviewBillscolumns.length > 0 && billsOverviewList.length > 0) ? OverviewTable_Data : []}
+                  sticky
+                  hoverEffect
+                  isTableLayoutFixed={true}
+                  lazyLoadRows={lazyRowsOverview}
+                />
+                {isLazyLoadingOverview && !isLoading && (
+                  <Loader size='sm' helperText />
+                )}
+                <div ref={tableBottomRefOverview} />
+              </div>
+              {overviewNoDataContent}
+            </div>
+          )}
         </div>
+
 
         {isFileModal && ['pdf'].includes(fileExtensions ?? '') && (
           <FileModal
@@ -1871,10 +2465,25 @@ const ListBillPosting = ({ vendorOptions, locationOptions, statusOptions, proces
             setVisibleTextValue(false)
             setDeleteModal(false)
           }}
-          handleSubmit={() => handleDelete(deleteId, deleteIds)}
+          handleSubmit={() => {
+            if (processSelection === '4') {
+              handleDeleteOverview(deleteOverviewId)
+            } else {
+              handleDelete(deleteId, deleteIds)
+            }
+          }}
           editedValues={editedValues}
           setEditedValues={setEditedValues}
         />
+
+        {/* Activity Drawer */}
+        <ActivityDrawer
+          noCommentBox={true}
+          isOpen={openDrawer}
+          onClose={() => setOpenDrawer(false)}
+          selectedPayableId={selectedPayableId}
+        />
+        <DrawerOverlay isOpen={openDrawer} />
       </Wrapper>
     </>
   )

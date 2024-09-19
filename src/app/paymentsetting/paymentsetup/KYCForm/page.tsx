@@ -3,12 +3,24 @@
 import { useRouter } from 'next/navigation';
 import { Button, Close, Loader, Modal, ModalAction, ModalContent, ModalTitle, Typography } from 'pq-ap-lib';
 import 'pq-ap-lib/dist/index.css';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react'
 
 const KYCForm: React.FC = () => {
+    // For Dynamic Company Id & AccountingTool
+    const { data: session } = useSession()
+    const email = session?.user?.email ?? ''
     const router = useRouter()
+
     const [isConfirmKYCModalOpen, setIsConfirmKYCModalOpen] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [kycFormUrl, setKycFormUrl] = useState<string>('');
+
+    useEffect(() => {
+        const baseUrl = process.env.KYC_FORM_URL;
+        const encodedEmail = encodeURIComponent(email);
+        setKycFormUrl(`${baseUrl}?email=${encodedEmail}&source=PathQuest`);
+    }, [email]);
 
     const clearAllData = async () => {
         router.push('/paymentsetting/paymentsetup')
@@ -33,7 +45,8 @@ const KYCForm: React.FC = () => {
                 )}
                 <iframe
                     className="flex-grow custom-scroll"
-                    src="https://kyc.pathquest.com/onboard/?email=payments%40pathquest.com&source=PathQuest"
+                    // src="https://kyc.pathquest.com/onboard/?email=sherin.mathew%40technomark.io&source=PathQuest"
+                    src={kycFormUrl}
                     frameBorder="0"
                     width="100%"
                     height="100%"

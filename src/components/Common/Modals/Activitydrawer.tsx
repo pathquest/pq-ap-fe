@@ -25,10 +25,11 @@ import { Configuration, OpenAIApi } from 'openai'
 
 // store
 import { ActivityList, WatcherOptions, FilterTagDataOptions } from '@/models/activity'
-import { useAppDispatch } from '@/store/configureStore'
+import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { getActivityList, getWatcherList, saveActivityList, saveWatcherList } from '@/store/features/billsToPay/billsToPaySlice'
 import WatcherListDropdown from '../Dropdown/WatcherListDropdown'
 import { performApiAction } from '../Functions/PerformApiAction'
+import { getModulePermissions, hasSpecificPermission } from '../Functions/ProcessPermission'
 
 const extensionToIconMap: any = {
   pdf: <PdfIcon />,
@@ -43,6 +44,15 @@ const extensionToIconMap: any = {
 
 const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId }: ActivityDrawerProps) => {
   const dispatch = useAppDispatch()
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+
+  const isActivityCommentView = getModulePermissions(processPermissionsMatrix, "Activity") ?? {}
+  const isQueriesView = isActivityCommentView["Comments-Queries"]?.View ?? false;
+  const isQueriesCreate = isActivityCommentView["Comments-Queries"]?.Create ?? false;
+
+  const isInformalCreate = isActivityCommentView["Informal"]?.Create ?? false;
+  const isSpeechToTextCreate = isActivityCommentView["Speech to text"]?.Create ?? false;
+  const isSummaryCreate = isActivityCommentView["Summary"]?.Create ?? false;
 
   const [selectedTab, setSelectedTab] = useState('1')
   const [selectedAssignees, setSelectedAssignees] = useState<WatcherOptions[]>([])
@@ -59,10 +69,14 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
   const [watcherLoader, setWatcherLoader] = useState<boolean>(false)
   const [isOpenAssignUserDropDown, setIsOpenAssignUserDropDown] = useState<boolean>(false)
   const [loader, setLoader] = useState<boolean>(false)
-  const [isRecording, setIsRecording] = useState(false)
+  const [summaryLoader, setSummaryLoader] = useState<boolean>(false)
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState<boolean>(false)
   const [isSummaryModalIcon, setIsSummaryModalIcon] = useState<boolean>(false)
-  const [time, setTime] = useState('00:00')
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [time, setTime] = useState('00:00');
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   let recognizer: any
   let stream: any
 
@@ -72,7 +86,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
   const userId = localStorage.getItem('UserId')
 
   const configuration = new Configuration({
-    apiKey: "sk-g3uUNFNdr-yENq7Wid-DOMIUhK9mxJcp2sB6RqiOhGT3BlbkFJSOrneJDtdI4HJPDUzw667HiQrx5lLASArNJGqyFY8A",
+    apiKey: process.env.OPEN_AI,
   })
 
   const openai = new OpenAIApi(configuration)
@@ -133,10 +147,10 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
   }
 
   const tabBar = [
-    { id: '1', label: 'ALL' },
-    { id: '2', label: 'ACTIVITY' },
-    { id: '3', label: 'COMMENTS' },
-  ]
+    { id: '1', label: 'ALL', isVisible: true },
+    { id: '2', label: 'ACTIVITY', isVisible: true },
+    { id: '3', label: 'COMMENTS', isVisible: isQueriesView },
+  ].filter(item => item.isVisible)
 
   const getTabId = (args: string) => {
     setSelectedTab(args)
@@ -149,7 +163,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
   useEffect(() => {
     if (isOpen) {
       fetchActivityList()
-      fetchWatcherList()
+      !noCommentBox && fetchWatcherList()
     }
   }, [isOpen])
 
@@ -261,30 +275,49 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
     }
 
     if (summaryMessage.length > 0 && value === 'summary') {
+      setSummaryLoader(true)
       try {
-        const data = await openai.createCompletion({
-          model: 'gpt-3.5-turbo-instruct',
-          prompt: summaryMessage,
+        const data = await openai.createChatCompletion({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: summaryMessage }],
           temperature: 0.5,
           max_tokens: 3000,
-        })
-        setIsSummaryModalIcon(false)
-        setIsSummaryModalOpen(true)
-        const apiResponse = data.data.choices[0].text
-        setSummaryModalData(String(apiResponse))
-      } catch (error) { }
+        });
+
+        if (data.data && data.data.choices && data.data.choices.length > 0) {
+          setSummaryLoader(false)
+          const apiResponse = data.data.choices[0].message?.content ?? '';
+          setIsSummaryModalIcon(false);
+          setIsSummaryModalOpen(true);
+          setSummaryModalData(String(apiResponse));
+        } else {
+          setSummaryLoader(false)
+          setNewText('Nothing found in the response.');
+        }
+      } catch (error) {
+        setNewText('');
+        setSummaryLoader(false)
+        console.error("Error:", error);
+      }
     } else {
       try {
-        const data = await openai.createCompletion({
-          model: 'gpt-3.5-turbo-instruct',
-          prompt: actionMessage,
+        const data = await openai.createChatCompletion({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: actionMessage }],
           temperature: 0.5,
           max_tokens: 4000,
-        })
+        });
 
-        const apiResponse = data.data.choices[0].text
-        setNewText(String(apiResponse))
-      } catch (error) { }
+        if (data.data && data.data.choices && data.data.choices.length > 0) {
+          const apiResponse = data.data.choices[0].message?.content ?? '';
+          setNewText(String(apiResponse));
+        } else {
+          setNewText('Nothing found in the response.');
+        }
+      } catch (error) {
+        setNewText('');
+        console.error("Error:", error);
+      }
     }
   }
 
@@ -331,6 +364,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
   const onCloseSubmit = () => {
     setNewText('')
     setLoader(false)
+    setSummaryLoader(false)
     setListLoader(false)
     setWatcherLoader(false)
     setGetList([])
@@ -340,59 +374,113 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
     onClose(false)
   }
 
-  const stopRecording = () => {
-    if (isRecording) {
-      if (recognizer) {
-        recognizer.stopContinuousRecognitionAsync(
-          () => {
-            recognizer.close()
-            setIsRecording(false)
-            setTime('00:00')
-          },
-          (error: any) => {
-            console.error(error)
-            setIsRecording(false)
-            setTime('00:00')
-          }
-        )
-      }
-      if (stream) {
-        stream.getTracks().forEach((track: any) => track.stop())
-      }
-    }
-  }
-
   const startRecording = () => {
     navigator.mediaDevices
       .getUserMedia({ audio: true })
-      .then(() => {
-        setIsRecording(true)
-        const { SpeechRecognizer, AudioConfig, SpeechConfig } = require('microsoft-cognitiveservices-speech-sdk')
-        const speechConfig = SpeechConfig.fromSubscription('68253e1bacd140ada9f9f66a9093b7f9', 'eastus')
-        const audioConfig = AudioConfig.fromDefaultMicrophoneInput()
+      .then((stream) => {
+        setIsRecording(true);
 
-        recognizer = new SpeechRecognizer(speechConfig, audioConfig)
+        // Create a new MediaRecorder instance
+        const recorder = new MediaRecorder(stream);
+        setMediaRecorder(recorder);
 
-        let seconds = 0
-        const intervalId = setInterval(() => {
-          seconds++
-          const minutes = Math.floor(seconds / 60)
-          const remainingSeconds = seconds % 60
-          setTime(`${minutes < 10 ? '0' : ''}${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`)
-        }, 1000)
+        const chunks: any = [];
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            chunks.push(event.data);
+          }
+        };
 
-        recognizer.recognizeOnceAsync((result: any) => {
-          clearInterval(intervalId)
-          setNewText((prevText) => prevText + ' ' + result.text)
-          recognizer.close()
-          setIsRecording(false)
-          setTime('00:00')
-        })
+        recorder.onstop = () => {
+          // Create a blob from the recorded chunks
+          const blob = new Blob(chunks, { type: 'audio/wav' });
+          setAudioBlob(blob);
+        };
+
+        recorder.start();
+
+        // Reset the timer
+        setTime('00:00');
+
+        // Start a new interval for the timer
+        const id = setInterval(() => {
+          setTime((prevTime) => {
+            const [minutes, seconds] = prevTime.split(':').map(Number);
+            let newMinutes = minutes;
+            let newSeconds = seconds + 1;
+
+            if (newSeconds === 60) {
+              newMinutes++;
+              newSeconds = 0;
+            }
+
+            return `${newMinutes < 10 ? '0' : ''}${newMinutes}:${newSeconds < 10 ? '0' : ''}${newSeconds}`;
+          });
+        }, 1000);
+        setIntervalId(id);
       })
       .catch((error) => {
-        console.error('Error accessing microphone:', error)
-      })
-  }
+        console.error('Error accessing microphone:', error);
+      });
+  };
+
+  const stopRecording = () => {
+    if (isRecording) {
+      if (mediaRecorder) {
+        mediaRecorder.stop();
+        setIsRecording(false);
+      }
+
+      // Clear the timer interval when recording stops
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    }
+  };
+
+  // Trigger the transcription when the audioBlob is available
+  useEffect(() => {
+    const transcribeAudio = async () => {
+      if (audioBlob) {
+        // Prepare the form data
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'audio.wav');
+        formData.append('model', 'whisper-1'); // Adjust model name as needed
+
+        try {
+          const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.OPEN_AI}`, // Ensure this is correctly set
+            },
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Failed to transcribe audio: ${errorData.error.message}`);
+          }
+
+          const result = await response.json();
+          setNewText((prevText) => prevText + ' ' + result.text);
+          setTime('00:00');
+        } catch (error) {
+          console.error('Error transcribing audio:', error);
+        }
+      }
+    };
+
+    transcribeAudio();
+  }, [audioBlob]);
+
+  useEffect(() => {
+    return () => {
+      // Clean up interval on component unmount
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [intervalId]);
 
   const modalClose = () => {
     setIsSummaryModalOpen(false)
@@ -412,16 +500,23 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
             activeValue={selectedTab}
           />
           <div className='flex w-full items-center justify-end gap-2 border-b-2 border-lightSilver pr-2'>
-            <Tooltip
-              position='bottom'
-              content='Summary'
-              className={`${getList.length > 0 && !isSummaryModalIcon ? 'cursor-pointer' : 'pointer-events-none'
-                } !py-2 !pl-0 !pr-0  !font-proxima !text-[14px]`}
-            >
-              <span onClick={() => handleAIText('summary')}>
-                <InformalIcon />
-              </span>
-            </Tooltip>
+            {summaryLoader ? (
+              <div className='animate-spin'>
+                <SpinnerIcon bgColor='#6E6D7A' />
+              </div>
+            ) : (
+              isSummaryCreate && <Tooltip
+                position='bottom'
+                content='Summary'
+                className={`${getList.length > 0 && !isSummaryModalIcon ? 'cursor-pointer' : 'pointer-events-none'
+                  } !py-2 !pl-0 !pr-0  !font-proxima !text-[14px]`}
+              >
+                <span onClick={() => handleAIText('summary')}>
+                  <InformalIcon />
+                </span>
+              </Tooltip>
+            )}
+
             <span className="pt-2" onClick={onCloseSubmit}>
               <Close variant='medium' />
             </span>
@@ -432,7 +527,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
           className={`!z-0 ${(selectedTab !== '2' && !noCommentBox) ? 'h-[calc(100vh-250px)]' : 'h-[90vh]'
             }  custom-scroll overflow-y-scroll px-5 pb-1 pt-5`}
         >
-          {getList.length > 0 && watcherList.length > 0 ? (
+          {getList.length > 0 ? (
             <>
               {selectedTab === '1' && (
                 <ChatBox
@@ -477,7 +572,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
               } advanced fixed bottom-0 flex w-full flex-col bg-white px-5 pb-[2px]`}
           >
             <hr className='mb-5 !border !border-lightSilver' />
-            <div className={`relative rounded-[4px] ${watcherList.length > 0 ? '' : 'pointer-events-none'} `}>
+            <div className={`relative rounded-[4px]`}>
               <MentionsInput
                 style={defaultStyle}
                 value={newText?.trimStart()}
@@ -525,7 +620,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
               />
 
               <div className={`flex h-12 items-center gap-4`}>
-                <Tooltip
+                {isInformalCreate && <Tooltip
                   position='top'
                   content='Informal'
                   className={`${newText !== '' ? 'cursor-pointer' : 'pointer-events-none'
@@ -534,7 +629,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
                   <span onClick={() => handleAIText('Informal'.toLowerCase())}>
                     <InformalIcon />
                   </span>
-                </Tooltip>
+                </Tooltip>}
 
                 <Tooltip
                   position='top'
@@ -547,7 +642,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
                   </label>
                 </Tooltip>
 
-                <span className={`${!listLoader ? 'cursor-pointer' : 'pointer-events-none'}`}>
+                <span className={`${isSpeechToTextCreate ? "block" : "hidden"} ${!listLoader ? 'cursor-pointer' : 'pointer-events-none'}`}>
                   {isRecording ? (
                     <span className='flex' onClick={stopRecording}>
                       <MicrophoneIcon fill='#DC3545' />
@@ -562,7 +657,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
 
                 <Button
                   variant='btn-primary'
-                  className='btn-md rounded-md disabled:opacity-50'
+                  className={`${isQueriesCreate ? "block" : "hidden"} btn-md rounded-md disabled:opacity-50`}
                   onClick={() => handleSubmit(2)}
                   disabled={newText !== '' || fileNames.length > 0 ? (loader ? true : false) : true}
                 >

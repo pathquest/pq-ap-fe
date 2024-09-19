@@ -52,7 +52,9 @@ import {
   AssignDocumentToUserOptionsProps,
   AssigneeOptionsProps,
   DeleteDocumentOptionsProps,
+  DeleteDocumentOverviewOptionsProps,
   DocumentGetListOptions,
+  DocumentGetOverviewListOptions,
   GetColumnMappingListOptionsProps,
   GetDocumentByIdOptionsProps,
   MergeDocumentOptionsProps,
@@ -119,7 +121,7 @@ import {
 } from '@/models/glAccountMaster'
 import { GetSearchHistoryOptions, SaveSearchHistoryOptions, SearchResultOptions } from '@/models/global'
 import { GetEmailTemplate, ReadDeleteAllNotificationProps, SaveNotificationMatrix, SaveSummaryData, UpdateSummaryStatus } from '@/models/notification'
-import { ApproveRejectCheckOptions, DeactivateBankAccountOptions, SaveBuyerBankOption, SaveCheckMicroDepositOptions, SavePaymentMethodOptions, UpdateBuyerBankOptions, UpdatePaymentMethodOptions } from '@/models/paymentSetup'
+import { ApproveRejectCheckOptions, DeactivateBankAccountOptions, GetAllBankAccountOptions, SaveBuyerBankOption, SaveCheckMicroDepositOptions, SavePaymentMethodOptions, UpdateBuyerBankOptions, UpdatePaymentMethodOptions } from '@/models/paymentSetup'
 import { GetPaymentStatusColumnMappingOptions, PaymentStatusListOptions, SavePaymentStatusColumnMappingOptions, SetCancelPaymentOptions } from '@/models/paymentStatus'
 import { GLAccountOptions, ProductServiceGetListOptions } from '@/models/product&ServiceMaster'
 import {
@@ -164,6 +166,7 @@ import axios, { AxiosResponse } from 'axios'
 import { getSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import { dashboardOptions, InsightsOptions, vendorWiseMonthlyPaymentOptions } from '@/models/dashboard'
+import { ssoUrl } from './server/common'
 
 const API_SSO = process.env.API_SSO
 const API_PROFILE = process.env.API_PROFILE
@@ -219,13 +222,13 @@ axios.interceptors.request.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      window.location.href = '/signin';
+      // window.location.href = '/signin';
       return Promise.reject('Unauthorized');
     }
     return Promise.reject(error);
   }
 );
- 
+
 axios.interceptors.response.use(
   (response) => {
     return response;
@@ -233,25 +236,25 @@ axios.interceptors.response.use(
   async (error) => {
     if (error.response.status === 401) {
       cachedSession = null; // Clear cached session on 401 error
- 
+
       let session: any;
- 
+
       if (typeof getSession === 'function') {
         session = await getSession();
       } else {
         session = await auth();
       }
- 
-      if (!session) {
-        return redirect('/signin');
-      }
- 
+
+      // if (!session) {
+      //   return redirect(`${ssoUrl}/signin`);
+      // }
+
       cachedSession = session; // Cache the new session
- 
+
       // Retry the request with the new session
       return axios(error.config);
     }
- 
+
     return Promise.reject(error);
   }
 );
@@ -346,11 +349,11 @@ const User = {
   cityListDropdown: (data: CityListOptions) => requests.get(`${API_PROFILE}/city/list?stateId=${data.StateId}`),
   userGetDataById: (data: UserDataOptions) => requests.get(`${API_MANAGE}/user/getbyid?userId=${data.UserId}`),
   userSaveData: (data: UserSaveDataOptions) => requests.post(`${API_MANAGE}/user/save`, data),
-  userGetManageRights: (data: UserGetManageRights) => requests.post(`${API_PROFILE}/role/getusercompanypermissions`, data),
+  userGetManageRights: (data: UserGetManageRights) => requests.post(`${API_MANAGE}/role/getusercompanypermissions`, data),
   userListDropdown: () => requests.get(`${API_MANAGE}/user/getdropdown`),
   getAssignUsertoCompany: (data: UserGetCompanyDropdown) => requests.post(`${API_MANAGE}/company/getdropdownbyuser`, data),
   assignCompanyToUser: (data: AssignCompanyToUser) => requests.post(`${API_MANAGE}/user/assigncompanytouser`, data),
-  SaveManageRight: (data: SaveManageRight) => requests.post(`${API_PROFILE}/role/saveusercompanypermissions`, data),
+  SaveManageRight: (data: SaveManageRight) => requests.post(`${API_MANAGE}/role/saveusercompanypermissions`, data),
   uploadUserImage: (data: UploadUserImage) => requests.post(`${API_PROFILE}/user/upload/image`, data),
   getUserImage: (data: GetUserImage) => requests.get(`${API_PROFILE}/user/getuserimage?fileName=${data.fileName}`),
   deleteUser: (data: UserDelete) => requests.post(`${API_MANAGE}/user/delete`, data),
@@ -358,13 +361,13 @@ const User = {
 
 // Manage Roles
 const Role = {
-  roleListDropdown: (data: RoleListOptions) => requests.post(`${API_PROFILE}/role/getdropdown`, data),
-  roleGetList: (data: RoleGetListOptions) => requests.post(`${API_PROFILE}/role/getrolesbycompany`, data),
-  permissionGetList: (data: PermissionListOptions) => requests.post(`${API_PROFILE}/role/getrolepermissions`, data),
-  roleRemove: (data: RoleRemoveOptions) => requests.post(`${API_PROFILE}/role/deleterole`, data),
-  savePermission: (data: SavePermissionOptions) => requests.post(`${API_PROFILE}/role/saverolepermission`, data),
-  saveRole: (data: SaveRoleOptions) => requests.post(`${API_PROFILE}/role/createrole`, data),
-  roleGetById: (data: RoleGetIdOptions) => requests.post(`${API_PROFILE}/role/getbyid`, data),
+  roleListDropdown: (data: RoleListOptions) => requests.post(`${API_MANAGE}/role/getdropdown`, data),
+  roleGetList: (data: RoleGetListOptions) => requests.post(`${API_MANAGE}/role/getrolesbycompany`, data),
+  permissionGetList: (data: PermissionListOptions) => requests.post(`${API_MANAGE}/role/getrolepermissions`, data),
+  roleRemove: (data: RoleRemoveOptions) => requests.post(`${API_MANAGE}/role/deleterole`, data),
+  savePermission: (data: SavePermissionOptions) => requests.post(`${API_MANAGE}/role/saverolepermission`, data),
+  saveRole: (data: SaveRoleOptions) => requests.post(`${API_MANAGE}/role/createrole`, data),
+  roleGetById: (data: RoleGetIdOptions) => requests.post(`${API_MANAGE}/role/getbyid`, data),
 }
 
 const FileUpload = {
@@ -464,6 +467,7 @@ const Notification = {
 // Bill Posting
 const Bill = {
   documentGetList: (data: DocumentGetListOptions) => requests.post(`${API_FILEUPLOAD}/document/getlist`, data),
+  documentBillsOverviewList: (data: DocumentGetOverviewListOptions) => requests.post(`${API_FILEUPLOAD}/billsoverview/getlist`, data),
   documentGetStatusList: () => requests.get(`${API_FILEUPLOAD}/document/getstatusdropdown`),
   getVendorList: (data: VendorListOptions) => requests.post(`${API_FILEUPLOAD}/vendor/getlist`, data),
   getProcessList: () => requests.get(`${API_MANAGE}/settings/getprocessdropdown`),
@@ -471,6 +475,7 @@ const Bill = {
   getUserList: (data: UserListOptionsProps) => requests.post(`${API_MANAGE}/user/getlist`, data),
   removeDocument: (data: RemoveDocumentOptionsProps) => requests.post(`${API_FILEUPLOAD}/document/delete`, data),
   deleteDocument: (data: DeleteDocumentOptionsProps) => requests.post(`${API_FILEUPLOAD}/document/updateStatus`, data),
+  deleteOverviewDocument: (data: DeleteDocumentOverviewOptionsProps) => requests.post(`${API_FILEUPLOAD}/accountpayable/delete`, data),
   getAssigneeList: (data: AssigneeOptionsProps) => requests.post(`${API_MANAGE}/user/getdropdownbycompany`, data),
   assignDocumentsToUser: (data: AssignDocumentToUserOptionsProps) =>
     requests.post(`${API_FILEUPLOAD}/document/updateassignuser`, data),
@@ -482,6 +487,10 @@ const Bill = {
   accountPayableSave: (data: any) => requests.post(`${API_FILEUPLOAD}/accountpayable/save`, data),
   getColumnMappingList: (data: GetColumnMappingListOptionsProps) =>
     requests.post(`${API_FILEUPLOAD}/document/getcolumnmappinglist`, data),
+  getColumnMappingOverviewList: (data: GetColumnMappingListOptionsProps) =>
+    requests.post(`${API_FILEUPLOAD}/billsoverview/getcolumnmappinglist `, data),
+  getColumnMappingBillsOverview: (data: GetColumnMappingListOptionsProps) =>
+    requests.post(`${API_FILEUPLOAD}/document/getColumnMappingBillsOverview`, data),
   saveColumnMappingList: (data: any) => requests.post(`${API_FILEUPLOAD}/document/savecolumnmapping`, data),
   uploadAttachment: (data: any) => requests.postForm(`${API_FILEUPLOAD}/document/uploadattachments`, data),
   processTypeChangeByDocumentId: (data: any) => requests.post(`${API_FILEUPLOAD}/document/updateProcess`, data),
@@ -494,6 +503,7 @@ const Bill = {
   getCustomerDropdown: (data: any) => requests.post(`${API_MASTER}/customer/getdropdown`, data),
   getProjectDropdown: (data: any) => requests.post(`${API_MASTER}/project/getdropdown`, data),
   getDepartmentDropdown: (data: any) => requests.post(`${API_MASTER}/department/getdropdown`, data),
+  saveOverviewColumnMapping: (data: any) => requests.post(`${API_FILEUPLOAD}/billsoverview/savecolumnmapping`, data),
 }
 
 //Field Mapping
@@ -514,8 +524,6 @@ const BillApproval = {
   paymentsApproval: (data: PaymentApprovals) => requests.post(`${API_BILLSTOPAY}/paymentapproval/setapproval`, data),
   paymentReAssign: (data: PaymentReAssigns) => requests.post(`${API_BILLSTOPAY}/paymentapproval/reassign`, data),
 }
-
-const PaymentApproval = {}
 
 // Bills-To-Pay
 const BillsToPay = {
@@ -556,6 +564,7 @@ const PaymentStatus = {
 // Payment Setup
 const PaymentSetup = {
   companyKYC: () => requests.get(`${API_BILLSTOPAY}/cpx/companykyc`),
+  syncBankAccount: () => requests.get(`${API_BILLSTOPAY}/payment/paymentmethodsync`),
   buyerBankList: () => requests.get(`${API_BILLSTOPAY}/cpx/getbuyerbankaccounts`),
   getKYCStatus: () => requests.get(`${API_BILLSTOPAY}/cpx/getkycstatus`),
   getBuyerBankById: (data: UpdateBuyerBankOptions) => requests.post(`${API_BILLSTOPAY}/cpx/getbuyerbankbyid`, data),
@@ -565,7 +574,7 @@ const PaymentSetup = {
   getPaymentMethodById: (data: UpdatePaymentMethodOptions) => requests.post(`${API_BILLSTOPAY}/cpx/getpaymentmethodbyid`, data),
   savePaymentMethod: (data: SavePaymentMethodOptions) => requests.post(`${API_BILLSTOPAY}/cpx/savepaymentmethod`, data),
   activateBankAccount: (data: DeactivateBankAccountOptions) => requests.post(`${API_BILLSTOPAY}/cpx/activatebuyerbank`, data),
-  getBankAccountDropdown: () => requests.get(`${API_BILLSTOPAY}/cpx/getbuyerbankdropdown`),
+  getBankAccountDropdown: (data: GetAllBankAccountOptions) => requests.post(`${API_BILLSTOPAY}/cpx/getbuyerbankdropdown`, data),
   saveCheckPaymentMethod: (data: any) => requests.postForm(`${API_BILLSTOPAY}/cpx/addcheckpaymentmethod`, data),
   saveCheckMicroDeposit: (data: SaveCheckMicroDepositOptions) =>
     requests.post(`${API_BILLSTOPAY}/cpx/addcheckmicrodeposit`, data),
@@ -671,6 +680,7 @@ const Files = {
 const APIs = {
   /* BILL POSTING */
   vendorDropdown: (data: any) => requests.post(`${API_MASTER}/vendor/getdropdown`, data),
+  vendorGLTermDropdown: (data: any) => requests.post(`${API_MASTER}/vendor/getvendortermgldrpdwn`, data),
   termDropdown: (data: any) => requests.post(`${API_MASTER}/term/getdropdown`, data),
   accountDropdown: (data: any) => requests.post(`${API_MASTER}/account/getdropdown`, data),
 
@@ -749,7 +759,7 @@ const accountantDashboard = {
   companyDropdownbyOrg: (data: any) => requests.post(`${API_MANAGE}/company/getcompanydropdownbyorg`, data),
   billingInfoList: (data: any) => requests.post(`${API_DASHBOARD}/dashboard/getbillinginfolist`, data),
   accountingDashboardList: (data: any) => requests.post(`${API_DASHBOARD}/dashboard/getaccountingdashboard`, data),
-  organizationDropdown: () => requests.get(`${API_PROFILE}/organization/getorganizationdropdown`),
+  organizationDropdown: () => requests.get(`${API_MANAGE}/organization/getorganizationdropdown`),
 }
 
 const agent = {

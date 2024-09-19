@@ -18,12 +18,23 @@ import { locationListDropdown } from '@/store/features/master/dimensionSlice'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import { getLocationList, termDropdown, vendorDropdown } from '@/store/features/bills/billSlice'
 import { useSession } from 'next-auth/react'
+import { getModulePermissions, hasImportPermission, hasViewPermission } from '@/components/Common/Functions/ProcessPermission'
 
 const ListReports = () => {
   const dispatch = useAppDispatch()
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
   const AccountingTool = session?.user?.AccountingTool
+
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isReportView = getModulePermissions(processPermissionsMatrix, "Reports") ?? {}
+
+  const isAPLedgerImport = isReportView["AP Ledger"]?.Import ?? false;
+  const isBillAnalysisImport = isReportView["Bill Analysis"]?.Import ?? false;
+  const isBillPaymentsImport = isReportView["Bill Payments"]?.Import ?? false;
+  const isUnpaidBillsImport = isReportView["Unpaid Bills"]?.Import ?? false;
+  const isVendorAgingDetailedImport = isReportView["Vendor Aging Detailed"]?.Import ?? false;
+  const isVendorAgingSummaryImport = isReportView["Vendor Aging Summary"]?.Import ?? false;
 
   const dropdownExportRef = useRef<HTMLDivElement>(null)
   const API_REPORTS = process.env.API_REPORTS
@@ -92,7 +103,7 @@ const ListReports = () => {
       case 'UnpaidBills':
         return { url: '/reports/getunpaidbill', params: { ...unpaidBillsParams, IsDownload: true, ExportType: 1 } }
       case 'BillPayments':
-        return { url: '/reports/getbillanalysisdetail', params: { ...billPaymentParams, IsDownload: true, ExportType: 1 } }
+        return { url: '/reports/getbillPayments', params: { ...billPaymentParams, IsDownload: true, ExportType: 1 } }
       default:
         return { url: '', params: {} }
     }

@@ -4,7 +4,6 @@ import Actions from '@/components/Common/DatatableActions/DatatableActions'
 import React, { useEffect, useRef, useState } from 'react'
 
 // Library Components
-import { invalidateSessionCache } from '@/api/axios'
 import AvatarWithText from '@/app/manage/companies/__components/AvatarWithText'
 import CompaniesModal from '@/app/manage/companies/__components/CompaniesModal'
 import Drawer from '@/app/manage/companies/__components/Drawer'
@@ -19,11 +18,15 @@ import WrapperManage from '@/components/Common/WrapperManage'
 import { useCompanyContext } from '@/context/companyContext'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { AssignUserToCompany, companyGetList, companyListDropdown, conncetQb, conncetXero, filterAccounting, manageCompanyAssignUser, performCompanyActions, redirectQb, redirectXero, sageCompanyConnect, sageCompanyReconnect, sageUserConnect } from '@/store/features/company/companySlice'
-import { setIsRefresh, setSelectedCompany, userListDropdown } from '@/store/features/user/userSlice'
+import { setIsRefresh, setSelectedCompany, userGetManageRights, userListDropdown } from '@/store/features/user/userSlice'
 import { convertStringsToIntegers } from '@/utils'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { Avatar, Button, Close, DataTable, Loader, Modal, ModalContent, ModalTitle, MultiSelectChip, Password, SaveCompanyDropdown, Select, Text, Toast, Tooltip, Typography } from 'pq-ap-lib'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Avatar, Button, Close, CompanyList, DataTable, Loader, Modal, ModalContent, ModalTitle, MultiSelectChip, Password, SaveCompanyDropdown, Select, Text, Toast, Tooltip, Typography } from 'pq-ap-lib'
+import agent, { invalidateSessionCache } from '@/api/axios'
+import { getModulePermissions, hasSpecificPermission, hasViewPermission, processPermissions } from '@/components/Common/Functions/ProcessPermission'
+import { setOrganizationName, setOrgPermissionsMatrix, setProcessPermissionsMatrix } from '@/store/features/profile/profileSlice'
+import { permissionGetList } from '@/store/features/role/roleSlice'
 
 interface Item {
   clientname: string
@@ -35,6 +38,7 @@ interface List {
   Name: string
   AccountingTool: number | null
   IsActive: boolean
+  IsFieldMappingSet: boolean
   // Add other properties as needed
 }
 
@@ -66,14 +70,24 @@ interface IntacctEntityProps {
   RECORDNO: string | null
 }
 
-const ListCompanies = ({ session }: any) => {
-  const user = session ? session?.user : {}
+const ListCompanies = () => {
+  // const user = session ? session?.user : {}
+  const { data: session } = useSession()
+  const UserId = session?.user?.user_id
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const urlToken = session?.user?.access_token
+  const user = session ? session?.user : {}
+
   const { update } = useSession()
 
   const { selectedCompany } = useAppSelector((state) => state.company)
   const selectedCompanyValue = selectedCompany?.value
   const { isRefresh } = useAppSelector((state) => state.user)
+  const { processPermissionsMatrix, orgPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isManageCompanyCreate = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Company", "Create");
+  const isManageCompanyEdit = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Company", "Edit");
+
   const dispatch = useAppDispatch()
 
   const filterMenuRef = useRef<HTMLUListElement>(null)
@@ -85,7 +99,8 @@ const ListCompanies = ({ session }: any) => {
   const [openDeactivateModal, setOpenDeactivateModal] = useState<boolean>(false)
   const [openActivateModal, setOpenActivateModal] = useState<boolean>(false)
   const [openDisconnectModal, setOpenDisconnectModal] = useState<boolean>(false)
-  const [openRemoveModal, setOpenRemoveModal] = useState(false)
+  const [openRemoveModal, setOpenRemoveModal] = useState<boolean>(false)
+  const [isManageConfigurationDrawerOpen, setIsManageConfigurationDrawerOpen] = useState<boolean>(false)
   const [openCompaniesModal, setOpenCompaniesModal] = useState<boolean>(false)
   const [isApplyButtonDisabled, setIsApplyButtonDisabled] = useState(true)
   const [initialFilterValues, setInitialFilterValues] = useState({
@@ -190,6 +205,16 @@ const ListCompanies = ({ session }: any) => {
       colalign: "right",
       colStyle: '!w-[30px]'
     },
+  ]
+
+  const sidebarItems = [
+    { name: 'Dashboard', route: '/dashboard' },
+    { name: 'Files', route: '/history' },
+    { name: 'Bills', route: '/bills' },
+    { name: 'Payments', route: '/payments' },
+    { name: 'Approval', route: '/approvals' },
+    { name: 'Reports', route: '/reports' },
+    { name: 'Vendor', route: '/vendors' }
   ]
 
   //For Lazy Loading
@@ -593,7 +618,7 @@ const ListCompanies = ({ session }: any) => {
   const handleActions = async (actionType: string, actionId: number, CompanyName: string) => {
     setSelectedRowId(actionId)
     invalidateSessionCache();
-    await update({ ...user, CompanyId: actionId, CompanyName: CompanyName })
+    await update({ ...session?.user, CompanyId: actionId, CompanyName: CompanyName })
 
     switch (actionType.toLowerCase()) {
       case 'edit':
@@ -609,18 +634,23 @@ const ListCompanies = ({ session }: any) => {
       case 'disconnect':
         setOpenDisconnectModal(true)
         break
+      case 'field mapping':
+        router.push('/setup/apfieldmapping')
+        localStorage.setItem("IsFieldMappingSet", "false")
+        break
       case 'connect':
         {
           if (accountingTool === 1) openInnerModalIntacct()
-
           if (accountingTool === 2) handleConnectQb(actionId)
-
           if (accountingTool === 3) handleConnectXero(actionId)
         }
         break
       case 'remove':
         setOpenRemoveModal(true)
         break
+      // case 'manage configuration':
+      //   setIsManageConfigurationDrawerOpen(true)
+      //   break
       default:
         break
     }
@@ -639,14 +669,101 @@ const ListCompanies = ({ session }: any) => {
     }
   }, [])
 
+  const getUserManageRights = (CompanyId: any) => {
+    setCompanyList([])
+    setIsLoading(true)
+    const params = {
+      UserId: UserId,
+      CompanyId: Number(CompanyId),
+    }
+    performApiAction(dispatch, userGetManageRights, params, (responseData: any) => {
+      const processedData = processPermissions(responseData);
+      dispatch(setProcessPermissionsMatrix(processedData));
+      const firstAllowedItem = sidebarItems.find(item => hasViewPermission(processedData, item.name))
+
+      // router.push('/dashboard')
+      if (processedData.length > 0) {
+        if (firstAllowedItem && firstAllowedItem.name != "Payments") {
+          router.push(firstAllowedItem.route)
+        }
+        else if (firstAllowedItem && firstAllowedItem.name == "Payments") {
+          const isPaymentView = getModulePermissions(processedData, "Payments") ?? {}
+          const isPaymentStatus = isPaymentView["Payment Status"]?.View ?? false;
+          if (isPaymentStatus) {
+            router.push('/payments/status')
+          } else {
+            router.push('/payments/billtopay')
+          }
+        }
+        else {
+          // If no permissions are found, you might want to redirect to a default page or show an error
+          router.push('/404')
+          setIsLoading(false)
+        }
+      } else {
+        Toast.error('You do not have permission for any module.')
+        setIsLoading(false)
+        getCompanyList(1)
+      }
+    })
+  }
+
   // this function is company column click in table and redirect to bills page
   const handleRowClick = async (list: List) => {
     invalidateSessionCache();
-    await update({ ...user, CompanyId: list?.Id, AccountingTool: list?.AccountingTool, CompanyName: list.Name })
+    await update({ ...session?.user, CompanyId: list?.Id, AccountingTool: list?.AccountingTool, CompanyName: list.Name })
 
     dispatch(setSelectedCompany({ label: list?.Name, value: list?.Id, accountingTool: list?.AccountingTool }))
-    router.push('/dashboard')
+    if (list?.IsFieldMappingSet) {
+      localStorage.removeItem('IsFieldMappingSet')
+      getUserManageRights(list?.Id)
+      router.push('/dashboard')
+    } else {
+      Toast.error('Please complete Manage Configuration and Field Mapping setup')
+    }
   }
+
+  const getRolePermissionData = (roleId: any) => {
+    const params = {
+      RoleId: roleId,
+    }
+    performApiAction(dispatch, permissionGetList, params, (responseData: any) => {
+      const processedData = processPermissions(responseData);
+      dispatch(setOrgPermissionsMatrix(processedData));
+      dispatch(setProcessPermissionsMatrix(processedData));
+    })
+  }
+
+  const userConfig = async () => {
+    try {
+      const response = await agent.APIs.getUserConfig()
+      if (response.ResponseStatus === 'Success') {
+        getRolePermissionData(response.ResponseData.RoleId)
+        await update({
+          ...user,
+          org_id: response.ResponseData.OrganizationId,
+          org_name: response.ResponseData.OrganizationName,
+          user_id: response.ResponseData.UserId,
+          is_admin: response.ResponseData.IsAdmin,
+          is_organization_admin: response.ResponseData.IsOrganizationAdmin,
+          role_id: response.ResponseData.RoleId
+        })
+
+        dispatch(setOrganizationName(response.ResponseData.OrganizationName))
+
+        localStorage.setItem('UserId', response.ResponseData.UserId)
+        localStorage.setItem('OrgId', response.ResponseData.OrganizationId)
+        localStorage.setItem('IsAdmin', response.ResponseData.IsAdmin)
+        localStorage.setItem('IsOrgAdmin', response.ResponseData.IsOrganizationAdmin)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  useEffect(() => {
+      userConfig()
+  }, [urlToken])
 
   // For Assign user dropdown menu click inside table
 
@@ -680,19 +797,18 @@ const ListCompanies = ({ session }: any) => {
     setAccountingTool(accountingTool)
   }
 
-  // Show Table of Contents
-  const compData = companyList && companyList.map((list, index) => {
+  // Show Table of Contents 'Manage Configuration'
+  const companyData = companyList && companyList.map((list: any, index) => {
     const actions =
       list?.AccountingTool === 4
-        ? ['Edit', 'Remove']
-        : ['Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove']
+        ? [isManageCompanyEdit && 'Edit', 'Remove'].filter(Boolean)
+        : !list?.IsFieldMappingSet ? ['Field Mapping', isManageCompanyEdit && 'Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove'] : ['Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove'].filter(Boolean)
     return {
       Id: <div className={`${list.IsActive ? '' : 'opacity-[50%]'}`}>{index + 1}</div>,
       Name: (
         <div
           className={`flex cursor-pointer items-center gap-2 ${list?.IsActive ? '' : 'opacity-[50%]'}`}
-          onClick={() => handleRowClick(list)}
-        >
+          onClick={() => handleRowClick(list)}>
           <Avatar variant='small' name={list?.Name} />
           {list?.Name}
         </div>
@@ -875,6 +991,10 @@ const ListCompanies = ({ session }: any) => {
     setOpenRemoveModal(false)
   }
 
+  // const handleManageConfigurationDrawerClose = () => {
+  //   setIsManageConfigurationDrawerOpen(false)
+  // }
+
   // set a dynamic orgId
   const globalData = (data: OrgData) => {
     setOrgId(data?.orgId)
@@ -902,7 +1022,6 @@ const ListCompanies = ({ session }: any) => {
     checkIfFiltersChanged({ company: [], accountingTools: [], assignUser: [] })
   }
 
-  const dynamicClass = openFilterBox ? `absolute right-[120px] translate-x-0` : 'fixed right-0 translate-x-full'
 
   return (
     <>
@@ -921,7 +1040,7 @@ const ListCompanies = ({ session }: any) => {
               </Tooltip>
             </div>
 
-            <Button className='rounded-full !h-[36px] laptop:px-6 laptopMd:px-6 lg:px-6 xl:px-6 hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px]' variant='btn-primary' onClick={handleCompaniesModal}>
+            <Button className={`${isManageCompanyCreate ? "block" : "hidden"} rounded-full !h-[36px] laptop:px-6 laptopMd:px-6 lg:px-6 xl:px-6 hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px]`} variant='btn-primary' onClick={handleCompaniesModal}>
               <div className='flex justify-center items-center font-bold'>
                 <span className='mr-[8px]'>
                   <PlusIcon color={'#FFF'} />
@@ -933,10 +1052,9 @@ const ListCompanies = ({ session }: any) => {
         </div>
 
         {/* Filter Modal */}
-        <div
-          className={`${openFilterBox &&
-            'custom-scroll fixed bottom-0 left-0 right-0 top-0 z-20 overflow-y-auto bg-[rgba(0,0,0,0.4)] transition-all duration-300 ease-in-out'
-            }`}>
+        <div className={`${openFilterBox &&
+          'custom-scroll fixed bottom-0 left-0 right-0 top-0 z-20 overflow-y-auto bg-[rgba(0,0,0,0.4)] transition-all duration-300 ease-in-out'
+          }`}>
           <div
             tabIndex={-1}
             className={`top-28 z-30 w-[793px] outline-none rounded border border-lightSilver bg-pureWhite ${openFilterBox ? 'absolute translate-x-0 right-[250px]' : ' fixed translate-x-full right-0'} transition-transform duration-300 ease-in-out`}>
@@ -1019,10 +1137,10 @@ const ListCompanies = ({ session }: any) => {
 
         {/* Data Table */}
         <div className='h-[calc(100vh-145px)] approvalMain overflow-auto max-[425px]:mx-1'>
-          <div className={`${compData.length !== 0 && 'h-0'}`}>
+          <div className={`${companyData.length !== 0 && 'h-0'}`}>
             <DataTable
               columns={headers}
-              data={compData.length > 0 ? compData : []}
+              data={companyData.length > 0 ? companyData : []}
               hoverEffect={true}
               sticky
               isTableLayoutFixed
@@ -1034,7 +1152,16 @@ const ListCompanies = ({ session }: any) => {
 
             <div ref={tableBottomRef} />
           </div>
-          <DataLoadingStatus isLoading={isLoading} data={compData} />
+
+          {companyList.length === 0 ? (
+            isLoading ?
+              <div className='flex h-[calc(93vh-150px)] w-full items-center justify-center'>
+                <Loader size='md' helperText />
+              </div>
+              : !isLoading && <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
+                No records available at the moment.
+              </div>
+          ) : ''}
         </div>
 
         {/*  Create Company Popup */}
@@ -1051,7 +1178,7 @@ const ListCompanies = ({ session }: any) => {
           />
         )}
 
-        {/*  Drawer */}
+        {/* Add Company Drawer */}
         <Drawer
           onOpen={openDrawer}
           onClose={handleDrawerClose}
@@ -1071,8 +1198,9 @@ const ListCompanies = ({ session }: any) => {
           isConfirmCancel={isConfirmCancel}
         />
 
+
         {/* Drawer Overlay */}
-        <DrawerOverlay isOpen={openDrawer} onClose={() => { }} />
+        <DrawerOverlay isOpen={openDrawer || isManageConfigurationDrawerOpen} onClose={() => { }} />
 
         {/* Cancel Modal Popup */}
         <ConfirmationModal

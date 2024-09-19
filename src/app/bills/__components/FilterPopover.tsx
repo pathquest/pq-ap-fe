@@ -1,4 +1,4 @@
-import { AssignedFilterData } from '@/data/billPosting'
+import { AssignedFilterData, FilterOverviewProcessType, FilterOverviewStatus } from '@/data/billPosting'
 import { BillPostingFilterFormFieldsProps } from '@/models/billPosting'
 import { useAppSelector } from '@/store/configureStore'
 import { convertStringsToIntegers } from '@/utils'
@@ -92,15 +92,15 @@ function FilterPopover({
       : 'fixed right-0 translate-x-full'
   }
 
-  const includedOptions = statusOptions.filter((option: any) => 
+  const includedOptions = statusOptions.filter((option: any) =>
     localFilterFormFields.ft_status.includes(option.value)
   );
 
-  const otherOptions = statusOptions.filter((option: any) => 
+  const otherOptions = statusOptions.filter((option: any) =>
     !localFilterFormFields.ft_status.includes(option.value)
   );
 
-  const filteredOptions = includedOptions.concat(otherOptions);
+  const filteredOptions = includedOptions.concat(otherOptions) ?? [];
 
   return (
     <>
@@ -123,7 +123,44 @@ function FilterPopover({
           </div>
 
           <div className='m-5 grid grid-cols-3 items-center gap-5'>
-            {processSelection !== '3' && (
+            {processSelection === '4' && (
+              <>
+                <Select
+                  id={'ft_process'}
+                  label='Process'
+                  placeholder={'Process'}
+                  value={localFilterFormFields?.ft_process}
+                  defaultValue={localFilterFormFields?.ft_process}
+                  options={FilterOverviewProcessType ?? []}
+                  getValue={(value) => {
+                    onResetFilter(false)
+                    setLocalFilterFormFields({
+                      ...localFilterFormFields,
+                      ft_process: value,
+                    })
+                  }}
+                  getError={() => ''}
+                />
+                <MultiSelectChip
+                  type='checkbox'
+                  id={'ft_overview_status'}
+                  label='Status'
+                  placeholder={'Status'}
+                  defaultValue={localFilterFormFields?.ft_overview_status ?? []}
+                  options={FilterOverviewStatus ?? []}
+                  getValue={(value) => {
+                    onResetFilter(false)
+                    setLocalFilterFormFields({
+                      ...localFilterFormFields,
+                      ft_overview_status: value,
+                    })
+                  }}
+                  getError={() => ''}
+                  onSelect={() => { }}
+                />
+              </>
+            )}
+            {processSelection !== '3' && processSelection !== '4' && (
               <>
                 <MultiSelectChip
                   type='checkbox'
@@ -142,24 +179,25 @@ function FilterPopover({
                   getError={() => ''}
                   onSelect={() => { }}
                 />
-
-                <Select
-                  id={'ft_assignee'}
-                  label='Assignee'
-                  placeholder={'Assignee'}
-                  value={localFilterFormFields?.ft_assignee}
-                  defaultValue={localFilterFormFields?.ft_assignee}
-                  options={AssignedFilterData ?? []}
-                  getValue={(value) => {
-                    onResetFilter(false)
-                    setLocalFilterFormFields({
-                      ...localFilterFormFields,
-                      ft_assignee: value,
-                      ft_select_users: value !== '2' ? [] : localFilterFormFields?.ft_select_users,
-                    })
-                  }}
-                  getError={() => ''}
-                />
+                {processSelection !== '4' && (
+                  <Select
+                    id={'ft_assignee'}
+                    label='Assignee'
+                    placeholder={'Assignee'}
+                    value={localFilterFormFields?.ft_assignee}
+                    defaultValue={localFilterFormFields?.ft_assignee}
+                    options={AssignedFilterData ?? []}
+                    getValue={(value) => {
+                      onResetFilter(false)
+                      setLocalFilterFormFields({
+                        ...localFilterFormFields,
+                        ft_assignee: value,
+                        ft_select_users: value !== '2' ? [] : localFilterFormFields?.ft_select_users,
+                      })
+                    }}
+                    getError={() => ''}
+                  />
+                )}
               </>
             )}
 
@@ -222,23 +260,25 @@ function FilterPopover({
               />
             </div>
 
-            <MultiSelectChip
-              type='checkbox'
-              id={'ft_location'}
-              label='Location'
-              placeholder={'Location'}
-              defaultValue={localFilterFormFields?.ft_location ?? []}
-              options={locationOptions ?? []}
-              getValue={(value) => {
-                onResetFilter(false)
-                setLocalFilterFormFields({
-                  ...localFilterFormFields,
-                  ft_location: convertStringsToIntegers(value),
-                })
-              }}
-              getError={() => ''}
-              onSelect={() => { }}
-            />
+            {processSelection !== '4' && (
+              <MultiSelectChip
+                type='checkbox'
+                id={'ft_location'}
+                label='Location'
+                placeholder={'Location'}
+                defaultValue={localFilterFormFields?.ft_location ?? []}
+                options={locationOptions ?? []}
+                getValue={(value) => {
+                  onResetFilter(false)
+                  setLocalFilterFormFields({
+                    ...localFilterFormFields,
+                    ft_location: convertStringsToIntegers(value),
+                  })
+                }}
+                getError={() => ''}
+                onSelect={() => { }}
+              />
+            )}
           </div>
 
           <div className='flex items-center justify-end gap-5 border-t border-t-lightSilver p-[15px]'>

@@ -485,6 +485,7 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
         <div className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-420px)]' : 'h-[calc(100vh-210px)]'} overflow-auto ${tableDynamicWidth}`}>
           <div className={`mainTable ${vendorBalanceDetails.length !== 0 && 'h-0'}`}>
             <DataTable
+              zIndex={2}
               columns={VendorBalanceDetailcolumns}
               data={table_Data}
               sticky

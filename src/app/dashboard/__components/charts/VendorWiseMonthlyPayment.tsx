@@ -195,7 +195,7 @@ const VendorWiseMonthlyPayment: React.FC<any> = ({ LocationOption }) => {
                     </div>
                 </div>
             </div>
-            <div className='laptopMd:h-[84%] lg:h-[84%] xl:h-[84%] hd:h-[90%] 2xl:h-[90%] 3xl:h-[90%] overflow-auto approvalMain custom-scroll'>
+            <div className='laptopMd:h-[87.8%] lg:h-[87.8%] xl:h-[87.8%] hd:h-[90%] 2xl:h-[90%] 3xl:h-[90%] overflow-auto dashboardMain custom-scroll'>
                 <div className={`${vendorList.length === 0 ? 'h-11' : 'h-auto'}`}>
                     <DataTable
                         columns={columns}
@@ -221,7 +221,7 @@ const VendorWiseMonthlyPayment: React.FC<any> = ({ LocationOption }) => {
             onClose={() => setIsExpandChartOpen(false)}
             modalTitle='Vendor Wise Monthly Payment'
             modalContent={
-                <div className='w-full laptopMd:h-[calc(98vh-145px)] lg:h-[calc(98vh-145px)] xl:h-[calc(98vh-145px)] hd:h-[calc(90vh-145px)] 2xl:h-[calc(90vh-145px)] 3xl:h-[calc(90vh-145px)] overflow-y-auto custom-scroll'>
+                <div className='dashboardMain w-full laptopMd:h-[calc(98vh-145px)] lg:h-[calc(98vh-145px)] xl:h-[calc(98vh-145px)] hd:h-[calc(90vh-145px)] 2xl:h-[calc(90vh-145px)] 3xl:h-[calc(90vh-145px)] overflow-y-auto custom-scroll'>
                     <div className={`${vendorList.length === 0 ? 'h-11' : 'h-auto'}`}>
                         <DataTable
                             columns={columns}

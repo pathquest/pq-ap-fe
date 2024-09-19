@@ -44,7 +44,7 @@ const Editable = ({
       setEditing(false);
 
       if (key === "Tab") {
-        event.preventDefault();
+        // event.preventDefault();
         if (shiftKey) {
           // Handle Shift+Tab
           (event.target as HTMLElement).blur();

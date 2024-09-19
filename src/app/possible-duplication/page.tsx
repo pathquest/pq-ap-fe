@@ -1,6 +1,6 @@
 'use server'
 
-import { getLocationDropdown, getProcessDropdown, getStatusDropdown, getVendorDropdown } from '@/api/server/common'
+import { getLocationDropdown, getProcessDropdown, getStatusDropdown, getVendorDropdown, ssoUrl } from '@/api/server/common'
 import ListPossibleDuplication from '@/app/possible-duplication/__components/list/ListPossibleDuplication'
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
@@ -10,7 +10,7 @@ const ListPossibleDuplicationPage = async () => {
   const CompanyId = session?.user?.CompanyId
 
   if (!session) {
-    return redirect('/signin')
+    return redirect(`${ssoUrl}/signin`)
   }
 
   const vendorOptions: any = await getVendorDropdown(Number(CompanyId))

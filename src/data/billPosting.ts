@@ -75,6 +75,19 @@ const AssignedFilterData = [
   { value: '3', label: 'Unassigned' },
 ]
 
+const FilterOverviewProcessType = [
+  { value: '1', label: 'Account Payable' },
+  { value: '2', label: 'Account Adjustment' },
+]
+
+const FilterOverviewStatus = [
+  { value: '1', label: 'Bill Posting In-progress' },
+  { value: '2', label: 'Posted' },
+  { value: '3', label: 'Paid' },
+  { value: '4', label: 'Partially Paid' },
+  { value: '5', label: 'Payment In-progress' },
+]
+
 const moveToOptions = [
   {
     label: 'Accounts Payable',
@@ -102,21 +115,6 @@ const attachfileheaders: any = [
     accessor: 'Size',
     sortable: false,
     colalign: 'right',
-  },
-]
-
-const accountOptions = [
-  {
-    label: 'Account Payable',
-    value: '1',
-  },
-  {
-    label: 'Account Adjustment',
-    value: '2',
-  },
-  {
-    label: 'Other',
-    value: '3',
   },
 ]
 
@@ -234,7 +232,8 @@ const accountPayableLineItemsObj = {
 export {
   AssignedFilterData,
   assignUsersList,
-  accountOptions,
+  FilterOverviewProcessType,
+  FilterOverviewStatus,
   chatAllItems,
   moveToOptions,
   attachfileheaders,

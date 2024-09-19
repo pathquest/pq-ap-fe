@@ -13,7 +13,6 @@ export type ProfileFormFieldsProps = {
   user_image?: string
   is_active?: boolean
   is_verified?: boolean
-  guid:string
 }
 
 export type ProfileFormFieldErrorsProps = {

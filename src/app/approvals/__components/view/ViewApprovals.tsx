@@ -522,10 +522,10 @@ const ViewApprovals = ({ processtype }: any) => {
 
                 <div ref={rightBoxRef} className='mt-[15px] flex h-auto flex-col overflow-hidden border border-[#D8D8D8]'>
                   <div className='flex border-b border-[#D8D8D8] px-5 py-[14px]'>
-                    <BasicTooltip position='right' content='Bill Number' className='!py-0 !pl-0 !pr-1 !font-proxima !text-[14px]'>
+                    <div className='!py-0 !pl-0 !pr-1 !font-proxima !text-[14px]'>
                       <span className='text-[16px] font-proxima tracking-[0.02em]'>BILL INFO : </span>
                       <span className='break-all pl-[18px] text-[16px] font-bold font-proxima tracking-[0.02em]'>{documentDetailByIdData?.BillNumber}</span>
-                    </BasicTooltip>
+                    </div>
                   </div>
 
                   <div className='custom-scroll h-[92vh] w-full overflow-auto '>

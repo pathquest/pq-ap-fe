@@ -12,7 +12,7 @@ import React, { useEffect, useState } from 'react';
 import ChartTypeDropdown from '../modal/ChartType';
 import DashboardFilter from '../modal/DashboardFilter';
 import ExpandModal from '../modal/ExpandModal';
-import { Typography } from 'pq-ap-lib';
+import { Loader, Typography } from 'pq-ap-lib';
 
 const TotalPostedBillsByMonth: React.FC<any> = ({ LocationOption }) => {
     const { data: session } = useSession()
@@ -28,6 +28,7 @@ const TotalPostedBillsByMonth: React.FC<any> = ({ LocationOption }) => {
     const [chartType, setChartType] = useState<string>('column');
     const [isStacked, setIsStacked] = useState<boolean>(false);
     const [isMonthWise, setIsMonthWise] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false)
 
     const getPostedBillsDashboard = (newFilterFields: any) => {
         const startDate = new Date(newFilterFields?.StartDate);
@@ -35,16 +36,24 @@ const TotalPostedBillsByMonth: React.FC<any> = ({ LocationOption }) => {
         const dayDifference = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
         const isMonthWiseData = dayDifference > 31;
         setIsMonthWise(isMonthWiseData);
+        setIsLoading(true)
 
         const params = {
             IsMonthWise: isMonthWiseData,
             CompanyIds: [CompanyId],
-            LocationIds: newFilterFields?.LocationIds.length != 0 ? newFilterFields?.LocationIds.map(Number) : null,
+            LocationIds:
+                newFilterFields?.LocationIds.length === LocationOption.length
+                    ? null
+                    : newFilterFields?.LocationIds.map(Number),
             StartDate: newFilterFields?.StartDate ? utcFormatDate(newFilterFields.StartDate) : null,
-            EndDate: newFilterFields?.EndDate ? utcFormatDate(newFilterFields.EndDate) : null
+            EndDate: newFilterFields?.EndDate ? utcFormatDate(newFilterFields.EndDate) : null,
+            ProcessType: newFilterFields?.ProcessType ? newFilterFields.ProcessType : ['1', '2']
         }
         performApiAction(dispatch, getPostedBillsByMonth, params, (responseData: any) => {
             setChartData(responseData)
+            setIsLoading(false)
+        }, () => {
+            setIsLoading(false)
         })
     }
 
@@ -158,7 +167,7 @@ const TotalPostedBillsByMonth: React.FC<any> = ({ LocationOption }) => {
                     point: {
                         events: {
                             click: function () {
-                                router.push(`/reports?reportCode=BillAnalysis?chart=PostedBillsByMonth`);
+                                router.push(`bills?module=BillsOverview?chart=PostedBillsByMonth`);
                             }
                         }
                     },
@@ -264,9 +273,13 @@ const TotalPostedBillsByMonth: React.FC<any> = ({ LocationOption }) => {
                     </div>
                 </div>
             </div>
-            <div className='main_chart w-full'>
-                <HighchartsReact highcharts={Highcharts} options={getChartOptions()} />
-            </div>
+            {isLoading
+                ? <div className='h-[400px] w-full flex justify-center'>
+                    <Loader size='md' helperText/>
+                </div>
+                : <div className='main_chart w-full'>
+                    <HighchartsReact highcharts={Highcharts} options={getChartOptions()} />
+                </div>}
             <ExpandModal
                 onOpen={isExpandChartOpen}
                 onClose={() => setIsExpandChartOpen(false)}

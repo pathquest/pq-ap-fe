@@ -36,6 +36,9 @@ const nextConfig = {
     STORAGE_ACCOUNT: process.env.STORAGE_ACCOUNT,
     CONTAINER_NAME: process.env.CONTAINER_NAME,
     SASS_TOKEN: process.env.SASS_TOKEN,
+    
+    AP_REDIRECT_URL: process.env.AP_REDIRECT_URL,
+    BI_REDIRECT_URL: process.env.BI_REDIRECT_URL,
   },
   images: {
     domains: ['nextpqap.azurewebsites.net'],

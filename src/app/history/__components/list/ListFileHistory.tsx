@@ -2,7 +2,7 @@
 
 import { BillNumberProps, Column, HistoryFilterFormFieldsProps, LinkBillToExistingBillProps } from '@/models/files'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import { Badge, BasicTooltip, DataTable, Loader, Select, Toast, Typography } from 'pq-ap-lib'
+import { Badge, BasicTooltip, Breadcrumb, DataTable, Loader, Select, Toast, Typography } from 'pq-ap-lib'
 import { lazy, useEffect, useRef, useState } from 'react'
 
 import agent from '@/api/axios'
@@ -20,6 +20,8 @@ import { convertUTCtoLocal, getPDFUrl, limitString } from '@/utils/billposting'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import HistoryDetails from './HistoryDetails'
+import { hasCreatePermission, hasImportPermission } from '@/components/Common/Functions/ProcessPermission'
 
 export const nestedColumns: Column[] = [
   {
@@ -121,10 +123,12 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
 
   const dispatch = useAppDispatch()
   const router = useRouter()
-
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isCreate = hasCreatePermission(processPermissionsMatrix, "Files")
+  const isImport = hasImportPermission(processPermissionsMatrix, "Files")
+  
   const { data: session } = useSession()
   const CompanyId = session?.user?.CompanyId
-
   const [isFilterVisible, setIsFilterVisible] = useState(false)
   const { filterFormFields } = useAppSelector((state) => state.files)
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
@@ -132,8 +136,15 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
   const AccountingTool = selectedCompany?.accountingTool
 
   const [apiDataCount, setApiDataCount] = useState(0)
+  const [userdetails, setUserDetails] = useState<any>({
+    userId: 0,
+    userName: '',
+    uploadedDate:'',
+    providerType:0
+  })
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isVendorDetails, setIsVendorDetails] = useState<boolean>(false)
 
   const [localFilterFormFields, setLocalFilterFormFields] = useState<HistoryFilterFormFieldsProps>(filterFormFields)
   const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
@@ -147,10 +158,6 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
 
   const [isResetFilter, setIsResetFilter] = useState<boolean>(false)
   const [isApplyFilter, setIsApplyFilter] = useState<boolean>(false)
-
-  const [selectedDocument, setSelectedDocument] = useState<number | null>(null)
-  const [nestedRowId, setNestedRowId] = useState<number | null>(null)
-  const [attachmentDocumentId, setAttachmentDocumentId] = useState<number | null>(null)
 
   const [linkedBillObj, setLinkedBillObj] = useState<LinkBillToExistingBillProps>({
     AccountPayableId: null,
@@ -178,17 +185,6 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
 
   const [currentWindow, setCurrentWindow] = useState<any>(null)
 
-  const filteredNestedColumns: Column[] =
-    nestedColumns &&
-    nestedColumns
-      .map((item) => {
-        if (AccountingTool === 3 && item?.accessor === 'LocationName') {
-          return undefined
-        }
-        return item
-      })
-      .filter((item): item is Column => !!item)
-
   const fetchHistoryData = async (pageIndex?: number) => {
     if (pageIndex === 1) {
       setHistoryLists([])
@@ -211,9 +207,9 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
         PageSize: lazyRows,
         Source: filterFormFields?.fh_source ? filterFormFields?.fh_source : [],
         UserIds: filterFormFields?.fh_received_uploaded ? filterFormFields?.fh_received_uploaded : [],
-        Process: filterFormFields?.fh_process ? filterFormFields?.fh_process : [],
-        BillNo: billNumbersSelected ? billNumbersSelected : [],
-        LocationIds: filterFormFields.fh_locations ? filterFormFields.fh_locations : [],
+        Process: [],
+        BillNo: [],
+        LocationIds: [],
         StartDate: dateRangeVal[0] ? convertStringsDateToUTC(dateRangeVal[0]?.trim()) : null,
         EndDate: dateRangeVal[1] ? convertStringsDateToUTC(dateRangeVal[1]?.trim()) : null,
       }
@@ -311,88 +307,8 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
     }
   }
 
-  const handleCreateFile = (selectedDocument: number) => {
-    setIsCreateModalVisible(true)
-    setSelectedDocument(selectedDocument)
-  }
-
-  const handleRetryFile = async (documentId: number) => {
-    setIsRetryLoading(true)
-    try {
-      const response = await agent.APIs.handleFileHistoryRetry({ Id: documentId })
-
-      if (response?.ResponseStatus === 'Success') {
-        const updatedHistoryLists = historyLists.map((historyItem: any) => {
-          const updatedAttachmentData = historyItem.AttachmentData.map((attachmentItem: any) => {
-            if (attachmentItem.DocumentsId === documentId) {
-              return {
-                ...attachmentItem,
-                Status: 'Moved To Automation',
-                IsShowOptions: false,
-              };
-            }
-            return attachmentItem;
-          });
-        
-          return {
-            ...historyItem,
-            AttachmentData: updatedAttachmentData,
-          };
-        });
-        setHistoryLists(updatedHistoryLists)
-        setIsRetryLoading(false)
-      }
-    } catch (error) {
-      Toast.error('Something Went Wrong!')
-    }
-  }
-
   const handleModalClick = () => {
     setIsConfirmModalVisible(true)
-  }
-
-  const handleOpenAttachFile = (documentsId: number) => {
-    setAttachmentDocumentId(documentsId)
-    setIsAttachmentVisible(true)
-  }
-
-  const handleSelectedModule = (
-    module: string,
-    documentsId: number,
-    isFromDocuments: boolean,
-    filePath: string,
-    fileName: string
-  ) => {
-    if (module === '1') {
-      dispatch(setIsFormDocuments(isFromDocuments))
-      router.push(`/bills/create/1/${documentsId}`)
-    }
-    if (module === '2') {
-      dispatch(setIsFormDocuments(isFromDocuments))
-      router.push(`/bills/create/2/${documentsId}`)
-    }
-    if (module === '3') {
-      setIsCreateModalVisible(false)
-      setIsLinkToBillModalVisible(true)
-
-      setLinkedBillObj({
-        ...linkedBillObj,
-        DocumentId: documentsId,
-        FilePath: filePath,
-        FileName: fileName,
-      })
-    }
-  }
-
-  const showPDFViewerModal = async (filePath: any, fileName: any) => {
-    if (filePath) {
-      await getPDFUrl(filePath, fileName, setPDFUrl, null, setFileBlob, setIsPdfLoading, null, null, null, null)
-    }
-  }
-
-  const handleFileOpen = (filePath: any, fileName: string) => {
-    showPDFViewerModal(filePath, fileName)
-    setFileModal(!isFileModal)
   }
 
   const ProviderIcon = ({ providerType, providerTypeName, onClick }: any) => {
@@ -406,198 +322,19 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
     )
   }
 
-  const StatusIndicator = ({ status }: any) => {
-    let backgroundColorClass
-
-    if (status === 'Failed') {
-      backgroundColorClass = 'bg-[#FB2424]'
-    } else if (status === 'Deleted') {
-      backgroundColorClass = 'bg-[#FDB663]'
-    } else {
-      backgroundColorClass = 'bg-[#02B89D]'
-    }
-    return (
-      <div className='!z-0 flex w-full items-center'>
-        <span className={`mr-2 flex !h-[6px] !w-[6px] rounded-full ${backgroundColorClass}`}></span>
-        <Typography className='!text-sm text-darkCharcoal'>{status}&nbsp;</Typography>
-      </div>
-    )
-  }
-
-  const DataRow = ({
-    d,
-    nestedData,
-    handleFileOpen,
-    handleOpenAttachFile,
-    setIsFileRecord,
-    handleCreateFile,
-    handleRetryFile,
-    isRetryLoading,
-    isCreateModalVisible,
-    createOptions,
-    selectedDocument,
-    createModalRef,
-  }: any) => {
-    const formattedNestedUploadedDate =
-      nestedData?.UploadedDate && format(convertUTCtoLocal(nestedData?.UploadedDate), 'MM/dd/yyyy, HH:mm:ss')
-
-    let apProviderTypeText
-
-    if (nestedData?.APProviderType === 1) {
-      apProviderTypeText = 'Account Payable'
-    } else if (nestedData?.APProviderType === 2) {
-      apProviderTypeText = 'Account Adjustment'
-    } else {
-      apProviderTypeText = 'Others'
-    }
-
-    return {
-      ...nestedData,
-      FileName1: (
-        <BasicTooltip position='right' content={nestedData.FileName} className='!z-[2] !p-0 !font-proxima !text-sm'>
-          <span>{limitString(nestedData.FileName, 13)}</span>
-        </BasicTooltip>
-      ),
-      FileName: nestedData.FileName && nestedData.FileName.length > 5
-        ? <BasicTooltip position='right' content={nestedData.FileName} className='!m-0 !p-0 !z-[4]'>
-          <span>{limitString(nestedData.FileName, 13)}</span>
-        </BasicTooltip>
-        : <label className="font-proxima text-sm cursor-pointer">{nestedData.FileName}</label>,
-      APProviderType: apProviderTypeText,
-      UploadedDate: <Typography className='!text-sm tracking-[0.02em] text-darkCharcoal'>{formattedNestedUploadedDate}</Typography>,
-      BillNo: (
-        <div className='flex w-full items-center justify-between'>
-          <div
-            className='w-4/5 cursor-pointer'
-            onClick={() => {
-              setIsFileRecord({
-                FileName: nestedData.FileName,
-                PageCount: nestedData.Pages,
-                BillNumber: nestedData.BillNo,
-              })
-              handleFileOpen(nestedData.FilePath, nestedData.FileName)
-            }}
-          >
-            <Typography className='pl-0 !text-sm text-darkCharcoal'>{nestedData.BillNo || ''}</Typography>
-          </div>
-          <div className='relative mr-4 w-1/5'>
-            {nestedData.DocumentAttachment?.length > 0 && (
-              <BasicTooltip position='right' content='Additional Attachments' className='!z-[2] !font-proxima !text-sm'>
-                <div className='flex cursor-pointer justify-end' onClick={() => handleOpenAttachFile(nestedData?.DocumentsId)}>
-                  <div className='absolute -top-1 right-0'>
-                    <Badge badgetype='error' variant='dot' text={nestedData.DocumentAttachment.length.toString()} />
-                  </div>
-                  <AttachIcon />
-                </div>
-              </BasicTooltip>
-            )}
-            {isAttachmentVisible && attachmentDocumentId === nestedData?.DocumentsId && (
-              <div
-                ref={dropdownRef}
-                className='absolute !z-[3] flex w-[443px] flex-col rounded-md border border-[#cccccc] bg-white p-5 shadow-md'
-              >
-                <DataTable
-                  getExpandableData={() => { }}
-                  columns={attachfileheaders}
-                  data={nestedData.DocumentAttachment.map((e: any) => ({
-                    ...e,
-                    FileName: (
-                      <div
-                        className='flex cursor-pointer items-center gap-1'
-                        onClick={() => {
-                          handleFileOpen(e.FilePath, e.FileName)
-                          setIsFileRecord({
-                            FileName: e.FileName,
-                            PageCount: e.PageCount,
-                            BillNumber: d.BillNumber,
-                          })
-                          setIsAttachmentVisible(false)
-                        }}
-                      >
-                        <GetFileIcon FileName={e.FileName} />
-                        <span className='w-52 truncate' title={e.FileName}>
-                          {e.FileName} &nbsp;
-                        </span>
-                      </div>
-                    ),
-                    Size: <Typography className='!text-sm text-darkCharcoal'>{formatFileSize(e.FileSize)}</Typography>,
-                  }))}
-                  sticky
-                  hoverEffect
-                  getRowId={() => { }}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      ),
-      Status: <StatusIndicator status={nestedData.Status} />,
-      Amount: (
-        <Typography className='!pr-[25px] !text-sm !font-bold text-darkCharcoal'>
-          ${nestedData?.Amount ? formatCurrency(nestedData.Amount) : "0.00"}
-        </Typography>
-      ),
-      actions: (
-        <div className='relative flex h-full justify-end'>
-          {nestedData?.IsShowOptions && (
-            <div className='flex justify-center items-center'>
-              <BasicTooltip position='left' content='Create' className='!z-[2] !font-proxima !text-sm'>
-                <div className='cursor-pointer' onClick={() => handleCreateFile(nestedData?.DocumentsId)}>
-                  <FilesAddIcon />
-                </div>
-              </BasicTooltip>
-              {isRetryLoading && nestedRowId === nestedData?.DocumentsId ? (
-                <div className='pointer-events-none cursor-default px-2 py-1.5'>
-                  <div className='animate-spin'>
-                    <SpinnerIcon bgColor='#6E6D7A' />
-                  </div>
-                </div>
-              ) : (
-                <BasicTooltip position='left' content='Retry' className={`${isRetryLoading ? 'pointer-events-none' : 'cursor-pointer'} !z-[2] !font-proxima !text-sm`}>
-                  <div className='cursor-pointer' onClick={() => {
-                    setNestedRowId(nestedData?.DocumentsId);
-                    handleRetryFile(nestedData?.DocumentsId);
-                  }}>
-                    <FilesRetryIcon />
-                  </div>
-                </BasicTooltip>
-              )}
-            </div>
-          )}
-          {/* {isRetryLoading && <div className='spin'></div>} */}
-          {selectedDocument === nestedData?.DocumentsId && isCreateModalVisible && (
-            <div
-              ref={createModalRef}
-              className='absolute right-2 top-11 z-[99] w-[215px] bg-white shadow-[0px_4px_8px_0px_#00000026]'
-            >
-              {createOptions.map((option: any) => (
-                <div
-                  key={option.id}
-                  onClick={() =>
-                    handleSelectedModule(
-                      option.id,
-                      nestedData?.DocumentsId,
-                      nestedData?.IsFromDocuments,
-                      nestedData?.FilePath,
-                      nestedData?.FileName
-                    )
-                  }
-                  className='cursor-pointer px-3.5 py-2.5 font-proxima text-[14px] hover:bg-[#EEF4F8]'
-                >
-                  {option.label}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ),
-    }
-  }
-
   const table_Data = historyLists?.map((d: any) => {
     const formattedUploadedDate = d?.UploadedDate && format(convertUTCtoLocal(d?.UploadedDate), 'MM/dd/yyyy, HH:mm:ss')
     return {
       ...d,
+      UserName: <label className="font-proxima text-sm cursor-pointer" onClick={() => {
+        setIsVendorDetails(true)
+        setUserDetails({
+          userId: d.UserId,
+          userName: d.UserName,
+          uploadedDate:formattedUploadedDate,
+          ProviderType:d.ProviderType
+        })
+      }}>{d.UserName}</label>,
       ProviderTypeName: (
         <div className='pl-[14px]'>
           <ProviderIcon
@@ -608,36 +345,6 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
         </div>
       ),
       UploadedDate: <Typography className='!text-sm tracking-[0.02em] text-darkCharcoal'>{formattedUploadedDate}</Typography>,
-      details: (
-        <div className='custom-scroll stickyTable h-auto max-h-[288px] overflow-auto border-b border-solid border-black'>
-          <DataTable
-            columns={filteredNestedColumns}
-            data={
-              d.AttachmentData?.length > 0 &&
-              d.AttachmentData.map((nestedData: any) =>
-                DataRow({
-                  d,
-                  nestedData,
-                  handleFileOpen,
-                  handleOpenAttachFile,
-                  setIsFileRecord,
-                  handleCreateFile,
-                  handleRetryFile,
-                  isRetryLoading,
-                  isCreateModalVisible,
-                  createOptions,
-                  selectedDocument,
-                  createModalRef,
-                })
-              )
-            }
-            hoverEffect
-            isTableLayoutFixed
-            getExpandableData={() => { }}
-            getRowId={() => { }}
-          />
-        </div>
-      ),
       Actions: <HistorySystemUpdateIcon />,
     }
   })
@@ -753,71 +460,90 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
     noDataContent = ''
   }
 
-
   return (
     <Wrapper masterSettings={false}>
-      <div className='sticky top-0 z-[6] flex !h-[66px] items-center justify-between bg-whiteSmoke laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
-        <div className='flex items-center'>
-          <label className='font-proxima flex cursor-pointer items-center laptop:text-base laptopMd:text-base lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg laptop:font-semibold laptopMd:font-semibold lg:font-semibold xl:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>File History</label>
-        </div>
+      {
+        isVendorDetails ? (
+          <HistoryDetails
+            isDetailsOpen={isVendorDetails}
+            userDetails={userdetails}
+            userOptions={userOptions}
+            billNumberOptions={billNumberOptions}
+            locationOptions={locationOptions}
+            onBack={(value: boolean) => {
+              setIsVendorDetails(value)
+            }} />
+        ) : (
+          <>
+            <div className='sticky top-0 z-[6] flex !h-[66px] items-center justify-between bg-whiteSmoke laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
+              <div className='flex items-center'>
+                <label className='font-proxima flex cursor-pointer items-center laptop:text-base laptopMd:text-base lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg laptop:font-semibold laptopMd:font-semibold lg:font-semibold xl:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>File History</label>
+              </div>
+              <div className='flex items-center laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5'>
+                <div className='flex justify-center items-center h-6 laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5 border-r border-lightSilver laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em] text-darkCharcoal'>
+                  Total Uploaded Files: <span className='font-bold text-darkCharcoal'>{apiDataCount}</span>
+                </div>
+                <div className='flex justify-center items-center mt-1' onClick={() => setIsFilterVisible(true)}>
+                  <BasicTooltip position='bottom' content='Filter' className='!px-0 !pb-2.5 !font-proxima !text-sm'>
+                    <FilterIcon />
+                  </BasicTooltip>
+                </div>
 
-        <div className='flex items-center laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5'>
-          <div className='flex justify-center items-center h-6 laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5 border-r border-lightSilver laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em] text-darkCharcoal'>
-            Total Uploaded Files: <span className='font-bold text-darkCharcoal'>{apiDataCount}</span>
-          </div>
-          <div className='flex justify-center items-center mt-1' onClick={() => setIsFilterVisible(true)}>
-            <BasicTooltip position='bottom' content='Filter' className='!px-0 !pb-2.5 !font-proxima !text-sm'>
-              <FilterIcon />
-            </BasicTooltip>
-          </div>
-          <div className='flex justify-center items-center mt-0.5'>
-            <Download
-              url={`${process.env.API_FILEUPLOAD}/document/getlist`}
-              params={{}}
-              fileName='History'
-            />
-          </div>
-        </div>
-      </div>
+                <div className='flex justify-center items-center mt-0.5'>
+                  <Download
+                    url={`${process.env.API_FILEUPLOAD}/document/getlist`}
+                    params={{}}
+                    fileName='History'
+                  />
+                </div>
 
-      <div className={`custom-scroll h-[calc(100vh-145px)] approvalMain overflow-auto ${tableDynamicWidth}`}>
-        <div className={`historyTable !outline-none ${table_Data.length === 0 ? 'h-11' : 'h-auto'}`}>
-          <DataTable
-            columns={columns}
-            data={table_Data ? table_Data : []}
-            sticky
-            hoverEffect
-            isTableLayoutFixed
-            expandable
-            isExpanded
-            expandOneOnly={false}
-            lazyLoadRows={lazyRows}
-            getRowId={() => { }}
-            getExpandableData={() => { }}
+              </div>
+
+            </div >
+            <div className={`custom-scroll h-[calc(100vh-145px)] approvalMain overflow-auto ${tableDynamicWidth}`}>
+              <div className={`historyTable !outline-none ${table_Data.length === 0 ? 'h-11' : 'h-auto'}`}>
+                <DataTable
+                  columns={columns}
+                  data={table_Data ? table_Data : []}
+                  sticky
+                  hoverEffect
+                  isTableLayoutFixed
+                  // expandable
+                  // isExpanded
+                  // expandOneOnly={false}
+                  lazyLoadRows={lazyRows}
+                  getRowId={() => { }}
+                  getExpandableData={() => { }}
+                />
+                {isLazyLoading && !isLoading && (
+                  <Loader size='sm' helperText />
+                )}
+                <div ref={tableBottomRef} />
+              </div>
+              {noDataContent}
+            </div>
+          </>
+        )
+      }
+
+
+      {
+        isFileModal && ['pdf'].includes(fileExtensions ?? '') && (
+          <FileModal
+            isFileRecord={isFileRecord}
+            setIsFileRecord={setIsFileRecord}
+            PDFUrl={PDFUrl}
+            isFileNameVisible={true}
+            isOpenDrawer={isOpenDrawer}
+            setPDFUrl={(value: any) => setPDFUrl(value)}
+            setIsOpenDrawer={(value: boolean) => setIsOpenDrawer(value)}
+            setFileModal={(value: boolean) => setFileModal(value)}
+            fileBlob={fileBlob}
+            isPdfLoading={isPdfLoading}
+            openInNewWindow={openInNewWindow}
           />
-          {isLazyLoading && !isLoading && (
-            <Loader size='sm' helperText />
-          )}
-          <div ref={tableBottomRef} />
-        </div>
-        {noDataContent}
-      </div>
-
-      {isFileModal && ['pdf'].includes(fileExtensions ?? '') && (
-        <FileModal
-          isFileRecord={isFileRecord}
-          setIsFileRecord={setIsFileRecord}
-          PDFUrl={PDFUrl}
-          isFileNameVisible={true}
-          isOpenDrawer={isOpenDrawer}
-          setPDFUrl={(value: any) => setPDFUrl(value)}
-          setIsOpenDrawer={(value: boolean) => setIsOpenDrawer(value)}
-          setFileModal={(value: boolean) => setFileModal(value)}
-          fileBlob={fileBlob}
-          isPdfLoading={isPdfLoading}
-          openInNewWindow={openInNewWindow}
-        />
-      )}
+        )
+      }
 
       <HistoryFilter
         isFilterVisible={isFilterVisible}
@@ -828,8 +554,6 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
         localFilterFormFields={localFilterFormFields}
         setLocalFilterFormFields={setLocalFilterFormFields}
         receivedUserOptions={userOptions}
-        billNumberOptions={billNumberOptions}
-        locationOptions={locationOptions}
       />
 
       <LinkToBillModal
@@ -871,6 +595,6 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
         colorVariantNo='btn-outline-primary'
         colorVariantYes='btn-primary'
       />
-    </Wrapper>
+    </Wrapper >
   )
 }

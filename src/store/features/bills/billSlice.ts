@@ -15,6 +15,8 @@ import {
   MergeDocumentOptionsProps,
   RemoveDocumentOptionsProps,
   UserListOptionsProps,
+  DocumentGetOverviewListOptions,
+  DeleteDocumentOverviewOptionsProps,
 } from '@/models/billPosting'
 import { format, subMonths } from 'date-fns'
 
@@ -34,11 +36,13 @@ const initialState: AuthState = {
   isVisibleSidebar: true,
   IsFromDocuments: false,
   billStatus: 0,
-  selectedProcessTypeInList: 1,
+  selectedProcessTypeInList: '1',
   filterFormFields: {
     ft_status: ['1', '2', '6', '8'],
     ft_assignee: '1',
+    ft_process: '1',
     ft_select_users: [],
+    ft_overview_status: ['1','2','3','4','5'],
     ft_vendor: null,
     ft_datepicker: `${formattedDate} to ${formattedCurrentDate}`,
     ft_location: null,
@@ -48,6 +52,14 @@ const initialState: AuthState = {
 export const documentGetList = createAsyncThunk('bill/documentGetList', async (data: DocumentGetListOptions, thunkAPI) => {
   try {
     return await agent.Bill.documentGetList(data)
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue({ error: error.data })
+  }
+})
+
+export const documentBillsOverviewList = createAsyncThunk('bill/documentBillsOverviewList', async (data: DocumentGetOverviewListOptions, thunkAPI) => {
+  try {
+    return await agent.Bill.documentBillsOverviewList(data)
   } catch (error: any) {
     return thunkAPI.rejectWithValue({ error: error.data })
   }
@@ -108,6 +120,15 @@ export const deleteDocument = createAsyncThunk('auth/deleteDocument', async (dat
     return thunkAPI.rejectWithValue({ error: error.data })
   }
 })
+
+export const deleteOverviewDocument = createAsyncThunk('auth/deleteOverviewDocument', async (data: DeleteDocumentOverviewOptionsProps, thunkAPI) => {
+  try {
+    return await agent.Bill.deleteOverviewDocument(data)
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue({ error: error.data })
+  }
+})
+
 
 export const getfieldmappings = createAsyncThunk('bill/getfieldmappings', async (data: GetFieldMappingOptionsProps, thunkAPI) => {
   try {
@@ -181,6 +202,28 @@ export const getColumnMappingList = createAsyncThunk(
   async (data: GetColumnMappingListOptionsProps, thunkAPI) => {
     try {
       return await agent.Bill.getColumnMappingList(data)
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue({ error: error.data })
+    }
+  }
+)
+
+export const getColumnMappingOverviewList = createAsyncThunk(
+  'bill/getColumnMappingOverviewList',
+  async (data: GetColumnMappingListOptionsProps, thunkAPI) => {
+    try {
+      return await agent.Bill.getColumnMappingOverviewList(data)
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue({ error: error.data })
+    }
+  }
+)
+
+export const getColumnMappingBillsOverview = createAsyncThunk(
+  'bill/getColumnMappingBillsOverview',
+  async (data: GetColumnMappingListOptionsProps, thunkAPI) => {
+    try {
+      return await agent.Bill.getColumnMappingBillsOverview(data)
     } catch (error: any) {
       return thunkAPI.rejectWithValue({ error: error.data })
     }
@@ -285,6 +328,17 @@ export const getDepartmentDropdown = createAsyncThunk('bill/getDepartmentDropdow
     return thunkAPI.rejectWithValue({ error: error.data })
   }
 })
+
+export const saveOverviewColumnMapping = createAsyncThunk(
+  'bill/saveOverviewColumnMapping',
+  async (data: any, thunkAPI) => {
+    try {
+      return await agent.Bill.saveOverviewColumnMapping(data)
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue({ error: error.data })
+    }
+  }
+)
 
 export const billSlice = createSlice({
   name: 'bill',

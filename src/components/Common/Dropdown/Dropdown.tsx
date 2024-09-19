@@ -4,81 +4,115 @@ import ChevronDown from './Icons/ChevronDown'
 import Search from './Icons/Search'
 import Star from './Icons/Star'
 
-import { Option } from '@/models/paymentStatus'
+import { invalidateSessionCache } from '@/api/axios'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { setSelectedVendors, setVendorIdList } from '@/store/features/billsToPay/billsToPaySlice'
-import { paymentStatusDropdown, setFilterFields, setStatusIdList } from '@/store/features/paymentstatus/paymentStatusSlice'
-import { getAssignUsertoCompany, setIsRefresh, setSelectedCompany } from '@/store/features/user/userSlice'
+import { setFilterFields } from '@/store/features/paymentstatus/paymentStatusSlice'
+import { setProcessPermissionsMatrix } from '@/store/features/profile/profileSlice'
+import { getAssignUsertoCompany, setIsRefresh, setSelectedCompany, userGetManageRights } from '@/store/features/user/userSlice'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Button, Toast, Typography } from 'pq-ap-lib'
-import { invalidateSessionCache } from '@/api/axios'
+import { performApiAction } from '../Functions/PerformApiAction'
+import { getModulePermissions, hasViewPermission, processPermissions } from '../Functions/ProcessPermission'
 
 const Dropdown: React.FC = () => {
   const { data: session } = useSession()
   const { update } = useSession()
-  const user = session ? session?.user : {}
-
-  const userId = localStorage.getItem('UserId')
+  const user: any = session ? session?.user : {}
+  const CompanyId = session?.user?.CompanyId
+  const UserId = session?.user?.user_id
+  const router = useRouter()
 
   const dropDownRef = useRef<HTMLDivElement>(null)
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const [searchValue, setSearchValue] = useState<string>('')
   const [selectedValue, setSelectedValue] = useState<string>('')
   const [newCompanyList, setNewCompanyList] = useState<any[]>([])
-  const CompanyId = session?.user?.CompanyId
-
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
 
   const { selectedCompany, isRefresh } = useAppSelector((state) => state.user)
   const dispatch = useAppDispatch()
   const selectedCompanyValue = selectedCompany?.value
 
+  const sidebarItems = [
+    { name: 'Dashboard', route: '/dashboard' },
+    { name: 'Files', route: '/history' },
+    { name: 'Bills', route: '/bills' },
+    { name: 'Payments', route: '/payments' },
+    { name: 'Approval', route: '/approvals' },
+    { name: 'Reports', route: '/reports' },
+    { name: 'Vendor', route: '/vendors' }
+  ]
+
   //Company List Dropdown API
-  const getCompanyList = async () => {
-    if (userId) {
-      try {
-        const params = {
-          UserId: Number(userId),
-        }
+  // const getCompanyList1 = async () => {
+  //   if (UserId) {
+  //     try {
+  //       const params = {
+  //         UserId: UserId,
+  //       }
 
-        const { payload, meta } = await dispatch(getAssignUsertoCompany(params))
-        const dataMessage = payload?.Message
+  //       const { payload, meta } = await dispatch(getAssignUsertoCompany(params))
+  //       const dataMessage = payload?.Message
 
-        if (meta?.requestStatus === 'fulfilled') {
-          if (payload?.ResponseStatus === 'Success') {
-            setNewCompanyList(payload?.ResponseData)
-          } else {
-            Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
-          }
-        } else {
-          Toast.error(`${payload?.status} : ${payload?.statusText}`)
-        }
-      } catch (error) {
-        console.error(error)
-      }
+  //       if (meta?.requestStatus === 'fulfilled') {
+  //         if (payload?.ResponseStatus === 'Success') {
+  //           setNewCompanyList(payload?.ResponseData)
+  //         } else {
+  //           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
+  //         }
+  //       } else {
+  //         Toast.error(`${payload?.status} : ${payload?.statusText}`)
+  //       }
+  //     } catch (error) {
+  //       console.error(error)
+  //     }
+  //   }
+  // }
+
+  const getCompanyList = () => {
+    const params = {
+      UserId: UserId,
     }
+    performApiAction(dispatch, getAssignUsertoCompany, params, (responseData: any) => {
+      setNewCompanyList(responseData)
+    })
   }
 
-  //Status List API
-  const getAllStatusList = async () => {
-    try {
-      const { payload, meta } = await dispatch(paymentStatusDropdown())
-      const dataMessage = payload?.Message
-
-      if (meta?.requestStatus === 'fulfilled') {
-        if (payload?.ResponseStatus === 'Success') {
-          const allValues = payload?.ResponseData.map((option: Option) => option.value)
-          dispatch(setStatusIdList(allValues))
-        } else {
-          Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
-        }
-      } else {
-        Toast.error(`${payload?.status} : ${payload?.statusText}`)
-      }
-    } catch (error) {
-      console.error(error)
+  const getUserManageRights = (CompanyId: any) => {
+    const params = {
+      UserId: UserId,
+      CompanyId: Number(CompanyId),
     }
+    performApiAction(dispatch, userGetManageRights, params, (responseData: any) => {
+      const processedData = processPermissions(responseData);
+      dispatch(setProcessPermissionsMatrix(processedData));
+      // const firstAllowedItem = sidebarItems.find(item => hasViewPermission(processedData, item.name))
+
+      if (processedData.length > 0) {
+        // if (firstAllowedItem && firstAllowedItem.name != "Payments") {
+        //   router.push(firstAllowedItem.route)
+        // }
+        // else if (firstAllowedItem && firstAllowedItem.name == "Payments") {
+        //   const isPaymentView = getModulePermissions(processedData, "Payments") ?? {}
+        //   const isPaymentStatus = isPaymentView["Payment Status"]?.View ?? false;
+        //   if (isPaymentStatus) {
+        //     router.push('/payments/status')
+        //   } else {
+        //     router.push('/payments/billtopay')
+        //   }
+        // }
+        // else {
+        //   // If no permissions are found, you might want to redirect to a default page or show an error
+        //   router.push('/404')
+        // }
+      } else {
+        Toast.error('You do not have any permission for any module.')
+        router.push('/manage/companies')
+      }
+    })
   }
 
   useEffect(() => {
@@ -92,15 +126,13 @@ const Dropdown: React.FC = () => {
             accountingTool: newCompanyList[0].accountingTool,
           })
         )
-      index && getAllStatusList()
     }
   }, [newCompanyList])
 
   useEffect(() => {
     getCompanyList()
     const company = newCompanyList.find((item) => item.value == CompanyId)
-    company &&
-      dispatch(setSelectedCompany({ label: company.label, value: company?.value, accountingTool: company?.accountingTool }))
+    company && dispatch(setSelectedCompany({ label: company.label, value: company?.value, accountingTool: company?.accountingTool }))
   }, [isRefresh])
 
   useEffect(() => {
@@ -124,10 +156,12 @@ const Dropdown: React.FC = () => {
   }
 
   const handleSelect = async (label: string, value: string, accountingTool: number, clickOn: string) => {
+    setSearchValue('')
     if (clickOn === 'label') {
       dispatch(setSelectedCompany({ label, value, accountingTool }))
       localStorage.setItem('CompanyId', value)
       invalidateSessionCache();
+      getUserManageRights(value)
       await update({ ...user, CompanyId: value, CompanyName: label, AccountingTool: accountingTool })
 
       // dispatch(setVendorIdList([]))
@@ -173,14 +207,14 @@ const Dropdown: React.FC = () => {
   }, [handleOutsideClick])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === 'Enter') {
       e.preventDefault()
       window.location.href = '/manage/companies'
     }
   }
 
   const handleListItemKeyDown = (e: React.KeyboardEvent<HTMLLIElement>, option: any, index: number) => {
-    if ((e.key === 'Enter' || e.key === ' ') && e.target instanceof HTMLElement && e.target.tagName == "LI") {
+    if ((e.key === 'Enter') && e.target instanceof HTMLElement && e.target.tagName == "LI") {
       setFocusedIndex(-1);
       handleSelect(option.label, option.value, option.accountingTool, 'label')
     } else if (e.key === "ArrowUp" && index > 0 && isOpen) {
@@ -192,34 +226,32 @@ const Dropdown: React.FC = () => {
     }
   };
 
-
   return (
-    <div className='relative laptop:w-[270px] laptopMd:w-[270px] lg:w-[270px] xl:w-[270px] hd:w-[334px] 2xl:w-[334px] 3xl:w-[334px]'
+    <div className='relative laptop:w-[275px] laptopMd:w-[275px] lg:w-[275px] xl:w-[275px] hd:w-[334px] 2xl:w-[334px] 3xl:w-[334px]'
       ref={dropDownRef}
       tabIndex={0}
-      onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => (e.key === 'Enter' || e.key === ' ') && setIsOpen(!isOpen)}>
-      <div className='flex h-10 w-full'>
+      onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => (e.key === 'Enter') && setIsOpen(!isOpen)}>
+      <div className='flex h-10 w-full gap-1'>
         <div className='flex text-[1.5rem] !w-[30px] items-center justify-center'>
           <Building />
         </div>
-        <div className='flex h-full w-full items-center  justify-center px-2'>
+        <div className='flex h-full w-full items-center justify-center px-2'>
           <span
-            className={`flex h-full pl-1  w-full cursor-pointer  items-center text-sm ${selectedValue === '' ? 'text-slatyGrey' : 'text-black'}`}
+            className={`flex h-full pl-1 w-full cursor-pointer items-center text-sm ${selectedValue === '' ? 'text-slatyGrey' : 'text-black'}`}
             onClick={handleInput}
           >{selectedValue === '' ? 'Select Company...' : selectedValue}
           </span>
         </div>
         <div
-          className={`absolute right-[-5px] flex h-full !w-[20px] cursor-pointer items-center justify-center text-[1.6rem] transition-transform ${isOpen ? 'duration-400 rotate-180 text-primary' : 'text-slatyGrey duration-200'
+          className={`absolute right-[-10px] flex h-full !w-[20px] cursor-pointer items-center justify-center text-[1.6rem] transition-transform ${isOpen ? 'duration-400 rotate-180 text-primary' : 'text-slatyGrey duration-200'
             }`}
-          onClick={handleInput}
-        >
+          onClick={handleInput}>
           <ChevronDown />
         </div>
       </div>
 
       <ul
-        className={`absolute top-12 z-[5] w-full overflow-y-auto border-t-2 border-primary bg-pureWhite shadow-md transition-transform ${isOpen
+        className={`absolute top-12 z-[5] w-[250px] overflow-y-auto border-t-2 border-primary bg-pureWhite shadow-md transition-transform ${isOpen
           ? 'max-h-[500px] translate-y-0 opacity-100 transition-opacity duration-300'
           : 'max-h-0 translate-y-20 opacity-0 transition-opacity duration-300'
           } ${isOpen ? 'ease-out' : ''}`}
@@ -231,6 +263,7 @@ const Dropdown: React.FC = () => {
             <Search />
           </div>
           <input
+            key={isOpen + ""}
             tabIndex={isOpen ? 0 : -1}
             placeholder='Search'
             onChange={handleInputChange}
@@ -263,9 +296,10 @@ const Dropdown: React.FC = () => {
                 <Building />
               </div>
               <div
-                className='flex flex-grow'
+                className={`flex flex-grow`}
                 onClick={() => {
                   if (option.label !== searchValue) {
+                    localStorage.removeItem('IsFieldMappingSet')
                     handleSelect(option.label, option.value, option.accountingTool, 'label')
                   }
                 }}
@@ -283,12 +317,12 @@ const Dropdown: React.FC = () => {
           </span>
         )}
         <li
-          className={`sticky bottom-0 z-[5] flex cursor-pointer items-center justify-center bg-white p-5 text-sm font-normal focus:bg-whiteSmoke`}
+          className={`border-t border-lightSilver sticky bottom-0 z-[5] flex cursor-pointer items-center justify-center bg-white laptop:p-4 laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 text-sm font-normal focus:bg-whiteSmoke`}
         >
           <Button
             className='!h-9 !w-full rounded-full'
             variant='btn-primary'
-            tabIndex={isOpen ? 0 : -1}
+            onClick={() => localStorage.removeItem('IsFieldMappingSet')}
             onKeyDown={(event: React.KeyboardEvent<HTMLButtonElement>) => handleKeyDown(event)}
           >
             <Link tabIndex={-1} className='!text-sm !tracking-[0.02em] !font-proxima outline-none font-semibold' href={`/manage/companies`}>

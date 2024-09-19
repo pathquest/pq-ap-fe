@@ -195,10 +195,10 @@ const EditBillForm = ({
   return (
     <div className='py-5 pr-5'>
       <div className='flex pb-7 pl-5 pt-2.5'>
-        <BasicTooltip position='right' content='Bill Number' className='!py-0 !pl-0 !pr-1 !font-proxima !text-[14px]'>
+        <div className='!py-0 !pl-0 !pr-1 !font-proxima !text-[14px]'>
           <span className='text-[16px] font-proxima tracking-[0.02em]'>BILL INFO : </span>
           <span className='break-all pl-[18px] text-[16px] font-bold font-proxima tracking-[0.02em]'>{documentDetailByIdData?.BillNumber}</span>
-        </BasicTooltip>
+        </div>
       </div>
 
       <div className='grid laptop:grid-cols-2'>

@@ -1,7 +1,7 @@
 import { useAppDispatch } from '@/store/configureStore'
 import { setIsFormDocuments } from '@/store/features/bills/billSlice'
 import moment from 'moment'
-import { CheckBox, Tooltip } from 'pq-ap-lib'
+import { CheckBox, BasicTooltip } from 'pq-ap-lib'
 
 interface BillListingProps {
   billLists: any
@@ -42,7 +42,7 @@ const BillPostingEditListComponent = ({
 
   return (
     <div
-      className={`flex items-center justify-between border-b border-solid border-[#E6E6E6] px-2.5 py-5 hover:cursor-pointer hover:bg-[#EEF4F8] 
+      className={`flex items-center justify-between border-b border-solid border-darkSmoke px-2.5 py-5 hover:cursor-pointer hover:bg-[#EEF4F8]
     ${isActive ? 'bg-[#EEF4F8]' : ''}
     `}
       onClick={() => {
@@ -66,23 +66,23 @@ const BillPostingEditListComponent = ({
       )}
       <div className={`grid w-[95%] grid-cols-2 pl-3.5`}>
         <div className='grid place-items-start'>
-          <label className='mb-1 break-all !text-[14px] font-proxima'>
-            <Tooltip position='right' content='Bill Number' className='!p-0 !font-proxima !text-[14px]'>
+          <label className='mb-1 break-all !text-sm text-darkCharcoal tracking-[0.02em] font-proxima'>
+            <BasicTooltip position='right' content='Bill Number' className='!pl-0 !py-0 !pr-1 !font-proxima !text-sm'>
               {BillNumber ? BillNumber : 'Not Available'}
-            </Tooltip>
+            </BasicTooltip>
           </label>
-          <label className='!text-[14px] font-proxima'>
+          <label className='!text-sm text-darkCharcoal font-proxima tracking-[0.02em]'>
             {VendorName ? VendorName : 'Not Available'}
           </label>
         </div>
-        <div className='grid place-items-end'>
-          <label className='mb-1 !text-[14px] font-proxima'>
+        <div className='grid'>
+          <label className='w-full mb-1 !text-sm font-proxima tracking-[0.02em] text-end'>
             {moment(CreatedOn).format('L')}
           </label>
-          <label className='flex !w-24 flex-wrap items-end justify-end !text-[14px] font-proxima'>
-            <span className='!font-bold'>Status: &nbsp;</span>
+          <div className='flex !w-full items-start justify-end !text-sm font-proxima font-bold tracking-[0.02em] text-darkCharcoal gap-2'>
+            <span>Status:</span>
             <span>{StatusName}</span>
-          </label>
+          </div>
         </div>
       </div>
     </div>

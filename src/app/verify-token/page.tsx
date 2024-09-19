@@ -24,11 +24,11 @@ export default function VerifyTokenPage() {
                 token: urlToken,
             }).then(() => {
                 if (session?.user?.access_token) {
-                    if (isFirstConfig === 'false') {
-                        router.push('/manage/companies')
-                    } else {
+                    // if (isFirstConfig === 'false') {
+                    //     router.push('/manage/companies')
+                    // } else {
                         router.push('/profile')
-                    }
+                    // }
                 }
             })
         }

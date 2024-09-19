@@ -3,9 +3,10 @@
 import SyncIcon from '@/assets/Icons/SyncIcon'
 import DataLoadingStatus from '@/components/Common/Functions/DataLoadingStatus'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
 import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 import Wrapper from '@/components/Common/Wrapper'
-import { useAppDispatch } from '@/store/configureStore'
+import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { currencyGetList, syncCurrencyMaster } from '@/store/features/paymentsetting/currencySlice'
 import { useSession } from 'next-auth/react'
 import { DataTable, Loader, SearchBar, Toast, Tooltip, Typography } from 'pq-ap-lib'
@@ -21,6 +22,8 @@ const ListCurrency: React.FC = () => {
   // For Dynamic Company Id & AccountingTool
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isCurrencySync = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "Currency", "Sync");
 
   const dispatch = useAppDispatch()
   const [currencyList, setCurrencyList] = useState<CurrencyList[]>([])
@@ -194,7 +197,7 @@ const ListCurrency: React.FC = () => {
   //DataTable Data
   const currencyListData = currencyList && currencyList?.map((e: CurrencyList, index: number) =>
     new Object({
-      id:<Typography className="!pl-3">{index + 1}</Typography>,
+      id: <Typography className="!pl-3">{index + 1}</Typography>,
       code: e?.Code,
       description: e?.Description
     })
@@ -223,11 +226,11 @@ const ListCurrency: React.FC = () => {
               }}
             />
           </div>
-          <Tooltip content={`Sync Currency`} position='left' className='!z-[6] flex h-8 w-9 justify-center items-center'>
+          {isCurrencySync && <Tooltip content={`Sync Currency`} position='left' className='!z-[6] flex h-8 w-9 justify-center items-center'>
             <div className={`${isSyncing && 'animate-spin'}`} onClick={() => setIsSyncModalOpen(true)}>
               <SyncIcon />
             </div>
-          </Tooltip>
+          </Tooltip>}
         </div>
       </div>
 

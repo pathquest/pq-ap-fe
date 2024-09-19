@@ -16,18 +16,48 @@ import { setNotificationCount } from '@/store/features/auth/authSlice'
 import { getNotificationList } from '@/store/features/notification/notificationSlice'
 
 import { WebPubSubClient } from '@azure/web-pubsub-client'
-import { Avatar, Tooltip, Typography, Toast } from 'pq-ap-lib'
+import { Avatar, Toast, Tooltip, Typography } from 'pq-ap-lib'
 import SearchComponent from './GlobalSearch/SearchComponent'
 
 import { handleSignOut } from '@/actions/server/auth'
 import { useSession } from 'next-auth/react'
 import Building from './Dropdown/Icons/Building'
+import { hasSpecificPermission, processPermissions } from './Functions/ProcessPermission'
+import { performApiAction } from './Functions/PerformApiAction'
+import { permissionGetList } from '@/store/features/role/roleSlice'
+import { setOrgPermissionsMatrix, setProcessPermissionsMatrix } from '@/store/features/profile/profileSlice'
 
 const Navbar = ({ onData }: any) => {
   const { data: session } = useSession()
   const CompanyId = session?.user?.CompanyId
 
+  const { organizationName, RoleId } = useAppSelector((state) => state.profile)
+
+  const { processPermissionsMatrix, orgPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isManageCompanyView = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Company", "View");
+  const isManageUserView = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Users", "View");
+  const isManageRolesView = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Roles", "View");
+
+  // Master
+  const isDimensionView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "Dimension", "View");
+  const isGLAccountView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "GL Account", "View");
+  const isAPTermView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "AP Term", "View");
+  const isCurrencyView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "Currency", "View");
+  const isTaxRateView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "Tax Rate", "View");
+
+  //Setup
+  const isAPFieldMappingView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "AP Field Mapping", "View");
+  const isNotificationView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Notification", "View");
+  const isCloudConfigurationView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Cloud Configuration", "View");
+  const isAutomationView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Automation", "View");
+  const isPaymentSetupView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Payment Setup", "View");
+  // const isManageUserView = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Users", "View");
+  // const isManageRolesView = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Roles", "View");
+
   const router = useRouter()
+  const userId = localStorage.getItem('UserId')
+  const IsFieldMappingSet = localStorage.getItem('IsFieldMappingSet') ?? 'true'
+
   const pathname = usePathname()
 
   const settingRef = useRef<HTMLDivElement>(null)
@@ -48,9 +78,9 @@ const Navbar = ({ onData }: any) => {
     {
       heading: 'Global Setting',
       items: [
-        { name: 'Manage Company', href: '/manage/companies' },
-        { name: 'Manage Users', href: '/manage/users' },
-        { name: 'Manage Roles', href: '/manage/roles' },
+        { name: 'Manage Company', href: '/manage/companies', isVisible: isManageCompanyView },
+        { name: 'Manage Users', href: '/manage/users', isVisible: isManageUserView },
+        { name: 'Manage Roles', href: '/manage/roles', isVisible: isManageRolesView },
       ],
     },
   ]
@@ -58,22 +88,27 @@ const Navbar = ({ onData }: any) => {
   const settingsData = [
     {
       heading: 'Masters',
+      isHeadingVisible: (isDimensionView || isGLAccountView || isAPTermView || true) ? true : false,
       items: [
         {
           name: 'Dimension',
           href: '/master/dimension',
+          isVisible: isDimensionView
         },
         {
           name: 'GL Account',
           href: '/master/glaccount',
+          isVisible: isGLAccountView
         },
         {
           name: 'AP Term',
           href: '/master/apterm',
+          isVisible: isAPTermView
         },
         {
           name: 'Product Service',
           href: '/master/productservice',
+          isVisible: true
         },
         // {
         //   name: 'Customers',
@@ -83,14 +118,17 @@ const Navbar = ({ onData }: any) => {
     },
     {
       heading: 'Payment Policies',
+      isHeadingVisible: (isCurrencyView || isTaxRateView || isPaymentSetupView) ? true : false,
       items: [
         {
           name: 'Currency',
           href: '/paymentsetting/currency',
+          isVisible: isCurrencyView
         },
         {
           name: 'Tax Rate',
           href: '/paymentsetting/taxrate',
+          isVisible: isTaxRateView
         },
         // {
         //   name: 'Payment Method',
@@ -99,27 +137,33 @@ const Navbar = ({ onData }: any) => {
         {
           name: 'Payment Setup',
           href: '/paymentsetting/paymentsetup',
+          isVisible: isPaymentSetupView
         },
       ],
     },
     {
       heading: 'Setup',
+      isHeadingVisible: (isAPFieldMappingView || isNotificationView || isCloudConfigurationView || isAutomationView) ? true : false,
       items: [
         {
           name: 'AP Field Mapping',
           href: '/setup/apfieldmapping',
+          isVisible: isAPFieldMappingView
         },
         {
           name: 'Notification',
           href: '/setup/notification',
+          isVisible: isNotificationView
         },
         {
           name: 'Cloud Configuration',
           href: '/setup/cloudconfiguration',
+          isVisible: isCloudConfigurationView
         },
         {
           name: 'Automation',
           href: '/setup/automation',
+          isVisible: isAutomationView
         },
       ],
     },
@@ -178,10 +222,13 @@ const Navbar = ({ onData }: any) => {
     const handleConnected = (e: any) => { }
 
     const handleServerMessage = (data: any) => {
+      Toast.success(`${data?.message?.data?.message}`)
       if (data?.message?.data?.company_id === parseInt(`${CompanyId}`)) {
         setCount(() => notificationCount + 1)
       }
+
     }
+
 
     async function connect() {
       await client.start()
@@ -194,6 +241,7 @@ const Navbar = ({ onData }: any) => {
       client.off('connected', handleConnected)
       client.off('server-message', handleServerMessage)
     }
+
   }, [])
 
   useEffect(() => {
@@ -207,8 +255,22 @@ const Navbar = ({ onData }: any) => {
     }
   }, [handleOutsideClick])
 
+  const getRolePermissionData = () => {
+    const params = {
+      RoleId: RoleId ?? 0,
+    }
+    performApiAction(dispatch, permissionGetList, params, (responseData: any) => {
+      const processedData = processPermissions(responseData);
+      dispatch(setOrgPermissionsMatrix(processedData));
+      // dispatch(setProcessPermissionsMatrix(processedData));
+    })
+  }
+
+  useEffect(() => {
+    getRolePermissionData()
+  }, [])
+
   const settingsFocusedArr = ['/manage/users', '/manage/roles', '/manage/companies', '/practice-dashboard']
-  const organizationFocusedArr = ['/practice-dashboard', '/manage/companies', '/manage/users', '/manage/roles']
 
   return (
     <>
@@ -229,7 +291,7 @@ const Navbar = ({ onData }: any) => {
                   <Building />
                 </div>
                 <div className='flex h-full w-full items-center justify-center px-2'>
-                  <span className={`flex h-full w-full font-proxima cursor-pointer items-center pl-1 text-sm text-black tracking-[0.02em]`}> ZALA</span>
+                  <span className={`flex h-full w-full font-proxima items-center pl-1 text-sm text-black tracking-[0.02em]`}> {organizationName}</span>
                 </div>
               </div>
             )}
@@ -266,21 +328,21 @@ const Navbar = ({ onData }: any) => {
               {isSettingOpen && (
                 <div
                   style={{ boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.2)' }}
-                  className={`flex ${settingsFocusedArr.includes(pathname) ? 'w-44' : 'h-[326px] w-[760px]'
+                  className={`flex ${settingsFocusedArr.includes(pathname) ? 'w-44' : 'h-[326px] w-auto'
                     } absolute right-0 top-[63px] bg-white`}
                 >
                   {globalSetting.map((data) => (
-                    <div
-                      className={`flex bg-whiteSmoke ${settingsFocusedArr.includes(pathname) ? 'w-full' : 'w-1/4 border-r border-lightSilver '
-                        } flex-col gap-4 px-6 py-7`}
+                    <div className={`${(!isManageCompanyView && !isManageUserView && !isManageRolesView) ? "hidden" : ""} flex bg-whiteSmoke ${settingsFocusedArr.includes(pathname) ? 'w-full' : 'w-[190px] border-r border-lightSilver '
+                      } flex-col gap-4 px-6 py-7`}
                       key={data.heading}
                     >
                       <span className='border-b border-lightSilver pb-3 font-semibold font-proxima tracking-[0.02em]'>{data.heading}</span>
                       {data.items.map((element) => (
                         <Link
                           key={element.name}
+                          onClick={() => localStorage.removeItem('IsFieldMappingSet')}
                           href={`${element.href}`}
-                          className='text-[14px] font-normal hover:text-primary font-proxima tracking-[0.02em]'
+                          className={`${element.isVisible ? "flex" : "hidden"} text-[14px] font-normal hover:text-primary font-proxima tracking-[0.02em]`}
                           onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) =>
                             (e.key === 'Enter' || e.key === ' ') && router.push(element.href)
                           }
@@ -293,33 +355,43 @@ const Navbar = ({ onData }: any) => {
                   {!settingsFocusedArr.includes(pathname) &&
                     settingsData.map((data) => (
                       <div
-                        className={`flex w-1/4 ${data.heading != 'Payment Policies' && 'pl-6 pr-6'}  flex-col gap-4 py-7`}
+                        className={`${data.isHeadingVisible ? "block" : "hidden"} flex w-[190px] ${data.heading != 'Payment Policies' && 'pl-6 pr-6'}  flex-col gap-4 py-7`}
                         key={data.heading}
                       >
                         <span className='border-b border-lightSilver pb-3 font-proxima text-[16px] font-bold tracking-[0.02em]'>
                           {data.heading}
                         </span>
-                        {data.items.map((element) => (
-                          <Link
-                            key={element.name}
-                            href={`${element.href}`}
-                            className='text-[14px] font-normal hover:text-primary font-proxima tracking-[0.02em] '
-                            onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) =>
-                              (e.key === 'Enter' || e.key === ' ') && router.push(element.href)
-                            }
-                            onClick={() => {
-                              localStorage.setItem('previousUrl', window.location.href)
-                              router.push(element.href)
-                            }}
-                          >
-                            {element.name}
-                          </Link>
-                        ))}
-                      </div>
+                        {IsFieldMappingSet === 'false' ? (
+                          <>
+                            {data.items.map((element) => (
+                              <span className='cursor-default text-[14px] font-normal  font-proxima tracking-[0.02em] '>
+                                {element.name}
+                              </span>
+                            ))}
+                          </>
+                        ) :
+                          data.items.map((element) => (
+                            <Link
+                              key={element.name}
+                              href={`${element.href}`}
+                              className={`${element.isVisible ? "flex" : "hidden"} text-[14px] font-normal hover:text-primary font-proxima tracking-[0.02em]`}
+                              onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) =>
+                                (e.key === 'Enter' || e.key === ' ') && router.push(element.href)
+                              }
+                              onClick={() => {
+                                localStorage.setItem('previousUrl', window.location.href)
+                                router.push(element.href)
+                              }}
+                            >
+                              {element.name}
+                            </Link>
+                          ))
+                        }
+                      </div >
                     ))}
-                </div>
+                </div >
               )}
-            </div>
+            </div >
             <div
               ref={helpRef}
               className={`relative z-10 flex h-full w-8 2xl:w-10 cursor-pointer items-center justify-center border-b-2  ${isHelpOpen ? 'border-primary bg-whiteSmoke' : 'border-transparent bg-transparent'
@@ -393,6 +465,7 @@ const Navbar = ({ onData }: any) => {
                 <ul className='absolute right-0 top-[63px] w-44 bg-white' style={{ boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.2)' }}>
                   <Link
                     href='/profile'
+                    onClick={() => localStorage.setItem('profilePreviousUrl', window.location.href)}
                     onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) =>
                       (e.key === 'Enter' || e.key === ' ') && router.push('/profile')
                     }
@@ -422,9 +495,9 @@ const Navbar = ({ onData }: any) => {
                 </ul>
               )}
             </div>
-          </div>
-        </div>
-      </div>
+          </div >
+        </div >
+      </div >
     </>
   )
 }

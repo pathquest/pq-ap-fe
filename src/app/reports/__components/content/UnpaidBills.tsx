@@ -449,6 +449,7 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
             } overflow-auto ${tableDynamicWidth}`}
         >
           <DataTable
+            zIndex={2}
             columns={columns}
             data={table_Data}
             sticky

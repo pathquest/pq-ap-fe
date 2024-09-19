@@ -31,7 +31,7 @@ export interface SaveRoleOptions {
     RoleName: string
     RoleDescription: string
     IsStandard: boolean
-    CompanyId: string | undefined
+    CompanyId: number | undefined
     FromRoleId: number | undefined
   }
   rolePermission: {

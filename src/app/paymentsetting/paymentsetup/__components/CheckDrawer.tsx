@@ -171,7 +171,11 @@ const AccountDrawer: React.FC<DrawerProps> = ({ isOpen, onClose, ModeId, Mode, c
 
   // Buyer Bank Account Dropdown API
   const getBuyerBankAccountDropdown = async () => {
-    performApiAction(dispatch, getBankAccountDropdown, null, (responseData: any) => {
+    const params = {
+      Type: "Check"
+    }
+
+    performApiAction(dispatch, getBankAccountDropdown, params, (responseData: any) => {
       setAccountNumberOption(responseData)
     })
   }
