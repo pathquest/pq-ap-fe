@@ -172,11 +172,10 @@ function MergeDocDrawer({ isOpen, onClose, selectedBillItems, removeItem, billLi
           <div className='flex items-center justify-between border-b-[1px] border-[#D8D8D8] p-[15px]'>
             <div className='flex flex-col'>
               <span className=''>
-                <Typography className='!text-[18px] !font-bold'>Merged Document</Typography>
+                <Typography className='!text-[18px] !font-bold !tracking-[0.02em] !text-darkCharcoal'>Merged Document</Typography>
               </span>
             </div>
             <div
-              className=''
               onClick={() => {
                 onClose(false)
                 setNameOfTheMergeDocument('')

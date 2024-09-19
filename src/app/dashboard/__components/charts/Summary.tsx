@@ -6,17 +6,18 @@ import { getSummary } from '@/store/features/dashboard/dashboardSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Typography } from 'pq-ap-lib'
+import { Loader, Typography } from 'pq-ap-lib'
 import React, { useEffect, useState } from 'react'
-import SummaryFilter from '../modal/SummaryFilter'
+import ProcessTypeDashboardFilter from '../modal/ProcessTypeDashboardFilter'
+import { setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 
 const Summary: React.FC<any> = ({ LocationOption }) => {
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
   const [summaryData, setSummaryData] = useState<any>([])
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const filterFields = useAppSelector((state: any) => state.dashboard.filterFields["Summary"]);
-  console.log("🚀 ~ filterFields:", filterFields)
 
   const dispatch = useAppDispatch()
   const router = useRouter()
@@ -27,7 +28,7 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
     return formattedDate
   }
 
-  function getMonthNameFromDate(dateString:any) {
+  function getMonthNameFromDate(dateString: any) {
     const monthNames = [
       "January", "February", "March", "April", "May",
       "June", "July", "August", "September", "October",
@@ -39,6 +40,7 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
 
 
   const getSummaryDashboard = (newFilterFields: any) => {
+    setIsLoading(true)
     const params = {
       CompanyIds: [CompanyId],
       LocationIds: newFilterFields?.LocationIds.length != 0 ? newFilterFields?.LocationIds.map(Number) : null,
@@ -47,6 +49,9 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
     }
     performApiAction(dispatch, getSummary, params, (responseData: any) => {
       setSummaryData(responseData)
+      setIsLoading(false)
+    }, () => {
+      setIsLoading(false)
     })
   }
 
@@ -59,7 +64,7 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
   const updatedCardData = [
     {
       amount: `$${summaryData.TotalAmount ?? 0}`,
-      description: 'Posted Bill Amount'
+      description: 'Total Posted Amount'
     },
     {
       amount: `${summaryData.TotalPostedBills ?? 0}`,
@@ -77,11 +82,13 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
 
   const handleSummaryClick = (description: string) => {
     switch (description) {
-      case 'Posted Bill Amount':
-        router.push(`/reports?reportCode=BillAnalysis?chart=Summary`)
+      case 'Total Posted Amount':
+        dispatch(setSelectedProcessTypeFromList('4'))
+        router.push(`/bills?module=BillsOverview?chart=Summary`)
         break
       case 'Posted Bills & Adj':
-        router.push(`/reports?reportCode=BillAnalysis?chart=Summary`)
+        dispatch(setSelectedProcessTypeFromList('4'))
+        router.push(`/bills?module=BillsOverview?chart=Summary`)
         break
       case 'Pending Bill Approval':
         router.push(`/approvals?approvalId=1`)
@@ -95,19 +102,24 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
           BillEndDate: filterFields.EndDate,
           StartDueDate: '',
           EndDueDate: '',
+          Assignee: '1',
+          LocationIds:
+            filterFields?.LocationIds.length === LocationOption.length
+              ? null
+              : filterFields?.LocationIds.map(Number),
         }))
         break
-      case 'Pending Payment Approval':
-        dispatch(setPaymentApprovalFilterFields({
-          VendorIds: [],
-          BankAccountIds: [],
-          ApprovalStatusIds: ['0'],
-          PaymentMethodIds: [],
-          MinAmount: '',
-          MaxAmount: ''
-        }))
-        router.push(`approvals?approvalId=2`)
-        break
+      // case 'Pending Payment Approval':
+      //   dispatch(setPaymentApprovalFilterFields({
+      //     VendorIds: [],
+      //     BankAccountIds: [],
+      //     ApprovalStatusIds: ['0'],
+      //     PaymentMethodIds: [],
+      //     MinAmount: '',
+      //     MaxAmount: ''
+      //   }))
+      //   router.push(`approvals?approvalId=2`)
+      //   break
       default:
         break
     }
@@ -136,25 +148,27 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
         </div>
         <div className='filter_change cursor-pointer flex items-center relative my-5' onClick={handleFilterOpen}><ChartFilterIcon />
           {/* Filter Modal */}
-          <SummaryFilter isFilterOpen={isFilterOpen} locationOption={LocationOption} onClose={handleFilterClose} ChartType="Summary" onSuccessApply={onSuccessApply} />
+          <ProcessTypeDashboardFilter isFilterOpen={isFilterOpen} locationOption={LocationOption} onClose={handleFilterClose} ChartType="Summary" onSuccessApply={onSuccessApply} />
         </div>
       </div>
-
-      <div className="px-4 mb-5 grid grid-cols-4 sm:grid-cols-2 laptop:grid-cols-3 laptopMd:grid-cols-4 lg:grid-cols-4 gap-5">
-        {updatedCardData.map((data, index) => (
-          <div
-            key={data.amount + index}
-            onClick={() => handleSummaryClick(data.description)}
-            className="w-full cursor-pointer cards_content laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 shadow-md border border-lightSilver rounded  bg-white"
-          >
-            <div className="lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-proxima font-semibold tracking-[0.02em]">
-              {data.amount}
+      <div className={`px-4 mb-5 grid ${isLoading ? "grid-cols-1" : "grid-cols-4 sm:grid-cols-2 laptop:grid-cols-3 laptopMd:grid-cols-4 lg:grid-cols-4 gap-5"}`}>
+        {isLoading ? <div className='h-[90px] w-full flex justify-center'>
+          <Loader size='sm' helperText/>
+        </div>
+          : updatedCardData.map((data, index) => (
+            <div
+              key={data.amount + index}
+              onClick={() => handleSummaryClick(data.description)}
+              className={`${data.amount == "0" || data.amount == "$0" ? "cursor-default pointer-events-none" : "cursor-pointer"} w-full cards_content laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 shadow-md border border-lightSilver rounded  bg-white"`}
+            >
+              <div className="lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-proxima font-semibold tracking-[0.02em]">
+                {data.amount}
+              </div>
+              <div className='text-base font-proxima laptopMd:mt-1.5 lg:mt-1.5 xl:mt-1.5 hd:mt-2.5 2xl:mt-2.5 3xl:mt-2.5 text-darkCharcoal tracking-[0.02em]'>
+                {data.description}
+              </div>
             </div>
-            <div className='text-base font-proxima laptopMd:mt-1.5 lg:mt-1.5 xl:mt-1.5 hd:mt-2.5 2xl:mt-2.5 3xl:mt-2.5 text-darkCharcoal tracking-[0.02em]'>
-              {data.description}
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
     </>
   )

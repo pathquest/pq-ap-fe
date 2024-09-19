@@ -6,9 +6,10 @@ import { redirect } from 'next/navigation'
 
 export default async function QuickbookAuthSuccessPage() {
   const session = await auth()
+  const token = session?.user?.access_token
 
   if (session) {
-    return redirect('/profile')
+    return redirect(`/profile?token=${token}`)
   }
 
   return <QuickbookAuthSuccess session={session} />

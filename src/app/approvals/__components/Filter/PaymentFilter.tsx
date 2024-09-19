@@ -24,6 +24,7 @@ const Filter: React.FC<any> = ({
     const [isFilterChanged, setIsFilterChanged] = useState<boolean>(false)
     const [isValidMaxAmount, setIsValidMaxAmount] = useState<boolean>(false)
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string[]>([])
+    const [maxAmountErrorMessage, setMaxAmountErrorMessage] = useState<string>('')
 
     const statusOptions = [
         { label: 'Pending', value: '0' },
@@ -41,6 +42,7 @@ const Filter: React.FC<any> = ({
         setIsResetClicked(true);
         setIsFilterChanged(true);
         setIsValidMaxAmount(true);
+        setMaxAmountErrorMessage('')
     }
 
     const handleApplyChanges = () => {
@@ -132,24 +134,26 @@ const Filter: React.FC<any> = ({
         const maxVal = parseFloat(max);
 
         if (min != '' && max == '') {
+            setMaxAmountErrorMessage('')
             return true;
         }
 
         if (min == '' && max != '') {
+            setMaxAmountErrorMessage('')
             return true;
         }
 
         if (min != '' && max != '') {
             if (maxVal < minVal) {
-                Toast.error('Max amount cannot be less than min amount');
+                setMaxAmountErrorMessage('Max amount cannot be less than min amount')
                 return false;
             }
+            setMaxAmountErrorMessage('')
             return true;
         }
 
         return false;
     };
-
     return (
         <div tabIndex={isFilterOpen ? 0 : -1} className={`${isFilterOpen &&
             'custom-scroll outline-none fixed bottom-0 left-0 right-0 top-0 z-20 overflow-y-auto bg-[rgba(0,0,0,0.4)] transition-all duration-300 ease-in-out'
@@ -237,41 +241,44 @@ const Filter: React.FC<any> = ({
                             onSelect={() => { }}
                         />
                     </div>
-                    <div className='flex justify-center items-center gap-5'>
-                        <Text
-                            label='Amount'
-                            id='minAmount'
-                            name='minAmount'
-                            placeholder='Min'
-                            maxLength={11}
-                            value={minAmount}
-                            getValue={(value) => {
-                                const trimmedValue = value.trim();
-                                setIsResetClicked(false);
-                                /^\d*$/.test(trimmedValue) && setMinAmount(trimmedValue)
-                                const isValid = validateAmount(trimmedValue, maxAmount);
-                                setIsFilterChanged(isValid);
-                                setIsValidMaxAmount(isValid);
-                            }}
-                            getError={() => { }}
-                        />
-                        <Text
-                            className='mt-7'
-                            id='maxAmount'
-                            name='maxAmount'
-                            placeholder='Max'
-                            value={maxAmount}
-                            maxLength={11}
-                            getValue={(value) => {
-                                const trimmedValue = value.trim();
-                                setIsResetClicked(false);
-                                /^\d*$/.test(trimmedValue) && setMaxAmount(trimmedValue)
-                                const isValid = validateAmount(minAmount, trimmedValue);
-                                setIsFilterChanged(isValid);
-                                setIsValidMaxAmount(isValid);
-                            }}
-                            getError={() => { }}
-                        />
+                    <div>
+                        <div className='flex justify-center items-center gap-5'>
+                            <Text
+                                label='Amount'
+                                id='minAmount'
+                                name='minAmount'
+                                placeholder='Min'
+                                maxLength={11}
+                                value={minAmount}
+                                getValue={(value) => {
+                                    const trimmedValue = value.trim();
+                                    setIsResetClicked(false);
+                                    /^\d*$/.test(trimmedValue) && setMinAmount(trimmedValue)
+                                    const isValid = validateAmount(trimmedValue, maxAmount);
+                                    setIsFilterChanged(isValid);
+                                    setIsValidMaxAmount(isValid);
+                                }}
+                                getError={() => { }}
+                            />
+                            <Text
+                                className='mt-7'
+                                id='maxAmount'
+                                name='maxAmount'
+                                placeholder='Max'
+                                value={maxAmount}
+                                maxLength={11}
+                                getValue={(value) => {
+                                    const trimmedValue = value.trim();
+                                    setIsResetClicked(false);
+                                    /^\d*$/.test(trimmedValue) && setMaxAmount(trimmedValue)
+                                    const isValid = validateAmount(minAmount, trimmedValue);
+                                    setIsFilterChanged(isValid);
+                                    setIsValidMaxAmount(isValid);
+                                }}
+                                getError={() => { }}
+                            />
+                        </div>
+                        <div key={maxAmountErrorMessage} className='mt-1 w-full text-xs text-defaultRed'>{maxAmountErrorMessage}</div>
                     </div>
                 </div>
 

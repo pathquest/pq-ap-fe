@@ -13,8 +13,6 @@ interface InboxFilterProps {
   onApply?: () => void
   onReset?: () => void
   receivedUserOptions: any
-  billNumberOptions: any
-  locationOptions: any
 }
 
 const HistoryFilter = ({
@@ -26,8 +24,6 @@ const HistoryFilter = ({
   onApply,
   onReset,
   receivedUserOptions,
-  billNumberOptions,
-  locationOptions,
 }: InboxFilterProps) => {
   const filterModalRef = useRef<HTMLDivElement>(null)
   const [isFilterChanged, setIsFilterChanged] = useState<boolean>(false)
@@ -77,52 +73,54 @@ const HistoryFilter = ({
           </Button>
         </div>
 
-        <div className='historyFilter grid grid-cols-12 gap-5 overflow-y-auto custom-scroll p-5'>
-          <div className='col-span-6'>
-            <CompanyList
-              id={'fh_source'}
-              label='Source'
-              placeholder={'Please select'}
-              showAvatar={5}
-              checkbox={false}
-              avatarSize='x-small'
-              values={localFilterFormFields?.fh_source}
-              options={sourceOptions}
-              getError={() => { }}
-              getValue={(value: string[]) => {
-                if (setLocalFilterFormFields) {
-                  setLocalFilterFormFields((prevState: any) => ({
-                    ...prevState,
-                    fh_source: value,
-                  }))
-                }
-              }}
-              isSearchEnable={false}
-              isSelectAllEnable={false}
-            />
-          </div>
-          <div className='col-span-6'>
-            <CompanyList
-              id={'fh_received_uploaded'}
-              label='Received/Uploaded'
-              placeholder={'Please select'}
-              showAvatar={5}
-              checkbox={false}
-              avatarSize='x-small'
-              values={localFilterFormFields?.fh_received_uploaded}
-              options={receivedUserOptions}
-              getError={() => { }}
-              getValue={(value: string[]) => {
-                if (setLocalFilterFormFields) {
-                  setLocalFilterFormFields((prevState: any) => ({
-                    ...prevState,
-                    fh_received_uploaded: value,
-                  }))
-                }
-              }}
-              isSearchEnable={false}
-            />
-          </div>
+        <div className='historyFilter grid grid-cols-12 gap-5 p-5'>
+              <div className='col-span-6'>
+                <CompanyList
+                  id={'fh_source'}
+                  label='Source'
+                  placeholder={'Please select'}
+                  showAvatar={5}
+                  checkbox={false}
+                  avatarSize='x-small'
+                  values={localFilterFormFields?.fh_source}
+                  options={sourceOptions}
+                  getError={() => { }}
+                  getValue={(value: string[]) => {
+                    if (setLocalFilterFormFields) {
+                      setLocalFilterFormFields((prevState: any) => ({
+                        ...prevState,
+                        fh_source: value,
+                      }))
+                    }
+                  }}
+                  isSearchEnable={false}
+                  isSelectAllEnable={false}
+                />
+              </div>
+              <div className='col-span-6'>
+                <CompanyList
+                  id={'fh_received_uploaded'}
+                  label='Received/Uploaded'
+                  placeholder={'Please select'}
+                  showAvatar={5}
+                  checkbox={false}
+                  avatarSize='x-small'
+                  values={localFilterFormFields?.fh_received_uploaded}
+                  options={receivedUserOptions}
+                  getError={() => { }}
+                  getValue={(value: string[]) => {
+                    if (setLocalFilterFormFields) {
+                      setLocalFilterFormFields((prevState: any) => ({
+                        ...prevState,
+                        fh_received_uploaded: value,
+                      }))
+                    }
+                  }}
+                  isSearchEnable={false}
+                />
+              </div>
+            {/* </>
+          )} */}
           <div className='col-span-6'>
             <DatepickerRange
               id='fh_uploaded_date'
@@ -141,69 +139,6 @@ const HistoryFilter = ({
               getError={() => { }}
             />
           </div>
-          <div className='col-span-6'>
-            <MultiSelectChip
-              type='checkbox'
-              id={'fh_bill_number'}
-              label='Bill Number'
-              placeholder={'Please select'}
-              defaultValue={localFilterFormFields?.fh_bill_number}
-              options={billNumberOptions ?? []}
-              getValue={(value) => {
-                if (setLocalFilterFormFields) {
-                  setLocalFilterFormFields((prevState: any) => ({
-                    ...prevState,
-                    fh_bill_number: value,
-                  }))
-                }
-              }}
-              getError={() => ''}
-              onSelect={() => { }}
-            />
-          </div>
-          <div className='col-span-6'>
-            <MultiSelectChip
-              type='checkbox'
-              id={'fh_process'}
-              label='Process'
-              placeholder={'Please select'}
-              defaultValue={localFilterFormFields?.fh_process}
-              options={processOptions ?? []}
-              getValue={(value) => {
-                if (setLocalFilterFormFields) {
-                  setLocalFilterFormFields((prevState: any) => ({
-                    ...prevState,
-                    fh_process: value,
-                  }))
-                }
-              }}
-              getError={() => ''}
-              onSelect={() => { }}
-            />
-          </div>
-          {AccountingTool !== 3 && (
-            <div className='col-span-6'>
-              <MultiSelectChip
-                type='checkbox'
-                id={'fh_locations'}
-                label='Location'
-                height={40}
-                placeholder={'Location'}
-                defaultValue={localFilterFormFields?.fh_locations ?? []}
-                options={locationOptions ?? []}
-                getValue={(value) => {
-                  if (setLocalFilterFormFields) {
-                    setLocalFilterFormFields((prevState: any) => ({
-                      ...prevState,
-                      fh_locations: value,
-                    }))
-                  }
-                }}
-                getError={() => ''}
-                onSelect={() => { }}
-              />
-            </div>
-          )}
         </div>
 
         <div className='flex items-center justify-end border-t border-lightSilver shadow-inner laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5 laptop:p-4 laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5'>

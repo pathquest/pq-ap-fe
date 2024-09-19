@@ -215,7 +215,7 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
         LOCATION: <Typography>{e.Location ?? null}</Typography>,
         BILLDATE: <Typography>{e.BillDate !== null ? format(e.BillDate, 'MM/dd/yyyy') : null}</Typography>,
         DUEDATE: <Typography>{e.DueDate !== null ? format(e.DueDate, 'MM/dd/yyyy') : null}</Typography>,
-        TERM: <Typography>{e.Term ?? null}</Typography>,
+        Term: <Typography>{e.Term ?? null}</Typography>,
         BILLNUMBER: <Typography>{e.BillNumber ?? null}</Typography>,
         AMOUNT: <Typography className='font-semibold'>${e.Amount == null ? '0.00' : parseFloat(e.Amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Typography>,
         PAYMENTSTATUS: <Typography className='px-4'>{e.PaymentStatusName.charAt(0).toUpperCase() + e.PaymentStatusName.slice(1).toLowerCase() ?? null}</Typography>,
@@ -270,7 +270,7 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
                     LOCATION: <Typography>{e.Location ?? null}</Typography>,
                     BILLDATE: <Typography>{e.BillDate !== null ? format(e.BillDate, 'MM/dd/yyyy') : null}</Typography>,
                     DUEDATE: <Typography>{e.DueDate !== null ? format(e.DueDate, 'MM/dd/yyyy') : null}</Typography>,
-                    TERM: <Typography>{e.Term ?? null}</Typography>,
+                    Term: <Typography>{e.Term ?? null}</Typography>,
                     BILLNUMBER: <Typography>{e.BillNumber ?? null}</Typography>,
                     AMOUNT: (
                       <Typography className='font-semibold'>
@@ -326,7 +326,7 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
               ? null : convertStringsDateToUTC(dateRangeVal[1]?.trim()) ?? null
             : convertStringsDateToUTC(reportPeriod),
         ViewBy: viewByValue,
-        TermIds: AccountingTool !== 3 ? termValue : null,
+        TermIds: AccountingTool !== 3 ? termValue.length > 0 ? termValue.length === termOptions.length ? null : termValue : null : null,
         PaymentStatus: paymentStatusValue.length > 0 ? convertStringsToIntegers(paymentStatusValue) : null,
         PageNumber: 1,
         PageSize: 100,

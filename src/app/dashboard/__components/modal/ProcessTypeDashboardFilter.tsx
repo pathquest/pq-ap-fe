@@ -15,15 +15,16 @@ export const processOptions = [
     }
 ]
 
-const SummaryFilter: React.FC<any> = ({
+const ProcessTypeDashboardFilter: React.FC<any> = ({
     locationOption,
+    ChartType,
     isFilterOpen,
     onClose,
-    onSuccessApply,
+    onSuccessApply
 }) => {
     const { data: session } = useSession()
     const CompanyId = Number(session?.user?.CompanyId)
-    const filterFields = useAppSelector((state: any) => state.dashboard.filterFields['Summary']);
+    const filterFields = useAppSelector((state: any) => state.dashboard.filterFields[ChartType]);
     const dispatch = useAppDispatch()
 
     const filterRef = useRef<any>(null)
@@ -51,18 +52,8 @@ const SummaryFilter: React.FC<any> = ({
     useEffect(() => {
         if (locationOption.length > 0) {
             const allLocation = locationOption.map((option: any) => option.value)
-            setSelectedLocation(allLocation);
             let newFilterFields = {
                 LocationIds: allLocation,
-                Date: selectedDate,
-                ProcessType: processType,
-            }
-            dispatch(setSummaryFilter(newFilterFields));
-        }
-        else {
-            setSelectedLocation([]);
-            let newFilterFields = {
-                LocationIds: [],
                 Date: selectedDate,
                 ProcessType: processType,
             }
@@ -87,6 +78,8 @@ const SummaryFilter: React.FC<any> = ({
         onClose()
         if (filterFields) {
             setSelectedLocation(filterFields.LocationIds || []);
+            setSelectedDate(filterFields.Date)
+            setProcessType(filterFields.ProcessType)
         }
     }
 
@@ -94,7 +87,8 @@ const SummaryFilter: React.FC<any> = ({
         e.stopPropagation()
 
         const newFilterFields = isResetClicked ? {
-            LocationIds: locationOption.map((option: any) => option.value),
+            // LocationIds: locationOption.map((option: any) => option.value),
+            LocationIds: [],
             Date: selectedDate ? selectedDate : '',
             ProcessType: processType ? processType : [],
         } : {
@@ -102,16 +96,15 @@ const SummaryFilter: React.FC<any> = ({
             Date: selectedDate ? selectedDate : '',
             ProcessType: processType ? processType : [],
         };
-
         await dispatch(setSummaryFilter(newFilterFields));
         onSuccessApply(newFilterFields)
-
         onClose()
     }
 
     const resetFilter = () => {
         setSelectedLocation(locationOption.map((option: any) => option.value));
-
+        setProcessType(processOptions.map((option: any) => option.value))
+        setSelectedDate(formattedDate)
         setIsResetClicked(true);
     }
 
@@ -154,10 +147,10 @@ const SummaryFilter: React.FC<any> = ({
 
                     <div className={`py-4`}>
                         <MultiSelectChip
-                            id='locations'
-                            label='Location'
-                            options={locationOption}
                             type='checkbox'
+                            id={'locations'}
+                            label='Location'
+                            options={locationOption ?? []}
                             defaultValue={selectedLocation}
                             getValue={(value) => {
                                 if (value) {
@@ -213,4 +206,4 @@ const SummaryFilter: React.FC<any> = ({
     )
 }
 
-export default SummaryFilter
+export default ProcessTypeDashboardFilter

@@ -134,39 +134,57 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId, DuplicateI
     )
   }
 
-  const updatedRoleData =
-    subRolePermission &&
-    subRolePermission?.map(
-      (data: any) =>
-        new Object({
-          ...data,
-          ...getCheckBoxes(data),
-          details:
-            data?.Children.length > 0 && data?.Children[0].IsShowCheckBox === false ? (
-              <DataTable
-                sticky
-                noHeader
-                expandable
-                getExpandableData={() => { }}
-                getRowId={() => { }}
-                columns={nestedHeaders}
-                data={
-                  data?.Children?.length > 0
-                    ? data.Children?.map(
-                      (nestedData: any) =>
-                        new Object({
-                          ...nestedData,
-                          ...getCheckBoxes(nestedData),
-                        })
-                    )
-                    : []
-                }
-              />
-            ) : (
-              ''
-            ),
-        })
-    )
+  const updatedRoleData = subRolePermission && subRolePermission?.map(
+    (data: any) =>
+      new Object({
+        ...data,
+        ...getCheckBoxes(data),
+        details:
+          data?.Children.length > 0 && data?.Children[0].IsShowCheckBox === false ? (
+            <DataTable
+              sticky
+              noHeader
+              expandable
+              getExpandableData={() => { }}
+              getRowId={() => { }}
+              columns={nestedHeaders}
+              data={
+                data?.Children?.length > 0
+                  ? data.Children?.map(
+                    (nestedData: any) =>
+                      new Object({
+                        ...nestedData,
+                        ...getCheckBoxes(nestedData),
+                        details:
+                          nestedData?.Children.length > 0 && nestedData?.Children[0].IsShowCheckBox === false ? (
+                            <DataTable
+                              columns={nestedHeaders}
+                              sticky
+                              noHeader
+                              expandable
+                              getExpandableData={() => { }}
+                              getRowId={() => { }}
+                              data={
+                                nestedData?.Children?.length > 0
+                                  ? nestedData.Children?.map(
+                                    (innerNestedData: any) =>
+                                      new Object({
+                                        ...innerNestedData,
+                                        ...getCheckBoxes(innerNestedData),
+                                      })
+                                  )
+                                  : []
+                              }
+                            />
+                          ) : '',
+                      })
+                  )
+                  : []
+              }
+            />
+          ) : '',
+      })
+  )
 
   const setErrorTrue = () => {
     setRoleNameError(true)
@@ -231,7 +249,7 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId, DuplicateI
           RoleName: roleName,
           RoleDescription: roleDescription,
           IsStandard: true,
-          CompanyId: CompanyId,
+          CompanyId: Number(CompanyId),
           FromRoleId: DuplicateId ?? 0,
         },
         rolePermission: {
@@ -313,7 +331,6 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId, DuplicateI
         <DataTable
           columns={nestedHeaders}
           data={updatedRoleData}
-          userClass='uppercase'
           expandable
           getExpandableData={() => { }}
           getRowId={() => { }}

@@ -53,6 +53,7 @@ import { Button, Loader, Select, Toast, BasicTooltip, Typography } from 'pq-ap-l
 import { useEffect, useRef, useState } from 'react'
 
 interface EditWrapperProps {
+  module: string | null,
   children?: React.ReactNode
   billLists?: any
   processSelectionOptions?: any
@@ -103,6 +104,7 @@ interface EditWrapperProps {
 
 const EditWrapper = ({
   children,
+  module,
   billLists,
   processSelectionOptions,
   processSelection,
@@ -180,7 +182,7 @@ const EditWrapper = ({
   const CompanyId = Number(selectedCompany?.value)
   const { selectedProcessTypeInList } = useAppSelector((state) => state.bill)
   const userId = localStorage.getItem('UserId')
-  const billStatus = documentDetailByIdData?.Status ?? 10
+  const billStatus = documentDetailByIdData?.Status
 
   const fetchAssigneData = async () => {
     const params = {
@@ -324,7 +326,7 @@ const EditWrapper = ({
 
             setIsRefreshList(true)
 
-            window.history.replaceState(null, '', `/bills/edit/${nextBillId}`)
+            window.history.replaceState(null, '', `/bills/edit/${nextBillId}?module=bills`)
             // router.push(`/bills/edit/${nextBillId}`)
           } else {
             Toast.success(`Assignee has been changed successfully`)
@@ -452,22 +454,6 @@ const EditWrapper = ({
   }
 
   const saveAccountPayable = async (params: any, postSaveAs: any) => {
-    const index = billLists.findIndex((object: any) => {
-      return object.Id == activeBill
-    })
-
-    let nextBillId: any
-
-    if (billLists.length === 1) {
-      router.push(`/bills`)
-    } else if (billLists.length === index + 1) {
-      nextBillId = billLists[0].Id
-    } else {
-      nextBillId = billLists[index + 1].Id
-    }
-
-    const findNextBill = billLists.find((value: any) => (value.Id === nextBillId ? value : null))
-
     try {
       const response = await agent.APIs.accountPayableSave(params)
 
@@ -475,14 +461,37 @@ const EditWrapper = ({
         if (!formFields?.attachment) {
           setLoaderState(postSaveAs, loader, setLoader)
 
-          dispatch(setIsFormDocuments(findNextBill.IsFromDocuments))
-          setActiveBill(nextBillId)
+
           setIsNewWindowUpdate(true)
           setIsRefreshList(true)
           setLineItemsFieldsData([])
           showSuccessMessage(postSaveAs)
 
-          window.history.replaceState(null, '', `/bills/edit/${nextBillId}`)
+          if (billStatus !== 10) {
+            const index = billLists.length > 0 && billLists.findIndex((object: any) => {
+              return object.Id == activeBill
+            })
+
+            let nextBillId: any
+
+            if (billLists.length === 1) {
+              router.push(`/bills`)
+            } else if (billLists.length === index + 1) {
+              nextBillId = billLists[0].Id
+            } else {
+              nextBillId = billLists[index + 1].Id
+            }
+
+            const findNextBill = billLists.length > 0 && nextBillId && billLists.find((value: any) => (value.Id === nextBillId ? value : null))
+
+            dispatch(setIsFormDocuments(findNextBill.IsFromDocuments))
+            setActiveBill(nextBillId)
+            window.history.replaceState(null, '', `/bills/edit/${nextBillId}?module=bills`)
+          }
+          if (billStatus === 10) {
+            router.push('/bills')
+          }
+
           setLoader({
             postAsPaid: false,
             saveAsDraft: false,
@@ -510,14 +519,36 @@ const EditWrapper = ({
               setPostaspaidModal(false)
             }
 
-            dispatch(setIsFormDocuments(findNextBill.IsFromDocuments))
-            setActiveBill(nextBillId)
             setIsNewWindowUpdate(true)
             setIsRefreshList(true)
             setLineItemsFieldsData([])
             showSuccessMessage(postSaveAs)
 
-            window.history.replaceState(null, '', `/bills/edit/${nextBillId}`)
+            if (billStatus !== 10) {
+              const index = billLists.length > 0 && billLists.findIndex((object: any) => {
+                return object.Id == activeBill
+              })
+
+              let nextBillId: any
+
+              if (billLists.length === 1) {
+                router.push(`/bills`)
+              } else if (billLists.length === index + 1) {
+                nextBillId = billLists[0].Id
+              } else {
+                nextBillId = billLists[index + 1].Id
+              }
+
+              const findNextBill = billLists.length > 0 && nextBillId && billLists.find((value: any) => (value.Id === nextBillId ? value : null))
+
+              dispatch(setIsFormDocuments(findNextBill.IsFromDocuments))
+              setActiveBill(nextBillId)
+              window.history.replaceState(null, '', `/bills/edit/${nextBillId}?module=bills`)
+            }
+            if (billStatus === 10) {
+              router.push('/bills')
+            }
+
             setLoader({
               postAsPaid: false,
               saveAsDraft: false,
@@ -597,7 +628,7 @@ const EditWrapper = ({
 
       try {
         const response = await saveAccountPayable(accountPayableParams, postSaveAs)
-        billStatus == 10 ? router.push('/payments/billtopay') : "";
+        module == "billsToPay" ? router.push('/payments/billtopay') : "";
         return response
       } catch (error) {
         onErrorLoader(postSaveAs)
@@ -607,7 +638,7 @@ const EditWrapper = ({
     } else {
       try {
         const response = await saveAccountPayable(accountPayableParams, postSaveAs)
-        billStatus == 10 ? router.push('/payments/billtopay') : "";
+        module == "billsToPay" ? router.push('/payments/billtopay') : "";
         return response
       } catch (error) {
         onErrorLoader(postSaveAs)
@@ -724,6 +755,13 @@ const EditWrapper = ({
   const isDisablePostButton =
     !billStatusEditable.includes(billStatus) || loader.postAsPaid || loader.saveAsDraft || selectedStates[0]?.id !== userId
 
+  const onClickMoveToDropdown = () => {
+    setIsOpenMoveToDropDown(true)
+    setIsOpenFilter(false)
+    setIsOpenViewMode(false)
+    setIsOpenAssignUserDropDown(false)
+  }
+
   return (
     <Wrapper>
       <div className='relative mx-auto grid-cols-12 md:grid'>
@@ -731,7 +769,7 @@ const EditWrapper = ({
           <div
             onScroll={handleScroll}
             className={`relative ${isVisibleLeftSidebar ? 'visible w-full' : 'hidden w-0'
-              } tansform relative col-span-3 h-[calc(100vh_-_65px)] overflow-y-auto border border-r border-lightSilver transition-[left] duration-[0.5s] ease-in-out`}
+              } tansform relative col-span-3 h-[calc(100vh-130px)] overflow-y-auto border-b border-r border-lightSilver transition-[left] duration-[0.5s] ease-in-out`}
           >
             <div className={`sticky top-0 z-[4] flex items-center border-b border-lightSilver bg-white p-[13px]`}>
               <div className='selectMain w-4/5'>
@@ -759,12 +797,10 @@ const EditWrapper = ({
                   className='!w-4/5'
                 />
               </div>
-              <div className='flex w-1/5 justify-end'>
-                <div onClick={handleFilterIconOpen} className='ml-3'>
-                  <BasicTooltip position='bottom' content='Filter' className='!font-proxima !text-[14px]'>
-                    <div className='h-[18px] w-[17px]'>
-                      <FilterIcon />
-                    </div>
+              <div className='flex w-1/5 justify-end gap-1 pr-1'>
+                <div onClick={handleFilterIconOpen}>
+                  <BasicTooltip position='bottom' content='Filter' className='!px-0 !pt-1 !pb-1 !font-proxima !text-[14px]'>
+                    <FilterIcon />
                   </BasicTooltip>
                 </div>
                 <div
@@ -772,9 +808,9 @@ const EditWrapper = ({
                   className={`${selectedBillItems && selectedBillItems.length > 1 && isEnableMerge && selectedStates[0]?.id === userId
                     ? 'cursor-pointer'
                     : 'pointer-events-none opacity-50'
-                    } ml-3`}
+                    }`}
                 >
-                  <BasicTooltip position='bottom' content='Merge' className='!font-proxima !text-[14px]'>
+                  <BasicTooltip position='bottom' content='Merge' className=' !pl-2 !pr-0 !pt-2 !pb-1 !font-proxima !text-[14px]'>
                     <MergeIcon color='#6E6D7A' />
                   </BasicTooltip>
                 </div>
@@ -811,21 +847,30 @@ const EditWrapper = ({
           <div className={`!h-[66px] sticky top-0 z-[5] flex w-full flex-row justify-between bg-lightGray px-5`}>
             <div className='flex items-center justify-center '>
               {!isVisibleLeftSidebar && (
-                <span className='cursor-pointer rounded-full bg-white p-1.5' onClick={() => window.history.back()}>
+                <span className='cursor-pointer rounded-full bg-white p-1.5' onClick={() => {
+                  window.history.back()
+                }}>
                   <BackIcon />
                 </span>
               )}
               {billStatusEditable.includes(billStatus) && (
                 <>
-                  <span className='pl-[13px] !text-[14px] font-semibold'>TAT :</span>
-                  <span className='pl-2 !text-[16px] font-semibold text-[#FB2424]'>{timeDifference.value}</span>
+                  {
+                    billStatus !== 10 && (
+                      <>
+                        <span className='pl-[13px] !text-[14px] font-semibold'>TAT :</span>
+                        <span className='pl-2 !text-[16px] font-semibold text-[#FB2424]'>{timeDifference.value}</span>
+                      </>
+                    )
+                  }
                 </>
               )}
             </div>
 
+            {/* {processSelection !== '4' && ( */}
             <ul className='flex items-center justify-center gap-5'>
-              {billStatusEditable.includes(billStatus) && (
-                <li className='mt-1.5'>
+              {billStatusEditable.includes(billStatus) && processSelection !== '4' && (
+                <li className='h-full flex items-center'>
                   <BasicTooltip position='bottom' content='Assignee' className='!font-proxima !text-[14px] !px-0'>
                     <AssignUser
                       width={52}
@@ -840,50 +885,61 @@ const EditWrapper = ({
                   </BasicTooltip>
                 </li>
               )}
-              <BasicTooltip position='bottom' content='Activities' className='!font-proxima !px-0 mt-[5px] !pb-1 !text-[14px]'>
-                <li onClick={() => setIsVisibleActivities(true)}>
+              <li className='h-full flex items-center'
+                onClick={() => setIsVisibleActivities(true)}
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleActivities(true)}
+              >
+                <BasicTooltip position='bottom' content='Activities' className='!font-proxima !px-0 !text-[14px]'>
                   <ActivityIcon />
-                </li>
-              </BasicTooltip>
-              {billStatusEditable.includes(billStatus) && selectedStates[0]?.id === userId && (
+                </BasicTooltip>
+              </li>
+              {billStatusEditable.includes(billStatus) && selectedStates[0]?.id === userId && processSelection !== '4' && (
                 <li
-                  className='mt-1.5'
-                  onClick={() => {
-                    setIsOpenMoveToDropDown(true)
-                    setIsOpenFilter(false)
-                    setIsOpenViewMode(false)
-                    setIsOpenAssignUserDropDown(false)
-                  }}
+                  className='h-full flex items-center'
+                  onClick={onClickMoveToDropdown}
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === 'Enter') && onClickMoveToDropdown()}
                 >
                   <BasicTooltip position='bottom' content='Move' className='!font-proxima !text-[14px] !px-0'>
-                    <div className='flex items-center'>
+                    <div className='flex items-center gap-2'>
                       <TabMoveIcon />
-                      <div className='pl-2'>
+                      <div className={`transition-transform ${isOpenMoveToDropDown ? "duration-400 rotate-180" : "duration-200"}`}>
                         <DownArrowIcon />
                       </div>
                     </div>
                   </BasicTooltip>
                 </li>
               )}
-              {billStatusEditable.includes(billStatus) && selectedStates[0]?.id === userId && (
-                <BasicTooltip position='bottom' content='Delete' className='!font-proxima !text-[14px] !px-0'>
-                  <li className='mt-1.5' onClick={() => setIsVisibleRemoveConfirm(true)}>
+              {billStatusEditable.includes(billStatus) && selectedStates[0]?.id === userId && processSelection !== '4' && (
+                <li
+                  className='h-full flex items-center'
+                  onClick={() => setIsVisibleRemoveConfirm(true)}
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleRemoveConfirm(true)}
+                >
+                  <BasicTooltip position='bottom' content='Delete' className='!font-proxima !text-[14px] !px-0'>
                     <DeleteIcon />
-                  </li>
-                </BasicTooltip>
+                  </BasicTooltip>
+                </li>
               )}
 
-              <li className={`mt-1.5 ${billStatus == 10 ? "hidden" : "block"}`} onClick={handleViewMode}>
-                <BasicTooltip position='bottom' content='View' className='!font-proxima pt-4 !px-0 !text-[14px]'>
+              {processSelection !== '4' && <li className={`h-full ${module == "billsToPay" ? "hidden" : "flex items-center"}`}
+                onClick={handleViewMode}
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === 'Enter') && handleViewMode()}
+              >
+                <BasicTooltip position='bottom' content='View' className='!font-proxima !px-0 !text-[14px]'>
                   <ViewIcon />
                 </BasicTooltip>
-              </li>
+              </li>}
             </ul>
+            {/* )} */}
 
             {isOpenMoveToDropDown && (
               <div
                 ref={dropdownMoveToRef}
-                className='absolute right-36 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                className='absolute right-28 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
               >
                 <div className='flex flex-col items-start justify-start'>
                   {moveToOptions &&
@@ -976,7 +1032,7 @@ const EditWrapper = ({
 
           <div className='custom-bottom-sticky bottom-0 grid place-content-center place-items-center gap-5 !border-t border-lightSilver !h-[66px] px-5 py-[15px] sm:!flex sm:!items-center sm:!justify-end'>
             <span
-              className={`${billStatus == 10 ? "hidden" : "block"} flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-whiteSmoke`}
+              className={`${module == "billsToPay" || billStatus === 10 ? "hidden" : "block"} flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-whiteSmoke`}
               onClick={() => handleBackword(activeBill)}
               tabIndex={0}
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleBackword(activeBill)}
@@ -984,11 +1040,11 @@ const EditWrapper = ({
               <LeftArrowIcon />
             </span>
 
-            {selectedProcessTypeInList !== '2' && (
+            {selectedProcessTypeInList !== '2' && module !== "billsToPay" && billStatus !== 10 && (
               <Button
-                variant={isDisablePaidButton ? billStatus == 10 ? 'btn-outline-primary' : 'btn' : 'btn-outline-primary'}
+                variant={isDisablePaidButton ? module == "billsToPay" || billStatus === 10 ? 'btn-outline-primary' : 'btn' : 'btn-outline-primary'}
                 className={`disabled:opacity-50 btn-sm !h-9 rounded-full`}
-                disabled={isDisablePaidButton ? billStatus == 10 ? false : true : false}
+                disabled={isDisablePaidButton ? module == "billsToPay" || billStatus === 10 ? false : true : false}
                 onClick={() => PostasPiad(12)}
                 tabIndex={0}
                 onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && PostasPiad(12)}
@@ -997,11 +1053,11 @@ const EditWrapper = ({
               </Button>
             )}
 
-            <Button
-              variant={`${isDisableDraftButton ? billStatus == 10 ? 'btn-outline-primary' : 'btn' : 'btn-outline-primary'}`}
+            {(module !== "billsToPay" && billStatus !== 10) && <Button
+              variant={`${isDisableDraftButton ? module == "billsToPay" || billStatus === 10 ? 'btn-outline-primary' : 'btn' : 'btn-outline-primary'}`}
               className={`btn-sm !h-9 rounded-full`}
               onClick={() => onSubmitBill(2)}
-              disabled={isDisableDraftButton ? billStatus == 10 ? false : true : false}
+              disabled={isDisableDraftButton ? module == "billsToPay" || billStatus === 10 ? false : true : false}
               tabIndex={0}
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSubmitBill(2)}
             >
@@ -1016,13 +1072,13 @@ const EditWrapper = ({
                   <label className="cursor-pointer font-proxima font-semibold uppercase h-full laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em] py-1.5 px-[15px]">Save as draft</label>
                 )}
               </>
-            </Button>
+            </Button>}
 
             <Button
-              variant={isDisablePostButton ? billStatus == 10 ? 'btn-primary' : 'btn' : 'btn-primary'}
+              variant={isDisablePostButton ? module == "billsToPay" || billStatus === 10 ? 'btn-primary' : 'btn' : 'btn-primary'}
               className={`disabled:opacity-50 btn-sm !h-9 rounded-full`}
               onClick={() => onSubmitBill(3)}
-              disabled={isDisablePostButton ? billStatus == 10 ? false : true : false}
+              disabled={isDisablePostButton ? module == "billsToPay" || billStatus === 10 ? false : true : false}
               tabIndex={0}
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSubmitBill(3)}
             >
@@ -1040,7 +1096,7 @@ const EditWrapper = ({
             </Button>
 
             <span
-              className={`${billStatus == 10 ? "hidden" : "block"} flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-whiteSmoke`}
+              className={`${module == "billsToPay" || billStatus === 10 ? "hidden" : "block"} flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-whiteSmoke`}
               onClick={() => handleForward(activeBill)}
               tabIndex={0}
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleForward(activeBill)}

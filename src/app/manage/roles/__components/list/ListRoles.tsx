@@ -6,16 +6,21 @@ import DataLoadingStatus from '@/components/Common/Functions/DataLoadingStatus'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 import WrapperManage from '@/components/Common/WrapperManage'
-import { useAppDispatch } from '@/store/configureStore'
+import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { permissionGetList, roleGetList, roleRemove } from '@/store/features/role/roleSlice'
 import { ConfirmationModalContent } from '@/utils/local'
 import { Button, CheckBox, DataTable, SearchBar, Toast, Typography } from 'pq-ap-lib'
 import React, { useEffect, useState } from 'react'
 import Drawer from '../Drawer'
+import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
 
 const ListRoles: React.FC = () => {
   // For Dynamic Company Id & AccountingTool
   const dispatch = useAppDispatch()
+  const { orgPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isManageRoleCreate = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Roles", "Create");
+  const isManageRoleEdit = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Roles", "Edit");
+
 
   const [editId, setEditId] = useState<number | null>()
   const [duplicateId, setDuplicateId] = useState<number | null>()
@@ -191,7 +196,7 @@ const ListRoles: React.FC = () => {
         action: (
           <Actions
             id={e?.RoleId}
-            actions={e?.IsPublic ? ['Duplicate'] : ['Edit', 'Duplicate', 'Remove']}
+            actions={e?.IsPublic ? ['Duplicate'] : [isManageRoleEdit && 'Edit', 'Duplicate', 'Remove'].filter(Boolean)}
             handleClick={handleMenuChange}
             actionRowId={() => { }}
           />
@@ -227,6 +232,28 @@ const ListRoles: React.FC = () => {
                                     new Object({
                                       ...nestedData,
                                       ...getCheckBoxes(nestedData),
+                                      details:
+                                        nestedData?.Children.length > 0 && nestedData?.Children[0].IsShowCheckBox === false ? (
+                                          <DataTable
+                                            columns={subHeaders}
+                                            sticky
+                                            noHeader
+                                            expandable
+                                            getExpandableData={() => { }}
+                                            getRowId={() => { }}
+                                            data={
+                                              nestedData?.Children?.length > 0
+                                                ? nestedData.Children?.map(
+                                                  (innerNestedData: any) =>
+                                                    new Object({
+                                                      ...innerNestedData,
+                                                      ...getCheckBoxes(innerNestedData),
+                                                    })
+                                                )
+                                                : []
+                                            }
+                                          />
+                                        ) : '',
                                     })
                                 )
                                 : []
@@ -293,7 +320,7 @@ const ListRoles: React.FC = () => {
             />
           </div>
 
-          <Button className='rounded-full !h-[36px] laptop:px-6 laptopMd:px-6 lg:px-6 xl:px-6 hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px]' variant='btn-primary' onClick={handleToggleChange}>
+          <Button className={`${isManageRoleCreate ? "block" : "hidden"} rounded-full !h-[36px] laptop:px-6 laptopMd:px-6 lg:px-6 xl:px-6 hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px]`} variant='btn-primary' onClick={handleToggleChange}>
             <div className='flex justify-center items-center font-bold'>
               <span className='mr-[8px]'>
                 <PlusIcon color={'#FFF'} />

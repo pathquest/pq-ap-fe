@@ -45,6 +45,7 @@ const EditBillsToPay = () => {
   const processtype = selectedProcessTypeInList
 
   const [vendorOptions, setVendorOptions] = useState<any>([])
+  const [vendorGLTermOptions, setVendorGLTermOptions] = useState<any>([])
   const [termOptions, setTermOptions] = useState<any>([])
   const [defaultTermOptions, setDefaultTermOptions] = useState<any>([])
   const [accountOptions, setAccountOptions] = useState<any>([])
@@ -135,7 +136,7 @@ const EditBillsToPay = () => {
     ])
   }
 
-  const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any) => {
+  const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any, vendorOptions: any) => {
     try {
       const response = await agent.APIs.getDocumentDetails({
         Id: Number(activeBill as string),
@@ -158,7 +159,8 @@ const EditBillsToPay = () => {
           keyValueMainFieldObj,
           keyValueLineItemFieldObj,
           mainFieldListOptions,
-          generateLinetItemFieldsErrorObj
+          generateLinetItemFieldsErrorObj,
+          vendorOptions
         )
 
         if (newLineItems.length === 0) {
@@ -172,7 +174,7 @@ const EditBillsToPay = () => {
           setLineItemsFieldsData(newLineItems)
           setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
         }
-        
+
         setFormFields(updatedDataObj)
         setHasFormFieldLibraryErrors(updatedDataErrorObj)
 
@@ -200,7 +202,7 @@ const EditBillsToPay = () => {
         mainFieldListOptions,
         lineItemFieldListOptions
       )
-      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj)
+      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, vendorGLTermOptions)
     }
   }, [activeBill])
 
@@ -220,10 +222,17 @@ const EditBillsToPay = () => {
         lineItemsFieldsDataObj,
       } = await fetchAPIsData(processtype, AccountingTool as number, 'edit', CompanyId as number)
 
-      setVendorOptions(vendorOptions)
+      setVendorOptions(vendorOptions.map((value: any) => ({
+        value: value.value,
+        label: `${value.value} - ${value.label}`,
+      })))
+      setVendorGLTermOptions(vendorOptions)
       setTermOptions(termOptions)
       setDefaultTermOptions(defaultTermOptions)
-      setAccountOptions(accountOptions)
+      setAccountOptions(accountOptions.map((value: any) => ({
+        value: value.value,
+        label: `${value.value} - ${value.label}`,
+      })))
       setGenerateFormFields(generateFormFields)
       setGenerateFormFieldsErrorObj(generateFormFieldsErrorObj)
       setGenerateLinetItemFieldsErrorObj(generateLinetItemFieldsErrorObj)
@@ -248,7 +257,7 @@ const EditBillsToPay = () => {
       setLineItemFieldListOptions(lineItemConfiguration)
 
       if (activeBill) {
-        getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj)
+        getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, vendorOptions)
       }
 
       setIsLoading(false)
@@ -264,7 +273,7 @@ const EditBillsToPay = () => {
         mainFieldListOptions,
         lineItemFieldListOptions
       )
-      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj)
+      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, vendorOptions)
     }
   }, [activeBill])
 
@@ -540,6 +549,17 @@ const EditBillsToPay = () => {
                 : key === 'quantity'
                   ? parseFloat(i.rate) * parseFloat(value)
                   : parseFloat(i.amount)
+            if (generateLinetItemFieldsErrorObj.hasOwnProperty('amount')) {
+              const newLineItemsFieldArray = hasLineItemFieldLibraryErrors.map((item) => {
+                return {
+                  ...item,
+                  amount: isNaN(parseFloat(`${calculatedAmount}`))
+                    ? false
+                    : true,
+                }
+              })
+              setHasLineItemFieldLibraryErrors(newLineItemsFieldArray)
+            }
             return {
               ...i,
               [key]: fractionColumn.includes(key) ? convertFractionToRoundValue(value) : value,
@@ -558,6 +578,17 @@ const EditBillsToPay = () => {
                     : key === 'amount'
                       ? parseFloat(value)
                       : parseFloat(i.amount)
+            if (generateLinetItemFieldsErrorObj.hasOwnProperty('amount')) {
+              const newLineItemsFieldArray = hasLineItemFieldLibraryErrors.map((item) => {
+                return {
+                  ...item,
+                  amount: isNaN(parseFloat(`${calculatedAmount}`))
+                    ? false
+                    : true,
+                }
+              })
+              setHasLineItemFieldLibraryErrors(newLineItemsFieldArray)
+            }
             return {
               ...i,
               [key]: fractionColumn.includes(key) ? convertFractionToRoundValue(value) : value,
@@ -784,6 +815,42 @@ const EditBillsToPay = () => {
         [key]: value,
         duedate: formattedDueDateCalculated,
       })
+      return
+    }
+
+    if (key === 'vendor') {
+      const payToName = mainFieldListOptions.find((option: any) => option.MappedWith === 2 || option.MappedWith === 14)?.Name
+      const returnToName = mainFieldListOptions.find((option: any) => option.MappedWith === 3 || option.MappedWith === 15)?.Name
+
+      const selectedVendorObj = vendorGLTermOptions.find((item: any) => item.value === value)
+      const newLineItemsObj = lineItemsFieldsData.map((items: any) => {
+        return {
+          ...items,
+          account: selectedVendorObj.GLAccount
+        }
+      })
+      const newLineItemsErrorObj = hasLineItemFieldLibraryErrors.map((items: any) => {
+        return {
+          ...items,
+          account: selectedVendorObj.GLAccount ? true : false
+        }
+      })
+
+      setFormFields({
+        ...formFields,
+        [key]: value,
+        term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '',
+        [payToName]: value,
+        [returnToName]: value,
+      })
+      setHasFormFieldLibraryErrors({
+        ...hasFormFieldLibraryErrors,
+        term: selectedVendorObj?.Term ? true : false,
+        [payToName]: true,
+        [returnToName]: true,
+      })
+      setLineItemsFieldsData(newLineItemsObj)
+      setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
       return
     }
 

@@ -1,6 +1,6 @@
 'use server'
 
-import { getBillNumberDropdown, getLocationDropdown, getUserDropdown } from '@/api/server/common'
+import { getBillNumberDropdown, getLocationDropdown, getUserDropdown, ssoUrl } from '@/api/server/common'
 import ListFileHistory from './__components/list/ListFileHistory'
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
@@ -10,7 +10,7 @@ const ListBill = async () => {
   const CompanyId = session?.user?.CompanyId
 
   if (!session) {
-    return redirect('/signin')
+    return redirect(`${ssoUrl}/signin`)
   }
 
   const userOptions: any = await getUserDropdown(Number(CompanyId))

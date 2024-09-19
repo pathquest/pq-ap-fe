@@ -1,10 +1,11 @@
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { setBillApprovalFilterFields } from '@/store/features/billApproval/approvalSlice'
-import { Button, DatepickerRange, MultiSelectChip, Text, Toast, Typography } from 'pq-ap-lib'
+import { Button, DatepickerRange, MultiSelectChip, Select, Text, Toast, Typography } from 'pq-ap-lib'
 import React, { useEffect, useRef, useState } from 'react'
 
 const Filter: React.FC<any> = ({
     vendorOption,
+    locationOption,
     isFilterOpen,
     onClose,
 }) => {
@@ -24,11 +25,21 @@ const Filter: React.FC<any> = ({
     const [billNumber, setBillNumber] = useState<string>('')
     const [billDateRange, setBillDateRange] = useState<string>('')
     const [dueDateRange, setDueDateRange] = useState<string>('')
+    const [maxAmountErrorMessage, setMaxAmountErrorMessage] = useState<string>('')
+
+    const [selectedLocation, setSelectedLocation] = useState<string[]>([])
+    const [assigneeValue, setAssigneeValue] = useState<string>('1')
 
     const statusOptions = [
         { label: 'Pending', value: '0' },
         { label: 'Approved', value: '1' },
         { label: 'Rejected', value: '2' },
+    ]
+
+    const assigneeOptions = [
+        { label: 'Assign To Me', value: '1' },
+        { label: 'Assign To Other', value: '2' },
+        { label: 'Created By Me', value: '3' },
     ]
 
     const resetFilter = () => {
@@ -42,6 +53,9 @@ const Filter: React.FC<any> = ({
         setIsResetClicked(true);
         setIsFilterChanged(true);
         setIsValidMaxAmount(true);
+        setMaxAmountErrorMessage('');
+        setAssigneeValue('1');
+        setSelectedLocation([]);
     }
 
     const handleApplyChanges = () => {
@@ -56,6 +70,8 @@ const Filter: React.FC<any> = ({
                 BillEndDate: '',
                 StartDueDate: '',
                 EndDueDate: '',
+                Assignee: '1',
+                LocationIds: [],
             }))
             setIsResetClicked(false)
         } else {
@@ -72,7 +88,9 @@ const Filter: React.FC<any> = ({
                 BillStartDate: billStartDate ?? '',
                 BillEndDate: billEndDate ?? '',
                 StartDueDate: startDueDate ?? '',
-                EndDueDate: EndDueDate ?? ''
+                EndDueDate: EndDueDate ?? '',
+                Assignee: assigneeValue ?? '1',
+                LocationIds: selectedLocation ?? []
             }))
         }
         onClose()
@@ -87,7 +105,8 @@ const Filter: React.FC<any> = ({
             setSelectedVendor(billApprovalFilterFields.VendorIds ?? [])
             setMinAmount(billApprovalFilterFields.MinAmount ?? "")
             setMaxAmount(billApprovalFilterFields.MaxAmount ?? "")
-
+            setAssigneeValue(billApprovalFilterFields.Assignee ?? "1")
+            setSelectedLocation(billApprovalFilterFields.LocationIds ?? []);
             setBillNumber(billApprovalFilterFields.BillNumber ?? "");
             setBillDateRange(billDateValue ?? '');
             setDueDateRange(dueDateValue ?? '');
@@ -98,15 +117,17 @@ const Filter: React.FC<any> = ({
         if (isFilterOpen && billApprovalFilterFields) {
             const isChanged =
                 JSON.stringify(selectedVendor) !== JSON.stringify(billApprovalFilterFields.VendorIds) ||
+                JSON.stringify(selectedLocation) !== JSON.stringify(billApprovalFilterFields.LocationIds) ||
                 JSON.stringify(selectedApprovalStatus) !== JSON.stringify(billApprovalFilterFields.ApprovalStatusIds) ||
                 billNumber.trim() !== billApprovalFilterFields.BillNumber.trim() ||
+                assigneeValue.trim() !== billApprovalFilterFields.Assignee.trim() ||
                 minAmount.trim() !== billApprovalFilterFields.MinAmount.trim() ||
                 maxAmount.trim() !== billApprovalFilterFields.MaxAmount.trim() ||
                 billDateRange.trim() !== `${billApprovalFilterFields.BillStartDate} ${billDateRange == "" ? "" : "to"} ${billApprovalFilterFields.BillEndDate}`.trim() ||
                 dueDateRange.trim() !== `${billApprovalFilterFields.StartDueDate} ${billDateRange == "" ? "" : "to"} ${billApprovalFilterFields.EndDueDate}`.trim()
             setIsFilterChanged(isChanged);
         }
-    }, [isFilterOpen, selectedApprovalStatus, billDateRange, dueDateRange, selectedVendor, minAmount, maxAmount, billApprovalFilterFields]);
+    }, [isFilterOpen, selectedApprovalStatus, billDateRange, dueDateRange, selectedVendor, minAmount, maxAmount, assigneeValue, selectedLocation, billApprovalFilterFields]);
 
     // Handel Outside Click
     useEffect(() => {
@@ -134,7 +155,8 @@ const Filter: React.FC<any> = ({
             setSelectedVendor(billApprovalFilterFields.VendorIds ?? [])
             setMinAmount(billApprovalFilterFields.MinAmount ?? "")
             setMaxAmount(billApprovalFilterFields.MaxAmount ?? "")
-
+            setAssigneeValue(billApprovalFilterFields.Assignee ?? "1")
+            setSelectedLocation(billApprovalFilterFields.LocationIds ?? []);
             setBillNumber(billApprovalFilterFields.BillNumber ?? "");
             setBillDateRange(billDateValue ?? '');
             setDueDateRange(dueDateValue ?? '');
@@ -154,18 +176,21 @@ const Filter: React.FC<any> = ({
         const maxVal = parseFloat(max);
 
         if (min != '' && max == '') {
+            setMaxAmountErrorMessage('')
             return true;
         }
 
         if (min == '' && max != '') {
+            setMaxAmountErrorMessage('')
             return true;
         }
 
         if (min != '' && max != '') {
             if (maxVal < minVal) {
-                Toast.error('Max amount cannot be less than min amount');
+                setMaxAmountErrorMessage('Max amount cannot be less than min amount')
                 return false;
             }
+            setMaxAmountErrorMessage('')
             return true;
         }
 
@@ -228,44 +253,47 @@ const Filter: React.FC<any> = ({
                             getError={() => { }}
                         />
                     </div>
-                    <div className='flex justify-center items-center gap-5'>
-                        <Text
-                            label='Amount'
-                            id='minAmount'
-                            name='minAmount'
-                            placeholder='Min'
-                            className='pt-[7px]'
-                            maxLength={11}
-                            value={minAmount}
-                            noSpecialChar
-                            noText
-                            getValue={(value) => {
-                                const trimmedValue = value.trim();
-                                setIsResetClicked(false);
-                                /^\d*$/.test(trimmedValue) && setMinAmount(trimmedValue)
-                                const isValid = validateAmount(trimmedValue, maxAmount);
-                                setIsFilterChanged(isValid);
-                                setIsValidMaxAmount(isValid);
-                            }}
-                            getError={() => { }}
-                        />
-                        <Text
-                            id='maxAmount'
-                            name='maxAmount'
-                            placeholder='Max'
-                            className='mt-7 pt-[7px]'
-                            value={maxAmount}
-                            maxLength={11}
-                            getValue={(value) => {
-                                const trimmedValue = value.trim();
-                                setIsResetClicked(false);
-                                /^\d*$/.test(trimmedValue) && setMaxAmount(trimmedValue)
-                                const isValid = validateAmount(minAmount, trimmedValue);
-                                setIsFilterChanged(isValid);
-                                setIsValidMaxAmount(isValid);
-                            }}
-                            getError={() => { }}
-                        />
+                    <div>
+                        <div className='flex justify-center items-center gap-5'>
+                            <Text
+                                label='Amount'
+                                id='minAmount'
+                                name='minAmount'
+                                placeholder='Min'
+                                className='pt-[7px]'
+                                maxLength={11}
+                                value={minAmount}
+                                noSpecialChar
+                                noText
+                                getValue={(value) => {
+                                    const trimmedValue = value.trim();
+                                    setIsResetClicked(false);
+                                    /^\d*$/.test(trimmedValue) && setMinAmount(trimmedValue)
+                                    const isValid = validateAmount(trimmedValue, maxAmount);
+                                    setIsFilterChanged(isValid);
+                                    setIsValidMaxAmount(isValid);
+                                }}
+                                getError={() => { }}
+                            />
+                            <Text
+                                id='maxAmount'
+                                name='maxAmount'
+                                placeholder='Max'
+                                className='mt-7 pt-[7px]'
+                                value={maxAmount}
+                                maxLength={11}
+                                getValue={(value) => {
+                                    const trimmedValue = value.trim();
+                                    setIsResetClicked(false);
+                                    /^\d*$/.test(trimmedValue) && setMaxAmount(trimmedValue)
+                                    const isValid = validateAmount(minAmount, trimmedValue);
+                                    setIsFilterChanged(isValid);
+                                    setIsValidMaxAmount(isValid);
+                                }}
+                                getError={() => { }}
+                            />
+                        </div>
+                        <div key={maxAmountErrorMessage} className='mt-1 w-full text-xs text-defaultRed'>{maxAmountErrorMessage}</div>
                     </div>
                     <div>
                         <MultiSelectChip
@@ -316,6 +344,37 @@ const Filter: React.FC<any> = ({
                                 setIsValidMaxAmount(true);
                             }}
                             getError={() => { }}
+                        />
+                    </div>
+                    <div>
+                        <Select
+                            id='assignee'
+                            label='Assignee'
+                            placeholder={'Please Select'}
+                            defaultValue={assigneeValue + ""}
+                            options={assigneeOptions}
+                            getValue={(value) => {
+                                setAssigneeValue(value)
+                                setIsResetClicked(false)
+                            }}
+                            getError={() => ''}
+                        />
+                    </div>
+                    <div>
+                        <MultiSelectChip
+                            id='locations'
+                            label='Location'
+                            options={locationOption}
+                            type='checkbox'
+                            defaultValue={selectedLocation}
+                            getValue={(value) => {
+                                if (value) {
+                                    setIsResetClicked(false)
+                                    setSelectedLocation(value.map(Number))
+                                }
+                            }}
+                            getError={() => { }}
+                            onSelect={() => { }}
                         />
                     </div>
                 </div>

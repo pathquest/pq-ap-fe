@@ -29,6 +29,7 @@ import {
   accountPayableSave,
   assignDocumentsToUser,
   deleteDocument,
+  deleteOverviewDocument,
   getAssigneeList,
   processTypeChangeByDocumentId,
   setFilterFormFields,
@@ -40,6 +41,7 @@ import { parseISO } from 'date-fns'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button, Loader, Select, Toast, BasicTooltip, Typography } from 'pq-ap-lib'
 import { useEffect, useRef, useState } from 'react'
+import EditIcon from '@/assets/Icons/notification/EditIcon'
 
 interface ViewWrapperProps {
   children?: React.ReactNode
@@ -498,6 +500,38 @@ const ViewWrapper = ({
     }
   }
 
+  const onDeleteOverviewDocuments = async () => {
+    if (isVisibleTextValue) {
+      if (isHandleErrorValue) {
+        const params = {
+          AccountPayableId: documentDetailByIdData.Id,
+          ActionReason: editedValues?.reason,
+        }
+        try {
+          const { payload, meta } = await dispatch(deleteOverviewDocument(params))
+          const dataMessage = payload?.Message
+
+          if (meta?.requestStatus === 'fulfilled') {
+            if (payload?.ResponseStatus === 'Success') {
+              Toast.success('Items successfully deleted!!')
+              router.push('/bills')
+            } else {
+              Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
+            }
+          } else {
+            Toast.error(`${payload?.status} : ${payload?.statusText}`)
+          }
+        } catch (error) {
+          console.log(error)
+        }
+      } else {
+        setEditedValues({
+          reason: editedValues.reason,
+        })
+      }
+    }
+  }
+
   const onSelectCategory = async (value: number) => {
     setIsOpenMoveToDropDown(false)
     setIsOpenViewMode(false)
@@ -685,9 +719,9 @@ const ViewWrapper = ({
           <div
             onScroll={handleScroll}
             className={`relative ${isVisibleLeftSidebar ? 'visible w-full' : 'hidden w-0'
-              } relative col-span-4 h-[calc(100vh_-_65px)] overflow-y-auto border border-r border-[#D8D8D8] transition-[left] duration-[0.5s] ease-in-out laptop:col-span-3`}
+              } relative col-span-4 h-[calc(100vh-130px)] overflow-y-auto border-b border-r border-lightSilver transition-[left] duration-[0.5s] ease-in-out laptop:col-span-3`}
           >
-            <div className={`sticky top-0 z-[4] flex items-center border-b border-[#D8D8D8] bg-white p-[13px]`}>
+            <div className={`sticky top-0 z-[4] flex items-center border-b border-lightSilver bg-white p-[13px]`}>
               <div className='selectMain w-4/5'>
                 <Select
                   id={'process_selection'}
@@ -713,23 +747,20 @@ const ViewWrapper = ({
                   className='!w-4/5'
                 />
               </div>
-              <div className='flex w-1/5 justify-end'>
-                <div onClick={handleFilterIconOpen} className='ml-3 pt-1'>
-                  <BasicTooltip position='bottom' content='Filter' className='!font-proxima !text-[14px] !px-0'>
-                    <div className='h-[18px] w-[17px]'>
-                      <FilterIcon />
-                    </div>
+              <div className='flex w-1/5 justify-end gap-1 pr-1'>
+                <div onClick={handleFilterIconOpen}>
+                  <BasicTooltip position='bottom' content='Filter' className='!px-0 !pt-1 !pb-1 !font-proxima !text-[14px]'>
+                    <FilterIcon />
                   </BasicTooltip>
                 </div>
-
                 <div
                   onClick={() => handleMergeIconOpen(true)}
                   className={`${selectedBillItems.length > 1 && isEnableMerge && selectedStates[0]?.id === userId
                     ? 'cursor-pointer'
                     : 'pointer-events-none opacity-50'
-                    } ml-5 mt-1`}
+                    }`}
                 >
-                  <BasicTooltip position='bottom' content='Merge' className='!font-proxima !text-[14px] !px-0'>
+                  <BasicTooltip position='bottom' content='Merge' className=' !pl-2 !pr-0 !pt-2 !pb-1 !font-proxima !text-[14px]'>
                     <MergeIcon color='#6E6D7A' />
                   </BasicTooltip>
                 </div>
@@ -770,166 +801,215 @@ const ViewWrapper = ({
                   className='cursor-pointer rounded-full bg-white p-1.5'
                   onClick={() => router.push('/bills')}
                   tabIndex={0}
-                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && router.push('/bills')}
+                  onKeyDown={(e) => (e.key === 'Enter') && router.push('/bills')}
                 >
                   <BackIcon />
                 </span>
               )}
-              {billStatus !== 3 && billStatus !== 9 && (
+              {processSelection !== '4' && (
                 <>
-                  <span className='pl-[13px] !text-[14px] font-semibold'>TAT :</span>
-                  <span className='pl-2 !text-[16px] font-semibold text-[#FB2424]'>{timeDifference.value}</span>
+                  {billStatus !== 3 && billStatus !== 9 && (
+                    <>
+                      <span className='pl-[13px] !text-[14px] font-semibold'>TAT :</span>
+                      <span className='pl-2 !text-[16px] font-semibold text-[#FB2424]'>{timeDifference.value}</span>
+                    </>
+                  )}
                 </>
               )}
             </div>
 
             <ul className='flex items-center justify-center gap-5'>
-              {billStatus !== 3 &&
-                billStatus !== 9 &&
-                billStatus !== 4 &&
-                billStatus !== 7 &&
-                selectedProcessTypeInList !== '3' && (
-                  <li className='mt-1.5'>
-                    <BasicTooltip position='bottom' content='Assignee' className='!font-proxima !text-[14px] !px-0'>
-                      <AssignUser
-                        width={52}
-                        selectedStates={selectedStates}
-                        setSelectedStates={handleSetValue}
-                        userData={assignList}
-                        dropdownAssignUserRef={dropdownAssignUserRef}
-                        isOpenAssignUserDropDown={isOpenAssignUserDropDown}
-                        setIsOpenAssignUserDropDown={setIsOpenAssignUserDropDown}
-                        right={0}
-                      />
-                    </BasicTooltip>
-                  </li>
-                )}
-              <BasicTooltip position='bottom' content='Activities' className='!font-proxima !px-0 mt-[5px] !pb-1 !text-[14px]'>
-                <li
-                  onClick={() => setIsVisibleActivities(true)}
-                  tabIndex={0}
-                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setIsVisibleActivities(true)}
-                >
-                  <ActivityIcon />
-                </li>
-              </BasicTooltip>
-              {billStatus !== 3 &&
-                billStatus !== 9 &&
-                billStatus !== 4 &&
-                billStatus !== 7 &&
-                selectedStates[0]?.id === userId && (
-                  <li
-                    className='mt-1.5'
-                    onClick={onClickMoveToDropdown}
-                    tabIndex={0}
-                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClickMoveToDropdown()}
-                  >
-                    <BasicTooltip position='bottom' content='Move' className='!font-proxima !text-[14px] !px-0'>
-                      <div className='flex items-center'>
-                        <TabMoveIcon />
-                        <div className='pl-2'>
-                          <DownArrowIcon />
-                        </div>
-                      </div>
-                    </BasicTooltip>
-                    {isOpenMoveToDropDown && (
-                      <div
-                        ref={dropdownMoveToRef}
-                        className='absolute right-36 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
-                      >
-                        <div className='flex flex-col items-start justify-start'>
-                          {moveToOptions &&
-                            moveToOptions
-                              .filter((m) => {
-                                if (parseInt(processSelection) === 1) {
-                                  return m.value !== 1
-                                } else if (parseInt(processSelection) === 2) {
-                                  return m.value !== 2
-                                } else if (parseInt(processSelection) === 3) {
-                                  return m.value !== 3
-                                } else {
-                                  return true
-                                }
-                              })
-                              .map((item) => {
-                                return (
-                                  <span
-                                    className='flex w-full cursor-pointer items-center justify-start px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
-                                    onClick={() => {
-                                      onSelectCategory(item.value)
-                                    }}
-                                    key={item.value}
-                                  >
-                                    <Typography>{item?.label}</Typography>
-                                  </span>
-                                )
-                              })}
-                        </div>
-                      </div>
+              {processSelection !== '4' && (
+                <>
+                  {billStatus !== 3 &&
+                    billStatus !== 9 &&
+                    billStatus !== 4 &&
+                    billStatus !== 7 &&
+                    selectedProcessTypeInList !== '3' && (
+                      <li className='h-full flex items-center'>
+                        <BasicTooltip position='bottom' content='Assignee' className='!font-proxima !text-[14px] !px-0'>
+                          <AssignUser
+                            width={52}
+                            selectedStates={selectedStates}
+                            setSelectedStates={handleSetValue}
+                            userData={assignList}
+                            dropdownAssignUserRef={dropdownAssignUserRef}
+                            isOpenAssignUserDropDown={isOpenAssignUserDropDown}
+                            setIsOpenAssignUserDropDown={setIsOpenAssignUserDropDown}
+                            right={0}
+                          />
+                        </BasicTooltip>
+                      </li>
                     )}
-                  </li>
-                )}
-              {billStatus !== 3 &&
-                billStatus !== 9 &&
-                billStatus !== 4 &&
-                billStatus !== 7 &&
-                selectedStates[0]?.id === userId && (
-                  <BasicTooltip position='bottom' content='Delete' className='!font-proxima !text-[14px] !px-0'>
-                    <li
-                      className='mt-1.5'
-                      onClick={() => setIsVisibleRemoveConfirm(true)}
-                      tabIndex={0}
-                      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setIsVisibleRemoveConfirm(true)}
-                    >
-                      <DeleteIcon />
-                    </li>
-                  </BasicTooltip>
-                )}
-
-              <li
-                className='mt-1.5'
-                onClick={handleViewMode}
-                tabIndex={0}
-                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleViewMode()}
-              >
-                <BasicTooltip position='bottom' content='View' className='!font-proxima pt-4 !px-0 !text-[14px]'>
-                  <ViewIcon />
-                </BasicTooltip>
-                {isOpenViewMode && (
-                  <div
-                    ref={dropdownViewModeRef}
-                    className='absolute right-6 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                </>
+              )}
+              {processSelection === '4' && (
+                <>
+                  <li className='h-full flex items-center'
+                    onClick={() => router.push(`/bills/edit/${activeBill}?module=bills`)}
+                    tabIndex={0}
+                    onKeyDown={(e) => (e.key === 'Enter')}
                   >
-                    <div className='flex flex-col items-start justify-start'>
+                    <BasicTooltip position='left' content='Edit bill' className='!z-10 !font-proxima !text-sm'>
                       <span
-                        className='flex w-full cursor-pointer items-center justify-center px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
-                        onClick={() => router.push('/bills')}
-                      >
-                        <span className='pr-[10px]'>
-                          <ListIcon />
-                        </span>
-                        <Typography>List Mode</Typography>
+                        className='cursor-pointer'>
+                        <EditIcon />
                       </span>
+                    </BasicTooltip>
+                  </li>
 
-                      {billStatusEditable.includes(billStatus) &&
-                        processSelection !== '3' &&
-                        checkUserId &&
-                        selectedStates[0]?.id === userId && (
-                          <span
-                            className='flex w-full cursor-pointer items-center justify-center px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
-                            onClick={() => router.push(`/bills/edit/${activeBill}`)}
-                          >
-                            <span className='pr-[10px]'>
-                              <EditModeIcon />
-                            </span>
-                            <Typography>Edit Mode</Typography>
-                          </span>
-                        )}
-                    </div>
-                  </div>
-                )}
+                  <li
+                    className='h-full flex items-center'
+                    onClick={() => setIsVisibleRemoveConfirm(true)}
+                    tabIndex={0}
+                    onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleRemoveConfirm(true)}
+                  >
+                    <BasicTooltip position='bottom' content='Delete' className='!font-proxima !text-[14px] !px-0'>
+                      <DeleteIcon />
+                    </BasicTooltip>
+                  </li>
+                </>
+              )}
+
+              <li className='h-full flex items-center'
+                onClick={() => setIsVisibleActivities(true)}
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleActivities(true)}
+              >
+                <BasicTooltip position='bottom' content='Activities' className='!font-proxima !px-0 !text-[14px]'>
+                  <ActivityIcon />
+                </BasicTooltip>
               </li>
+
+              {processSelection !== '4' && (
+                <>
+                  {billStatus !== 3 &&
+                    billStatus !== 9 &&
+                    billStatus !== 4 &&
+                    billStatus !== 7 &&
+                    selectedStates[0]?.id === userId && (
+                      <li
+                        className='h-full flex items-center'
+                        onClick={onClickMoveToDropdown}
+                        tabIndex={0}
+                        onKeyDown={(e) => (e.key === 'Enter') && onClickMoveToDropdown()}
+                      >
+                        <BasicTooltip position='bottom' content='Move' className='!font-proxima !text-[14px] !px-0'>
+                          <div className='flex items-center gap-2'>
+                            <TabMoveIcon />
+                            <div className={`transition-transform ${isOpenMoveToDropDown ? "duration-400 rotate-180" : "duration-200"}`}>
+                              <DownArrowIcon />
+                            </div>
+                          </div>
+                        </BasicTooltip>
+                        {isOpenMoveToDropDown && (
+                          <div
+                            ref={dropdownMoveToRef}
+                            className='absolute right-28 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                          >
+                            <div className='flex flex-col items-start justify-start'>
+                              {moveToOptions &&
+                                moveToOptions
+                                  .filter((m) => {
+                                    if (parseInt(processSelection) === 1) {
+                                      return m.value !== 1
+                                    } else if (parseInt(processSelection) === 2) {
+                                      return m.value !== 2
+                                    } else if (parseInt(processSelection) === 3) {
+                                      return m.value !== 3
+                                    } else {
+                                      return true
+                                    }
+                                  })
+                                  .map((item) => {
+                                    return (
+                                      <span
+                                        className='flex w-full cursor-pointer items-center justify-start px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
+                                        onClick={() => {
+                                          onSelectCategory(item.value)
+                                        }}
+                                        key={item.value}
+                                      >
+                                        <Typography>{item?.label}</Typography>
+                                      </span>
+                                    )
+                                  })}
+                            </div>
+                          </div>
+                        )}
+                      </li>
+                    )}
+                </>
+              )}
+              {processSelection !== '4' && (
+                <>
+                  {billStatus !== 3 &&
+                    billStatus !== 9 &&
+                    billStatus !== 4 &&
+                    billStatus !== 7 &&
+                    selectedStates[0]?.id === userId && (
+                      <li
+                        className='h-full flex items-center'
+                        onClick={() => setIsVisibleRemoveConfirm(true)}
+                        tabIndex={0}
+                        onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleRemoveConfirm(true)}
+                      >
+                        <BasicTooltip position='bottom' content='Delete' className='!font-proxima !text-[14px] !px-0'>
+                          <DeleteIcon />
+                        </BasicTooltip>
+                      </li>
+                    )}
+                </>
+              )}
+
+
+              {processSelection !== '4' && (
+                <li
+                  className='h-full flex items-center'
+                  onClick={handleViewMode}
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === 'Enter') && handleViewMode()}
+                >
+                  <BasicTooltip position='bottom' content='View' className='!font-proxima !px-0 !text-[14px]'>
+                    <ViewIcon />
+                  </BasicTooltip>
+                  {isOpenViewMode && (
+                    <div
+                      ref={dropdownViewModeRef}
+                      className='absolute right-6 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                    >
+                      <div className='flex flex-col items-start justify-start'>
+                        <span
+                          className='flex w-full cursor-pointer items-center justify-center px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
+                          onClick={() => router.push('/bills')}
+                        >
+                          <span className='pr-[10px]'>
+                            <ListIcon />
+                          </span>
+                          <Typography>List Mode</Typography>
+                        </span>
+
+                        {billStatusEditable.includes(billStatus) &&
+                          processSelection !== '3' &&
+                          checkUserId &&
+                          selectedStates[0]?.id === userId && (
+                            <span
+                              className='flex w-full cursor-pointer items-center justify-center px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
+                              onClick={() => router.push(`/bills/edit/${activeBill}?module=bills`)}
+                            >
+                              <span className='pr-[10px]'>
+                                <EditModeIcon />
+                              </span>
+                              <Typography>Edit Mode</Typography>
+                            </span>
+                          )}
+                      </div>
+                    </div>
+                  )}
+                </li>
+              )}
             </ul>
+
           </div>
 
           <FilterPopover
@@ -955,101 +1035,110 @@ const ViewWrapper = ({
 
           {children}
 
-          <div className='custom-bottom-sticky bottom-0 grid place-content-center place-items-center gap-2 !border-t border-[#D8D8D8] px-5 py-[12px] sm:!flex sm:!items-center sm:!justify-end'>
-            <span
-              className='mr-[20px] flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-[#F6F6F6]'
-              onClick={() => handleBackword(activeBill)}
-              tabIndex={0}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleBackword(activeBill)}
-            >
-              <LeftArrowIcon />
-            </span>
-
-            {selectedProcessTypeInList !== '2' && (
-              <Button
-                variant={isDisablePaidButton ? 'btn' : 'btn-outline-primary'}
-                className='btn-md w-[130px] rounded-full'
-                onClick={() => setPostaspaidModal(true)}
-                disabled={isDisablePaidButton ? true : false}
+          {processSelection !== '4' && (
+            <div className='!h-[66px] custom-bottom-sticky bottom-0 grid place-content-center place-items-center gap-2 !border-t border-lightSilver px-5 py-[12px] sm:!flex sm:!items-center sm:!justify-end'>
+              <span
+                className='mr-[20px] flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-whiteSmoke'
+                onClick={() => handleBackword(activeBill)}
                 tabIndex={0}
-                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setPostaspaidModal(true)}
+                onKeyDown={(e) => (e.key === 'Enter') && handleBackword(activeBill)}
+              >
+                <LeftArrowIcon />
+              </span>
+
+              {selectedProcessTypeInList !== '2' && (
+                <Button
+                  variant={isDisablePaidButton ? 'btn' : 'btn-outline-primary'}
+                  className='btn-md w-[130px] rounded-full'
+                  onClick={() => setPostaspaidModal(true)}
+                  disabled={isDisablePaidButton ? true : false}
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === 'Enter') && setPostaspaidModal(true)}
+                >
+                  <>
+                    {loader.postAsPaid ? (
+                      <div className={`flex w-full items-center justify-center`}>
+                        <div className='animate-spin'>
+                          <SpinnerIcon bgColor='#02B89D' />
+                        </div>
+                      </div>
+                    ) : (
+                      <Typography className='!text-[14px] font-semibold uppercase !tracking-[0.02em]'>Post as paid</Typography>
+                    )}
+                  </>
+                </Button>
+              )}
+              <Button
+                variant={`${isDisableDraftButton ? 'btn' : 'btn-outline-primary'}`}
+                className='btn-md ml-[20px] w-[143px] rounded-full'
+                onClick={() => onSubmitBill(2)}
+                disabled={isDisableDraftButton ? true : false}
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === 'Enter') && onSubmitBill(2)}
               >
                 <>
-                  {loader.postAsPaid ? (
+                  {loader.saveAsDraft ? (
                     <div className={`flex w-full items-center justify-center`}>
-                      <div className='animate-spin'>
+                      <div className='animate-spin '>
                         <SpinnerIcon bgColor='#02B89D' />
                       </div>
                     </div>
                   ) : (
-                    <Typography className='!text-[14px] font-semibold uppercase !tracking-[0.02em]'>Post as paid</Typography>
+                    <>
+                      {billStatus === 2 ? (
+                        <Typography className='!text-[14px] font-semibold uppercase !tracking-[0.02em]'>Drafted</Typography>
+                      ) : (
+                        <Typography className='!text-[14px] font-semibold uppercase !tracking-[0.02em]'>Save as draft</Typography>
+                      )}
+                    </>
                   )}
                 </>
               </Button>
-            )}
-            <Button
-              variant={`${isDisableDraftButton ? 'btn' : 'btn-outline-primary'}`}
-              className='btn-md ml-[20px] w-[143px] rounded-full'
-              onClick={() => onSubmitBill(2)}
-              disabled={isDisableDraftButton ? true : false}
-              tabIndex={0}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSubmitBill(2)}
-            >
-              <>
-                {loader.saveAsDraft ? (
-                  <div className={`flex w-full items-center justify-center`}>
-                    <div className='animate-spin '>
-                      <SpinnerIcon bgColor='#02B89D' />
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {billStatus === 2 ? (
-                      <Typography className='!text-[14px] font-semibold uppercase !tracking-[0.02em]'>Drafted</Typography>
-                    ) : (
-                      <Typography className='!text-[14px] font-semibold uppercase !tracking-[0.02em]'>Save as draft</Typography>
-                    )}
-                  </>
-                )}
-              </>
-            </Button>
 
-            <Button
-              variant={isDisablePostButton ? 'btn' : 'btn-primary'}
-              className='btn-md ml-[20px] w-[90px] rounded-full'
-              onClick={() => onSubmitBill(3)}
-              disabled={isDisablePostButton ? true : false}
-              tabIndex={0}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSubmitBill(3)}
-            >
-              <>
-                {loader.post ? (
-                  <div className={`flex w-full items-center justify-center`}>
-                    <div className='animate-spin '>
-                      <SpinnerIcon bgColor='#FFF' />
+              <Button
+                variant={isDisablePostButton ? 'btn' : 'btn-primary'}
+                className='btn-md ml-[20px] w-[90px] rounded-full'
+                onClick={() => onSubmitBill(3)}
+                disabled={isDisablePostButton ? true : false}
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === 'Enter') && onSubmitBill(3)}
+              >
+                <>
+                  {loader.post ? (
+                    <div className={`flex w-full items-center justify-center`}>
+                      <div className='animate-spin '>
+                        <SpinnerIcon bgColor='#FFF' />
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <Typography className='!text-[14px] font-semibold uppercase !tracking-[0.02em]'>Post</Typography>
-                )}
-              </>
-            </Button>
+                  ) : (
+                    <Typography className='!text-[14px] font-semibold uppercase !tracking-[0.02em]'>Post</Typography>
+                  )}
+                </>
+              </Button>
 
-            <span
-              className='ml-[20px] flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-[#F6F6F6]'
-              onClick={() => handleForward(activeBill)}
-              tabIndex={0}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleForward(activeBill)}
-            >
-              <RightArrowIcon />
-            </span>
-          </div>
+              <span
+                className='ml-[20px] flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-whiteSmoke'
+                onClick={() => handleForward(activeBill)}
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === 'Enter') && handleForward(activeBill)}
+              >
+                <RightArrowIcon />
+              </span>
+            </div>
+          )}
         </div>
 
         <ActivityDrawer
           noCommentBox={false}
           isOpen={isVisibleActivities}
-          onClose={() => { setIsVisibleActivities(false); !checkActivityStatus && setIsVisibleLeftSidebar(true) }}
+          onClose={() => {
+            setIsVisibleActivities(false);
+            if (selectedProcessTypeInList === '4') {
+              setIsVisibleLeftSidebar(false)
+            } else if (selectedProcessTypeInList !== '4' && !checkActivityStatus) {
+              setIsVisibleLeftSidebar(true)
+            }
+          }}
           GUID={documentDetailByIdData?.GUID}
           selectedPayableId={activeBill}
         />
@@ -1086,7 +1175,13 @@ const ViewWrapper = ({
           setVisibleTextValue={(value: boolean) => setVisibleTextValue(value)}
           onOpen={isVisibleRemoveConfirm}
           onClose={() => setIsVisibleRemoveConfirm(false)}
-          handleSubmit={() => onDeleteDocuments()}
+          handleSubmit={() => {
+            if (selectedProcessTypeInList !== '4') {
+              onDeleteDocuments()
+            } else {
+              onDeleteOverviewDocuments()
+            }
+          }}
           editedValues={editedValues}
           setEditedValues={setEditedValues}
         />

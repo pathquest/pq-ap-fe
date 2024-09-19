@@ -22,12 +22,18 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Actions } from '../DataTableActions'
 import Filter from '../Filter'
 import VendorAddScreen from '../VendorAddScreen'
+import { hasCreatePermission, hasEditPermission, hasImportPermission, hasSyncPermission } from '@/components/Common/Functions/ProcessPermission'
 
 const ListVendors: React.FC = () => {
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
   const accountingTool = session?.user?.AccountingTool
   const { filterFields } = useAppSelector((state) => state.vendor)
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isCreate = hasCreatePermission(processPermissionsMatrix, "Vendor")
+  const isEdit = hasEditPermission(processPermissionsMatrix, "Vendor")
+  const isSync = hasSyncPermission(processPermissionsMatrix, "Vendor")
+  const isImport = hasImportPermission(processPermissionsMatrix, "Vendor")
 
   const dispatch = useAppDispatch()
   const router = useRouter()
@@ -60,7 +66,7 @@ const ListVendors: React.FC = () => {
   const [isImportModalOpen, setIsImportModalOpen] = useState<boolean>(false)
   const [inactiveId, setInactiveId] = useState<number>(0)
   const [vendorName, setVendorName] = useState<string>('')
-  const [isImport, setIsImport] = useState<boolean>(false)
+  const [isImporting, setIsImporting] = useState<boolean>(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const [vendorList, setVendorList] = useState<any>([])
@@ -466,7 +472,7 @@ const ListVendors: React.FC = () => {
       Payables: <label className={`font-proxima text-sm !font-bold !tracking-[0.02em] ${d?.Status ? '' : 'opacity-50'}`}>
         ${formatCurrency(d?.Payables)}
       </label>,
-      action: <Actions id={d?.Id} vendorName={d?.Name} recordNumber={d?.RecordNo} status={d?.Status} actions={d?.Status ? ['Edit Details', 'Inactive'] : ['Active']} handleClick={handleMenuChange} />
+      action: <Actions id={d?.Id} vendorName={d?.Name} recordNumber={d?.RecordNo} status={d?.Status} actions={d?.Status ? [isEdit && 'Edit Details', 'Inactive'].filter(Boolean) : ['Active']} handleClick={handleMenuChange} />
     })
   )
 
@@ -505,7 +511,7 @@ const ListVendors: React.FC = () => {
     if (!selectedFile) {
       Toast.error('Error', 'Please select a CSV or Excel file for importing data.')
     } else {
-      setIsImport(true)
+      setIsImporting(true)
       modalClose()
       const params = {
         Files: selectedFile,
@@ -517,11 +523,11 @@ const ListVendors: React.FC = () => {
           Toast.success(`${responseData.SuccessCount} record imported successfully`)
         }
         getVendorList(1)
-        setIsImport(false);
+        setIsImporting(false);
         setSelectedFile(null);
       }, () => {
         // ErrorData
-        setIsImport(false);
+        setIsImporting(false);
         setSelectedFile(null);
       }, (WarningData: any) => {
         // WarningData
@@ -532,7 +538,7 @@ const ListVendors: React.FC = () => {
           Toast.warning(`${data.ErrorMessage}`)
         })
         getVendorList(1)
-        setIsImport(false);
+        setIsImporting(false);
         setSelectedFile(null);
       })
     }
@@ -572,19 +578,19 @@ const ListVendors: React.FC = () => {
                       <FilterIcon />
                     </div>
                   </BasicTooltip>
-                  <BasicTooltip position='bottom' content='Create' className='!z-[6] !cursor-pointer !px-0'>
+                  {isCreate && <BasicTooltip position='bottom' content='Create' className='!z-[6] !cursor-pointer !px-0'>
                     <div className='flex justify-center items-center cursor-pointer' onClick={handleDrawerOpen}>
                       <CreateIcon />
                     </div>
-                  </BasicTooltip>
-                  {accountingTool === 4 ? <BasicTooltip content={`Import`} position='bottom' className='!z-[6] !px-0'>
+                  </BasicTooltip>}
+                  {(accountingTool === 4 && isImport) ? <BasicTooltip content={`Import`} position='bottom' className='!z-[6] !px-0'>
                     <div className="overflow-hidden flex justify-center items-center">
-                      <div className={`${isImport && 'animate-spin-y'}`} onClick={() => setIsImportModalOpen(true)}>
+                      <div className={`${isImporting && 'animate-spin-y'}`} onClick={() => setIsImportModalOpen(true)}>
                         <ImportIcon />
                       </div>
                     </div>
                   </BasicTooltip>
-                    : <BasicTooltip position='bottom' content='Sync' className='!z-[6] !cursor-pointer !px-0'>
+                    : accountingTool != 4 && isSync && <BasicTooltip position='bottom' content='Sync' className='!z-[6] !cursor-pointer !px-0'>
                       <div className={`flex justify-center items-center cursor-pointer ${isSyncing && 'animate-spin'}`} onClick={() => setIsSyncModalOpen(true)}>
                         <SyncIcon />
                       </div>

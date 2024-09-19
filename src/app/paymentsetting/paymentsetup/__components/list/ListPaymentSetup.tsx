@@ -2,35 +2,38 @@
 import ChevronDownIcon from '@/assets/Icons/ChevronDownIcon'
 import InfoIcon from '@/assets/Icons/infoIcon'
 import KYCIcon from '@/assets/Icons/KYCIcon'
+import PlusIcon from '@/assets/Icons/PlusIcon'
 import PlusSetupIcon from '@/assets/Icons/PlusSetupIcon'
 import SuccessIcon from '@/assets/Icons/SuccessIcon'
 import SyncIcon from '@/assets/Icons/SyncIcon'
 import WarningIcon from '@/assets/Icons/WarningIcon'
 import DrawerOverlay from '@/components/Common/DrawerOverlay'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
 import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 import Wrapper from '@/components/Common/Wrapper'
 import { BankAccountListOption, PaymentMethodOption, PaymentSetupListOptions } from '@/models/paymentSetup'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import { activateBankAccount, buyerBankList, companyKYC, deactivateBankAccount, getKYCStatus, paymentMethodList, savePaymentMethod, setCustomerKycStatus } from '@/store/features/paymentsetting/paymentSetupSlice'
+import { activateBankAccount, buyerBankList, companyKYC, deactivateBankAccount, getKYCStatus, paymentMethodList, savePaymentMethod, setCustomerKycStatus, syncBankAccount } from '@/store/features/paymentsetting/paymentSetupSlice'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Badge, Button, Close, Loader, Modal, ModalAction, ModalContent, ModalTitle, NavigationBar, Toast, Tooltip } from 'pq-ap-lib'
+import { Badge, Button, Close, Loader, Modal, ModalAction, ModalContent, ModalTitle, Toast, Tooltip } from 'pq-ap-lib'
 import 'pq-ap-lib/dist/index.css'
 import React, { useEffect, useRef, useState } from 'react'
-import { useMediaQuery } from 'react-responsive'
 import AccountDrawer from '../AccountDrawer'
 import Card from '../Card'
 import CheckApprove from '../CheckApprove'
 import CheckDrawer from '../CheckDrawer'
 import PaymentSetupDrawer from '../PaymentSetupDrawer'
-import PlusIcon from '@/assets/Icons/PlusIcon'
 
 const ListPaymentSetup: React.FC = () => {
   // For Dynamic Company Id & AccountingTool
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId) ?? 0
   const accountingTool = Number(session?.user?.AccountingTool)
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isPaymentSetupCreate = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Payment Setup", "Create");
+  const isPaymentSetupSync = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Payment Setup", "Sync");
 
   const dispatch = useAppDispatch()
   const { customerKycStatus } = useAppSelector((state) => state.paymentSetupSlice)
@@ -50,17 +53,17 @@ const ListPaymentSetup: React.FC = () => {
   const divRef = useRef<HTMLDivElement>(null);
 
   const [selectedTab, setSelectedTab] = useState<string>('bank')
-
   const [isOpenAccountDrawer, setIsOpenAccountDrawer] = useState<boolean>(false)
   const [isOpenCheckDrawer, setIsOpenCheckDrawer] = useState<boolean>(false)
   const [isOpenVirtualCardDrawer, setIsOpenVirtualCardDrawer] = useState<boolean>(false)
   const [isULOptionOpen, setIsULOptionOpen] = useState<boolean>(false)
-  const [isSpin, setIsSpin] = useState<boolean>(false)
+  const [isSyncing, setIsSyncing] = useState<boolean>(false)
   const [paymentMethodName, setPaymentMethodName] = useState<string>('')
   const [kycMessage, setKycMessage] = useState<string>('')
   const [modeId, setModeId] = useState<number>(0)
   const [mode, setMode] = useState<string>('')
   const [isActivateModalOpen, setIsActivateModalOpen] = useState<boolean>(false)
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState<boolean>(false)
   const [activateId, setAactivateId] = useState<number>(0)
   const [bankAccountList, setBankAccountList] = useState<BankAccountListOption[]>([])
   const [buyerPaymentMethodList, setBuyerPaymentMethodList] = useState<PaymentSetupListOptions[]>([])
@@ -68,10 +71,7 @@ const ListPaymentSetup: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isStatusLoading, setIsStatusLoading] = useState<boolean>(false)
   const [isKYCModalOpen, setIsKYCModalOpen] = useState<boolean>(false)
-  const isTablet = useMediaQuery({ query: '(max-width: 1023px)' })
-  const [visibleTab, setVisibleTab] = useState<number>(2)
   const [paymentMethodSetupId, setPaymentMethodSetupId] = useState<number>(0)
-  const [isPendingKYCTooltipShow, setIsPendingKYCTooltipShow] = useState<boolean>(true)
   const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState<boolean>(false)
   const [disableActionName, setDisableActionName] = useState<string>('')
 
@@ -79,24 +79,12 @@ const ListPaymentSetup: React.FC = () => {
 
   const [isCheckApproveScreenOpen, setIsCheckApproveScreenOpen] = useState<boolean>(false)
   const [accountId, setAccountId] = useState<string>('')
-  const [hideAlert, setHideAlert] = useState(true);
-
-  useEffect(() => {
-    if (isTablet) {
-      setVisibleTab(1)
-    }
-    else {
-      setVisibleTab(2)
-    }
-  }, [isTablet])
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState<boolean>(false)
 
   const handleToggleChange = () => {
-    if (customerKycStatus == "Approved") {
+    if (customerKycStatus) {
       setIsOpenAccountDrawer(true)
       setMode("Add")
-    } else {
-      setHideAlert(true)
-      setIsPendingKYCTooltipShow(true)
     }
   }
 
@@ -172,7 +160,7 @@ const ListPaymentSetup: React.FC = () => {
         setPaymentMethodSetupId(paymentMethodSetupId)
         break
       case 'Enable Virtual Card':
-        handlePaymentMethodStatus(id, paymentMethodSetupId, false, true, false);
+        handlePaymentMethodStatus(id, paymentMethodSetupId, null, true, null);
         break
       case 'Disable ACH':
         setDisableActionName('Disable ACH')
@@ -181,7 +169,7 @@ const ListPaymentSetup: React.FC = () => {
         setPaymentMethodSetupId(paymentMethodSetupId)
         break
       case 'Enable ACH':
-        handlePaymentMethodStatus(id, paymentMethodSetupId, true, false, false);
+        handlePaymentMethodStatus(id, paymentMethodSetupId, true, null, null);
         break
       case 'Disable Check':
         setDisableActionName('Disable Check')
@@ -190,7 +178,7 @@ const ListPaymentSetup: React.FC = () => {
         setPaymentMethodSetupId(paymentMethodSetupId)
         break
       case 'Enable Check':
-        handlePaymentMethodStatus(id, paymentMethodSetupId, false, false, true);
+        handlePaymentMethodStatus(id, paymentMethodSetupId, null, null, true);
         break
       case "Microdeposit Verification":
         setModeId(id)
@@ -217,7 +205,19 @@ const ListPaymentSetup: React.FC = () => {
 
   const handleDisableSubmit = () => {
     if (disableActionName) {
-      handlePaymentMethodStatus(activateId, paymentMethodSetupId, false, false, false);
+      switch (disableActionName) {
+        case "Disable ACH":
+          handlePaymentMethodStatus(activateId, paymentMethodSetupId, false, null, null);
+          break;
+        case "Disable Virtual Card":
+          handlePaymentMethodStatus(activateId, paymentMethodSetupId, null, false, null);
+          break;
+        case "Disable Check":
+          handlePaymentMethodStatus(activateId, paymentMethodSetupId, null, null, false);
+          break;
+        default:
+          break
+      }
     }
   }
 
@@ -276,6 +276,8 @@ const ListPaymentSetup: React.FC = () => {
     setIsDeactivateModalOpen(false)
     setDisableActionName('')
     setPaymentMethodSetupId(0)
+    setIsSyncModalOpen(false)
+    setIsAlertModalOpen(false)
   }
 
   const handleSubmit = () => {
@@ -331,17 +333,25 @@ const ListPaymentSetup: React.FC = () => {
   }
 
   useEffect(() => {
-    if (CompanyId || isKYCModalOpen) {
-      getCurrentKYCStatus()
-    }
-  }, [CompanyId, isKYCModalOpen])
-
-  useEffect(() => {
+    getBuyerBankList()
     if (customerKycStatus == "Approved") {
-      getBuyerBankList()
       getPaymentMethodList()
     }
   }, [refreshTable, CompanyId, customerKycStatus])
+
+  useEffect(() => {
+    if (CompanyId) {
+      getCurrentKYCStatus()
+    }
+  }, [CompanyId])
+
+  useEffect(() => {
+    if (customerKycStatus == "Pending" && bankAccountList.length == 0 && !isLoading) {
+      setIsAlertModalOpen(true)
+    } else {
+      setIsAlertModalOpen(false)
+    }
+  }, [customerKycStatus, bankAccountList])
 
   const handleModalClose = (type: string) => {
     setIsCheckApproveScreenOpen(false)
@@ -357,10 +367,10 @@ const ListPaymentSetup: React.FC = () => {
   const handleKYCFormSubmit = () => {
     customerKycStatus === "Pending" && getCompanyKYC()
 
-    window.open(`${process.env.KYC_FORM_URL}`, '_blank', 'noopener,noreferrer');
-    setIsKYCModalOpen(false)
+    // window.open(`${process.env.KYC_FORM_URL}`, '_blank', 'noopener,noreferrer');
     // router.push('https://kyc.pathquest.com/')
-    // router.push('/paymentsetting/paymentsetup/KYCForm')
+    router.push('/paymentsetting/paymentsetup/KYCForm')
+    setIsKYCModalOpen(false)
   }
 
   const handleKYCForm = () => {
@@ -371,7 +381,7 @@ const ListPaymentSetup: React.FC = () => {
     }
   }
 
-  const handlePaymentMethodStatus = async (paymentSetupId: number, paymentMethodSetupId: number, isAch: boolean, isVcn: boolean, isCheck: boolean) => {
+  const handlePaymentMethodStatus = async (paymentSetupId: number, paymentMethodSetupId: number, isAch: boolean | null, isVcn: boolean | null, isCheck: boolean | null) => {
     setIsStatusLoading(true)
     const params = {
       PaymentSetupId: paymentSetupId,
@@ -390,28 +400,38 @@ const ListPaymentSetup: React.FC = () => {
     })
   }
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setHideAlert(false);
-      setIsPendingKYCTooltipShow(false)
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [isPendingKYCTooltipShow]);
-
   const handleTabClick = (tabId: string) => {
     if (selectedTab == "bank") {
-      if (bankAccountList.length === 0) {
+      if (bankAccountList.length === 0 && customerKycStatus === "Approved") {
         setSelectedTab("bank");
         Toast.error('Add Bank Account First', 'You need to add bank account first before creating payment method setup')
+      } if (bankAccountList.length > 0 && customerKycStatus === "Approved") {
+        setSelectedTab('payment');
       }
       else {
-        setSelectedTab("payment");
+        setSelectedTab("bank");
+        Toast.error('Complete KYC Process First', 'You need to complete KYC process and add at least one bank account before payment method setup')
       }
     } else {
       setSelectedTab(tabId);
     }
   };
+
+  const handleSync = async () => {
+    setIsSyncing(true)
+    modalClose()
+    performApiAction(dispatch, syncBankAccount, null, (responseData: any) => {
+      if (responseData == true) {
+        setIsSyncing(false)
+        setRefreshTable(!refreshTable)
+        Toast.success('Bank Account sync successfully')
+      }
+    }, () => {
+      // ErrorData
+      setIsSyncing(false)
+    })
+  }
+
 
   return (
     <Wrapper masterSettings={true}>
@@ -440,28 +460,30 @@ const ListPaymentSetup: React.FC = () => {
                 <span className={`${isLoading ? "!hidden" : "!block"}`}>
                   <Badge variant="pill" badgetype={`${customerKycStatus === "Approved" ? "success" : customerKycStatus === "Received" ? "warning" : "error"}`} text={customerKycStatus} effect />
                 </span>
-                <div className={`flex items-center ${customerKycStatus !== "Approved" ? "cursor-pointer" : " pointer-events-none cursor-default"}`} onClick={handleKYCForm}>
+                <div className={`!-mr-2 flex items-center ${customerKycStatus !== "Approved" ? "cursor-pointer" : " pointer-events-none cursor-default"}`} onClick={handleKYCForm}>
                   <Tooltip content={`Company KYC`} position='bottom' className='!mx-0 !px-0'>
                     <KYCIcon />
                   </Tooltip>
                 </div></>}
-              <div className={`${isSpin && 'animate-spin'} ${accountingTool == 4 ? "hidden" : "block"}`} >
-                <SyncIcon />
+              <div className={`cursor-pointer ${isSyncing && 'animate-spin'} ${accountingTool == 4 ? "hidden" : "flex justify-center items-center"}`} onClick={() => setIsSyncModalOpen(true)}>
+                <Tooltip content={`Sync Bank Account`} position='left' className='!z-[6] !p-0 h-8 w-8 flex justify-center items-center'>
+                  <SyncIcon />
+                </Tooltip>
               </div>
 
               {selectedTab == "bank"
-                ? <Button className={`${accountingTool === 1 ? "hidden" : "block"} ${customerKycStatus == "Approved" ? "cursor-pointer" : ""} rounded-full !h-9 laptop:px-6 laptopMd:px-6 lg:px-6 xl:px-6 hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px]`} variant={customerKycStatus == "Approved" ? "btn-primary" : 'btn'} onClick={handleToggleChange}>
+                ? <Button className={`${(accountingTool === 1 && !isPaymentSetupCreate) ? "hidden" : "block"} cursor-pointer rounded-full !h-9 laptop:px-6 laptopMd:px-6 lg:px-6 xl:px-6 hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px]`} variant="btn-primary" onClick={handleToggleChange}>
                   <div className='flex justify-center items-center font-bold'>
                     <span className='mr-[8px]'>
-                      <PlusIcon color={customerKycStatus == "Approved" ? "#FFF" : "#6E6D7A"} />
+                      <PlusIcon color="#FFF" />
                     </span>
                     <label className='flex font-proxima cursor-pointer items-center laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base laptop:font-semibold laptopMd:font-semibold lg:font-semibold xl:font-semibold hd:font-semibold 2xl:font-semibold 3xl:font-semibold tracking-[0.02em] pr-1'>ADD BANK ACCOUNT</label>
                   </div>
                 </Button>
-                : <div ref={divRef} className={`relative`}>
-                  <Button className={`relative rounded-full !h-9 ${customerKycStatus == "Approved" && bankAccountList.length !== 0 ? "cursor-pointer" : "pointer-events-none"}`} variant={customerKycStatus == "Approved" && bankAccountList.length !== 0 ? "btn-primary" : 'btn'} onClick={() => setIsULOptionOpen(!isULOptionOpen)}>
+                : <div ref={divRef} className={`relative ${isPaymentSetupCreate ? "block" : "hidden"}`}>
+                  <Button className={`relative rounded-full !h-9 cursor-pointer`} variant="btn-primary" onClick={() => setIsULOptionOpen(!isULOptionOpen)}>
                     <div className='flex h-full'>
-                      <span className='pr-2 flex items-center '> <PlusSetupIcon /></span>
+                      <span className='pr-2 flex items-center'> <PlusSetupIcon /></span>
                       <label className='flex pr-3 border-r font-proxima cursor-pointer items-center laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base laptop:font-semibold laptopMd:font-semibold lg:font-semibold xl:font-semibold hd:font-semibold 2xl:font-semibold 3xl:font-semibold tracking-[0.02em]'>ADD PAYMENT METHOD</label>
                       <span className={`w-[35px] flex justify-center items-center transition-transform ${isULOptionOpen ? "rotate-180 duration-400" : "duration-200"}`}>
                         <ChevronDownIcon />
@@ -481,47 +503,36 @@ const ListPaymentSetup: React.FC = () => {
             </div>
           </div>
           {(!isLoading && selectedTab == "bank") &&
-            customerKycStatus === "Received"
+            customerKycStatus === "Received" && bankAccountList.length === 0
             ? <div className='h-[54px] w-full bg-warningColor flex items-center px-5'>
               <WarningIcon /> <label className='ml-2 text-[#664D03] font-bold font-proxima text-base tracking-wide'>{kycMessage}</label>
             </div>
-            : customerKycStatus === "Pending" && !isLoading && isPendingKYCTooltipShow ?
-              <div className={`${hideAlert ? "" : "hidden"} h-[54px] w-full bg-warningColor flex items-center px-5`}>
-                <WarningIcon /> <label className='ml-2 text-[#664D03] font-bold font-proxima text-base tracking-wide'> Complete KYC before adding Bank & Payment Setup.</label>
+            : (customerKycStatus === "Canceled" || customerKycStatus === "Declined" || customerKycStatus === "Suspended") ?
+              <div className='h-[54px] w-full bg-[#F8D7DA] flex items-center px-5'>
+                <InfoIcon bgColor="#DC3545" /><label className='ml-2 text-[#DC3545] font-bold font-proxima text-base tracking-wide'>{kycMessage}</label>
               </div>
-              : (customerKycStatus === "Canceled" || customerKycStatus === "Declined" || customerKycStatus === "Suspended") ?
-                <div className='h-[54px] w-full bg-[#F8D7DA] flex items-center px-5'>
-                  <InfoIcon bgColor="#DC3545" /><label className='ml-2 text-[#DC3545] font-bold font-proxima text-base tracking-wide'>{kycMessage}</label>
-                </div>
-                : ""
+              : ""
           }
 
           {/* Cards */}
-          {customerKycStatus === "Approved" ?
-            isStatusLoading ? <div className='flex h-full w-full items-center justify-center'>
+          {isStatusLoading || isLoading
+            ? <div className='flex h-full w-full items-center justify-center'>
               <Loader size='md' helperText />
-            </div> :
-              bankAccountList.length === 0 && !isLoading && selectedTab == "bank"
-                ? <div className='h-[54px] w-full bg-primary flex items-center px-5'>
-                  <SuccessIcon /> <label className='ml-2 text-white font-bold font-proxima text-base tracking-wide'>{kycMessage}</label>
-                </div>
-                : <div className='grid max-[1024px]:grid-cols-2 grid-cols-3 gap-5 px-3 py-5 h-[calc(100vh-135px)] overflow-auto custom-scroll'>
-                  {selectedTab == "bank"
-                    ? bankAccountList && bankAccountList.map((option, index) => (
-                      <Card key={index + Math.random()} selectedTab="bank" accountingTool={accountingTool} isActivate={option.IsActive} id={option.PaymentSetupId} title={option.BankName} bankName={option.BankName} paymentMethodSetupId={option.PaymentSetupMethodId} notes={option.Notes} routingNumber={option.RoutingNumber} accountNumber={option.AccountNumber} accountId={option.AccountId} handleMenuOption={handleMenuChange} />
-                    ))
-                    : buyerPaymentMethodList && buyerPaymentMethodList.map((option, index) => (
-                      <Card key={index + Math.random()} selectedTab="payment" accountingTool={accountingTool} isVerified={option.IsVerified} isApproved={option.isApproved} isActivate={option.IsActive} id={option.PaymentSetupId} title={option.isCheck ? "Check" : option.isAch ? "ACH" : "Virtual Card"} bankName={option.BankName} paymentMethodSetupId={option.PaymentSetupMethodId} routingNumber={option.RoutingNumber} accountNumber={option.AccountNumber} accountId={String(option.AccountId)} handleMenuOption={handleMenuChange} />
-                    ))
-                  }
-                </div>
-            : isLoading ? (
-              <div className='flex  h-[calc(100vh-150px)] w-full items-center justify-center'>
-                <Loader size='md' helperText />
+            </div>
+            : bankAccountList.length === 0 && !isLoading && selectedTab == "bank"
+              ? customerKycStatus === "Approved" && <div className='h-[54px] w-full bg-primary flex items-center px-5'>
+                <SuccessIcon /> <label className='ml-2 text-white font-bold font-proxima text-base tracking-wide'>{kycMessage}</label>
               </div>
-            ) : (
-              ""
-            )
+              : <div className='grid max-[1024px]:grid-cols-2 grid-cols-3 gap-5 px-3 py-5 h-[calc(100vh-135px)] overflow-auto custom-scroll'>
+                {selectedTab == "bank"
+                  ? bankAccountList && bankAccountList.map((option, index) => (
+                    <Card key={index + Math.random()} selectedTab="bank" accountingTool={accountingTool} isActivate={option.IsActive} id={option.PaymentSetupId} title={option.BankName} bankName={option.BankName} paymentMethodSetupId={option.PaymentSetupMethodId} notes={option.Notes} routingNumber={option.RoutingNumber} accountNumber={option.AccountNumber} accountId={option.AccountId} handleMenuOption={handleMenuChange} />
+                  ))
+                  : buyerPaymentMethodList && buyerPaymentMethodList.map((option, index) => (
+                    <Card key={index + Math.random()} selectedTab="payment" accountingTool={accountingTool} isVerified={option.IsVerified} isApproved={option.isApproved} isActivate={option.IsActive} id={option.PaymentSetupId} title={option.isCheck ? "Check" : option.isAch ? "ACH" : "Virtual Card"} bankName={option.BankName} paymentMethodSetupId={option.PaymentSetupMethodId} routingNumber={option.RoutingNumber} accountNumber={option.AccountNumber} accountId={String(option.AccountId)} handleMenuOption={handleMenuChange} />
+                  ))
+                }
+              </div>
           }
         </div>}
 
@@ -553,10 +564,21 @@ const ListPaymentSetup: React.FC = () => {
         colorVariantYes='btn-error'
       />
 
+      {/* Sync Modal */}
+      <ConfirmationModal
+        title='Sync'
+        content={`Are you sure you want to sync Bank Account ?`}
+        isModalOpen={isSyncModalOpen}
+        modalClose={modalClose}
+        handleSubmit={handleSync}
+        colorVariantNo='btn-outline-primary'
+        colorVariantYes='btn-primary'
+      />
+
       {/* Deactivate Modal */}
       <Modal isOpen={isActivateModalOpen} onClose={modalClose} width={'500px'}>
         <ModalTitle className='!h-[64px] laptop:py-3 laptopMd:py-3 lg:py-3 xl:py-3 hd:py-[21px] 2xl:py-[21px] 3xl:py-[21px] laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
-          <div className='font-proxima flex cursor-pointer items-center laptop:text-base laptopMd:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-medium tracking-[0.02em] text-darkCharcoal'>Deactivate Bank Account</div>
+          <div className='font-proxima flex items-center laptop:text-base laptopMd:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-medium tracking-[0.02em] text-darkCharcoal'>Deactivate Bank Account</div>
           <div className='pt-2.5' onClick={modalClose}>
             <Close variant='medium' />
           </div>
@@ -579,6 +601,30 @@ const ListPaymentSetup: React.FC = () => {
             variant='btn-error'
             onClick={handleSubmit}                >
             <label className="cursor-pointer font-proxima font-semibold h-full laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em]">YES</label>
+          </Button>
+        </ModalAction>
+      </Modal>
+
+      {/* Alert Modal */}
+      <Modal isOpen={isAlertModalOpen} onClose={modalClose} width={'800px'}>
+        <ModalTitle className='!h-[64px] laptop:py-3 laptopMd:py-3 lg:py-3 xl:py-3 hd:py-[21px] 2xl:py-[21px] 3xl:py-[21px] laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
+          <div className='font-proxima flex items-center laptop:text-base laptopMd:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-medium tracking-[0.02em] text-darkCharcoal'>Alert</div>
+          <div className='pt-2.5' onClick={modalClose}>
+            <Close variant='medium' />
+          </div>
+        </ModalTitle>
+
+        <ModalContent className='mb-5 mt-2.5 px-5'>
+          <div className='text-sm font-proxima text-darkCharcoal tracking-[0.02em]'>To proceed with payments via ACH, virtual card, or check, you must complete the KYC (Know Your Customer) process. Without this verification, these payment methods will be unavailable. However, you can still make payments using Cash or Record transfer if bank details are captured.</div>
+          <div className='mt-4 text-sm font-proxima text-darkCharcoal tracking-[0.02em]'>Please ensure to complete the KYC process to avoid any disruptions in your payment options. KYC process may take up to two weeks time.</div>
+        </ModalContent>
+
+        <ModalAction className='laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5 laptop:p-4 laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5'>
+          <Button
+            className='btn-sm !h-9 rounded-full !w-[53px]'
+            variant='btn-primary'
+            onClick={modalClose}>
+            <label className="cursor-pointer font-proxima font-semibold h-full laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em]">OK</label>
           </Button>
         </ModalAction>
       </Modal>

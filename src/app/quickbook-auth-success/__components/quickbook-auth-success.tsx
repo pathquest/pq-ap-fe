@@ -1,6 +1,7 @@
 'use client'
 
 import agent, { invalidateSessionCache } from '@/api/axios'
+import { ssoUrl } from '@/api/server/common'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader, Toast } from 'pq-ap-lib'
@@ -43,7 +44,7 @@ const QuickbookAuthSuccess = ({ session }: any) => {
             const data = response.Message
             if (data === 'invalid request!') {
               Toast.error(data || 'Failed please try again later.', 'please try after sometime.')
-              router.push('/signin')
+              router.push(`${ssoUrl}/signin`)
             } else {
               const data = response.Message
               if (data === null) {
@@ -51,7 +52,7 @@ const QuickbookAuthSuccess = ({ session }: any) => {
               } else {
                 Toast.error('Error', data)
               }
-              router.push('/signin')
+              router.push(`${ssoUrl}/signin`)
             }
           }
         } catch (error) {

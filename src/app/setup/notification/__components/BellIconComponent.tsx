@@ -208,9 +208,8 @@ const BellIconComponent = () => {
   return (
     <div ref={notificationRef} className='h-full'>
       <div
-        className={`relative flex h-full w-8 2xl:w-10 cursor-pointer items-center justify-center border-b-2  ${
-          isNotificationOpen ? 'border-primary bg-whiteSmoke' : 'border-transparent bg-transparent'
-        } `}
+        className={`relative flex h-full w-8 2xl:w-10 cursor-pointer items-center justify-center border-b-2  ${isNotificationOpen ? 'border-primary bg-whiteSmoke' : 'border-transparent bg-transparent'
+          } `}
         onClick={handleOpen}
         tabIndex={0}
         onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) =>
@@ -224,8 +223,8 @@ const BellIconComponent = () => {
             <BellIcon />
           </Tooltip>
         )}
-        <div className='absolute right-1 top-2.5 z-10'>
-          <Badge badgetype='error' variant='dot' text={`${notificationCount}`} effect={notificationCount != 0 ? true : false} />
+        <div className={`${notificationCount == 0 ? "hidden" : "absolute"} right-1 top-2.5 z-10`}>
+          <Badge badgetype='error' variant='dot' text={`${notificationCount}`} effect={true} />
         </div>
       </div>
       {isNotificationOpen && (
@@ -337,9 +336,8 @@ const BellIconComponent = () => {
           )}
 
           <div
-            className={`bottom-0 flex w-full items-center justify-center rounded-b-md bg-white ${
-              noData && 'pointer-events-none'
-            }  border-t border-lightSilver px-5 py-[15px] `}
+            className={`bottom-0 flex w-full items-center justify-center rounded-b-md bg-white ${noData && 'pointer-events-none'
+              }  border-t border-lightSilver px-5 py-[15px] `}
             onClick={() => DeleteAllNotifications(0)}
           >
             <span
@@ -347,9 +345,8 @@ const BellIconComponent = () => {
               onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) =>
                 (e.key === 'Enter' || e.key === ' ') && DeleteAllNotifications(0)
               }
-              className={`cursor-pointer font-proxima text-[14px] font-bold uppercase ${
-                noData ? 'text-[#6E6D7A]' : 'text-primary'
-              }`}
+              className={`cursor-pointer font-proxima text-[14px] font-bold uppercase ${noData ? 'text-[#6E6D7A]' : 'text-primary'
+                }`}
             >
               Clear All
             </span>

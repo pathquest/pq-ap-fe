@@ -9,9 +9,10 @@ import PlusIcon from '@/assets/Icons/PlusIcon'
 import DrawerOverlay from '@/components/Common/DrawerOverlay'
 import DataLoadingStatus from '@/components/Common/Functions/DataLoadingStatus'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
 import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 import Wrapper from '@/components/Common/Wrapper'
-import { useAppDispatch } from '@/store/configureStore'
+import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { automationGetRuleList, ruleActiveInactive } from '@/store/features/automation/automationSlice'
 import { getPaymentMethods } from '@/store/features/billsToPay/billsToPaySlice'
 import { companyAssignUser } from '@/store/features/company/companySlice'
@@ -27,6 +28,9 @@ const ListAutomation: React.FC = () => {
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
   const dispatch = useAppDispatch()
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isAutomationEdit = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Automation", "Edit");
+  const isAutomationCreate = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Automation", "Create");
 
   const automationOptions = [
     { label: 'All Automation Rules', value: 'AllAutomationRules' },
@@ -377,9 +381,9 @@ const ListAutomation: React.FC = () => {
         defaultCompany={e?.IsCompanyDefault}
         actions={
           !e?.IsCompanyDefault
-            ? ['Edit', 'Remove']
+            ? [isAutomationEdit && 'Edit', 'Remove'].filter(Boolean)
             : e?.IsActive
-              ? ['Edit', 'Inactive']
+              ? [isAutomationEdit && 'Edit', 'Inactive'].filter(Boolean)
               : ['Active']
         }
         handleClick={handleMenuChange}
@@ -495,7 +499,7 @@ const ListAutomation: React.FC = () => {
           />
         </div>
         <div ref={divRef} className='flex relative items-center'>
-          <Button className={`rounded-full !px-5 !h-9 ${allVendorOption.length === 0 && automationRule == "WorkFlow" ? "pointer-events-none" : ""}`} variant={`${allVendorOption.length === 0 && automationRule == "WorkFlow" ? "btn" : "btn-primary"}`} onClick={() => handleToggleChange()} >
+          <Button className={`${isAutomationCreate ? "block" : "hidden"} rounded-full !px-5 !h-9 ${allVendorOption.length === 0 && automationRule == "WorkFlow" ? "pointer-events-none" : ""}`} variant={`${allVendorOption.length === 0 && automationRule == "WorkFlow" ? "btn" : "btn-primary"}`} onClick={() => handleToggleChange()} >
             <div className='flex gap-2'>
               <span className='flex items-center'> <PlusIcon color={'white'} /></span>
               <label className={`flex items-center laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base !font-semibold tracking-wide cursor-pointer ${allVendorOption.length === 0 && automationRule == "WorkFlow" ? "opacity-50" : "opacity-100"} ${automationRule !== 'AllAutomationRules' && '!pr-2'} items-center justify-center text-center`}> CREATE RULE

@@ -51,6 +51,7 @@ const CreateBillPosting = ({
   const AccountingTool = session?.user?.AccountingTool
 
   const [vendorOptions, setVendorOptions] = useState<any>([])
+  const [vendorGLTermOptions, setVendorGLTermOptions] = useState<any>([])
   const [termOptions, setTermOptions] = useState<any>([])
   const [defaultTermOptions, setDefaultTermOptions] = useState<any>([])
   const [accountOptions, setAccountOptions] = useState<any>([])
@@ -120,33 +121,33 @@ const CreateBillPosting = ({
         lineItemFieldColumns,
         lineItemsFieldsDataObj,
       } = await fetchAPIsData(processtype, AccountingTool as number, 'create', CompanyId as number)
-
-      setVendorOptions(
+      await setVendorOptions(
         vendorOptions.map((value: any) => ({
           value: value.value,
-          label: `${value.value} - ${value.label}`,
+          label: value.code ? `${value.code} - ${value.label}` : value.label
         }))
       );
-      setTermOptions(termOptions)
-      setDefaultTermOptions(defaultTermOptions)
-      setAccountOptions(accountOptions.map((value: any) => ({
+      await setVendorGLTermOptions(vendorOptions)
+      await setTermOptions(termOptions)
+      await setDefaultTermOptions(defaultTermOptions)
+      await setAccountOptions(accountOptions.map((value: any) => ({
         value: value.value,
-        label: `${value.value} - ${value.label}`,
+        label: value.code ? `${value.code} - ${value.label}` : value.label
       })))
 
-      setFormFields(generateFormFields)
-      setHasFormFieldErrors(generateFormFieldsErrorObj)
-      setHasFormFieldLibraryErrors(generateFormFieldsErrorObj)
+      await setFormFields(generateFormFields)
+      await setHasFormFieldErrors(generateFormFieldsErrorObj)
+      await setHasFormFieldLibraryErrors(generateFormFieldsErrorObj)
 
-      setGenerateLinetItemFieldsErrorObj(generateLinetItemFieldsErrorObj)
-      setHasLineItemFieldErrors([generateLinetItemFieldsErrorObj])
-      setHasLineItemFieldLibraryErrors([generateLinetItemFieldsErrorObj])
+      await setGenerateLinetItemFieldsErrorObj(generateLinetItemFieldsErrorObj)
+      await setHasLineItemFieldErrors([generateLinetItemFieldsErrorObj])
+      await setHasLineItemFieldLibraryErrors([generateLinetItemFieldsErrorObj])
 
-      setLineItemFieldColumns(lineItemFieldColumns)
-      setLineItemsFieldsDataObj(lineItemsFieldsDataObj)
+      await setLineItemFieldColumns(lineItemFieldColumns)
+      await setLineItemsFieldsDataObj(lineItemsFieldsDataObj)
 
       if (lineItemsFieldsData.length === 0 || lineItemsFieldsData === null) {
-        setLineItemsFieldsData([
+        await setLineItemsFieldsData([
           {
             ...lineItemsFieldsDataObj,
             Index: 1,
@@ -163,8 +164,8 @@ const CreateBillPosting = ({
         ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.CustomList,
       ]
 
-      setMainFieldListOptions(mainFieldConfiguration)
-      setLineItemFieldListOptions(lineItemConfiguration)
+      await setMainFieldListOptions(mainFieldConfiguration)
+      await setLineItemFieldListOptions(lineItemConfiguration)
 
       setIsLoading(false)
     }
@@ -201,21 +202,22 @@ const CreateBillPosting = ({
             keyValueMainFieldObj,
             keyValueLineItemFieldObj,
             mainFieldListOptions,
-            generateLinetItemFieldsErrorObj
+            generateLinetItemFieldsErrorObj,
+            vendorGLTermOptions
           )
 
           if (newLineItems.length === 0) {
-            setLineItemsFieldsData([
+            await setLineItemsFieldsData([
               {
                 ...lineItemsFieldsDataObj,
                 Index: 1,
               },
             ])
           } else {
-            setLineItemsFieldsData(newLineItems)
+            await setLineItemsFieldsData(newLineItems)
             setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
           }
-          
+
           setFormFields(updatedDataObj)
           setHasFormFieldLibraryErrors(updatedDataErrorObj)
         }
@@ -228,7 +230,7 @@ const CreateBillPosting = ({
     }
   }, [documentId])
 
-  const onLineItemAdd = () => {
+  const onLineItemAdd = async () => {
     setIsSubmitClick(true)
 
     let newLineItemErrorValues: any = []
@@ -262,21 +264,21 @@ const CreateBillPosting = ({
       return
     } else {
       setIsSubmitClick(false)
-      setLineItemsFieldsData([
+      await setLineItemsFieldsData([
         ...lineItemsFieldsData,
         {
           Index: lineItemsFieldsData && lineItemsFieldsData[lineItemsFieldsData.length - 1].Index + 1,
           ...lineItemsFieldsDataObj,
         },
       ])
-      setHasLineItemFieldErrors([
+      await setHasLineItemFieldErrors([
         ...hasLineItemFieldErrors,
         {
           ...generateLinetItemFieldsErrorObj,
           Index: lineItemsFieldsData && lineItemsFieldsData[lineItemsFieldsData.length - 1].Index + 1,
         },
       ])
-      setHasLineItemFieldLibraryErrors([
+      await setHasLineItemFieldLibraryErrors([
         ...hasLineItemFieldLibraryErrors,
         {
           ...generateLinetItemFieldsErrorObj,
@@ -291,9 +293,9 @@ const CreateBillPosting = ({
     const dataAfterRemoveFormFieldErrors = lineItemRemoveArr(hasLineItemFieldErrors, currentIndex)
     const dataAfterRemoveFormFieldLibraryErrors = lineItemRemoveArr(hasLineItemFieldLibraryErrors, currentIndex)
 
-    setLineItemsFieldsData(dataAfterRemoveItem)
-    setHasLineItemFieldErrors(dataAfterRemoveFormFieldErrors)
-    setHasLineItemFieldLibraryErrors(dataAfterRemoveFormFieldLibraryErrors)
+    await setLineItemsFieldsData(dataAfterRemoveItem)
+    await setHasLineItemFieldErrors(dataAfterRemoveFormFieldErrors)
+    await setHasLineItemFieldLibraryErrors(dataAfterRemoveFormFieldLibraryErrors)
 
     if (documentId) {
       const params = {
@@ -303,9 +305,9 @@ const CreateBillPosting = ({
       try {
         const response = await agent.APIs.deleteLineItem(params)
         if (response?.ResponseStatus === 'Success') {
-          setLineItemsFieldsData(dataAfterRemoveItem)
-          setHasLineItemFieldErrors(dataAfterRemoveFormFieldErrors)
-          setHasLineItemFieldLibraryErrors(dataAfterRemoveFormFieldLibraryErrors)
+          await setLineItemsFieldsData(dataAfterRemoveItem)
+          await setHasLineItemFieldErrors(dataAfterRemoveFormFieldErrors)
+          await setHasLineItemFieldLibraryErrors(dataAfterRemoveFormFieldLibraryErrors)
           Toast.success(`Line Item Deleted!`)
         }
       } catch (error) {
@@ -314,7 +316,7 @@ const CreateBillPosting = ({
     }
   }
 
-  const onChangeTableFieldValue = (currentIndex: any, value: any, key: string) => {
+  const onChangeTableFieldValue = async (currentIndex: any, value: any, key: string) => {
     if (key === 'quantity') {
       if (value.includes('.') || value.toString().length > 3 || value < 0 || value > 500 || value === '000' || value === '00') {
         return
@@ -345,12 +347,24 @@ const CreateBillPosting = ({
                 : key === 'quantity'
                   ? parseFloat(i.rate) * parseFloat(value)
                   : parseFloat(i.amount)
+
+            if (generateLinetItemFieldsErrorObj.hasOwnProperty('amount')) {
+              const newLineItemsFieldArray = hasLineItemFieldLibraryErrors.map((item) => {
+                return {
+                  ...item,
+                  amount: isNaN(parseFloat(`${calculatedAmount}`))
+                    ? false
+                    : true,
+                }
+              })
+              setHasLineItemFieldLibraryErrors(newLineItemsFieldArray)
+            }
             return {
               ...i,
               [key]: fractionColumn.includes(key) ? convertFractionToRoundValue(value) : value,
-              amount: isNaN(parseFloat(`${calculatedAmount}`))
-                ? '0'
-                : convertFractionToRoundValue(parseFloat(`${calculatedAmount}`)),
+              // amount: isNaN(parseFloat(`${calculatedAmount}`))
+              //   ? '0'
+              //   : convertFractionToRoundValue(parseFloat(`${calculatedAmount}`)),
             }
           } else {
             const calculatedAmount =
@@ -363,17 +377,28 @@ const CreateBillPosting = ({
                     : key === 'amount'
                       ? parseFloat(value)
                       : parseFloat(i.amount)
+            if (generateLinetItemFieldsErrorObj.hasOwnProperty('amount')) {
+              const newLineItemsFieldArray = hasLineItemFieldLibraryErrors.map((item) => {
+                return {
+                  ...item,
+                  // amount: isNaN(parseFloat(`${calculatedAmount}`))
+                  //   ? false
+                  //   : true,
+                }
+              })
+              setHasLineItemFieldLibraryErrors(newLineItemsFieldArray)
+            }
             return {
               ...i,
               [key]: fractionColumn.includes(key) ? convertFractionToRoundValue(value) : value,
-              amount: isNaN(parseFloat(`${calculatedAmount}`)) ? '0' : convertFractionToRoundValue(`${calculatedAmount}`),
+              // amount: isNaN(parseFloat(`${calculatedAmount}`)) ? '0' : convertFractionToRoundValue(`${calculatedAmount}`),
             }
           }
         }
         return i
       })
 
-    setLineItemsFieldsData(newArr)
+    await setLineItemsFieldsData(newArr)
   }
 
   const renderField = (fieldName: any, d: any, field: any) => {
@@ -469,10 +494,28 @@ const CreateBillPosting = ({
     lineItemsFieldsData &&
     lineItemsFieldsData.map((d: any, index: number) => {
       const renderedFields: any = {}
+      const transformValue = (valueArray: any, mappedWith: any) => {
+        const mappedWithConditions = AccountingTool === 4 ? [25, 23, 19] : AccountingTool === 1 ? [10, 11, 12, 13] : [];
+
+        if (mappedWithConditions.includes(mappedWith)) {
+          return valueArray.map((item: any) => ({
+            value: item.value,
+            label: item.code ? `${item.code} - ${item.label}` : item.label
+          }));
+        }
+        return valueArray;
+      };
+
       lineItemFieldListOptions.forEach((field: any) => {
-        renderedFields[field.Label] = renderField(field.Name, d, field)
-      })
-     
+        const transformedValue = field.MappedWith === null
+          ? null
+          : transformValue(JSON.parse(field.Value || '[]'), field.MappedWith);
+
+        const updatedField = { ...field, Value: transformedValue ? JSON.stringify(transformedValue) : null };
+
+        renderedFields[updatedField.Label] = renderField(updatedField.Name, d, updatedField);
+      });
+
       return new Object({
         ...d,
         ...renderedFields,
@@ -520,31 +563,44 @@ const CreateBillPosting = ({
     return date ?? ''
   }
 
-  const setFormValues = (key: string, value: any) => {
+  const setFormValues = async (key: string, value: string | number) => {
     if (key === 'date') {
       if (formFields.hasOwnProperty('term') && formFields.term) {
-        const filterTerm = defaultTermOptions && defaultTermOptions?.find((t: any) => t.Id === formFields.term)
+        const filterTerm = defaultTermOptions?.find((t: any) => t.Id === formFields.term)
         let formattedDueDateCalculated = ''
 
         if (value) {
           const dueDateCalculatedValue = addDays(new Date(value), parseInt(filterTerm?.DueDate))
-          formattedDueDateCalculated = dueDateCalculatedValue ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
+          formattedDueDateCalculated =
+            dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
         } else {
           const dueDateCalculatedValue = addDays(new Date(), parseInt(filterTerm?.DueDate))
-          formattedDueDateCalculated = dueDateCalculatedValue ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
+          formattedDueDateCalculated =
+            dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
         }
 
-        setFormFields({
+        await setFormFields({
           ...formFields,
           [key]: value,
           ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
           duedate: formattedDueDateCalculated,
         })
+        await setHasFormFieldLibraryErrors({
+          ...hasFormFieldLibraryErrors,
+          [key]: value ? true : false,
+          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          duedate: formattedDueDateCalculated ? true : false,
+        })
       } else {
-        setFormFields({
+        await setFormFields({
           ...formFields,
           [key]: value,
           ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+        })
+        await setHasFormFieldLibraryErrors({
+          ...hasFormFieldLibraryErrors,
+          [key]: value ? true : false,
+          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
         })
       }
       return
@@ -552,23 +608,27 @@ const CreateBillPosting = ({
 
     if (key === 'term') {
       const filterTerm = defaultTermOptions && defaultTermOptions?.find((t: any) => t.Id === value)
-      let dueDateCalculated = ''
+      let formattedDueDateCalculated = ''
 
       if (formFields.date) {
-        dueDateCalculated = addDays(new Date(formFields.date), parseInt(filterTerm.DueDate))
+        const dueDateCalculatedValue = addDays(new Date(formFields.date), parseInt(filterTerm?.DueDate))
+        formattedDueDateCalculated =
+          dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
       } else {
-        dueDateCalculated = addDays(new Date(), parseInt(filterTerm.DueDate))
+        const dueDateCalculatedValue = addDays(new Date(), parseInt(filterTerm?.DueDate))
+        formattedDueDateCalculated =
+          dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
       }
-      const formattedDueDateCalculated = format(dueDateCalculated, 'MM/dd/yyyy')
 
-      setFormFields({
+      await setFormFields({
         ...formFields,
         [key]: value,
         duedate: formattedDueDateCalculated,
       })
-      setHasFormFieldLibraryErrors({
+      await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
-        duedate: true,
+        [key]: value ? true : false,
+        duedate: formattedDueDateCalculated ? true : false,
       })
       return
     }
@@ -577,23 +637,45 @@ const CreateBillPosting = ({
       const payToName = mainFieldListOptions.find((option: any) => option.MappedWith === 2 || option.MappedWith === 14)?.Name
       const returnToName = mainFieldListOptions.find((option: any) => option.MappedWith === 3 || option.MappedWith === 15)?.Name
 
-      setFormFields({
+      const selectedVendorObj = vendorGLTermOptions.find((item: any) => item.value === value)
+      const newLineItemsObj = lineItemsFieldsData.map((items: any) => {
+        return {
+          ...items,
+          account: selectedVendorObj.GLAccount
+        }
+      })
+      const newLineItemsErrorObj = hasLineItemFieldLibraryErrors.map((items: any) => {
+        return {
+          ...items,
+          account: selectedVendorObj.GLAccount ? true : false
+        }
+      })
+
+      await setFormFields({
         ...formFields,
         [key]: value,
-        [payToName]: value,
-        [returnToName]: value,
+        ...(lineItemsFieldsDataObj.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
+        ...(lineItemsFieldsDataObj.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
+        ...(lineItemsFieldsDataObj.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
       })
-      setHasFormFieldLibraryErrors({
+      await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
-        [payToName]: true,
-        [returnToName]: true,
+        ...(lineItemsFieldsDataObj.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
+        ...(lineItemsFieldsDataObj.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
+        ...(lineItemsFieldsDataObj.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
       })
+      await setLineItemsFieldsData(newLineItemsObj)
+      await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
       return
     }
 
-    setFormFields({
+    await setFormFields({
       ...formFields,
       [key]: value,
+    })
+    await setHasFormFieldLibraryErrors({
+      ...hasFormFieldLibraryErrors,
+      [key]: value ? true : false,
     })
   }
 

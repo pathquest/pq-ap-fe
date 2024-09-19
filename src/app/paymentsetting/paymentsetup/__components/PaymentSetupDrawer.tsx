@@ -63,24 +63,15 @@ const PaymentSetupDrawer: React.FC<DrawerProps> = ({ paymentMethodName, isOpen, 
     onClose(type)
   }
 
-  // Buyer Bank Account Dropdown API
   const getBuyerBankAccountDropdown = async () => {
-    try {
-      const { payload, meta } = await dispatch(getBankAccountDropdown())
-      const dataMessage = payload?.Message
-
-      if (meta?.requestStatus === 'fulfilled') {
-        if (payload?.ResponseStatus === 'Success') {
-          setAccountNumberOption(payload?.ResponseData)
-        } else {
-          Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
-        }
-      } else {
-        Toast.error(`${payload?.status} : ${payload?.statusText}`)
-      }
-    } catch (error) {
-      console.error(error)
+    let paymentType = paymentMethodName.replace(/\s+/g, '');
+    const params = {
+      Type: paymentType
     }
+
+    performApiAction(dispatch, getBankAccountDropdown, params, (responseData: any) => {
+      setAccountNumberOption(responseData)
+    })
   }
 
   const handleAccountNumberChange = (value: number) => {

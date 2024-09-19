@@ -13,10 +13,15 @@ import NavBar from '@/components/Navbar'
 
 import { Avatar, Button, Tooltip, Typography } from 'pq-ap-lib'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
-import { getUserImage } from '@/store/features/profile/profileSlice'
+import { getUserImage, setOrganizationName, setOrgPermissionsMatrix, setProcessPermissionsMatrix, setRoleId } from '@/store/features/profile/profileSlice'
 import { useAppDispatch } from '@/store/configureStore'
+import { useSession } from 'next-auth/react'
+import { ssoUrl } from '@/api/server/common'
+import { handleTokenSave } from '@/actions/server/auth'
+import { permissionGetList } from '@/store/features/role/roleSlice'
+import { processPermissions } from '@/components/Common/Functions/ProcessPermission'
 
 export interface ProfileData {
   first_name: string
@@ -41,9 +46,16 @@ export interface Product {
   name: string
 }
 
-const ProfileForm: React.FC = () => {
+const ProfileForm = ({ session }: any) => {
+  const user = session ? session?.user : {}
+  const token = session?.user?.access_token
+  const profilePreviousUrl = localStorage.getItem('profilePreviousUrl') ?? ''
+
   const router = useRouter()
+  const { update } = useSession()
   const dispatch = useAppDispatch()
+  const searchParams = useSearchParams()
+  const urlToken = searchParams.get('token') ?? ''
 
   const [edit, setEdit] = useState<string>('')
   const [isOpen, setOpen] = useState<boolean>(false)
@@ -69,6 +81,20 @@ const ProfileForm: React.FC = () => {
     try {
       const response = await agent.APIs.getUserConfig()
       if (response.ResponseStatus === 'Success') {
+        getRolePermissionData(response.ResponseData.RoleId)
+        dispatch(setRoleId(response.ResponseData.RoleId))
+        await update({
+          ...user,
+          org_id: response.ResponseData.OrganizationId,
+          org_name: response.ResponseData.OrganizationName,
+          user_id: response.ResponseData.UserId,
+          is_admin: response.ResponseData.IsAdmin,
+          is_organization_admin: response.ResponseData.IsOrganizationAdmin,
+          role_id: response.ResponseData.RoleId
+        })
+
+        dispatch(setOrganizationName(response.ResponseData.OrganizationName))
+
         localStorage.setItem('UserId', response.ResponseData.UserId)
         localStorage.setItem('OrgId', response.ResponseData.OrganizationId)
         localStorage.setItem('IsAdmin', response.ResponseData.IsAdmin)
@@ -79,14 +105,29 @@ const ProfileForm: React.FC = () => {
     }
   }
 
+  const getRolePermissionData = (roleId: any) => {
+    const params = {
+      RoleId: roleId ?? 0,
+    }
+    performApiAction(dispatch, permissionGetList, params, (responseData: any) => {
+      const processedData = processPermissions(responseData);
+      dispatch(setOrgPermissionsMatrix(processedData));
+      dispatch(setProcessPermissionsMatrix(processedData));
+    })
+  }
+
   const handleEdit = (arg1: boolean, arg2: string) => {
     setOpen(arg1)
     setEdit(arg2)
   }
 
-  useEffect(() => {
+  const fetchUserData = async () => {
     userConfig()
-  }, [])
+  }
+
+  useEffect(() => {
+    fetchUserData()
+  }, [urlToken])
 
   return (
     <div className={`h-screen overflow-y-auto`}>
@@ -95,12 +136,24 @@ const ProfileForm: React.FC = () => {
       {/* Navigation Bar */}
       <NavBar onData={globalData} isFormOpen={isOpen} />
       <div className='relative flex !flex-col items-center justify-center pb-5'>
-        <div className='relative flex h-36 w-full bg-[#02B89D]'>
-          <div className='flex items-center justify-start pl-[148px]'>
-            <span className='mr-2.5 cursor-pointer' onClick={() => router.push('/manage/companies')}>
-              <ChevronLeftIcon bgColor='whiteSmoke' />
-            </span>
-          </div>
+        <div className={`relative flex h-36 w-full ${profilePreviousUrl ? 'justify-start': 'justify-center'} bg-[#F4F4F4]`}>
+          {profilePreviousUrl ? (
+            <div className='flex items-center !justify-start pl-[148px]'>
+              <span className='mr-2.5 cursor-pointer' onClick={() => {
+                router.push(`${profilePreviousUrl}`)
+                localStorage.removeItem('profilePreviousUrl')
+              }}>
+                <ChevronLeftIcon bgColor='white' />
+              </span>
+            </div>
+          ) : (
+            <div
+              className={`absolute rounded-md justify-center font-semibold items-center flex bg-[#02B89D] w-[90%] p-4 text-white top-0 select-none animate-slideDown`}
+            >
+              "Welcome to PathQuest! Our platform is designed to simplify your accounts payable process". Let's get started by clicking on <u onClick={() => router.push('/manage/companies')} className='cursor-pointer pl-1'>MANAGE COMPANY</u>
+            </div>
+          )}
+
           <div className='absolute bottom-[-50px] left-1/2 -translate-x-1/2 transform'>
             <div className='flex h-28 w-28 items-center justify-center rounded-full bg-white'>
               {profileData && profileData?.user_image !== '' ? (

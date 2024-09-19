@@ -1,5 +1,5 @@
 import agent from '@/api/axios'
-import { ApproveRejectCheckOptions, DeactivateBankAccountOptions, SaveBuyerBankOption, SaveCheckMicroDepositOptions, SaveCheckPaymentMethodOptions, SavePaymentMethodOptions, UpdateBuyerBankOptions, UpdatePaymentMethodOptions } from '@/models/paymentSetup'
+import { ApproveRejectCheckOptions, DeactivateBankAccountOptions, GetAllBankAccountOptions, SaveBuyerBankOption, SaveCheckMicroDepositOptions, SaveCheckPaymentMethodOptions, SavePaymentMethodOptions, UpdateBuyerBankOptions, UpdatePaymentMethodOptions } from '@/models/paymentSetup'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 interface ProfileState {
@@ -28,9 +28,9 @@ export const getKYCStatus = createAsyncThunk('PaymentSetup/getKYCStatus', async 
   }
 })
 
-export const getBankAccountDropdown = createAsyncThunk('PaymentSetup/getBankAccountDropdown', async (_, thunkAPI) => {
+export const getBankAccountDropdown = createAsyncThunk('PaymentSetup/getBankAccountDropdown', async (data: GetAllBankAccountOptions, thunkAPI) => {
   try {
-    return await agent.PaymentSetup.getBankAccountDropdown()
+    return await agent.PaymentSetup.getBankAccountDropdown(data)
   } catch (error: any) {
     return thunkAPI.rejectWithValue({ error: error.data })
   }
@@ -119,6 +119,14 @@ export const saveCheckPaymentMethod = createAsyncThunk('PaymentSetup/saveCheckPa
 export const getPaymentMethodById = createAsyncThunk('PaymentSetup/getPaymentMethodById', async (data: UpdatePaymentMethodOptions, thunkAPI) => {
   try {
     return await agent.PaymentSetup.getPaymentMethodById(data)
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue({ error: error.data })
+  }
+})
+
+export const syncBankAccount = createAsyncThunk('PaymentSetup/syncBankAccount', async (_, thunkAPI) => {
+  try {
+    return await agent.PaymentSetup.syncBankAccount()
   } catch (error: any) {
     return thunkAPI.rejectWithValue({ error: error.data })
   }

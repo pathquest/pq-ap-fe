@@ -1,5 +1,6 @@
 'use server'
 
+import { ssoUrl } from '@/api/server/common'
 import EditBillPosting from '@/app/bills/__components/edit/EditBillPosting'
 import { auth } from '@/auth'
 import { store } from '@/store/configureStore'
@@ -9,7 +10,7 @@ const EditBill = async () => {
   const session = await auth()
 
   if (!session) {
-    return redirect('/signin')
+    return redirect(`${ssoUrl}/signin`)
   }
 
   const { bill } = store.getState()

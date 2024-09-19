@@ -1,4 +1,6 @@
 import { EyeClose, EyeOpen } from '@/assets/Icons/EyeIcon'
+import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
+import { useAppSelector } from '@/store/configureStore'
 import { MenuIcon, Textarea, Tooltip } from 'pq-ap-lib'
 import 'pq-ap-lib/dist/index.css'
 import React, { useEffect, useRef, useState } from 'react'
@@ -22,6 +24,8 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ selectedTab, title, id, bankName, routingNumber, isActivate, isVerified, isApproved, notes, accountNumber, paymentMethodSetupId, accountId, accountingTool, handleMenuOption }) => {
     const divRef = useRef<HTMLDivElement>(null)
+    const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+    const isPaymentSetupEdit = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Payment Setup", "Edit");
 
     const [isMenuClicked, setIsMenuClicked] = useState<boolean>(false)
     const [maskedAccountNumber, setMaskedAccountNumber] = useState<string>(accountNumber.length >= 4 ? 'X'.repeat((accountNumber.length) - 4) + accountNumber.slice((accountNumber.length) - 4) : accountNumber);
@@ -49,7 +53,7 @@ const Card: React.FC<CardProps> = ({ selectedTab, title, id, bankName, routingNu
     const CheckItems = [!isVerified && !isApproved && title === "Check" ? "Microdeposit Verification" : isVerified && !isApproved ? "Approve Check Layout" : "View Check Layout"]
     const menuItems = [
         "View Details",
-        ((selectedTab === "bank" && accountingTool !== 1) || title === "Check") && isActivate ? "Edit Details" : "",
+        ((selectedTab === "bank" && accountingTool !== 1) || title === "Check") && (isActivate && isPaymentSetupEdit) ? "Edit Details" : "",
         selectedTab === "bank"
             ? (isActivate ? "Deactivate Bank Account" : "Activate Bank Account")
             : (isApproved ? `${isActivate ? "Disable" : "Enable"} Check` : title === "Check" ? "" : `${isActivate ? "Disable" : "Enable"} ${title}`),
@@ -87,7 +91,7 @@ const Card: React.FC<CardProps> = ({ selectedTab, title, id, bankName, routingNu
                     <label className='text-xs text-slatyGrey font-proxima'>Bank Name </label><br />
                     <label className='pt-2.5 text-sm text-[#333333] font-proxima'>{bankName}</label>
                 </div>}
-            <div className={`px-5 py-[27px] ${!isActivate ? "bg-whiteSmoke  opacity-50 pointer-events-none" : ""}`}>
+            <div className={`h-[102px] px-5 py-[27px]  ${!isActivate ? "bg-whiteSmoke  opacity-50 pointer-events-none" : ""}`}>
                 <label className='text-xs text-slatyGrey font-proxima'>Account Number:</label><br />
                 <span className='flex h-6 pt-0.5 justify-between items-center'>
                     <label className='text-sm text-[#333333] font-proxima'>{maskedAccountNumber}</label>
@@ -100,7 +104,7 @@ const Card: React.FC<CardProps> = ({ selectedTab, title, id, bankName, routingNu
                     </div>
                 </span>
             </div>
-            <div className={`px-5 pb-[20px] break-words ${!isActivate ? "bg-whiteSmoke  opacity-50" : ""}`}>
+            <div className={`h-[68px] px-5 pb-[20px] break-words ${!isActivate ? "bg-whiteSmoke  opacity-50" : ""}`}>
                 <label className='text-xs text-slatyGrey font-proxima'>Routing Number :</label><br />
                 <label className='pt-2.5 text-sm text-[#333333] font-proxima'>{routingNumber}</label>
             </div>

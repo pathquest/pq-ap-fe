@@ -45,12 +45,12 @@ const ColumnFilterDropdown: React.FC<ColumnFilterDropdownProps> = ({
   }
 
   useEffect(() => {
-    if (selectedHeaders.includes('Adjustment Number') && selectedProcessTypeInList === '1') {
-      const newSelectedHeaders = selectedHeaders.map((item: any) => (item === 'Adjustment Number' ? 'Bill Number' : item))
+    if (selectedHeaders.includes('Adjustment No.') && selectedProcessTypeInList === '1') {
+      const newSelectedHeaders = selectedHeaders.map((item: any) => (item === 'Adjustment No.' ? 'Bill No.' : item))
       setSelectedHeaders(newSelectedHeaders)
     }
-    if (selectedHeaders.includes('Bill Number') && selectedProcessTypeInList === '2') {
-      const newSelectedHeaders = selectedHeaders.map((item: any) => (item === 'Bill Number' ? 'Adjustment Number' : item))
+    if (selectedHeaders.includes('Bill No.') && selectedProcessTypeInList === '2') {
+      const newSelectedHeaders = selectedHeaders.map((item: any) => (item === 'Bill No.' ? 'Adjustment No.' : item))
       setSelectedHeaders(newSelectedHeaders)
     }
   }, [selectedProcessTypeInList])
@@ -76,8 +76,8 @@ const ColumnFilterDropdown: React.FC<ColumnFilterDropdownProps> = ({
   }
 
   function getKeyFromLabel(label: any) {
-    if (label === 'Adjustment Number') {
-      return 'Bill Number'
+    if (label === 'Adjustment No.') {
+      return 'Bill No.'
     }
 
     if (label.props !== undefined) {
@@ -87,9 +87,9 @@ const ColumnFilterDropdown: React.FC<ColumnFilterDropdownProps> = ({
           return 'Amount'
         case 'Uploaded Date':
           return 'Uploaded Date'
-        case 'Bill Number':
-        case 'Adjustment Number':
-          return 'Bill Number'
+        case 'Bill No.':
+        case 'Adjustment No.':
+          return 'Bill No.'
         default:
           return label
       }

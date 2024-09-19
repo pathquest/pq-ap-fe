@@ -23,18 +23,19 @@ import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 import Wrapper from '@/components/Common/Wrapper'
 import usePdfViewer from '@/components/Common/pdfviewer/pdfViewer'
 import { FileRecordType } from '@/models/billPosting'
+import { Option } from '@/models/paymentStatus'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { billReAssign, billsApproval, getBillApprovalList } from '@/store/features/billApproval/approvalSlice'
 import { vendorDropdown } from '@/store/features/bills/billSlice'
+import { getBankAccountDrpdwnList } from '@/store/features/billsToPay/billsToPaySlice'
 import { companyAssignUser } from '@/store/features/company/companySlice'
-import { getBankAccountDropdown } from '@/store/features/paymentsetting/paymentSetupSlice'
+import { locationListDropdown } from '@/store/features/master/dimensionSlice'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Badge, CheckBox, DataTable, Loader, Select, Textarea, Toast, Typography, BasicTooltip } from 'pq-ap-lib'
+import { Badge, BasicTooltip, CheckBox, DataTable, Loader, Select, Textarea, Toast, Typography } from 'pq-ap-lib'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Filter from '../Filter/BillsFilter'
 import SelectApprovalDropdown from '../SelectApprovalDropdown'
-import { dummyData } from '../data/ApprovalDropdownData'
 
 const BillApproval: React.FC = () => {
   const router = useRouter()
@@ -60,7 +61,7 @@ const BillApproval: React.FC = () => {
   const isRowSelected = (id: any) => selectedRows.indexOf(id) !== -1
 
   const [orderBy, setOrderBy] = useState<number | null>(1)
-  const [orderColumnName, setOrderColumnName] = useState<string | null>(null)
+  const [orderColumnName, setOrderColumnName] = useState<string | null>('BillDate')
   const [sortOrders, setSortOrders] = useState<{ [key: string]: null | 'asc' | 'desc' }>({
     BillNumber: null,
     BillDate: null,
@@ -71,7 +72,7 @@ const BillApproval: React.FC = () => {
   })
 
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false)
-  const [billApprovalList, setBillApprovalList] = useState<any>(dummyData)
+  const [billApprovalList, setBillApprovalList] = useState<any>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isLazyLoading, setIsLazyLoading] = useState<boolean>(false)
   const [refreshTable, setRefreshTable] = useState<boolean>(false)
@@ -93,7 +94,7 @@ const BillApproval: React.FC = () => {
   const [reason, setReason] = useState<string>('')
   const [reasonError, setReasonError] = useState<boolean>(false)
   const [reasonHasError, setReasonHasError] = useState<boolean>(false)
-  const [rowBillNumber, setRowBillNumber] = useState<number>(0)
+  const [rowBillNumber, setRowBillNumber] = useState<string>('')
   const [selectedRowId, setSelectedRowId] = useState<number>(0)
 
   const [rejectedReason, setRejectedReason] = useState('')
@@ -109,6 +110,7 @@ const BillApproval: React.FC = () => {
   const [isOpenMoveTo, setOpenMoveTo] = useState<boolean>(false)
   const [isOpenAttchFile, setOpenAttachFile] = useState<boolean>(false)
   const [bankAccountOption, setBankAccountOption] = useState([])
+  const [locationOption, setLocationOption] = useState<Option[]>([])
 
   //For Lazy Loading
   const [shouldLoadMore, setShouldLoadMore] = useState<boolean>(true)
@@ -131,6 +133,8 @@ const BillApproval: React.FC = () => {
     EndDueDate: utcFormatDate(billApprovalFilterFields?.EndDueDate),
     SortColumn: orderColumnName,
     SortOrder: orderBy,
+    Location: billApprovalFilterFields?.LocationIds ? billApprovalFilterFields?.LocationIds.map(Number) : [],
+    AssignedBy: Number(billApprovalFilterFields?.Assignee) != 0 ? Number(billApprovalFilterFields?.Assignee) : 1
   }
 
   const columns: any = [
@@ -303,8 +307,18 @@ const BillApproval: React.FC = () => {
 
   //Approver Dropdown List API
   const getApproverDropdown = () => {
-    performApiAction(dispatch, getBankAccountDropdown, null, (responseData: any) => {
+    performApiAction(dispatch, getBankAccountDrpdwnList, null, (responseData: any) => {
       setBankAccountOption(responseData)
+    })
+  }
+
+  const getLocationDropdown = () => {
+    const params = {
+      CompanyId: CompanyId,
+      IsActive: true,
+    }
+    performApiAction(dispatch, locationListDropdown, params, (responseData: any) => {
+      setLocationOption(responseData)
     })
   }
 
@@ -386,6 +400,7 @@ const BillApproval: React.FC = () => {
   useEffect(() => {
     if (CompanyId) {
       getVendorDropdown()
+      getLocationDropdown()
     }
   }, [CompanyId, refreshTable])
 
@@ -708,13 +723,24 @@ const BillApproval: React.FC = () => {
       reasonType = reasonSelect
     }
 
+    const approvalDetailList = billApprovalList
+      .filter((row: any) => selectedRows.includes(row.AccountPayableId))
+      .map((row: any) => ({
+        Ids: row.AccountPayableId,
+        BatchId: row.BatchId
+      }));
+
     if ((status === 2 && !(reason.trim().length <= 0 || !reasonHasError)) || status === 1) {
       setIsLoading(true)
       const params = {
-        Ids: selectedRows,
+        ApprovalDetailList: approvalDetailList,
+        // Ids: selectedRows,
         StatusId: status,
         Remark: remark,
       }
+
+      const singleBillNumber = billApprovalList.find((item: any) => item.AccountPayableId == selectedRows[0]).BillNumber ?? ""
+
       performApiAction(dispatch, billsApproval, params, () => {
         modalClose()
         setRefreshTable(!refreshTable)
@@ -723,7 +749,7 @@ const BillApproval: React.FC = () => {
         const action = status == 1 ? 'approved' : 'rejected'
         const message = selectedRows.length > 1
           ? `${selectedRows.length} bills has been ${action} sucessfully`
-          : `Bill No.${rowBillNumber} has been ${action} sucessfully`
+          : `Bill No.${selectedRows.length == 1 ? singleBillNumber : rowBillNumber} has been ${action} sucessfully`
         Toast.success(message)
       }, () => {
         setIsLoading(false)
@@ -803,7 +829,7 @@ const BillApproval: React.FC = () => {
                 <label className="pe-2 font-bold text-darkCharcoal">Total Selected :</label> {selectedRows.length} Bills
               </div>
               <div className='text-sm tracking-[0.02em] font-proxima'>
-                <label className="pe-2 font-bold text-darkCharcoal">Total Pay :</label> ${TotalAmount}
+                <label className="pe-2 font-bold text-darkCharcoal">Total Pay :</label> ${(TotalAmount).toFixed(2)}
               </div>
               <div className='flex items-center h-full laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5'>
                 <BasicTooltip position='bottom' content='Approve' className='!z-9 !px-0 !py-1'>
@@ -875,6 +901,7 @@ const BillApproval: React.FC = () => {
       {/* For Filter Menu */}
       <Filter
         vendorOption={vendorOption}
+        locationOption={locationOption}
         bankAccountOption={bankAccountOption}
         isFilterOpen={isFilterOpen}
         onClose={() => handleFilterOpen()}

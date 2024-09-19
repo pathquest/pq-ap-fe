@@ -1,5 +1,6 @@
 import { handleSignOut } from '@/actions/server/auth'
 import agent from '@/api/axios'
+import { ssoUrl } from '@/api/server/common'
 import { ProfileData } from '@/app/profile/__components/profile-form'
 import { useRouter } from 'next/navigation'
 import { Button, Password, Toast, Typography } from 'pq-ap-lib'
@@ -37,7 +38,7 @@ const PasswordForm = ({ profileData, handleEdit }: any) => {
 
       if (response.ResponseStatus === 'Success') {
         Toast.success('Password updated successfully!')
-        router.push('/signin')
+        router.push(`${ssoUrl}/signin`)
         await handleSignOut()
       }
       if (response.ResponseStatus === 'Failure') {

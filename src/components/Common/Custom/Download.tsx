@@ -82,7 +82,7 @@ const Download: React.FC<ActionsProps> = ({ url, params, fileName, isPdfDownload
   return (
     <Dropdown>
       <MenuButton
-        className={`!m-0 flex !items-center !rounded-[0.5px] !h-9 !w-9 !border-none  !outline-black !bg-transparent !p-0 ${isExportLoading?"pointer-events-none":""} ${isOpen ? '!text-primary' : ''}`}
+        className={`!m-0 flex !items-center !rounded-[0.5px] !h-5 !w-5 !border-none !outline-black !bg-transparent !p-0 ${isExportLoading?"pointer-events-none":""} ${isOpen ? '!text-primary' : ''}`}
         onClick={handleDropdownToggle}>
         {isExportLoading ? (
           <div className='pointer-events-none cursor-default pl-2.5 pr-2 pb-1'>

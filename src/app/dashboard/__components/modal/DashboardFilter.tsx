@@ -4,6 +4,7 @@ import { setBillApprovalStatusFilter, setOnTimeVsMissedProcessingFilter, setPaym
 import { useSession } from 'next-auth/react';
 import { Button, DatepickerRange, MultiSelectChip, Select, Typography } from 'pq-ap-lib';
 import React, { useEffect, useRef, useState } from 'react';
+import { processOptions } from './ProcessTypeDashboardFilter';
 
 const DashboardFilter: React.FC<any> = ({
     locationOption,
@@ -30,11 +31,13 @@ const DashboardFilter: React.FC<any> = ({
     const [endDate, setEndDate] = useState<Date | null>(today);
 
     const [isResetClicked, setIsResetClicked] = useState<boolean>(false)
+    const [processType, setProcessType] = useState<string[]>(['1', '2'])
 
     useEffect(() => {
         if (filterFields) {
             setSelectedLocation(filterFields.LocationIds || []);
             setChartPeriodValue(filterFields.Period || "");
+            setProcessType(filterFields.ProcessType || "")
             if (filterFields.StartDate || filterFields.EndDate) {
                 setStartDate(filterFields.StartDate ? new Date(filterFields.StartDate) : null);
                 setEndDate(filterFields.EndDate ? new Date(filterFields.EndDate) : null);
@@ -58,29 +61,20 @@ const DashboardFilter: React.FC<any> = ({
     useEffect(() => {
         if (locationOption.length > 0) {
             const allLocation = locationOption.map((option: any) => option.value)
-            setSelectedLocation(allLocation);
             let newFilterFields = {
                 LocationIds: allLocation,
                 StartDate: startDate ? formatPeriodDate(startDate) : '',
                 EndDate: endDate ? formatPeriodDate(endDate) : '',
                 Period: 'This Month',
             }
-            dispatch(setPostedBillsByMonthFilter(newFilterFields));
-            dispatch(setOnTimeVsMissedProcessingFilter(newFilterFields));
-            dispatch(setVendorWiseMonthlyPaymentFilter(newFilterFields));
-            dispatch(setBillApprovalStatusFilter(newFilterFields));
-            dispatch(setProcessedVsPaymentNotApprovedFilter(newFilterFields));
-            dispatch(setPaymentApprovedVsPaidBeforeDueDateFilter(newFilterFields));
-        }
-        else {
-            setSelectedLocation([]);
-            let newFilterFields = {
-                LocationIds: [],
-                StartDate: startDate ? formatPeriodDate(startDate) : '',
-                EndDate: endDate ? formatPeriodDate(endDate) : '',
-                Period: 'This Month',
+            if (ChartType == 'PostedBillsByMonth') {
+                const allProcess = processOptions.map((option: any) => option.value)
+                const updatedFilterFields = {
+                    ...newFilterFields,
+                    ProcessType: allProcess ?? [],
+                };
+                dispatch(setPostedBillsByMonthFilter(updatedFilterFields));
             }
-            dispatch(setPostedBillsByMonthFilter(newFilterFields));
             dispatch(setOnTimeVsMissedProcessingFilter(newFilterFields));
             dispatch(setVendorWiseMonthlyPaymentFilter(newFilterFields));
             dispatch(setBillApprovalStatusFilter(newFilterFields));
@@ -165,6 +159,7 @@ const DashboardFilter: React.FC<any> = ({
                 setStartDate(filterFields.StartDate ? new Date(filterFields.StartDate) : null);
                 setEndDate(filterFields.EndDate ? new Date(filterFields.EndDate) : null);
                 setChartPeriodRange(`${filterFields.StartDate} to ${filterFields.EndDate}`);
+                setProcessType(filterFields.ProcessType || "")
             }
         }
     }
@@ -173,7 +168,8 @@ const DashboardFilter: React.FC<any> = ({
         e.stopPropagation()
 
         const newFilterFields = isResetClicked ? {
-            LocationIds: locationOption.map((option: any) => option.value),
+            // LocationIds: locationOption.map((option: any) => option.value),
+            LocationIds: selectedLocation,
             StartDate: startDate ? formatPeriodDate(startDate) : '',
             EndDate: endDate ? formatPeriodDate(endDate) : '',
             Period: 'This Month',
@@ -186,8 +182,12 @@ const DashboardFilter: React.FC<any> = ({
 
         switch (ChartType) {
             case 'PostedBillsByMonth':
-                dispatch(setPostedBillsByMonthFilter(newFilterFields));
-                onSuccessApply(newFilterFields)
+                const updatedFilterFields = {
+                    ...newFilterFields,
+                    ProcessType: processType ? processType : [],
+                };
+                dispatch(setPostedBillsByMonthFilter(updatedFilterFields));
+                onSuccessApply(updatedFilterFields)
                 break;
             case 'OnTimeVsMissedProcessing':
                 dispatch(setOnTimeVsMissedProcessingFilter(newFilterFields));
@@ -226,6 +226,7 @@ const DashboardFilter: React.FC<any> = ({
         setEndDate(today);
         setChartPeriodRange(`${formatPeriodDate(thisMonthStart)} to ${formatPeriodDate(today)}`);
         setIsResetClicked(true);
+        setProcessType(processOptions.map((option: any) => option.value))
     }
 
     const dynamicClass = isFilterOpen
@@ -245,8 +246,8 @@ const DashboardFilter: React.FC<any> = ({
                         Reset All
                     </Button>
                 </div>
-                <div className='h-full w-full px-5 place-content-center grid grid-cols-3 sm:grid-cols-3 laptop:grid-cols-3 laptopMd:grid-cols-3 lg:grid-cols-3 gap-5'>
-                    <div className='py-4'>
+                <div className='h-full w-full p-5 grid grid-cols-3 sm:grid-cols-3 laptop:grid-cols-3 laptopMd:grid-cols-3 lg:grid-cols-3 gap-5'>
+                    <div>
                         <Select
                             id={'chartPeriod'}
                             label='Period'
@@ -266,7 +267,7 @@ const DashboardFilter: React.FC<any> = ({
                             getError={() => ''}
                         />
                     </div>
-                    <div className={`pt-[18px] customDatePickerExpandWidth pb-4 ${chartPeriodValue === "Custom" ? "opacity-100" : "opacity-70 cursor-default pointer-events-none"}`}>
+                    <div className={`pt-[3px] customDatePickerExpandWidth ${chartPeriodValue === "Custom" ? "opacity-100" : "opacity-70 cursor-default pointer-events-none"}`}>
                         <DatepickerRange
                             id='ft_datepicker'
                             label='Date Range'
@@ -286,7 +287,7 @@ const DashboardFilter: React.FC<any> = ({
                             getError={() => { }}
                         />
                     </div>
-                    <div className={`py-4 ${ChartType == "VendorWiseMonthlyPayment" || ChartType == "BillApprovalStatus" ? "pb-8 md:pb-2 laptop:pb-2 laptopMd:pb-2 lg:pb-2 xl:pb-8" : "pb-8"} `}>
+                    <div className={`pt-0.5 ${ChartType == "VendorWiseMonthlyPayment" || ChartType == "BillApprovalStatus" ? "md:pb-2 laptop:pb-2 laptopMd:pb-2 lg:pb-2 xl:pb-2" : ""} `}>
                         <MultiSelectChip
                             id='locations'
                             label='Location'
@@ -300,6 +301,23 @@ const DashboardFilter: React.FC<any> = ({
                                 }
                             }}
                             getError={() => { }}
+                            onSelect={() => { }}
+                        />
+                    </div>
+                    <div className={`${ChartType == "PostedBillsByMonth" ? "visible" : "hidden"}`}>
+                        <MultiSelectChip
+                            type='checkbox'
+                            id={'fh_process'}
+                            label='Process'
+                            placeholder={'Please select'}
+                            defaultValue={processType}
+                            options={processOptions ?? []}
+                            getValue={(value) => {
+                                if (value) {
+                                    setProcessType(value)
+                                }
+                            }}
+                            getError={() => ''}
                             onSelect={() => { }}
                         />
                     </div>

@@ -70,12 +70,12 @@ export default function AssignUser({
             {selectedStates &&
               selectedStates.map((name: any, index: any) => {
                 if (index < 3) {
-                  return <Avatar key={index} variant='small' className='ml-[-15px]' name={name.name} />
+                  return <Avatar key={index} variant='x-small' className='ml-[-15px]' name={name.name} />
                 } else if (index === 3) {
                   return (
                     <Avatar
                       key={index}
-                      variant='small'
+                      variant='x-small'
                       className='ml-[-15px] !opacity-100'
                       name={`+${selectedStates.length.toString()}`}
                     />
@@ -144,7 +144,7 @@ export default function AssignUser({
               value={searchText}
             />
           </div>
-          <div className={`custom-scroll-PDF z-10 overflow-scroll h-[300px]`}>
+          <div className={`custom-scroll-PDF z-10 overflow-auto max-h-[300px]`}>
             <ul className={`${filteredStates?.length === 0 ? 'pt-[15px]' : ''} mt-3 h-auto cursor-pointer overflow-y-auto`}>
               {filteredStates?.map((data: any, key: any) => (
                 <li
@@ -173,7 +173,7 @@ export default function AssignUser({
                       className={`${enableCheckboxes ? 'pl-[11px]' : ''} flex ${selectedStates.some((option: any) => option.id === data.id) ? 'cursor-not-allowed' : 'cursor-pointer'
                         } items-center p-1 text-sm`}
                     >
-                      <Avatar key={data.id} variant='small' className='mr-[10px] !opacity-100' name={data.name} />
+                      <Avatar key={data.id} variant='x-small' className='mr-[10px] !opacity-100' name={data.name} />
                       {data.name}
                     </label>
                   </div>

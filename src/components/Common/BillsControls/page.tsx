@@ -1,9 +1,10 @@
 'use client'
 
+import { Select } from '@/app/vendors/__components/Selectdropdown/Select'
 import { todayDate } from '@/data/billPosting'
 import { isDateInFormat } from '@/utils'
 import { format, parse, parseISO } from 'date-fns'
-import { CheckBox, Datepicker, Radio, Select, Text, Typography, Uploader } from 'pq-ap-lib'
+import { CheckBox, Datepicker, Radio, Text, Typography, Uploader } from 'pq-ap-lib'
 import React from 'react'
 
 const BillsControlFields = ({ formFields }: billsFormFieldsProps) => {

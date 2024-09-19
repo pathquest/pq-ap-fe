@@ -151,7 +151,7 @@ const GLAccountDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId }) => 
             getError={() => { }}
           />
         </div>
-        <div className='laptop:mb-4 laptopMd:mb-4 lg:mb-4 xl:mb-4 hd:mb-5 2xl:mb-5 3xl:mb-5 flex'>
+        <div className='laptop:mb-4 laptopMd:mb-4 lg:mb-4 xl:mb-4 hd:mb-5 2xl:mb-5 3xl:mb-5'>
           <Select
             label='Account Type'
             id='accounttype'
@@ -167,7 +167,7 @@ const GLAccountDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId }) => 
             getError={() => { }}
           />
         </div>
-        <div className='laptop:mb-4 laptopMd:mb-4 lg:mb-4 xl:mb-4 hd:mb-5 2xl:mb-5 3xl:mb-5 flex'>
+        <div className='laptop:mb-4 laptopMd:mb-4 lg:mb-4 xl:mb-4 hd:mb-5 2xl:mb-5 3xl:mb-5'>
           <Text
             label='Account Number'
             id='accountNumber'

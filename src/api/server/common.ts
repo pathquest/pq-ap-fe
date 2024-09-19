@@ -12,6 +12,11 @@ export async function getVendorDropdown(companyId: number) {
   return handleResponse(response)
 }
 
+export async function getVendorGLTermDropdown(companyId: number) {
+  const response = await agent.APIs.vendorGLTermDropdown({ CompanyId: companyId, IsActive: true })
+  return handleResponse(response)
+}
+
 export async function getLocationDropdown(companyId: number) {
   const response = await agent.APIs.locationDropdown({ CompanyId: companyId, IsActive: true })
   return handleResponse(response)
@@ -106,6 +111,8 @@ export const fetchAPIsData = async (processType: string | number, accountingTool
   const processOptions: any = await getProcessDropdown()
   const statusOptions: any = await getStatusDropdown()
   const userOptions: any = await getUserDropdown(Number(CompanyId))
+  locationOptions = await getLocationDropdown(Number(CompanyId))
+  
   const fieldMappingConfigurations: any = await getFieldMappingConfigurations(Number(processType), Number(CompanyId))
   const mainFieldConfiguration = [
     ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.DefaultList,
@@ -125,7 +132,7 @@ export const fetchAPIsData = async (processType: string | number, accountingTool
     fieldMappingNames.map(async (name: string) => {
       switch (name) {
         case 'vendor':
-          vendorOptions = await getVendorDropdown(Number(CompanyId))
+          vendorOptions = await getVendorGLTermDropdown(Number(CompanyId))
           break
         case 'from':
           vendorOptions = await getVendorDropdown(Number(CompanyId))
@@ -296,3 +303,5 @@ export async function getUserProfile() {
   const response = await agent.APIs.getUserProfile()
   return handleResponse(response)
 }
+
+export const ssoUrl = process.env.AP_REDIRECT_URL
