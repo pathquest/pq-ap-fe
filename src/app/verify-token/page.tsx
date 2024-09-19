@@ -10,9 +10,10 @@ export default function VerifyTokenPage() {
     const { data: session } = useSession()
     const searchParams = useSearchParams()
     const urlToken = searchParams.get('token') ?? ''
+    const isFirstConfig = searchParams.get('isFirstConfig') ?? 'false'
 
-    useEffect(()=> {
-        if(session?.user?.access_token) {
+    useEffect(() => {
+        if (session?.user?.access_token) {
             router.push('/profile')
         }
     }, [session])
@@ -22,8 +23,12 @@ export default function VerifyTokenPage() {
             await handleTokenSave({
                 token: urlToken,
             }).then(() => {
-                if(session?.user?.access_token) {
-                    router.push('/profile')
+                if (session?.user?.access_token) {
+                    // if (isFirstConfig === 'false') {
+                    //     router.push('/manage/companies')
+                    // } else {
+                        router.push('/profile')
+                    // }
                 }
             })
         }

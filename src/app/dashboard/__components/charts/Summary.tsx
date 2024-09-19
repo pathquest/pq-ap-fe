@@ -6,7 +6,7 @@ import { getSummary } from '@/store/features/dashboard/dashboardSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Typography } from 'pq-ap-lib'
+import { Loader, Typography } from 'pq-ap-lib'
 import React, { useEffect, useState } from 'react'
 import ProcessTypeDashboardFilter from '../modal/ProcessTypeDashboardFilter'
 import { setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
@@ -16,6 +16,7 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
   const CompanyId = Number(session?.user?.CompanyId)
   const [summaryData, setSummaryData] = useState<any>([])
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const filterFields = useAppSelector((state: any) => state.dashboard.filterFields["Summary"]);
 
   const dispatch = useAppDispatch()
@@ -39,6 +40,7 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
 
 
   const getSummaryDashboard = (newFilterFields: any) => {
+    setIsLoading(true)
     const params = {
       CompanyIds: [CompanyId],
       LocationIds: newFilterFields?.LocationIds.length != 0 ? newFilterFields?.LocationIds.map(Number) : null,
@@ -47,6 +49,9 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
     }
     performApiAction(dispatch, getSummary, params, (responseData: any) => {
       setSummaryData(responseData)
+      setIsLoading(false)
+    }, () => {
+      setIsLoading(false)
     })
   }
 
@@ -98,7 +103,10 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
           StartDueDate: '',
           EndDueDate: '',
           Assignee: '1',
-          LocationIds: filterFields?.LocationIds.length != 0 ? filterFields?.LocationIds.map(Number) : []
+          LocationIds:
+            filterFields?.LocationIds.length === LocationOption.length
+              ? null
+              : filterFields?.LocationIds.map(Number),
         }))
         break
       // case 'Pending Payment Approval':
@@ -143,22 +151,24 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
           <ProcessTypeDashboardFilter isFilterOpen={isFilterOpen} locationOption={LocationOption} onClose={handleFilterClose} ChartType="Summary" onSuccessApply={onSuccessApply} />
         </div>
       </div>
-
-      <div className="px-4 mb-5 grid grid-cols-4 sm:grid-cols-2 laptop:grid-cols-3 laptopMd:grid-cols-4 lg:grid-cols-4 gap-5">
-        {updatedCardData.map((data, index) => (
-          <div
-            key={data.amount + index}
-            onClick={() => handleSummaryClick(data.description)}
-            className={`${data.amount == "0" || data.amount == "$0" ? "cursor-default pointer-events-none" : "cursor-pointer"} w-full cards_content laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 shadow-md border border-lightSilver rounded  bg-white"`}
-          >
-            <div className="lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-proxima font-semibold tracking-[0.02em]">
-              {data.amount}
+      <div className={`px-4 mb-5 grid ${isLoading ? "grid-cols-1" : "grid-cols-4 sm:grid-cols-2 laptop:grid-cols-3 laptopMd:grid-cols-4 lg:grid-cols-4 gap-5"}`}>
+        {isLoading ? <div className='h-[90px] w-full flex justify-center'>
+          <Loader size='sm' helperText/>
+        </div>
+          : updatedCardData.map((data, index) => (
+            <div
+              key={data.amount + index}
+              onClick={() => handleSummaryClick(data.description)}
+              className={`${data.amount == "0" || data.amount == "$0" ? "cursor-default pointer-events-none" : "cursor-pointer"} w-full cards_content laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 shadow-md border border-lightSilver rounded  bg-white"`}
+            >
+              <div className="lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-proxima font-semibold tracking-[0.02em]">
+                {data.amount}
+              </div>
+              <div className='text-base font-proxima laptopMd:mt-1.5 lg:mt-1.5 xl:mt-1.5 hd:mt-2.5 2xl:mt-2.5 3xl:mt-2.5 text-darkCharcoal tracking-[0.02em]'>
+                {data.description}
+              </div>
             </div>
-            <div className='text-base font-proxima laptopMd:mt-1.5 lg:mt-1.5 xl:mt-1.5 hd:mt-2.5 2xl:mt-2.5 3xl:mt-2.5 text-darkCharcoal tracking-[0.02em]'>
-              {data.description}
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
     </>
   )

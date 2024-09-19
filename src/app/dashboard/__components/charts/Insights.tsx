@@ -7,7 +7,7 @@ import { convertStringsDateToUTC } from '@/utils'
 import { format, subMonths } from 'date-fns'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Typography } from 'pq-ap-lib'
+import { Loader, Typography } from 'pq-ap-lib'
 import React, { useEffect, useMemo, useState } from 'react'
 
 const Insights: React.FC = () => {
@@ -19,6 +19,7 @@ const Insights: React.FC = () => {
     const dispatch = useAppDispatch()
     const router = useRouter()
 
+    const [isLoading, setIsLoading] = useState<boolean>(false)
     const [insightData, setInsightData] = useState<any>([])
     const firstDayOfPreviousMonth = subMonths(new Date(), 1)
     const formattedDate = format(firstDayOfPreviousMonth, 'MM/dd/yyyy')
@@ -28,9 +29,10 @@ const Insights: React.FC = () => {
         const [month, year] = monthYear.split('/')
         const formattedDate = `${month}/01/${year}`
         return formattedDate
-      }
+    }
 
     const getInsightDashboard = (newFilterFields: any) => {
+        setIsLoading(true)
         const params = {
             UserId: Number(userId),
             CompanyIds: [CompanyId],
@@ -40,6 +42,9 @@ const Insights: React.FC = () => {
         }
         performApiAction(dispatch, getInsights, params, (responseData: any) => {
             setInsightData(responseData)
+            setIsLoading(false)
+        }, () => {
+            setIsLoading(false)
         })
     }
 
@@ -128,22 +133,25 @@ const Insights: React.FC = () => {
                     Insight
                 </Typography>
             </div>
-            {updatedCardData.map((data, index) => (
-                <div className='pointer-events-none w-full px-4 hd:px-5 2xl:px-5 3xl:px-5' key={data.amount + index} onClick={() => handleInsightClick(data.description)}>
-                    <div
-                        key={data.amount + index}
-                        onClick={() => handleInsightClick(data.description)}
-                        className="w-full cursor-pointer cards_content laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 shadow-md border border-lightSilver rounded  bg-white"
-                    >
-                        <div className="lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-proxima font-semibold tracking-[0.02em]">
-                            {data.amount}
-                        </div>
-                        <div className='text-base font-proxima laptopMd:mt-1.5 lg:mt-1.5 xl:mt-1.5 hd:mt-2.5 2xl:mt-2.5 3xl:mt-2.5 text-darkCharcoal tracking-[0.02em]'>
-                            {data.description}
+            {isLoading ? <div className='h-full w-full flex justify-center items-center'>
+                <Loader size='sm' helperText/>
+            </div>
+                : updatedCardData.map((data, index) => (
+                    <div className='pointer-events-none w-full px-4 hd:px-5 2xl:px-5 3xl:px-5' key={data.amount + index} onClick={() => handleInsightClick(data.description)}>
+                        <div
+                            key={data.amount + index}
+                            onClick={() => handleInsightClick(data.description)}
+                            className="w-full cursor-pointer cards_content laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 shadow-md border border-lightSilver rounded  bg-white"
+                        >
+                            <div className="lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-proxima font-semibold tracking-[0.02em]">
+                                {data.amount}
+                            </div>
+                            <div className='text-base font-proxima laptopMd:mt-1.5 lg:mt-1.5 xl:mt-1.5 hd:mt-2.5 2xl:mt-2.5 3xl:mt-2.5 text-darkCharcoal tracking-[0.02em]'>
+                                {data.description}
+                            </div>
                         </div>
                     </div>
-                </div>
-            ))}
+                ))}
         </div>
     )
 }

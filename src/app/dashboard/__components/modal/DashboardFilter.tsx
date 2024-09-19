@@ -59,38 +59,29 @@ const DashboardFilter: React.FC<any> = ({
     ];
 
     useEffect(() => {
-        // if (locationOption.length > 0) {
-        //     // const allLocation = locationOption.map((option: any) => option.value)
-        //     setSelectedLocation([]);
-        //     let newFilterFields = {
-        //         LocationIds: [],
-        //         StartDate: startDate ? formatPeriodDate(startDate) : '',
-        //         EndDate: endDate ? formatPeriodDate(endDate) : '',
-        //         Period: 'This Month',
-        //     }
-        //     dispatch(setPostedBillsByMonthFilter(newFilterFields));
-        //     dispatch(setOnTimeVsMissedProcessingFilter(newFilterFields));
-        //     dispatch(setVendorWiseMonthlyPaymentFilter(newFilterFields));
-        //     dispatch(setBillApprovalStatusFilter(newFilterFields));
-        //     dispatch(setProcessedVsPaymentNotApprovedFilter(newFilterFields));
-        //     dispatch(setPaymentApprovedVsPaidBeforeDueDateFilter(newFilterFields));
-        // }
-        // else {
-        setSelectedLocation([]);
-        let newFilterFields = {
-            LocationIds: [],
-            StartDate: startDate ? formatPeriodDate(startDate) : '',
-            EndDate: endDate ? formatPeriodDate(endDate) : '',
-            Period: 'This Month',
+        if (locationOption.length > 0) {
+            const allLocation = locationOption.map((option: any) => option.value)
+            let newFilterFields = {
+                LocationIds: allLocation,
+                StartDate: startDate ? formatPeriodDate(startDate) : '',
+                EndDate: endDate ? formatPeriodDate(endDate) : '',
+                Period: 'This Month',
+            }
+            if (ChartType == 'PostedBillsByMonth') {
+                const allProcess = processOptions.map((option: any) => option.value)
+                const updatedFilterFields = {
+                    ...newFilterFields,
+                    ProcessType: allProcess ?? [],
+                };
+                dispatch(setPostedBillsByMonthFilter(updatedFilterFields));
+            }
+            dispatch(setOnTimeVsMissedProcessingFilter(newFilterFields));
+            dispatch(setVendorWiseMonthlyPaymentFilter(newFilterFields));
+            dispatch(setBillApprovalStatusFilter(newFilterFields));
+            dispatch(setProcessedVsPaymentNotApprovedFilter(newFilterFields));
+            dispatch(setPaymentApprovedVsPaidBeforeDueDateFilter(newFilterFields));
         }
-        dispatch(setPostedBillsByMonthFilter(newFilterFields));
-        dispatch(setOnTimeVsMissedProcessingFilter(newFilterFields));
-        dispatch(setVendorWiseMonthlyPaymentFilter(newFilterFields));
-        dispatch(setBillApprovalStatusFilter(newFilterFields));
-        dispatch(setProcessedVsPaymentNotApprovedFilter(newFilterFields));
-        dispatch(setPaymentApprovedVsPaidBeforeDueDateFilter(newFilterFields));
-        // }
-    }, [CompanyId])
+    }, [CompanyId, locationOption])
 
     const getDateRangeForOption = (option: string) => {
         const today = new Date();
@@ -229,8 +220,7 @@ const DashboardFilter: React.FC<any> = ({
         const today = new Date();
         const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
 
-        // setSelectedLocation(locationOption.map((option: any) => option.value));
-        setSelectedLocation([])
+        setSelectedLocation(locationOption.map((option: any) => option.value));
         setChartPeriodValue("This Month");
         setStartDate(thisMonthStart);
         setEndDate(today);

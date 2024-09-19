@@ -159,10 +159,6 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
   const [isResetFilter, setIsResetFilter] = useState<boolean>(false)
   const [isApplyFilter, setIsApplyFilter] = useState<boolean>(false)
 
-  const [selectedDocument, setSelectedDocument] = useState<number | null>(null)
-  const [nestedRowId, setNestedRowId] = useState<number | null>(null)
-  const [attachmentDocumentId, setAttachmentDocumentId] = useState<number | null>(null)
-
   const [linkedBillObj, setLinkedBillObj] = useState<LinkBillToExistingBillProps>({
     AccountPayableId: null,
     DocumentId: null,

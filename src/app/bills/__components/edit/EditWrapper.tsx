@@ -847,7 +847,9 @@ const EditWrapper = ({
           <div className={`!h-[66px] sticky top-0 z-[5] flex w-full flex-row justify-between bg-lightGray px-5`}>
             <div className='flex items-center justify-center '>
               {!isVisibleLeftSidebar && (
-                <span className='cursor-pointer rounded-full bg-white p-1.5' onClick={() => window.history.back()}>
+                <span className='cursor-pointer rounded-full bg-white p-1.5' onClick={() => {
+                  window.history.back()
+                }}>
                   <BackIcon />
                 </span>
               )}

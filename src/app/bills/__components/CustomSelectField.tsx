@@ -1,4 +1,4 @@
-import { Select } from 'pq-ap-lib'
+import { Select } from "@/app/vendors/__components/Selectdropdown/Select"
 
 const CustomSelectField = ({
   fieldName,

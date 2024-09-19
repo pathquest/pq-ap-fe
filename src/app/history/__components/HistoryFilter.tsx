@@ -73,7 +73,7 @@ const HistoryFilter = ({
           </Button>
         </div>
 
-        <div className='historyFilter grid grid-cols-12 gap-5 overflow-y-auto custom-scroll p-5'>
+        <div className='historyFilter grid grid-cols-12 gap-5 p-5'>
               <div className='col-span-6'>
                 <CompanyList
                   id={'fh_source'}

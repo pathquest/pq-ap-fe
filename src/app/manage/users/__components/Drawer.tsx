@@ -1,16 +1,15 @@
-import { CountrySelect } from '@/app/vendors/__components/Coutry_select_dropdown/CountrySelect'
 import EditIcon from '@/assets/Icons/EditIcon'
 import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
-import { useAppDispatch, useAppSelector } from '@/store/configureStore'
+import { useAppDispatch } from '@/store/configureStore'
 import { companyListDropdown } from '@/store/features/company/companySlice'
 import { roleListDropdown } from '@/store/features/role/roleSlice'
 import { cityListDropdown, countryListDropdown, getUserImage, stateListDropdown, timezoneListDropdown, uploadUserImage, userGetDataById, userSaveData } from '@/store/features/user/userSlice'
 import { convertStringsToIntegers } from '@/utils'
-import { Avatar, Button, Close, CompanyList, Email, Select, Text, Toast, Typography } from 'pq-ap-lib'
+import { useSession } from 'next-auth/react'
+import { Avatar, Button, Close, CompanyList, CountrySelect, Email, Select, Text, Toast } from 'pq-ap-lib'
 import { useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import { useSession } from 'next-auth/react'
 
 interface DrawerProps {
   onOpen: boolean

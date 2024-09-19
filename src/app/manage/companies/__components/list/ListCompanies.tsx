@@ -21,11 +21,12 @@ import { AssignUserToCompany, companyGetList, companyListDropdown, conncetQb, co
 import { setIsRefresh, setSelectedCompany, userGetManageRights, userListDropdown } from '@/store/features/user/userSlice'
 import { convertStringsToIntegers } from '@/utils'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Avatar, Button, Close, CompanyList, DataTable, Loader, Modal, ModalContent, ModalTitle, MultiSelectChip, Password, SaveCompanyDropdown, Select, Text, Toast, Tooltip, Typography } from 'pq-ap-lib'
-import { invalidateSessionCache } from '@/api/axios'
+import agent, { invalidateSessionCache } from '@/api/axios'
 import { getModulePermissions, hasSpecificPermission, hasViewPermission, processPermissions } from '@/components/Common/Functions/ProcessPermission'
-import { setProcessPermissionsMatrix } from '@/store/features/profile/profileSlice'
+import { setOrganizationName, setOrgPermissionsMatrix, setProcessPermissionsMatrix } from '@/store/features/profile/profileSlice'
+import { permissionGetList } from '@/store/features/role/roleSlice'
 
 interface Item {
   clientname: string
@@ -74,6 +75,9 @@ const ListCompanies = () => {
   const { data: session } = useSession()
   const UserId = session?.user?.user_id
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const urlToken = session?.user?.access_token
+  const user = session ? session?.user : {}
 
   const { update } = useSession()
 
@@ -709,16 +713,57 @@ const ListCompanies = () => {
     invalidateSessionCache();
     await update({ ...session?.user, CompanyId: list?.Id, AccountingTool: list?.AccountingTool, CompanyName: list.Name })
 
-    getUserManageRights(list?.Id)
     dispatch(setSelectedCompany({ label: list?.Name, value: list?.Id, accountingTool: list?.AccountingTool }))
-    // router.push('/dashboard')
     if (list?.IsFieldMappingSet) {
       localStorage.removeItem('IsFieldMappingSet')
-      // router.push('/dashboard')
+      getUserManageRights(list?.Id)
+      router.push('/dashboard')
     } else {
       Toast.error('Please complete Manage Configuration and Field Mapping setup')
     }
   }
+
+  const getRolePermissionData = (roleId: any) => {
+    const params = {
+      RoleId: roleId,
+    }
+    performApiAction(dispatch, permissionGetList, params, (responseData: any) => {
+      const processedData = processPermissions(responseData);
+      dispatch(setOrgPermissionsMatrix(processedData));
+      dispatch(setProcessPermissionsMatrix(processedData));
+    })
+  }
+
+  const userConfig = async () => {
+    try {
+      const response = await agent.APIs.getUserConfig()
+      if (response.ResponseStatus === 'Success') {
+        getRolePermissionData(response.ResponseData.RoleId)
+        await update({
+          ...user,
+          org_id: response.ResponseData.OrganizationId,
+          org_name: response.ResponseData.OrganizationName,
+          user_id: response.ResponseData.UserId,
+          is_admin: response.ResponseData.IsAdmin,
+          is_organization_admin: response.ResponseData.IsOrganizationAdmin,
+          role_id: response.ResponseData.RoleId
+        })
+
+        dispatch(setOrganizationName(response.ResponseData.OrganizationName))
+
+        localStorage.setItem('UserId', response.ResponseData.UserId)
+        localStorage.setItem('OrgId', response.ResponseData.OrganizationId)
+        localStorage.setItem('IsAdmin', response.ResponseData.IsAdmin)
+        localStorage.setItem('IsOrgAdmin', response.ResponseData.IsOrganizationAdmin)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  useEffect(() => {
+      userConfig()
+  }, [urlToken])
 
   // For Assign user dropdown menu click inside table
 

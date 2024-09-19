@@ -138,7 +138,6 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
     const [isAttachmentVisible, setIsAttachmentVisible] = useState(false)
     const [isLinkToBillModalVisible, setIsLinkToBillModalVisible] = useState(false)
 
-    const [historyLists, setHistoryLists] = useState<any>([])
     const [historyDetailsView, setHistoryDetailsView] = useState<any>([])
     const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false)
     const [isResetFilter, setIsResetFilter] = useState<boolean>(false)
@@ -209,7 +208,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                 if (payload?.ResponseStatus === 'Success') {
                     const rowAttachmentData = payload?.ResponseData?.List.flatMap((d: any) => {
                         const filteredAttachmentData = d.AttachmentData && d.AttachmentData?.filter(
-                            (nestedData: any) => d.UserId === userDetails.userId
+                            (nestedData: any) => d.UserId === userDetails.userId && d.ProviderType === userDetails.ProviderType && format(convertUTCtoLocal(d?.UploadedDate), 'MM/dd/yyyy, HH:mm:ss') === userDetails.uploadedDate
                         ) || [];
 
                         return filteredAttachmentData?.map((nestedData: any) =>
@@ -302,24 +301,24 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
             const response = await agent.APIs.handleFileHistoryRetry({ Id: documentId })
 
             if (response?.ResponseStatus === 'Success') {
-                const updatedHistoryLists = historyLists.map((historyItem: any) => {
-                    const updatedAttachmentData = historyItem.AttachmentData.map((attachmentItem: any) => {
-                        if (attachmentItem.DocumentsId === documentId) {
-                            return {
-                                ...attachmentItem,
-                                Status: 'Moved To Automation',
-                                IsShowOptions: false,
-                            };
-                        }
-                        return attachmentItem;
-                    });
+                // const updatedHistoryLists = historyLists.map((historyItem: any) => {
+                //     const updatedAttachmentData = historyItem.AttachmentData.map((attachmentItem: any) => {
+                //         if (attachmentItem.DocumentsId === documentId) {
+                //             return {
+                //                 ...attachmentItem,
+                //                 Status: 'Moved To Automation',
+                //                 IsShowOptions: false,
+                //             };
+                //         }
+                //         return attachmentItem;
+                //     });
 
-                    return {
-                        ...historyItem,
-                        AttachmentData: updatedAttachmentData,
-                    };
-                });
-                setHistoryDetailsView(updatedHistoryLists)
+                //     return {
+                //         ...historyItem,
+                //         AttachmentData: updatedAttachmentData,
+                //     };
+                // });
+                // setHistoryDetailsView(updatedHistoryLists)
                 setIsRetryLoading(false)
             }
         } catch (error) {

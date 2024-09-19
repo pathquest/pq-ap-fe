@@ -465,6 +465,7 @@ const Navbar = ({ onData }: any) => {
                 <ul className='absolute right-0 top-[63px] w-44 bg-white' style={{ boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.2)' }}>
                   <Link
                     href='/profile'
+                    onClick={() => localStorage.setItem('profilePreviousUrl', window.location.href)}
                     onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) =>
                       (e.key === 'Enter' || e.key === ' ') && router.push('/profile')
                     }

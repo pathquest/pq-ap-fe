@@ -185,7 +185,6 @@ const ListBillPosting = ({ statusOptions, processOptions }: any) => {
   })
   const [PDFUrl, setPDFUrl] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [isLoadingOverview, setIsLoadingOverview] = useState<boolean>(false)
   const [rowId, setRowId] = useState<number>(0)
 
   const [columnListVisible, setColumnListVisible] = useState<any>([])
@@ -210,6 +209,7 @@ const ListBillPosting = ({ statusOptions, processOptions }: any) => {
   const [shouldLoadMore, setShouldLoadMore] = useState(true)
   const [shouldLoadMoreOverview, setShouldLoadMoreOverview] = useState(true)
   const [isLazyLoading, setIsLazyLoading] = useState<boolean>(false)
+  const [isOptionsFetched, setIsOptionsFetched] = useState(false);
   const [isLazyLoadingOverview, setIsLazyLoadingOverview] = useState<boolean>(false)
 
   const [itemsLoaded, setItemsLoaded] = useState(0)
@@ -286,19 +286,26 @@ const ListBillPosting = ({ statusOptions, processOptions }: any) => {
 
   useEffect(() => {
     const fetchOptionsData = async () => {
-      const vendorOptions: any = await getVendorDropdown(Number(CompanyId))
-      const locationOptions: any = await getLocationDropdown(Number(CompanyId))
+      try {
+        const vendorOptions: any = await getVendorDropdown(Number(CompanyId));
+        const locationOptions: any = await getLocationDropdown(Number(CompanyId));
 
-      setVendorOptions(vendorOptions)
-      setLocationOptions(locationOptions)
-    }
-    fetchOptionsData()
-    dispatch(
-      setFilterFormFields({
-        ...initialBillPostingFilterFormFields,
-      })
-    )
-  }, [CompanyId])
+        setVendorOptions(vendorOptions);
+        setLocationOptions(locationOptions);
+
+        setIsOptionsFetched(true);
+      } catch (error) {
+        console.error('Error fetching options data:', error);
+      }
+    };
+
+    fetchOptionsData();
+    // dispatch(
+    //   setFilterFormFields({
+    //     ...initialBillPostingFilterFormFields,
+    //   })
+    // );
+  }, [CompanyId]);
 
   useEffect(() => {
     const dateRangeVal = filterFormFields.ft_datepicker.split('to')
@@ -366,8 +373,11 @@ const ListBillPosting = ({ statusOptions, processOptions }: any) => {
   }, [])
 
   useEffect(() => {
-    selectedProcessTypeInList === '4' ? fetchBillsOverviewData(1) : fetchBillsData(1)
-  }, [selectedProcessTypeInList, sortOrder, CompanyId])
+   setIsLoading(true)
+    if (isOptionsFetched) {
+      selectedProcessTypeInList === '4' ? fetchBillsOverviewData(1) : fetchBillsData(1);
+    }
+  }, [selectedProcessTypeInList, sortOrder, CompanyId, isOptionsFetched]);
 
   useEffect(() => {
     if (isApplyFilter) {
@@ -705,11 +715,12 @@ const ListBillPosting = ({ statusOptions, processOptions }: any) => {
     }
   }
 
+
   const fetchBillsOverviewData = async (pageIndex?: number) => {
     if (pageIndex === 1) {
       setBillsOverviewList([])
       setItemsLoadedOverview(0)
-      setIsLoadingOverview(true)
+      setIsLoading(true)
     }
     if (CompanyId) {
       const dateRangeVal = filterFormFields.ft_datepicker.split('to')
@@ -746,7 +757,7 @@ const ListBillPosting = ({ statusOptions, processOptions }: any) => {
             let updatedDataOverview = []
             if (pageIndex === 1) {
               updatedDataOverview = [...newListOverview]
-              setIsLoadingOverview(false)
+              setIsLoading(false)
               setIsLazyLoadingOverview(false)
               setShouldLoadMoreOverview(true)
             } else {
@@ -758,7 +769,7 @@ const ListBillPosting = ({ statusOptions, processOptions }: any) => {
 
             setIsApplyFilter(false)
             setIsResetFilter(false)
-            setIsLoadingOverview(false)
+            setIsLoading(false)
 
             if (itemsLoadedOverview >= newTotalCount) {
               setShouldLoadMoreOverview(false);
@@ -775,7 +786,7 @@ const ListBillPosting = ({ statusOptions, processOptions }: any) => {
         // responseFailure()
         console.error(error)
       } finally {
-        setIsLoadingOverview(false)
+        setIsLoading(false)
         setIsLazyLoadingOverview(false)
       }
     }
@@ -2086,7 +2097,7 @@ const ListBillPosting = ({ statusOptions, processOptions }: any) => {
   let overviewNoDataContent
 
   if (OverviewTable_Data.length === 0) {
-    if (isLoadingOverview) {
+    if (isLoading) {
       overviewNoDataContent = (
         <div className='flex h-full w-full items-center justify-center'>
           <Loader size='md' helperText />
@@ -2403,13 +2414,13 @@ const ListBillPosting = ({ statusOptions, processOptions }: any) => {
                     }
                   }}
                   columns={billsOverviewColumns}
-                  data={OverviewTable_Data ? OverviewTable_Data : []}
+                  data={(overviewBillscolumns.length > 0 && billsOverviewList.length > 0) ? OverviewTable_Data : []}
                   sticky
                   hoverEffect
                   isTableLayoutFixed={true}
                   lazyLoadRows={lazyRowsOverview}
                 />
-                {isLazyLoadingOverview && !isLoadingOverview && (
+                {isLazyLoadingOverview && !isLoading && (
                   <Loader size='sm' helperText />
                 )}
                 <div ref={tableBottomRefOverview} />

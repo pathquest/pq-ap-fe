@@ -199,11 +199,11 @@ const getUpdatedDataFromDetailsResponse = (
               Id: items?.Id,
               [filterLineItemObject.key]: filterLineItemObject.key === 'releasetopay' && !value
                 ? false
-                  : (filterLineItemObject.mappedWith === 11 || filterLineItemObject.mappedWith === 23) && !value
+                  : (filterLineItemObject.mappedWith === 11 || filterLineItemObject.mappedWith === 23) && !value && data.LocationId 
                     ? data.LocationId.toString()
-                    : (filterLineItemObject?.key === 'account' && data['VendorId'] && !items['GLAccount'])
+                    : (filterLineItemObject?.key === 'account' && data['VendorId'] && !items['GLAccount'] && selectedVendor?.GLAccount)
                       ? selectedVendor?.GLAccount
-                      : filterLineItemObject?.key === 'account' ? Number(value) : value,
+                      : (filterLineItemObject?.key === 'account' && value) ? Number(value) : value,
             }
           }
 
@@ -211,69 +211,69 @@ const getUpdatedDataFromDetailsResponse = (
             updatedLineItemErrorObj = {
               ...updatedLineItemErrorObj,
               Index: index + 1,
-              [filterLineItemObject.key]: !value
+              [filterLineItemObject.key]: filterLineItemObject.key === 'releasetopay' && !value
                 ? false
-                : (filterLineItemObject.mappedWith === 11 || filterLineItemObject.mappedWith === 23) && !value
-                  ? false
-                  : (filterLineItemObject?.key === 'account' && data['VendorId'] && !data['GLAccount'])
-                    ? false
-                    : filterLineItemObject?.key === 'account' ? false : true,
+                : (filterLineItemObject.mappedWith === 11 || filterLineItemObject.mappedWith === 23) && !value && data.LocationId
+                  ? true
+                  : (filterLineItemObject?.key === 'account' && data['VendorId'] && !items['GLAccount'] && selectedVendor?.GLAccount)
+                    ? true
+                    : (filterLineItemObject?.key === 'account' && value) ? true : value ? true : false,
             }
           }
         }
-        const { amount, rate, quantity } = updatedLineItemObj;
+        // const { amount, rate, quantity } = updatedLineItemObj;
 
-        if (amount && rate && !quantity) {
-          updatedLineItemObj.quantity = Math.ceil(parseFloat((amount / rate).toFixed(2)));
-          updatedLineItemErrorObj.quantity = true;
-        } else if (amount && quantity && !rate) {
-          updatedLineItemObj.rate = (amount / quantity).toFixed(2);
-          updatedLineItemErrorObj.rate = true;
-        } else if (rate && quantity && !amount) {
-          updatedLineItemObj.amount = (rate * quantity).toFixed(2);
-          updatedLineItemErrorObj.amount = true;
-        } else if (amount && !rate && !quantity) {
-          updatedLineItemObj.quantity = 1; // Default quantity
-          updatedLineItemObj.rate = parseFloat((amount / updatedLineItemObj.quantity).toFixed(2));
-          updatedLineItemErrorObj.rate = true;
-          updatedLineItemErrorObj.quantity = true;
-        } else if (rate && !amount && !quantity) {
-          updatedLineItemObj.amount = 0; // Default amount
-          updatedLineItemObj.quantity = 1; // Default quantity
-          updatedLineItemErrorObj.amount = true;
-          updatedLineItemErrorObj.quantity = true;
-        } else if (quantity && !amount && !rate) {
-          updatedLineItemObj.amount = 0; // Default amount
-          updatedLineItemObj.rate = 1; // Default rate
-          updatedLineItemErrorObj.amount = true;
-          updatedLineItemErrorObj.rate = true;
-        } else if (!amount && !rate && !quantity) {
-          updatedLineItemObj.amount = 0;
-          updatedLineItemObj.rate = 0;
-          updatedLineItemObj.quantity = 0;
-          updatedLineItemErrorObj.amount = false;
-          updatedLineItemErrorObj.rate = false;
-          updatedLineItemErrorObj.quantity = false;
-        } else {
-          if (!amount) {
-            updatedLineItemObj.amount = 0;
-            updatedLineItemErrorObj.amount = false;
-          } else {
-            updatedLineItemErrorObj.amount = true;
-          }
-          if (!rate) {
-            updatedLineItemObj.rate = 0;
-            updatedLineItemErrorObj.rate = false;
-          } else {
-            updatedLineItemErrorObj.rate = true;
-          }
-          if (!quantity) {
-            updatedLineItemObj.quantity = 0;
-            updatedLineItemErrorObj.quantity = false;
-          } else {
-            updatedLineItemErrorObj.quantity = true;
-          }
-        }
+        // if (amount && rate && !quantity) {
+        //   updatedLineItemObj.quantity = Math.ceil(parseFloat((amount / rate).toFixed(2)));
+        //   updatedLineItemErrorObj.quantity = true;
+        // } else if (amount && quantity && !rate) {
+        //   updatedLineItemObj.rate = (amount / quantity).toFixed(2);
+        //   updatedLineItemErrorObj.rate = true;
+        // } else if (rate && quantity && !amount) {
+        //   updatedLineItemObj.amount = (rate * quantity).toFixed(2);
+        //   updatedLineItemErrorObj.amount = true;
+        // } else if (amount && !rate && !quantity) {
+        //   updatedLineItemObj.quantity = 1; // Default quantity
+        //   updatedLineItemObj.rate = parseFloat((amount / updatedLineItemObj.quantity).toFixed(2));
+        //   updatedLineItemErrorObj.rate = true;
+        //   updatedLineItemErrorObj.quantity = true;
+        // } else if (rate && !amount && !quantity) {
+        //   updatedLineItemObj.amount = 0; // Default amount
+        //   updatedLineItemObj.quantity = 1; // Default quantity
+        //   updatedLineItemErrorObj.amount = true;
+        //   updatedLineItemErrorObj.quantity = true;
+        // } else if (quantity && !amount && !rate) {
+        //   updatedLineItemObj.amount = 0; // Default amount
+        //   updatedLineItemObj.rate = 1; // Default rate
+        //   updatedLineItemErrorObj.amount = true;
+        //   updatedLineItemErrorObj.rate = true;
+        // } else if (!amount && !rate && !quantity) {
+        //   updatedLineItemObj.amount = 0;
+        //   updatedLineItemObj.rate = 0;
+        //   updatedLineItemObj.quantity = 0;
+        //   updatedLineItemErrorObj.amount = false;
+        //   updatedLineItemErrorObj.rate = false;
+        //   updatedLineItemErrorObj.quantity = false;
+        // } else {
+        //   if (!amount) {
+        //     updatedLineItemObj.amount = 0;
+        //     updatedLineItemErrorObj.amount = false;
+        //   } else {
+        //     updatedLineItemErrorObj.amount = true;
+        //   }
+        //   if (!rate) {
+        //     updatedLineItemObj.rate = 0;
+        //     updatedLineItemErrorObj.rate = false;
+        //   } else {
+        //     updatedLineItemErrorObj.rate = true;
+        //   }
+        //   if (!quantity) {
+        //     updatedLineItemObj.quantity = 0;
+        //     updatedLineItemErrorObj.quantity = false;
+        //   } else {
+        //     updatedLineItemErrorObj.quantity = true;
+        //   }
+        // }
 
         return { updatedLineItemObj, updatedLineItemErrorObj }
       })

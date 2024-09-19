@@ -49,6 +49,7 @@ export interface Product {
 const ProfileForm = ({ session }: any) => {
   const user = session ? session?.user : {}
   const token = session?.user?.access_token
+  const profilePreviousUrl = localStorage.getItem('profilePreviousUrl') ?? ''
 
   const router = useRouter()
   const { update } = useSession()
@@ -135,12 +136,24 @@ const ProfileForm = ({ session }: any) => {
       {/* Navigation Bar */}
       <NavBar onData={globalData} isFormOpen={isOpen} />
       <div className='relative flex !flex-col items-center justify-center pb-5'>
-        <div className='relative flex h-36 w-full bg-[#02B89D]'>
-          <div className='flex items-center justify-start pl-[148px]'>
-            <span className='mr-2.5 cursor-pointer' onClick={() => router.push('/manage/companies')}>
-              <ChevronLeftIcon bgColor='whiteSmoke' />
-            </span>
-          </div>
+        <div className={`relative flex h-36 w-full ${profilePreviousUrl ? 'justify-start': 'justify-center'} bg-[#F4F4F4]`}>
+          {profilePreviousUrl ? (
+            <div className='flex items-center !justify-start pl-[148px]'>
+              <span className='mr-2.5 cursor-pointer' onClick={() => {
+                router.push(`${profilePreviousUrl}`)
+                localStorage.removeItem('profilePreviousUrl')
+              }}>
+                <ChevronLeftIcon bgColor='white' />
+              </span>
+            </div>
+          ) : (
+            <div
+              className={`absolute rounded-md justify-center font-semibold items-center flex bg-[#02B89D] w-[90%] p-4 text-white top-0 select-none animate-slideDown`}
+            >
+              "Welcome to PathQuest! Our platform is designed to simplify your accounts payable process". Let's get started by clicking on <u onClick={() => router.push('/manage/companies')} className='cursor-pointer pl-1'>MANAGE COMPANY</u>
+            </div>
+          )}
+
           <div className='absolute bottom-[-50px] left-1/2 -translate-x-1/2 transform'>
             <div className='flex h-28 w-28 items-center justify-center rounded-full bg-white'>
               {profileData && profileData?.user_image !== '' ? (
