@@ -293,7 +293,7 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
   }
 
   //Settings Sidebar Data
-  const settings_data: SettingsSection[] = [
+  const masterItems: SettingsSection[] = [
     {
       heading: 'MASTER',
       isHeadingVisible: (isDimensionView || isGLAccountView || isAPTermView || true) ? true : false,
@@ -313,27 +313,27 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
           href: '/master/apterm',
           isVisible: isAPTermView
         },
-        {
-          name: 'Product & Service',
-          href: '/master/productservice',
-          isVisible: true
-        },
+        // {
+        //   name: 'Product & Service',
+        //   href: '/master/productservice',
+        //   isVisible: true
+        // },
       ],
     },
     {
       heading: 'PAYMENT SETTING',
       isHeadingVisible: (isCurrencyView || isTaxRateView || isPaymentSetupView) ? true : false,
       items: [
-        {
-          name: 'Currency',
-          href: '/paymentsetting/currency',
-          isVisible: isCurrencyView
-        },
-        {
-          name: 'Tax Rate',
-          href: '/paymentsetting/taxrate',
-          isVisible: isTaxRateView
-        },
+        // {
+        //   name: 'Currency',
+        //   href: '/paymentsetting/currency',
+        //   isVisible: isCurrencyView
+        // },
+        // {
+        //   name: 'Tax Rate',
+        //   href: '/paymentsetting/taxrate',
+        //   isVisible: isTaxRateView
+        // },
         // {
         //   name: 'Payment Method',
         //   href: '/paymentsetting/paymentmethod',
@@ -359,11 +359,11 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
           href: '/setup/notification',
           isVisible: isNotificationView
         },
-        {
-          name: 'Cloud Configuration',
-          href: '/setup/cloudconfiguration',
-          isVisible: isCloudConfigurationView
-        },
+        // {
+        //   name: 'Cloud Configuration',
+        //   href: '/setup/cloudconfiguration',
+        //   isVisible: isCloudConfigurationView
+        // },
         {
           name: 'Automation',
           href: '/setup/automation',
@@ -377,7 +377,7 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
   const SettingItems = ({ pathname }: any) => {
     return (
       <>
-        {settings_data.map((item, index) => (
+        {masterItems.map((item, index) => (
           <div className={`${item.isHeadingVisible ? "block" : "hidden"}`} key={item.heading}>
             <Typography
               type='h6'
@@ -387,13 +387,13 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
               {item.heading}
             </Typography>
             {item.items.map((subItem) => {
-              const isAutomation = subItem.name == 'Automation'
+              // const isAutomation = subItem.name == 'Automation'
               const isActive = pathname === subItem.href
 
-              const paddingClasses = isAutomation ? 'pt-[10px] pb-[20px]' : 'py-[10px]'
+              // const paddingClasses = isAutomation ? 'pt-[10px] pb-[20px]' : 'py-[10px]'
               const hoverClasses = 'hover:border-primary hover:bg-whiteSmoke hover:text-primary'
               const borderColorClasses = isActive ? 'border-primary bg-whiteSmoke text-primary' : 'border-pureWhite'
-              const className = `${subItem.isVisible ? "flex" : "hidden"} flex items-center border-l-2 border-white ${IsFieldMappingSet === 'true' ? 'cursor-pointer' : 'cursor-default'} ${paddingClasses} pl-[20px] ${hoverClasses} ${borderColorClasses}`
+              const className = `${subItem.isVisible ? "flex" : "hidden"} flex items-center border-l-2 border-white ${IsFieldMappingSet === 'true' ? 'cursor-pointer' : 'cursor-default'} py-[10px] pl-[20px] ${hoverClasses} ${borderColorClasses}`
               return (
                 <Link href={`${IsFieldMappingSet === 'true' ? subItem.href : ''}`} className={className} key={subItem.name}>
                   <Typography type='h6' className={`${IsFieldMappingSet === 'true' ? 'cursor-pointer' : 'cursor-default'} !tracking-[0.02em]`}>
@@ -492,7 +492,7 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
                   Configuration
                 </Typography>
               </div>
-              <div className=' custom-scroll h-5/6 overflow-auto'>
+              <div className='custom-scroll h-[calc(100vh-120px)] overflow-auto'>
                 <SettingItems pathname={pathname} />
               </div>
             </>

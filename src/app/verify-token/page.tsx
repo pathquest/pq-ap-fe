@@ -12,24 +12,11 @@ export default function VerifyTokenPage() {
     const urlToken = searchParams.get('token') ?? ''
     const isFirstConfig = searchParams.get('isFirstConfig') ?? 'false'
 
-    useEffect(() => {
-        if (session?.user?.access_token) {
-            router.push('/profile')
-        }
-    }, [session])
-
     const checkUrlToken = async () => {
         if (urlToken) {
             await handleTokenSave({
                 token: urlToken,
-            }).then(() => {
-                if (session?.user?.access_token) {
-                    // if (isFirstConfig === 'false') {
-                    //     router.push('/manage/companies')
-                    // } else {
-                        router.push('/profile')
-                    // }
-                }
+                isFirstConfig:isFirstConfig
             })
         }
     }

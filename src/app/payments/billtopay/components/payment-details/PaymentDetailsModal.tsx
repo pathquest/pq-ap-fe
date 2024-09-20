@@ -364,12 +364,6 @@ const PaymentDetailsModal: React.FC<ActionsProps> = ({
     setSingleBillSelected(true)
   }
 
-  const handleCloseBothModals = () => {
-    onClose()
-    handleResetAll()
-    setIsPayBillClicked(false)
-  }
-
   const handleCloseModal = () => {
     onClose()
     handleResetAll()
@@ -1288,7 +1282,6 @@ const PaymentDetailsModal: React.FC<ActionsProps> = ({
       <ReauthenticateModal
         onOpen={isPayBillClicked}
         onClose={handleCloseReauthenticateModal}
-        onPaymentDetailsClose={handleCloseBothModals}
         onSubmitPay={sendBillForPay}
         onUploadAttachments={handleUploadAttachment}
       />

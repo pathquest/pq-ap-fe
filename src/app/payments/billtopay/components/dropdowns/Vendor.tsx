@@ -109,7 +109,7 @@ const Vendor: React.FC<VendorType> = ({ vendorOption }) => {
     };
 
     const handleListItemKeyDown = (e: React.KeyboardEvent<HTMLLIElement>, option: any, index: number) => {
-        if ((e.key === 'Enter' || e.key === ' ') && e.target instanceof HTMLElement && e.target.tagName == "LI") {
+        if ((e.key === 'Enter') && e.target instanceof HTMLElement && e.target.tagName == "LI") {
             setFocusedIndex(-1);
             handleSelect(option.value)
         } else if (e.key === "ArrowUp" && index > 0 && isOpen) {
@@ -122,14 +122,14 @@ const Vendor: React.FC<VendorType> = ({ vendorOption }) => {
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLLIElement>) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.key === 'Enter') {
             e.preventDefault()
             handleSelectAllCheckbox()
         }
     }
 
     const handleClearAllKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.key === 'Enter') {
             e.preventDefault()
             handleClearAll()
         }
@@ -146,7 +146,7 @@ const Vendor: React.FC<VendorType> = ({ vendorOption }) => {
         <div className='relative w-full'
             ref={dropDownRef}
             tabIndex={0}
-            onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => (e.key === 'Enter' || e.key === ' ') && setIsOpen(!isOpen)}>
+            onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => (e.key === 'Enter') && setIsOpen(!isOpen)}>
             <div className='flex h-10 w-full' tabIndex={-1}>
                 <div className='flex h-full w-full items-center  justify-center px-1' tabIndex={-1}>
                     <input

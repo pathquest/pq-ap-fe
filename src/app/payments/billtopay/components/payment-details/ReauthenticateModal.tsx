@@ -9,7 +9,6 @@ import React, { useEffect, useState } from 'react'
 interface ActionsProps {
   onOpen: boolean
   onClose: any
-  onPaymentDetailsClose?: any
   onSubmitPay?: any
   onUploadAttachments?: any
 }
@@ -17,7 +16,6 @@ interface ActionsProps {
 const ReauthenticateModal: React.FC<ActionsProps> = ({
   onOpen,
   onClose,
-  onPaymentDetailsClose,
   onSubmitPay,
   onUploadAttachments,
 }) => {
@@ -51,10 +49,10 @@ const ReauthenticateModal: React.FC<ActionsProps> = ({
     }
 
     performApiAction(dispatch, reauthentication, params, () => {
-    setIsLoading(false)
-    onUploadAttachments()
-    onSubmitPay()
-    onPaymentDetailsClose()
+      setIsLoading(false)
+      onUploadAttachments()
+      onSubmitPay()
+      onClose()
     }, () => {
       setIsLoading(false)
       setPasswordErr(true)
@@ -92,7 +90,7 @@ const ReauthenticateModal: React.FC<ActionsProps> = ({
         />
       </ModalContent>
       <ModalAction className='p-5 h-[76px]'>
-        <Button className='rounded-full w-full' variant='btn-primary' onClick={handleSubmit}>
+        <Button className={`rounded-full w-full ${isLoading ? 'pointer-events-none opacity-80' : ""}`} variant='btn-primary' onClick={handleSubmit}>
           <label className={`flex items-center justify-center ${isLoading ? "animate-spin mx-[26px]" : "cursor-pointer font-proxima font-semibold h-full laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em]"}`}>
             {isLoading ? <SpinnerIcon bgColor='#FFF' /> : "REAUTHENTICATE"}
           </label>

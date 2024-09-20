@@ -356,6 +356,7 @@ const Filter: React.FC<any> = ({
                             getValue={(value) => {
                                 setAssigneeValue(value)
                                 setIsResetClicked(false)
+                                setIsValidMaxAmount(true);
                             }}
                             getError={() => ''}
                         />
@@ -371,6 +372,7 @@ const Filter: React.FC<any> = ({
                                 if (value) {
                                     setIsResetClicked(false)
                                     setSelectedLocation(value.map(Number))
+                                    setIsValidMaxAmount(true);
                                 }
                             }}
                             getError={() => { }}
