@@ -88,11 +88,11 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
   const lazyRows = 11
 
   const dropDownOptions = [
-    {
-      value: '1',
-      label: 'Purchase Order',
-      icon: <ShoppingCart />,
-    },
+    // {
+    //   value: '1',
+    //   label: 'Purchase Order',
+    //   icon: <ShoppingCart />,
+    // },
     {
       value: '2',
       label: 'Bills',

@@ -105,11 +105,11 @@ const Navbar = ({ onData }: any) => {
           href: '/master/apterm',
           isVisible: isAPTermView
         },
-        {
-          name: 'Product Service',
-          href: '/master/productservice',
-          isVisible: true
-        },
+        // {
+        //   name: 'Product Service',
+        //   href: '/master/productservice',
+        //   isVisible: true
+        // },
         // {
         //   name: 'Customers',
         //   href: '/master/customers',
@@ -120,16 +120,16 @@ const Navbar = ({ onData }: any) => {
       heading: 'Payment Policies',
       isHeadingVisible: (isCurrencyView || isTaxRateView || isPaymentSetupView) ? true : false,
       items: [
-        {
-          name: 'Currency',
-          href: '/paymentsetting/currency',
-          isVisible: isCurrencyView
-        },
-        {
-          name: 'Tax Rate',
-          href: '/paymentsetting/taxrate',
-          isVisible: isTaxRateView
-        },
+        // {
+        //   name: 'Currency',
+        //   href: '/paymentsetting/currency',
+        //   isVisible: isCurrencyView
+        // },
+        // {
+        //   name: 'Tax Rate',
+        //   href: '/paymentsetting/taxrate',
+        //   isVisible: isTaxRateView
+        // },
         // {
         //   name: 'Payment Method',
         //   href: '/paymentsetting/paymentmethod',
@@ -155,11 +155,11 @@ const Navbar = ({ onData }: any) => {
           href: '/setup/notification',
           isVisible: isNotificationView
         },
-        {
-          name: 'Cloud Configuration',
-          href: '/setup/cloudconfiguration',
-          isVisible: isCloudConfigurationView
-        },
+        // {
+        //   name: 'Cloud Configuration',
+        //   href: '/setup/cloudconfiguration',
+        //   isVisible: isCloudConfigurationView
+        // },
         {
           name: 'Automation',
           href: '/setup/automation',
@@ -391,8 +391,8 @@ const Navbar = ({ onData }: any) => {
                     ))}
                 </div >
               )}
-            </div >
-            <div
+            </div>
+            {/* <div
               ref={helpRef}
               className={`relative z-10 flex h-full w-8 2xl:w-10 cursor-pointer items-center justify-center border-b-2  ${isHelpOpen ? 'border-primary bg-whiteSmoke' : 'border-transparent bg-transparent'
                 } `}
@@ -420,17 +420,17 @@ const Navbar = ({ onData }: any) => {
                   </Typography>
                 </div>
               )}
-            </div>
-            <div className='flex h-10 w-8 2xl:w-10 cursor-pointer items-center justify-center'>
+            </div> */}
+            {/* <div className='flex h-10 w-8 2xl:w-10 cursor-pointer items-center justify-center'>
               <Tooltip content={`Last Synced`} position='bottom' className='z-10'>
                 <SyncIcon />
               </Tooltip>
-            </div>
-            <div className='flex h-10 w-8 2xl:w-10 cursor-pointer items-center justify-center'>
+            </div> */}
+            {/* <div className='flex h-10 w-8 2xl:w-10 cursor-pointer items-center justify-center'>
               <Tooltip content={`Switch to BI`} position='bottom' className='z-10'>
                 <BIIcon />
               </Tooltip>
-            </div>
+            </div> */}
             <div
               ref={profileRef}
               className={`relative z-10 flex h-full w-8 2xl:w-10 cursor-pointer items-center justify-center border-b-2  ${isProfileOpen ? 'border-primary bg-whiteSmoke' : 'border-transparent bg-transparent'
