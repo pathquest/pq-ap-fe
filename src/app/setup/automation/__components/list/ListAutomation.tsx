@@ -184,7 +184,7 @@ const ListAutomation: React.FC = () => {
     }
     modalClose()
     performApiAction(dispatch, ruleActiveInactive, params, () => {
-      Toast.success(`Rule ${ruleStatus === 0 ? isDefaultCompany ? "Inactivated" : "removed" : "activated"} successfully.`)
+      Toast.success(`Rule ${ruleStatus === 0 ? isDefaultCompany ? "inactivated" : "removed" : "activated"} successfully.`)
       setRefreshTable(!refreshTable)
     });
   };
@@ -544,7 +544,7 @@ const ListAutomation: React.FC = () => {
       {/* Sync Modal */}
       <ConfirmationModal
         title='Status'
-        content={`Are you sure you want to ${ruleStatus === 0 ? "Inactive" : "Active"} this company rule?`}
+        content={`Are you sure you want to ${ruleStatus === 0 ? "inactive" : "active"} this company rule?`}
         isModalOpen={isStatusModalOpen}
         modalClose={modalClose}
         handleSubmit={ruleStatusUpdate}

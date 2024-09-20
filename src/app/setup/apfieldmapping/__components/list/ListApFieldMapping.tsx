@@ -916,7 +916,7 @@ const ListAPFieldMapping: React.FC = () => {
                   <div>
                     <div className='w-full px-2.5 py-5'>
                       <Typography type='h5' className='flex w-full px-2.5 !font-bold tracking-[0.02em] text-darkCharcoal'>
-                        Line Field Item
+                        Line Item Field
                       </Typography>
 
                       {/* Line Drop fields*/}

@@ -548,6 +548,26 @@ const ListVendors: React.FC = () => {
     router.push('/vendors-duplication')
   }
 
+  let noDataContent
+
+  if (vendorListData.length === 0) {
+    if (isLoading) {
+      noDataContent = (
+        <div className='flex h-full w-full items-center justify-center'>
+          <Loader size='md' helperText />
+        </div>
+      )
+    } else {
+      noDataContent = (
+        <div className='sticky flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]'>
+          No records available at the moment.
+        </div>
+      )
+    }
+  } else {
+    noDataContent = ''
+  }
+
   return (
     <Wrapper>
       {/* Navbar */}
@@ -618,7 +638,8 @@ const ListVendors: React.FC = () => {
               )}
               <div ref={tableBottomRef} />
             </div>
-            <DataLoadingStatus isLoading={isLoading} data={vendorList} />
+            {noDataContent}
+            {/* <DataLoadingStatus isLoading={isLoading} data={vendorList} /> */}
           </div>
 
           {/* Sync Modal */}
