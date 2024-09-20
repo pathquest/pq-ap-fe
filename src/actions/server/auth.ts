@@ -45,9 +45,8 @@ export async function handleTokenSave(formFields: any) {
       email: '',
       password: '',
       token: formFields.token,
-      redirect: false,
-    }).then(() => {
-      // redirect(`/verify-token`)
+      redirect: true,
+      redirectTo: `${formFields.isFirstConfig === 'false' ? '/manage/companies' : '/profile'}`
     })
   } catch (error) {
     if (error instanceof AuthError) {
