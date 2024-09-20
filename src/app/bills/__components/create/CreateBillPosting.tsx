@@ -582,25 +582,25 @@ const CreateBillPosting = ({
         await setFormFields({
           ...formFields,
           [key]: value,
-          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(formFields.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
           duedate: formattedDueDateCalculated,
         })
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
-          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          ...(formFields.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
           duedate: formattedDueDateCalculated ? true : false,
         })
       } else {
         await setFormFields({
           ...formFields,
           [key]: value,
-          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(formFields.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
         })
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
-          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          ...(formFields.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
         })
       }
       return
@@ -654,15 +654,15 @@ const CreateBillPosting = ({
       await setFormFields({
         ...formFields,
         [key]: value,
-        ...(lineItemsFieldsDataObj.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
-        ...(lineItemsFieldsDataObj.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
-        ...(lineItemsFieldsDataObj.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
+        ...(formFields.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
+        ...(formFields.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
+        ...(formFields.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
       })
       await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
-        ...(lineItemsFieldsDataObj.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
-        ...(lineItemsFieldsDataObj.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
-        ...(lineItemsFieldsDataObj.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
+        ...(formFields.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
+        ...(formFields.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
+        ...(formFields.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
       })
       await setLineItemsFieldsData(newLineItemsObj)
       await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)

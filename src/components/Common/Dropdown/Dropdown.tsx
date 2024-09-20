@@ -21,7 +21,7 @@ const Dropdown: React.FC = () => {
   const { data: session } = useSession()
   const { update } = useSession()
   const user: any = session ? session?.user : {}
-  const CompanyId = session?.user?.CompanyId
+  const CompanyId = Number(session?.user?.CompanyId)
   const UserId = session?.user?.user_id
   const router = useRouter()
 
@@ -72,6 +72,25 @@ const Dropdown: React.FC = () => {
   //   }
   // }
 
+  const handleSelect = async (label: string, value: string, accountingTool: number, clickOn: string) => {
+    setSearchValue('')
+    if (clickOn === 'label') {
+      dispatch(setSelectedCompany({ label, value, accountingTool }))
+      localStorage.setItem('CompanyId', value)
+      invalidateSessionCache();
+      await update({ ...user, CompanyId: value, CompanyName: label, AccountingTool: accountingTool })
+
+      // dispatch(setVendorIdList([]))
+      setSelectedValue(label)
+      setIsOpen(false)
+      dispatch(setFilterFields({ LocationIds: [], VendorIds: [], PaymentMethod: [], StartDate: '', EndDate: '' }))
+      dispatch(setSelectedVendors([]))
+      dispatch(setVendorIdList([]))
+    } else {
+      setIsOpen(true)
+    }
+  }
+
   const getCompanyList = () => {
     const params = {
       UserId: UserId,
@@ -81,10 +100,10 @@ const Dropdown: React.FC = () => {
     })
   }
 
-  const getUserManageRights = (CompanyId: any) => {
+  const getUserManageRights = () => {
     const params = {
       UserId: UserId,
-      CompanyId: Number(CompanyId),
+      CompanyId: CompanyId,
     }
     performApiAction(dispatch, userGetManageRights, params, (responseData: any) => {
       const processedData = processPermissions(responseData);
@@ -114,6 +133,10 @@ const Dropdown: React.FC = () => {
       }
     })
   }
+
+  useEffect(() => {
+  getUserManageRights()
+  },[CompanyId])
 
   useEffect(() => {
     const index = newCompanyList.findIndex((item) => item.value == selectedCompanyValue)
@@ -153,26 +176,6 @@ const Dropdown: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value.toLowerCase()
     setSearchValue(inputValue)
-  }
-
-  const handleSelect = async (label: string, value: string, accountingTool: number, clickOn: string) => {
-    setSearchValue('')
-    if (clickOn === 'label') {
-      dispatch(setSelectedCompany({ label, value, accountingTool }))
-      localStorage.setItem('CompanyId', value)
-      invalidateSessionCache();
-      getUserManageRights(value)
-      await update({ ...user, CompanyId: value, CompanyName: label, AccountingTool: accountingTool })
-
-      // dispatch(setVendorIdList([]))
-      setSelectedValue(label)
-      setIsOpen(false)
-      dispatch(setFilterFields({ LocationIds: [], VendorIds: [], PaymentMethod: [], StartDate: '', EndDate: '' }))
-      dispatch(setSelectedVendors([]))
-      dispatch(setVendorIdList([]))
-    } else {
-      setIsOpen(true)
-    }
   }
 
   // useEffect(() => {

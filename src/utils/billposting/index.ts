@@ -53,7 +53,7 @@ const initialBillPostingFilterFormFields: BillPostingFilterFormFieldsProps = {
   ft_status: ['1', '2', '6', '8'],
   ft_assignee: '1',
   ft_select_users: [],
-  ft_process: '1',
+  ft_process: ['1','2'],
   ft_overview_status: ['1', '2', '3', '4', '5'],
   ft_vendor: null,
   ft_datepicker: `${formattedDate} to ${formattedCurrentDate}`,

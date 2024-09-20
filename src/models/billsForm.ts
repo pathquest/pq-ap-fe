@@ -36,8 +36,8 @@ interface BillsFormField {
 }
 
 type FileObj = {
-  FileName?: string
-  FilePath?: string
+  FileName?: any
+  FilePath?: any
   Id?: number
   Size?: number
 }
