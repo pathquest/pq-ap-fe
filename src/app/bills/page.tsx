@@ -13,13 +13,13 @@ const ListBill = async () => {
     return redirect(`${ssoUrl}/signin`)
   }
 
-  const statusOptions: any = await getStatusDropdown()
+  // const statusOptions: any = await getStatusDropdown()
   // const processOptions: any = await getProcessDropdown()
 
   return (
     <>
       <ListBillPosting
-        statusOptions={statusOptions}
+        statusOptions={[]}
       />
     </>
   )
