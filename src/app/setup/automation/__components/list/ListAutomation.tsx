@@ -37,7 +37,7 @@ const ListAutomation: React.FC = () => {
     { label: 'Workflow', value: 'WorkFlow', isEnable: true },
     { label: 'Bill Approval', value: 'BillApproval', isEnable: true },
     { label: 'Payment Approval', value: 'PaymentApproval', isEnable: true },
-    { label: 'Purchase Order Approval', value: 'PurchaseOrderApproval', isEnable: false }
+    // { label: 'Purchase Order Approval', value: 'PurchaseOrderApproval', isEnable: false }
   ]
 
   const divRef = useRef<HTMLDivElement>(null);

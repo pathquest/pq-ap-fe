@@ -376,14 +376,14 @@ const ListNotification: React.FC = () => {
                     <div className='tooltip_text h-10 cursor-pointer'>
                       {nestedData.Email && !nestedData.EmailDisable && (
                         <div className='flex items-center justify-center gap-2'>
-                          <span className={`${isNotificationEdit ? "flex" : "hidden"}`} onClick={() => handleEditEmail(nestedData.MatrixId)}>
-                            <Tooltip position='bottom' content='Edit Email'>
+                          <span className={`flex justify-center items-center h-full ${isNotificationEdit ? "flex" : "hidden"}`} onClick={() => handleEditEmail(nestedData.MatrixId)}>
+                            <Tooltip position='bottom' content='Edit Email' className='!px-0'>
                               <EditIcon />
                             </Tooltip>
                           </span>
 
-                          <span onClick={() => { setViewTemplateId(nestedData.MatrixId); setIsViewTemplate(true) }}>
-                            <Tooltip position='left' content='View Template'>
+                          <span className='flex justify-center items-center h-full' onClick={() => { setViewTemplateId(nestedData.MatrixId); setIsViewTemplate(true) }}>
+                            <Tooltip position='left' content='View Template' className='!pr-0'>
                               <VisibilityIcon />
                             </Tooltip>
                           </span>
@@ -468,7 +468,7 @@ const ListNotification: React.FC = () => {
             </div>
             {/* Data Table */}
             <div
-              className={`approvalMain ${isExpanded ? 'h-[calc(100vh-380px)]' : 'h-[calc(100vh-204px)]'
+              className={`approvalMain ${isExpanded ? 'h-[calc(100vh-380px)]' : 'h-[calc(100vh-130px)]'
                 } overflow-auto duration-700 ease-in-out max-[425px]:mx-1`}
             >
               <div className={`${data?.length !== 0 && 'h-0'}`}>
@@ -500,7 +500,7 @@ const ListNotification: React.FC = () => {
             </div>
 
             {/* Footer component */}
-            <div
+            {/* <div
               className={`sticky bottom-0 z-[6] flex flex-col px-5 duration-700 ease-in-out ${isExpanded ? 'h-[240px]' : 'h-[74px]'
                 } items-start border-t border-lightSilver  `}
               style={{
@@ -579,7 +579,7 @@ const ListNotification: React.FC = () => {
                     </div>
                   </div>
                 ))}
-            </div>
+            </div> */}
           </>
         )}
       </div>

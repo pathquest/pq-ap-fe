@@ -29,12 +29,12 @@ const SelectApprovalDropdown: React.FC = () => {
             value: '2',
             isHidden: !isPaymentApprovalView,
         },
-        {
-            label: 'Purchase Order Approval',
-            value: '3',
-            isEnable: false,
-            isHidden: false
-        },
+        // {
+        //     label: 'Purchase Order Approval',
+        //     value: '3',
+        //     isEnable: false,
+        //     isHidden: false
+        // },
     ].filter(option => !option.isHidden)
 
     return (
