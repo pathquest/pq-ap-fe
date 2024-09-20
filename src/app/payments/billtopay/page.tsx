@@ -563,6 +563,7 @@ const PaymentsContent: React.FC = () => {
   }
 
   const fetchPaymentListData = async (pageIndex?: number) => {
+    setIsLoading(true)
     if (pageIndex === 1) {
       setCurrSelectedBillDetails([])
       setVendorsId([])
@@ -570,7 +571,6 @@ const PaymentsContent: React.FC = () => {
       setItemsLoaded(0)
     }
 
-    setIsLoading(true)
     try {
       const params = {
         ...getPaymentListParams,

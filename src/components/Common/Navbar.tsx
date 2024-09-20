@@ -85,7 +85,7 @@ const Navbar = ({ onData }: any) => {
     },
   ]
 
-  const settingsData = [
+  const masterItems = [
     {
       heading: 'Masters',
       isHeadingVisible: (isDimensionView || isGLAccountView || isAPTermView || true) ? true : false,
@@ -268,7 +268,7 @@ const Navbar = ({ onData }: any) => {
 
   useEffect(() => {
     getRolePermissionData()
-  }, [])
+  }, [RoleId])
 
   const settingsFocusedArr = ['/manage/users', '/manage/roles', '/manage/companies', '/practice-dashboard']
 
@@ -307,7 +307,7 @@ const Navbar = ({ onData }: any) => {
             {!settingsFocusedArr.includes(pathname) && <BellIconComponent />}
             <div
               ref={settingRef}
-              className={`relative z-10 flex h-full w-8 2xl:w-10 cursor-pointer items-center justify-center border-b-2 ${isSettingOpen ? 'border-primary bg-whiteSmoke' : 'border-transparent bg-transparent'
+              className={`relative z-10 flex h-full w-8 2xl:w-10 items-center justify-center border-b-2 ${isSettingOpen ? 'border-primary bg-whiteSmoke' : 'border-transparent bg-transparent'
                 } `}
               onClick={() => {
                 setIsSettingOpen(true)
@@ -353,7 +353,7 @@ const Navbar = ({ onData }: any) => {
                     </div>
                   ))}
                   {!settingsFocusedArr.includes(pathname) &&
-                    settingsData.map((data) => (
+                    masterItems.map((data) => (
                       <div
                         className={`${data.isHeadingVisible ? "block" : "hidden"} flex w-[190px] ${data.heading != 'Payment Policies' && 'pl-6 pr-6'}  flex-col gap-4 py-7`}
                         key={data.heading}

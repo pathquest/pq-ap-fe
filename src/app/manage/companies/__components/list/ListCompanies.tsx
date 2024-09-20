@@ -25,7 +25,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Avatar, Button, Close, CompanyList, DataTable, Loader, Modal, ModalContent, ModalTitle, MultiSelectChip, Password, SaveCompanyDropdown, Select, Text, Toast, Tooltip, Typography } from 'pq-ap-lib'
 import agent, { invalidateSessionCache } from '@/api/axios'
 import { getModulePermissions, hasSpecificPermission, hasViewPermission, processPermissions } from '@/components/Common/Functions/ProcessPermission'
-import { setOrganizationName, setOrgPermissionsMatrix, setProcessPermissionsMatrix } from '@/store/features/profile/profileSlice'
+import { setOrganizationName, setOrgPermissionsMatrix, setProcessPermissionsMatrix, setRoleId } from '@/store/features/profile/profileSlice'
 import { permissionGetList } from '@/store/features/role/roleSlice'
 
 interface Item {
@@ -200,7 +200,7 @@ const ListCompanies = () => {
     },
     {
       header: '',
-      accessor: 'action',
+      accessor: isManageCompanyEdit ? 'action' : "",
       sortable: false,
       colalign: "right",
       colStyle: '!w-[30px]'
@@ -697,8 +697,9 @@ const ListCompanies = () => {
         }
         else {
           // If no permissions are found, you might want to redirect to a default page or show an error
-          router.push('/404')
+          Toast.error('You do not have permission for any module.')
           setIsLoading(false)
+          getCompanyList(1)
         }
       } else {
         Toast.error('You do not have permission for any module.')
@@ -717,21 +718,10 @@ const ListCompanies = () => {
     if (list?.IsFieldMappingSet) {
       localStorage.removeItem('IsFieldMappingSet')
       getUserManageRights(list?.Id)
-      router.push('/dashboard')
+      // router.push('/dashboard')
     } else {
       Toast.error('Please complete Manage Configuration and Field Mapping setup')
     }
-  }
-
-  const getRolePermissionData = (roleId: any) => {
-    const params = {
-      RoleId: roleId,
-    }
-    performApiAction(dispatch, permissionGetList, params, (responseData: any) => {
-      const processedData = processPermissions(responseData);
-      dispatch(setOrgPermissionsMatrix(processedData));
-      dispatch(setProcessPermissionsMatrix(processedData));
-    })
   }
 
   const userConfig = async () => {
@@ -739,6 +729,7 @@ const ListCompanies = () => {
       const response = await agent.APIs.getUserConfig()
       if (response.ResponseStatus === 'Success') {
         getRolePermissionData(response.ResponseData.RoleId)
+        dispatch(setRoleId(response.ResponseData.RoleId))
         await update({
           ...user,
           org_id: response.ResponseData.OrganizationId,
@@ -761,8 +752,19 @@ const ListCompanies = () => {
     }
   }
 
+  const getRolePermissionData = (roleId: any) => {
+    const params = {
+      RoleId: roleId ?? 0,
+    }
+    performApiAction(dispatch, permissionGetList, params, (responseData: any) => {
+      const processedData = processPermissions(responseData);
+      dispatch(setOrgPermissionsMatrix(processedData));
+      dispatch(setProcessPermissionsMatrix(processedData));
+    })
+  }
+
   useEffect(() => {
-      userConfig()
+    userConfig()
   }, [urlToken])
 
   // For Assign user dropdown menu click inside table
@@ -801,8 +803,8 @@ const ListCompanies = () => {
   const companyData = companyList && companyList.map((list: any, index) => {
     const actions =
       list?.AccountingTool === 4
-        ? [isManageCompanyEdit && 'Edit', 'Remove'].filter(Boolean)
-        : !list?.IsFieldMappingSet ? ['Field Mapping', isManageCompanyEdit && 'Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove'] : ['Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove'].filter(Boolean)
+        ? ['Edit', 'Remove']
+        : !list?.IsFieldMappingSet ? ['Field Mapping', 'Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove'] : ['Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove'].filter(Boolean)
     return {
       Id: <div className={`${list.IsActive ? '' : 'opacity-[50%]'}`}>{index + 1}</div>,
       Name: (

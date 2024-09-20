@@ -89,6 +89,7 @@ const MultipleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
   const [vendorCreditList, setVendorCreditList] = useState<any[]>([])
   const [paymentMethods, setPaymentMethods] = useState<{ [key: number]: PaymentMethod }>({})
   const [isPaymentButtonDisabled, setIsPaymentButtonDisabled] = useState<boolean>(false)
+  const [isPaymentLoading, setIsPaymentLoading] = useState<boolean>(false)
 
   const handleResetAll = () => {
     setIsCreditAvailed(true)
@@ -111,6 +112,7 @@ const MultipleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
     setVendorCreditList([])
     setPaymentMethods([])
     setIsPaymentButtonDisabled(false)
+    setIsPaymentLoading(false)
   }
 
   const handleCloseReauthenticateModal = () => {
@@ -337,6 +339,7 @@ const MultipleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
 
   // API for send bill for pay
   const sendBillForPay = async () => {
+    setIsPaymentLoading(true)
     let creditsList: any = [];
 
     if (isFullPaymentSelected) {
@@ -514,7 +517,7 @@ const MultipleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
       return automaticDetail
     }
 
-    const params = {
+    const params: any = {
       PaymentMasterList: isFullPaymentSelected ? calculateAutomaticDetail() : mainBillDetail,
       PaymentGenrationType: isSingleBillSelected ? 1 : 2,
       PaymentDate: format(parse(selectedBillDate.trim(), 'MM/dd/yyyy', new Date()), "yyyy-MM-dd'T'HH:mm:ss"),
@@ -538,11 +541,34 @@ const MultipleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
       })
     }
 
-    performApiAction(dispatch, sendForPay, params, () => {
-      Toast.success(`Bill has been sent for approval!`)
-      onDataFetch()
-      clearLocalStorage()
-    })
+    try {
+      const { payload, meta } = await dispatch(sendForPay(params))
+      const dataMessage = payload?.Message
+      if (meta?.requestStatus === 'fulfilled') {
+        if (payload?.ResponseStatus === 'Success') {
+          Toast.success(`Bills has been sent for approval!`)
+          onDataFetch()
+          handleCloseModal()
+          setIsPaymentLoading(false)
+        } else {
+          const error = payload?.ErrorData?.ErrorDetail;
+          if (error != null) {
+            const errorBillNumber = error?.BillNumbers ?? [];
+            const formattedBillNumbers = errorBillNumber.join(', ');
+
+            Toast.error(`Payment already initiated from accounting tool for bill number(s) ${formattedBillNumbers}. Kindly check before proceeding.`,"", 60000)
+          } else {
+            Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
+          }
+          setIsPaymentLoading(false)
+        }
+      } else {
+        setIsPaymentLoading(false)
+        Toast.error(`${payload?.status} : ${payload?.statusText}`)
+      }
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   const handleMergeBillsSelected = () => {
@@ -742,7 +768,6 @@ const MultipleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
       <ReauthenticateModal
         onOpen={isReauthenticateModalOpen}
         onClose={handleCloseReauthenticateModal}
-        onPaymentDetailsClose={handleCloseModal}
         onSubmitPay={sendBillForPay}
         onUploadAttachments={() => { }}
       />

@@ -809,10 +809,10 @@ const VendorAddScreen: React.FC<DrawerProps> = ({ isOpen, EditId, onClose }) => 
                                 value={vendorName}
                                 validate
                                 minChar={3}
-                                maxLength={25}
+                                maxLength={50}
                                 hasError={vendorNameError}
                                 getValue={(value) => {
-                                    /^[a-zA-Z ]*$/.test(value) && setVendorName(value)
+                                    setVendorName(value)
                                     setVendorNameError(false)
                                 }}
                                 getError={() => { }}
@@ -825,7 +825,7 @@ const VendorAddScreen: React.FC<DrawerProps> = ({ isOpen, EditId, onClose }) => 
                                 value={displayName}
                                 validate
                                 minChar={3}
-                                maxLength={25}
+                                maxLength={50}
                                 hasError={displayNameError}
                                 getValue={(value) => {
                                     /^[a-zA-Z ]*$/.test(value) && setDisplayName(value)
@@ -841,7 +841,7 @@ const VendorAddScreen: React.FC<DrawerProps> = ({ isOpen, EditId, onClose }) => 
                                 value={nameOnCheck}
                                 validate
                                 minChar={3}
-                                maxLength={25}
+                                maxLength={50}
                                 hasError={nameOnCheckError}
                                 getValue={(value) => {
                                     /^[a-zA-Z ]*$/.test(value) && setNameOnCheck(value)

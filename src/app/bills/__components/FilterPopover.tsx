@@ -125,12 +125,12 @@ function FilterPopover({
           <div className='m-5 grid grid-cols-3 items-center gap-5'>
             {processSelection === '4' && (
               <>
-                <Select
+                <MultiSelectChip
+                  type='checkbox'
                   id={'ft_process'}
                   label='Process'
                   placeholder={'Process'}
-                  value={localFilterFormFields?.ft_process}
-                  defaultValue={localFilterFormFields?.ft_process}
+                  defaultValue={localFilterFormFields?.ft_process ?? []}
                   options={FilterOverviewProcessType ?? []}
                   getValue={(value) => {
                     onResetFilter(false)
@@ -140,6 +140,7 @@ function FilterPopover({
                     })
                   }}
                   getError={() => ''}
+                  onSelect={() => ''}
                 />
                 <MultiSelectChip
                   type='checkbox'
