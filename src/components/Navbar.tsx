@@ -180,7 +180,7 @@ const Page = ({ onData, isFormOpen }: any) => {
               Manage Companies
             </button>
           )} */}
-          <div className='flex h-8 w-8 cursor-pointer items-center justify-center' onClick={() => handleToggleChange('CandyBox')}>
+          {/* <div className='flex h-8 w-8 cursor-pointer items-center justify-center' onClick={() => handleToggleChange('CandyBox')}>
             <Tooltip content='PathQuest Apps' position='left'>
               <CandyBox />
             </Tooltip>
@@ -189,7 +189,7 @@ const Page = ({ onData, isFormOpen }: any) => {
             <div>
               <HelpIcon />
             </div>
-          </div>
+          </div> */}
           <div
             className='flex h-8 w-8 cursor-pointer items-center justify-center'
             onClick={() => handleToggleChange('ProfileMenu')}

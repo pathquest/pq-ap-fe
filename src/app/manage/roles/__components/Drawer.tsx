@@ -46,7 +46,19 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId, DuplicateI
       setRoleName(responseData.RoleData?.RoleName || '')
       setRoleDescription(responseData.RoleData?.RoleDescription || '')
       setSubRolePermission(responseData.List)
-      setPermissionList(responseData.PermissionIds)
+      // setPermissionList(responseData.PermissionIds)
+
+      const manageCompanyViewPermission = responseData.List
+        .find((item: any) => item.Key === "Settings")
+        ?.Children.find((child: any) => child.Key === "Global Setting")
+        ?.Children.find((grandChild: any) => grandChild.Key === "Manage Company")
+        ?.Children.find((greatGrandChild: any) => greatGrandChild.Key === "View")
+
+      if (manageCompanyViewPermission) {
+        setPermissionList([...responseData.PermissionIds, manageCompanyViewPermission.Id])
+      } else {
+        setPermissionList(responseData.PermissionIds)
+      }
     })
   }
 
@@ -123,8 +135,11 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId, DuplicateI
         const permissionId = permission && permission.Id
 
         if (permissionId !== undefined) {
+          const isManageCompanyChecked = data.Key === "Manage Company" && permissionKey === "view"
+          const isManageCompanyView = data.Key === "Manage Company" && permissionKey === "view"
+
           checkboxes[permissionKey.charAt(0).toUpperCase() + permissionKey.slice(1)] = (
-            <CheckBox onChange={handleCheckBoxChange} id={permissionId} checked={permissionList.includes(permissionId)} />
+            <CheckBox onChange={handleCheckBoxChange} id={permissionId} checked={isManageCompanyChecked || permissionList.includes(permissionId)} disabled={isManageCompanyView} />
           )
         }
 
