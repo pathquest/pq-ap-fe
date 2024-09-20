@@ -39,7 +39,6 @@ interface Product {
 const Page = ({ onData, isFormOpen }: any) => {
   const router = useRouter()
   const pathname = usePathname()
-  console.log("🚀 ~ Page ~ pathname:", pathname)
   const toggleRef = useRef<HTMLDivElement>(null)
 
   const [toggleCandyBoxChange, setToggleCandyBoxChange] = useState<boolean>(false)
