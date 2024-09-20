@@ -416,7 +416,7 @@ const FileUpload = ({ processOptions }: any) => {
     if (fileIndexStatus.filter((file: number) => file === 3).length > 0 && isUploading === false && isToast === true) {
       handleOcrFile()
       setTimeout(() => {
-        Toast.success(`${succesCount + 1} file(s) uploaded successfully and moved for automation processing`)
+        Toast.success(`${succesCount + 1} File(s) uploaded and has been moved for the process of automation.`)
       }, 1500)
       setIsToast(false)
     }

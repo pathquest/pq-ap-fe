@@ -1061,7 +1061,7 @@ const CreateBillPosting = ({
             <BackIcon />
           </span>
           <span className='pl-5 !text-[14px] font-bold font-proxima tracking-[0.02em] text-darkCharcoal'>
-            {processtype === '1' ? 'Account Payable' : 'Account Adjustment'}
+            {processtype === '1' ? 'Accounts Payable' : 'Accounts Adjustment'}
           </span>
         </div>
       </div>

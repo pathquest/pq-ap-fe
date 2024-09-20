@@ -143,7 +143,7 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
       <div className='flex justify-end mx-4 hd:mx-5 2xl:mx-5 3xl:mx-5'>
         <div className='w-full py-4 hd:py-5 2xl:py-5 3xl:py-5'>
           <Typography type='h5' className='title !text-base hd:!text-lg 2xl:!text-lg 3xl:!text-lg font-proxima font-semibold tracking-[0.02em] text-darkCharcoal'>
-            Summary ({getMonthNameFromDate(filterFields.Date)})
+            Summary (This Month)
           </Typography>
         </div>
         <div className='filter_change cursor-pointer flex items-center relative my-5' onClick={handleFilterOpen}><ChartFilterIcon />

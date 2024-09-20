@@ -85,17 +85,17 @@ const ListBillPosting = ({ statusOptions }: any) => {
 
   const accountOptions = [
     {
-      label: 'Account Payable',
+      label: 'Accounts Payable',
       value: '1',
       isHidden: !isAccountPayableView,
     },
     {
-      label: 'Account Adjustment',
+      label: 'Accounts Adjustment',
       value: '2',
       isHidden: !isAccountAdjustmentView,
     },
     {
-      label: 'Other',
+      label: 'Others',
       value: '3',
       isHidden: false,
     },
@@ -2140,7 +2140,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                 <ul className='flex items-center gap-5'>
                   {processSelection !== '3' && (<>
                     <li className={`mt-1.5 flex items-center gap-3 ${((processSelection == "1" && isAccountPayableSync) || (processSelection == "2" && isAccountAdjustmentSync) || (processSelection == "4" && isBillsOverviewSync)) ? "flex" : "hidden"}`} tabIndex={0}>
-                      <label className={`text-sm font-proxima tracking-[0.02em] text-darkCharcoal ${inProcessCount == 0 ? "hidden" : "block"}`}>{inProcessCount} Files is in automation.</label>
+                      <label className={`text-sm font-proxima tracking-[0.02em] text-darkCharcoal ${inProcessCount == 0 ? "hidden" : "block"}`}>{inProcessCount} Files in automation.</label>
                       <BasicTooltip position='bottom' content='Sync' className='!z-10 !font-proxima !text-sm !px-0'>
                         <div className={`${inProcessCount > 0 && 'animate-spin'}`}>
                           <SyncIcon />

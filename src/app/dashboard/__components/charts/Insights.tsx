@@ -57,7 +57,7 @@ const Insights: React.FC = () => {
     const updatedCardData = [
         {
             amount: `${insightData.BillPending ?? 0}`,
-            description: 'Bill Pending'
+            description: 'Pending Bills'
         },
         {
             amount: `${insightData.DuplicateBills ?? 0}`,
@@ -69,11 +69,11 @@ const Insights: React.FC = () => {
         },
         {
             amount: `${insightData.PendingApproval ?? 0}`,
-            description: 'Pending Approval'
+            description: 'Pending Approvals'
         },
         {
             amount: `${insightData.BillPayment ?? 0}`,
-            description: 'Bill Payment'
+            description: 'Bill Payments'
         }
     ];
 
@@ -130,7 +130,7 @@ const Insights: React.FC = () => {
         <div className='h-[493px] w-[240px] hd:w-[256px] 2xl:w-[256px] 3xl:w-[256px] shadow-md border border-lightSilver rounded bg-whiteSmoke overflow-y-auto flex flex-col gap-y-4 pb-4'>
             <div className='h-[62px] p-4 hd:p-5 2xl:p-5 3xl:p-5 border-b border-b-lightSilver sticky top-0 bg-white'>
                 <Typography type='h5' className='title !text-base hd:!text-lg 2xl:!text-lg 3xl:!text-lg font-proxima font-semibold tracking-[0.02em] text-darkCharcoal'>
-                    Insight
+                    Insights
                 </Typography>
             </div>
             {isLoading ? <div className='h-full w-full flex justify-center items-center'>
