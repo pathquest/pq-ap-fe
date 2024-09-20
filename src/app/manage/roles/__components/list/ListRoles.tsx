@@ -53,7 +53,7 @@ const ListRoles: React.FC = () => {
     },
     {
       header: '',
-      accessor: 'action',
+      accessor: isManageRoleEdit ? 'action' : "",
       sortable: false,
       colalign: 'right',
       colStyle: '!w-[6%]',
@@ -187,7 +187,7 @@ const ListRoles: React.FC = () => {
   }
 
   // Datatable Data
-  const classListData = subDataList?.map(
+  const roleListData = subDataList?.map(
     (e: any) =>
       new Object({
         RoleId: e?.RoleId,
@@ -196,7 +196,7 @@ const ListRoles: React.FC = () => {
         action: (
           <Actions
             id={e?.RoleId}
-            actions={e?.IsPublic ? ['Duplicate'] : [isManageRoleEdit && 'Edit', 'Duplicate', 'Remove'].filter(Boolean)}
+            actions={e?.IsPublic ? ['Duplicate'] : ['Edit', 'Duplicate', 'Remove']}
             handleClick={handleMenuChange}
             actionRowId={() => { }}
           />
@@ -333,10 +333,10 @@ const ListRoles: React.FC = () => {
 
       {/* Data Table */}
       <div className='h-[calc(100vh-145px)] overflow-auto approvalMain custom-scroll max-[425px]:mx-1'>
-        <div className={`${classListData.length !== 0 && 'h-0'}`}>
+        <div className={`${roleListData.length !== 0 && 'h-0'}`}>
           <DataTable
             columns={columns}
-            data={classListData.length > 0 ? classListData : []}
+            data={roleListData.length > 0 ? roleListData : []}
             hoverEffect={true}
             sticky
             expandable
@@ -347,7 +347,7 @@ const ListRoles: React.FC = () => {
             getRowId={() => { }}
           />
         </div>
-        <DataLoadingStatus isLoading={isLoading} data={classListData} />
+        <DataLoadingStatus isLoading={isLoading} data={roleListData} />
       </div>
 
       {/* Remove Modal */}

@@ -14,13 +14,12 @@ const ListBill = async () => {
   }
 
   const statusOptions: any = await getStatusDropdown()
-  const processOptions: any = await getProcessDropdown()
+  // const processOptions: any = await getProcessDropdown()
 
   return (
     <>
       <ListBillPosting
         statusOptions={statusOptions}
-        processOptions={processOptions}
       />
     </>
   )

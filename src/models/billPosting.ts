@@ -59,7 +59,7 @@ export interface BillPostingFilterFormFieldsProps {
   ft_status: string[]
   ft_overview_status: string[]
   ft_assignee: string
-  ft_process: string
+  ft_process: string[]
   ft_select_users: any
   ft_vendor: any
   ft_datepicker: string
@@ -97,7 +97,7 @@ export interface DocumentGetListOptions {
 
 export interface DocumentGetOverviewListOptions {
   Status: any
-  ProcessType: number | string
+  ProcessType: any
   VendorIds: any
   StartDate: string | null
   EndDate: string | null

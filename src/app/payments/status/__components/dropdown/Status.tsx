@@ -108,7 +108,7 @@ const Status: React.FC<StatusType> = ({ statusList, onSuccessApply }) => {
     };
 
     const handleListItemKeyDown = (e: React.KeyboardEvent<HTMLLIElement>, option: any, index: number) => {
-        if ((e.key === 'Enter' || e.key === ' ') && e.target instanceof HTMLElement && e.target.tagName == "LI") {
+        if ((e.key === 'Enter') && e.target instanceof HTMLElement && e.target.tagName == "LI") {
             setFocusedIndex(-1);
             handleSelect(option.value)
         } else if (e.key === "ArrowUp" && index > 0 && isOpen) {

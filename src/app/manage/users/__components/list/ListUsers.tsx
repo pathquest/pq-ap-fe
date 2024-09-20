@@ -258,7 +258,7 @@ const ListUsers: React.FC = () => {
     },
     {
       header: '',
-      accessor: 'action',
+      accessor: isManageUserEdit ? 'action' : "",
       sortable: false,
       colalign: 'right',
       colStyle: '!w-[30px]',
@@ -412,7 +412,7 @@ const ListUsers: React.FC = () => {
                 id={e?.id}
                 actions={[
                   'Manage Rights',
-                  isManageUserEdit && 'Edit',
+                  'Edit',
                   Number(userId) !== rowId ? e?.IsOrgAdmin === false && 'Remove' : false,
                 ].filter(Boolean)}
                 actionRowId={() => handleIdGet(e?.id)}
