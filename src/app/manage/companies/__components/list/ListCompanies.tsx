@@ -762,7 +762,7 @@ const ListCompanies = () => {
   }
 
   useEffect(() => {
-      userConfig()
+    userConfig()
   }, [urlToken])
 
   // For Assign user dropdown menu click inside table
@@ -1274,7 +1274,7 @@ const ListCompanies = () => {
         {openIntacctModal && (
           <Modal isOpen={true} onClose={() => setOpenIntacctModal(false)} width='400px'>
             <ModalTitle className='!h-[64px] laptop:py-3 laptopMd:py-3 lg:py-3 xl:py-3 hd:py-[21px] 2xl:py-[21px] 3xl:py-[21px] laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
-              <div className='font-proxima flex cursor-pointer items-center laptop:text-base laptopMd:text-base hd:text-lg 2xl:text-lg 3xl:text-lg laptop:font-semibold laptopMd:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>   Connect to Sage Intacct</div>
+              <div className='font-proxima flex cursor-pointer items-center laptop:text-base laptopMd:text-base hd:text-lg 2xl:text-lg 3xl:text-lg laptop:font-semibold laptopMd:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>Sage Intacct</div>
               <div className='pt-2.5' onClick={() => setOpenIntacctModal(false)}>
                 <Close variant='medium' />
               </div>
@@ -1284,7 +1284,7 @@ const ListCompanies = () => {
               <div className='flex flex-row justify-center'>
                 <div className='flex h-full w-full max-w-sm flex-col items-center overflow-hidden rounded'>
                   <Text
-                    placeholder='Company ID'
+                    placeholder='Please enter company ID'
                     value={intacctCompanyId}
                     getValue={(e) => setIntacctCompanyId(e)}
                     getError={() => { }}
@@ -1293,7 +1293,7 @@ const ListCompanies = () => {
                   />
                   <div className='my-5 w-full'>
                     <Text
-                      placeholder='User ID'
+                      placeholder='Please enter user ID'
                       value={intacctUserId}
                       getValue={(e) => setIntacctUserId(e)}
                       getError={() => { }}
@@ -1303,7 +1303,7 @@ const ListCompanies = () => {
                   </div>
                   <div className='mb-5 w-full'>
                     <Password
-                      placeholder='Password'
+                      placeholder='Please enter password'
                       name='password'
                       novalidate
                       validate
@@ -1314,9 +1314,9 @@ const ListCompanies = () => {
                     />
                   </div>
                   <Typography className='text-darkCharcoal'>
-                    You must autorize pathquest in your intacct web service.order to grant us acess your data{' '}
-                    <span className='cursor-pointer text-[16.5px] text-[#0592C6]'>Click Here </span>
-                    for instructions.
+                    By clicking on Connect, you authorize PathQuest's AP to access your data through Intacct web service request.{' '}
+                    {/* <span className='cursor-pointer text-[16.5px] text-[#0592C6]'>Click Here </span>
+                    for instructions. */}
                   </Typography>
                   <Button
                     className={`btn-sm $ mx-2 mt-5 mb-3 !h-[36px] !w-auto rounded-md font-semibold ${isLoading ? 'pointer-events-none opacity-80' : ''
@@ -1330,11 +1330,11 @@ const ListCompanies = () => {
                           <div className='mx-2 animate-spin '>
                             <SpinnerIcon bgColor='#FFF' />
                           </div>
-                          <div className='items-center'>CONNECT TO SAGE INTACCT</div>
+                          <div className='items-center'>CONNECT</div>
                         </div>
                       ) : (
                         <Typography type='h6' className='!font-bold'>
-                          CONNECT TO SAGE INTACCT
+                          CONNECT
                         </Typography>
                       )}
                     </div>
@@ -1347,11 +1347,11 @@ const ListCompanies = () => {
 
         {/* Intacct Connection Modal(Company Select Modal) */}
         {intacctCompanyModal && (
-          <Modal isOpen={true} onClose={() => handleIntacctClear()} width='800px'>
+          <Modal isOpen={true} onClose={() => handleIntacctClear()}>
             <ModalTitle>
               <div className='flex flex-col px-4 py-3'>
                 <Typography type='h5' className='!font-bold'>
-                  Connect to Sage Intacct
+                  Connect
                 </Typography>
               </div>
 
@@ -1362,17 +1362,17 @@ const ListCompanies = () => {
 
             <ModalContent>
               <div className='m-3 flex flex-row justify-center'>
-                <div className='mb-2 mr-6  flex h-full w-full max-w-[500px] flex-col items-center rounded'>
-                  <div className='w-full'>
-                    <span className='text-[35px]'>Connecting to Intacct Sage</span>
+                <div className='mb-2 flex h-full w-full max-w-[500px] flex-col items-center rounded'>
+                  <div className='w-full flex items-center justify-center'>
+                    <span className='text-[30px]'>Connecting to Sage Intacct </span>
                   </div>
-                  <div className='ml-4 flex w-full items-center justify-start'>
-                    <span className='text-[15px]'>It will take a few moments.Please do not close window.</span>
+                  <div className='ml-4 flex w-full items-center justify-center'>
+                    <span className='text-[15px]'>It will take a while. Please do not close this window.</span>
                   </div>
-                  <div className='my-4 w-[50%]'>
-                    <span className='font-medium'>Please Select Company</span>
+                  <div className='my-4 w-full flex justify-center items-center'>
+                    <span className='font-medium'>Company Selection</span>
                   </div>
-                  <div className='mb-2 w-[65%] overflow-visible'>
+                  <div className='mb-2 w-[65%] overflow-visible flex justify-center items-center'>
                     <Select
                       id='Company_dropdown'
                       className='!overflow-visible'
@@ -1390,7 +1390,7 @@ const ListCompanies = () => {
                     />
                   </div>
                   {entityVisiable && (
-                    <div className='mb-4 mt-4 w-[65%] overflow-visible'>
+                    <div className='mb-4 mt-4 w-[65%] overflow-visible flex justify-center items-center'>
                       <Select
                         id='Company_child_dropdown'
                         className='!overflow-visible'
@@ -1420,11 +1420,11 @@ const ListCompanies = () => {
                           <div className='mx-2 animate-spin '>
                             <SpinnerIcon bgColor='#FFF' />
                           </div>
-                          <div className='items-center'>CONNECT TO SAGE INTACCT</div>
+                          <div className='items-center'>CONNECT</div>
                         </div>
                       ) : (
                         <Typography type='h6' className='!font-bold'>
-                          CONNECT TO SAGE INTACCT
+                          CONNECT
                         </Typography>
                       )}
                     </div>
