@@ -49,6 +49,7 @@ import { convertStringsDateToUTC } from '@/utils'
 import { billStatusEditable, getPDFUrl, getTimeDifference, initialBillPostingFilterFormFields } from '@/utils/billposting'
 import { useSession } from 'next-auth/react'
 import ColumnFilterOverview from '../ColumnFilterOverview'
+import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
 
 const ListBillPosting = ({ statusOptions }: any) => {
   const { data: session } = useSession()
@@ -1247,7 +1248,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
         VendorName: <Typography className='!text-sm text-darkCharcoal'>{d.VendorName ? d.VendorName : ''}</Typography>,
         StatusName: <Typography className='!text-sm text-darkCharcoal'>{d.StatusName}</Typography>,
         Amount: (
-          <Typography className='!text-sm !font-bold text-darkCharcoal'>{`${d?.Amount ? `$${parseFloat(d?.Amount).toFixed(2) ?? '0.00'}` : '$0.00'}`}</Typography>
+          <Typography className='!text-sm !font-bold text-darkCharcoal'>{`${d?.Amount ? `$${formatCurrency(d?.Amount)}` : '$0.00'}`}</Typography>
         ),
         Assignee: (
           <>
@@ -1487,7 +1488,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
         VendorName: <Typography className='!text-sm text-darkCharcoal'>{d.VendorName ?? ''}</Typography>,
         BillStatus: <Typography className='!text-sm text-darkCharcoal'>{d.Status ?? ''}</Typography>,
         Amount: (
-          <Typography className='!text-sm !font-bold text-darkCharcoal'>{`${d?.Amount ? `$${parseFloat(d?.Amount).toFixed(2) ?? '0.00'}` : '$0.00'}`}</Typography>
+          <Typography className='!text-sm !font-bold text-darkCharcoal'>{`${d?.Amount ? `$${formatCurrency(d?.Amount)}` : '$0.00'}`}</Typography>
         ),
         LastUpdatedOn: (
           <Typography className='!text-sm text-darkCharcoal'>

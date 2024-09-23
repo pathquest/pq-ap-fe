@@ -8,7 +8,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Loader, Typography } from 'pq-ap-lib'
 import React, { useEffect, useState } from 'react'
-import ProcessTypeDashboardFilter from '../modal/ProcessTypeDashboardFilter'
+import ProcessTypeDashboardFilter, { processOptions } from '../modal/ProcessTypeDashboardFilter'
 import { setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
 
@@ -36,12 +36,11 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
       "November", "December"
     ];
     const monthIndex = parseInt(dateString.split('/')[0], 10) - 1; // Extract month and convert to zero-based index
-    const [month, year] = dateString.split('/');
+
     // const monthIndex = parseInt(month, 10) - 1;
     const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
   
-    if (monthIndex === currentMonth && parseInt(year, 10) === currentYear) {
+    if (monthIndex === currentMonth) {
       return "This month";
     }
 
@@ -53,9 +52,9 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
     setIsLoading(true)
     const params = {
       CompanyIds: [CompanyId],
-      LocationIds: newFilterFields?.LocationIds.length != 0 ? newFilterFields?.LocationIds.map(Number) : null,
+      LocationIds: newFilterFields?.LocationIds.length != 0 ? newFilterFields?.LocationIds.length === LocationOption.length ? null : newFilterFields?.LocationIds.map(Number) : null,
       Date: newFilterFields?.Date ? convertStringsDateToUTC(formatDateByMonthYear(newFilterFields.Date)) : '',
-      ProcessType: newFilterFields?.ProcessType ? newFilterFields.ProcessType : []
+      ProcessType: newFilterFields?.ProcessType.length != 0 ? newFilterFields?.ProcessType.length === processOptions.length ? ["1", "2"] : newFilterFields.ProcessType  : ["1", "2"]
     }
     performApiAction(dispatch, getSummary, params, (responseData: any) => {
       setSummaryData(responseData)

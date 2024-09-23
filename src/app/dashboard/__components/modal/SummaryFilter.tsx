@@ -6,11 +6,11 @@ import React, { useEffect, useRef, useState } from 'react';
 
 export const processOptions = [
     {
-        label: 'Account Payable',
+        label: 'Accounts Payable',
         value: '1',
     },
     {
-        label: 'Account Adjustment',
+        label: 'Accounts Adjustment',
         value: '2',
     }
 ]
