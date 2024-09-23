@@ -406,9 +406,9 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
         let apProviderTypeText
 
         if (nestedData?.APProviderType === 1) {
-            apProviderTypeText = 'Account Payable'
+            apProviderTypeText = 'Accounts Payable'
         } else if (nestedData?.APProviderType === 2) {
-            apProviderTypeText = 'Account Adjustment'
+            apProviderTypeText = 'Accounts Adjustment'
         } else {
             apProviderTypeText = 'Others'
         }
@@ -496,7 +496,9 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
             Status: <StatusIndicator status={nestedData.Status} />,
             Amount: (
                 <Typography className='!pr-[25px] !text-sm !font-bold text-darkCharcoal'>
-                    ${nestedData?.Amount ? formatCurrency(nestedData.Amount) : "0.00"}
+                    ${nestedData?.Amount !== null && nestedData?.Amount !== undefined
+                        ? Math.abs(parseFloat(nestedData.Amount)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                        : "0.00"}
                 </Typography>
             ),
             actions: (

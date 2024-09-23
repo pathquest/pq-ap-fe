@@ -77,6 +77,8 @@ const EditBillPosting = ({ processtype }: any) => {
   const [hasFormFieldErrors, setHasFormFieldErrors] = useState<{ [x: string]: boolean }>({})
   const [hasFormFieldLibraryErrors, setHasFormFieldLibraryErrors] = useState<{ [x: string]: boolean }>({})
 
+  const [checkFormFieldErrors, setCheckFormFieldErrors] = useState<{ [x: string]: boolean }>({})
+  
   const [generateFormFieldsErrorObj, setGenerateFormFieldsErrorObj] = useState<any>([])
   const [generateLinetItemFieldsErrorObj, setGenerateLinetItemFieldsErrorObj] = useState<any>([])
 
@@ -252,6 +254,9 @@ const EditBillPosting = ({ processtype }: any) => {
       await setGenerateLinetItemFieldsErrorObj(generateLinetItemFieldsErrorObj)
 
       await setFormFields(generateFormFields)
+
+      await setCheckFormFieldErrors(generateFormFieldsErrorObj)
+
       await setHasFormFieldErrors(generateFormFieldsErrorObj)
       await setHasFormFieldLibraryErrors(generateFormFieldsErrorObj)
 
@@ -859,7 +864,7 @@ const EditBillPosting = ({ processtype }: any) => {
 
   const setFormValues = async (key: string, value: string | number) => {
     if (key === 'date') {
-      if (formFields.hasOwnProperty('term') && formFields.term) {
+      if (checkFormFieldErrors.hasOwnProperty('term') && formFields.term) {
         const filterTerm = defaultTermOptions?.find((t: any) => t.Id === formFields.term)
         let formattedDueDateCalculated = ''
 
@@ -876,25 +881,25 @@ const EditBillPosting = ({ processtype }: any) => {
         await setFormFields({
           ...formFields,
           [key]: value,
-          ...(formFields.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
           duedate: formattedDueDateCalculated,
         })
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
-          ...(formFields.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
           duedate: formattedDueDateCalculated ? true : false,
         })
       } else {
         await setFormFields({
           ...formFields,
           [key]: value,
-          ...(formFields.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
         })
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
-          ...(formFields.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
         })
       }
       return
@@ -948,15 +953,15 @@ const EditBillPosting = ({ processtype }: any) => {
       await setFormFields({
         ...formFields,
         [key]: value,
-        ...(formFields.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
-        ...(formFields.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
-        ...(formFields.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
+        ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
       })
       await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
-        ...(formFields.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
-        ...(formFields.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
-        ...(formFields.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
+        ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
       })
       await setLineItemsFieldsData(newLineItemsObj)
       await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
