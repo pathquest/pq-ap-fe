@@ -187,17 +187,17 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                 })
                 .filter(Boolean) ?? []
 
-                const params = {
-                    PageNumber: 1,
-                    PageSize: 100,
-                    Source: filterFormFields?.fh_source ? filterFormFields?.fh_source : [],
-                    UserIds: filterFormFields?.fh_received_uploaded ? filterFormFields?.fh_received_uploaded : [],
-                    Process: filterFormFields?.fh_process ? filterFormFields?.fh_process : processOptions.map((option: any) => option.value),
-                    BillNo: billNumbersSelected ? billNumbersSelected : billNumberOptions.map((option: any) => option.label),
-                    LocationIds: filterFormFields.fh_locations ? filterFormFields.fh_locations.map((id: any) => id.toString()) : locationOptions.map((option: any) => option.value.toString()),
-                    StartDate: dateRangeVal[0] ? convertStringsDateToUTC(dateRangeVal[0]?.trim()) : null,
-                    EndDate: dateRangeVal[1] ? convertStringsDateToUTC(dateRangeVal[1]?.trim()) : null,
-                };
+        const params = {
+            PageNumber: 1,
+            PageSize: 100,
+            Source: filterFormFields?.fh_source ? filterFormFields?.fh_source : [],
+            UserIds: filterFormFields?.fh_received_uploaded ? filterFormFields?.fh_received_uploaded : [],
+            Process: filterFormFields?.fh_process ? filterFormFields?.fh_process : processOptions.map((option: any) => option.value),
+            BillNo: billNumbersSelected ? billNumbersSelected : billNumberOptions.map((option: any) => option.label),
+            LocationIds: filterFormFields.fh_locations ? filterFormFields.fh_locations.map((id: any) => id.toString()) : locationOptions.map((option: any) => option.value.toString()),
+            StartDate: dateRangeVal[0] ? convertStringsDateToUTC(dateRangeVal[0]?.trim()) : null,
+            EndDate: dateRangeVal[1] ? convertStringsDateToUTC(dateRangeVal[1]?.trim()) : null,
+        };
 
         try {
             setIsLoading(true)
@@ -498,14 +498,16 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
             Status: <StatusIndicator status={nestedData.Status} />,
             Amount: (
                 <Typography className='!pr-[25px] !text-sm !font-bold text-darkCharcoal'>
-                    ${nestedData?.Amount ? formatCurrency(nestedData.Amount) : "0.00"}
+                    ${nestedData?.Amount !== null && nestedData?.Amount !== undefined
+                        ? Math.abs(parseFloat(nestedData.Amount)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                        : "0.00"}
                 </Typography>
             ),
             actions: (
                 <div className='relative flex h-full justify-end'>
                     {nestedData?.IsShowOptions && (
                         <div className='flex justify-center items-center'>
-                            {isCreate &&<BasicTooltip position='left' content='Create' className='!z-[2] !font-proxima !text-sm'>
+                            {isCreate && <BasicTooltip position='left' content='Create' className='!z-[2] !font-proxima !text-sm'>
                                 <div className='cursor-pointer' onClick={() => handleCreateFile(nestedData?.DocumentsId)}>
                                     <FilesAddIcon />
                                 </div>
