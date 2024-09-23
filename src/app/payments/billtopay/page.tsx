@@ -61,8 +61,9 @@ const PaymentsContent: React.FC = () => {
   const pathname = usePathname()
 
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
-  const isPaymentView = getModulePermissions(processPermissionsMatrix, "Payments") ?? {}
-  const isBillsToPayEdit = isPaymentView["Bills to pay"]?.Edit ?? false;
+  const isPaymentPermission = getModulePermissions(processPermissionsMatrix, "Payments") ?? {}
+  const isBillsToPayEdit = isPaymentPermission["Bills to pay"]?.Edit ?? false;
+  const isBillsToPayView = isPaymentPermission["Bills to pay"]?.View ?? false;
 
   // For Dynamic Company Id & AccountingTool
   const { data: session } = useSession()
@@ -154,6 +155,12 @@ const PaymentsContent: React.FC = () => {
     PageCount: '',
     BillNumber: '',
   })
+
+  useEffect(() => {
+    if (!isBillsToPayView) {
+      router.push('/manage/companies');
+    }
+  }, [isBillsToPayView]);
 
   useEffect(() => {
     dispatch(setSearchSelectedModule('4'))

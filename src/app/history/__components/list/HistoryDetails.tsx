@@ -21,7 +21,7 @@ import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import HistoryFilterDetails from '../HistoryFilterDetails'
-import { hasCreatePermission, hasImportPermission } from '@/components/Common/Functions/ProcessPermission'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
 
 export const nestedColumns: Column[] = [
     {
@@ -82,7 +82,6 @@ export const nestedColumns: Column[] = [
     },
 ]
 
-
 const DropboxIcon = lazy(() => import('@/assets/Icons/DropboxIcon'))
 const EmailIcon = lazy(() => import('@/assets/Icons/EmailIcon'))
 const FileUploadIcon = lazy(() => import('@/assets/Icons/FileUploadIcon'))
@@ -114,8 +113,8 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
     const dispatch = useAppDispatch()
     const router = useRouter()
     const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
-    const isCreate = hasCreatePermission(processPermissionsMatrix, "Files")
-    const isImport = hasImportPermission(processPermissionsMatrix, "Files")
+    const isFilesPermission = getModulePermissions(processPermissionsMatrix, "Files") ?? {}
+    const isFilesCreate = isFilesPermission?.Create ?? false;
 
     const { data: session } = useSession()
     const CompanyId = session?.user?.CompanyId
@@ -126,7 +125,6 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
     const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
     const { selectedCompany } = useAppSelector((state) => state.user)
     const AccountingTool = selectedCompany?.accountingTool
-
 
     const [isLoading, setIsLoading] = useState<boolean>(false)
 
@@ -187,17 +185,17 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                 })
                 .filter(Boolean) ?? []
 
-                const params = {
-                    PageNumber: 1,
-                    PageSize: 100,
-                    Source: filterFormFields?.fh_source ? filterFormFields?.fh_source : [],
-                    UserIds: filterFormFields?.fh_received_uploaded ? filterFormFields?.fh_received_uploaded : [],
-                    Process: filterFormFields?.fh_process ? filterFormFields?.fh_process : processOptions.map((option: any) => option.value),
-                    BillNo: billNumbersSelected ? billNumbersSelected : billNumberOptions.map((option: any) => option.label),
-                    LocationIds: filterFormFields.fh_locations ? filterFormFields.fh_locations.map((id: any) => id.toString()) : locationOptions.map((option: any) => option.value.toString()),
-                    StartDate: dateRangeVal[0] ? convertStringsDateToUTC(dateRangeVal[0]?.trim()) : null,
-                    EndDate: dateRangeVal[1] ? convertStringsDateToUTC(dateRangeVal[1]?.trim()) : null,
-                };
+        const params = {
+            PageNumber: 1,
+            PageSize: 100,
+            Source: filterFormFields?.fh_source ? filterFormFields?.fh_source : [],
+            UserIds: filterFormFields?.fh_received_uploaded ? filterFormFields?.fh_received_uploaded : [],
+            Process: filterFormFields?.fh_process ? filterFormFields?.fh_process : processOptions.map((option: any) => option.value),
+            BillNo: billNumbersSelected ? billNumbersSelected : billNumberOptions.map((option: any) => option.label),
+            LocationIds: filterFormFields.fh_locations ? filterFormFields.fh_locations.map((id: any) => id.toString()) : locationOptions.map((option: any) => option.value.toString()),
+            StartDate: dateRangeVal[0] ? convertStringsDateToUTC(dateRangeVal[0]?.trim()) : null,
+            EndDate: dateRangeVal[1] ? convertStringsDateToUTC(dateRangeVal[1]?.trim()) : null,
+        };
 
         try {
             setIsLoading(true)
@@ -505,7 +503,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                 <div className='relative flex h-full justify-end'>
                     {nestedData?.IsShowOptions && (
                         <div className='flex justify-center items-center'>
-                            {isCreate &&<BasicTooltip position='left' content='Create' className='!z-[2] !font-proxima !text-sm'>
+                            {isFilesCreate && <BasicTooltip position='left' content='Create' className='!z-[2] !font-proxima !text-sm'>
                                 <div className='cursor-pointer' onClick={() => handleCreateFile(nestedData?.DocumentsId)}>
                                     <FilesAddIcon />
                                 </div>

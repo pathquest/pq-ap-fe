@@ -3,6 +3,7 @@ import { performApiAction } from '@/components/Common/Functions/PerformApiAction
 import { useCompanyContext } from '@/context/companyContext'
 import { useAppDispatch } from '@/store/configureStore'
 import { roleGetById, saveRole } from '@/store/features/role/roleSlice'
+import { useSession } from 'next-auth/react'
 import { Button, CheckBox, Close, DataTable, Text, Toast, Typography } from 'pq-ap-lib'
 import { useEffect, useState } from 'react'
 
@@ -14,9 +15,11 @@ interface DrawerProps {
 }
 
 const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId, DuplicateId }) => {
-  const { CompanyId } = useCompanyContext()
-  const dispatch = useAppDispatch()
+  // For Dynamic Company Id & AccountingTool
+  const { data: session } = useSession()
+  const CompanyId = Number(session?.user?.CompanyId) ?? 0
 
+  const dispatch = useAppDispatch()
   const [roleName, setRoleName] = useState<string>('')
   const [roleNameError, setRoleNameError] = useState<boolean>(false)
 
@@ -264,7 +267,7 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId, DuplicateI
           RoleName: roleName,
           RoleDescription: roleDescription,
           IsStandard: true,
-          CompanyId: Number(CompanyId),
+          CompanyId: CompanyId,
           FromRoleId: DuplicateId ?? 0,
         },
         rolePermission: {

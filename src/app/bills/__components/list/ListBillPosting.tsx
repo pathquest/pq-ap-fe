@@ -83,6 +83,13 @@ const ListBillPosting = ({ statusOptions }: any) => {
   const isBillsOverviewSync = isBillsView["Bills Overview"]?.Sync ?? false;
   const isBillsOverviewEdit = isBillsView["Bills Overview"]?.Edit ?? false;
 
+
+  useEffect(() => {
+    if (!isAccountPayableView && !isAccountAdjustmentView && !isBillsOverviewView) {
+      router.push('/manage/companies');
+    }
+  }, [isAccountPayableView, isAccountAdjustmentView, isBillsOverviewView]);
+
   const accountOptions = [
     {
       label: 'Accounts Payable',
