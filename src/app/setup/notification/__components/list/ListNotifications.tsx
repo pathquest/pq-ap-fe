@@ -335,7 +335,7 @@ const ListNotification: React.FC = () => {
 
     const createTriggerCheckBox = (type: any) => {
       const enabledTriggers = e.Triggers.filter((trigger: any) => !trigger[`${type}Disable`])
-      const allEnabledTriggersChecked = enabledTriggers.every((trigger: any) => trigger[type])
+      const allEnabledTriggersChecked = type == "Mobile" ? false : enabledTriggers.every((trigger: any) => trigger[type])
       const someEnabledTriggersChecked = enabledTriggers.some((trigger: any) => trigger[type])
       const allTriggersDisabled = e.Triggers.every((trigger: any) => trigger[`${type}Disable`])
 
