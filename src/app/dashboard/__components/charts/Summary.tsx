@@ -10,6 +10,7 @@ import { Loader, Typography } from 'pq-ap-lib'
 import React, { useEffect, useState } from 'react'
 import ProcessTypeDashboardFilter from '../modal/ProcessTypeDashboardFilter'
 import { setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
+import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
 
 const Summary: React.FC<any> = ({ LocationOption }) => {
   const { data: session } = useSession()
@@ -35,7 +36,16 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
       "November", "December"
     ];
     const monthIndex = parseInt(dateString.split('/')[0], 10) - 1; // Extract month and convert to zero-based index
-    return monthNames[monthIndex]; // Get month name
+    const [month, year] = dateString.split('/');
+    // const monthIndex = parseInt(month, 10) - 1;
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+  
+    if (monthIndex === currentMonth && parseInt(year, 10) === currentYear) {
+      return "This month";
+    }
+
+    return monthNames[monthIndex];
   }
 
 
@@ -63,7 +73,8 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
 
   const updatedCardData = [
     {
-      amount: `$${summaryData.TotalAmount ?? 0}`,
+      // amount: `$${summaryData.TotalAmount ?? 0}`,  
+      amount:`$${formatCurrency(summaryData.TotalAmount)}`,
       description: 'Total Posted Amount'
     },
     {
@@ -143,7 +154,7 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
       <div className='flex justify-end mx-4 hd:mx-5 2xl:mx-5 3xl:mx-5'>
         <div className='w-full py-4 hd:py-5 2xl:py-5 3xl:py-5'>
           <Typography type='h5' className='title !text-base hd:!text-lg 2xl:!text-lg 3xl:!text-lg font-proxima font-semibold tracking-[0.02em] text-darkCharcoal'>
-            Summary (This Month)
+            Summary ({getMonthNameFromDate(filterFields.Date)})
           </Typography>
         </div>
         <div className='filter_change cursor-pointer flex items-center relative my-5' onClick={handleFilterOpen}><ChartFilterIcon />

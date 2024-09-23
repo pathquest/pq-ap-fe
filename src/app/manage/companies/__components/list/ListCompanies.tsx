@@ -403,7 +403,7 @@ const ListCompanies = () => {
             Toast.error(`Invalid Credentials!`)
             setOpenIntacctModal(true)
           } else {
-            Toast.success(`Successfully Connceted`)
+            Toast.success(`Successfully Connected`)
             OpenComapnyModalIntacct()
             setIntacctComDropList(
               Data.map((item: Item) => ({
@@ -1374,7 +1374,7 @@ const ListCompanies = () => {
                   <div className='my-4 w-full flex justify-center items-center'>
                     <span className='font-medium'>Company Selection</span>
                   </div>
-                  <div className='mb-2 w-[65%] overflow-visible flex justify-center items-center'>
+                  <div className='mb-2 w-[65%] overflow-visible flex flex-col justify-center items-center'>
                     <Select
                       id='Company_dropdown'
                       className='!overflow-visible'
