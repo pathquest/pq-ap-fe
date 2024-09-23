@@ -408,9 +408,9 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
         let apProviderTypeText
 
         if (nestedData?.APProviderType === 1) {
-            apProviderTypeText = 'Account Payable'
+            apProviderTypeText = 'Accounts Payable'
         } else if (nestedData?.APProviderType === 2) {
-            apProviderTypeText = 'Account Adjustment'
+            apProviderTypeText = 'Accounts Adjustment'
         } else {
             apProviderTypeText = 'Others'
         }
