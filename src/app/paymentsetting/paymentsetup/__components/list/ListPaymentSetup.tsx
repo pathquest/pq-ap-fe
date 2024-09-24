@@ -34,6 +34,7 @@ const ListPaymentSetup: React.FC = () => {
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
   const isPaymentSetupCreate = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Payment Setup", "Create");
   const isPaymentSetupSync = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Payment Setup", "Sync");
+  const isPaymentSetupView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Payment Setup", "View");
 
   const dispatch = useAppDispatch()
   const { customerKycStatus } = useAppSelector((state) => state.paymentSetupSlice)
@@ -80,6 +81,12 @@ const ListPaymentSetup: React.FC = () => {
   const [isCheckApproveScreenOpen, setIsCheckApproveScreenOpen] = useState<boolean>(false)
   const [accountId, setAccountId] = useState<string>('')
   const [isSyncModalOpen, setIsSyncModalOpen] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (!isPaymentSetupView) {
+      router.push('/manage/companies');
+    }
+  }, [isPaymentSetupView]);
 
   const handleToggleChange = () => {
     if (customerKycStatus) {

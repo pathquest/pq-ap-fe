@@ -41,6 +41,7 @@ const ListAPFieldMapping: React.FC = () => {
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
   const isAPFieldMappingEdit = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "AP Field Mapping", "Edit");
   const isAPFieldMappingSync = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "AP Field Mapping", "Sync");
+  const isAPFieldMappingView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "AP Field Mapping", "View");
   const router = useRouter()
   const IsFieldMappingSet = localStorage.getItem('IsFieldMappingSet') ?? 'true'
 
@@ -66,6 +67,12 @@ const ListAPFieldMapping: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null)
   const [isLoader, setIsLoader] = useState<boolean>(false)
   const [unsavedChanges, setUnsavedChanges] = useState(false)
+
+  useEffect(() => {
+    if (!isAPFieldMappingView) {
+      router.push('/manage/companies');
+    }
+  }, [isAPFieldMappingView]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {

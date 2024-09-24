@@ -20,6 +20,7 @@ import { locationListDropdown } from '@/store/features/master/dimensionSlice'
 import { vendorDropdownList, vendorGetDropdownList } from '@/store/features/vendor/vendorSlice'
 import { Dropdown, Menu, MenuButton, MenuItem } from '@mui/joy'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Button, DataTable, Select, Toast, Typography } from 'pq-ap-lib'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -28,9 +29,11 @@ const ListAutomation: React.FC = () => {
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
   const dispatch = useAppDispatch()
+  const router = useRouter()
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
   const isAutomationEdit = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Automation", "Edit");
   const isAutomationCreate = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Automation", "Create");
+  const isAutomationView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Automation", "View");
 
   const automationOptions = [
     { label: 'All Automation Rules', value: 'AllAutomationRules' },
@@ -93,6 +96,12 @@ const ListAutomation: React.FC = () => {
       colalign: "right"
     }
   ]
+
+  useEffect(() => {
+    if (!isAutomationView) {
+      router.push('/manage/companies');
+    }
+  }, [isAutomationView]);
 
   const handleMenuChange = (actionName: string, id: number, optionalData: any, defaultCompany: any) => {
     switch (actionName) {

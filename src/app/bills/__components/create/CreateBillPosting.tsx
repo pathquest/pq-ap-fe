@@ -356,9 +356,9 @@ const CreateBillPosting = ({
               const newLineItemsFieldArray = hasLineItemFieldLibraryErrors.map((item) => {
                 return {
                   ...item,
-                  amount: isNaN(parseFloat(`${calculatedAmount}`))
-                    ? false
-                    : true,
+                  // amount: isNaN(parseFloat(`${calculatedAmount}`))
+                  //   ? false
+                  //   : true,
                 }
               })
               setHasLineItemFieldLibraryErrors(newLineItemsFieldArray)
@@ -586,27 +586,28 @@ const CreateBillPosting = ({
         await setFormFields({
           ...formFields,
           [key]: value,
-          ...(checkFormFieldErrors.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
           duedate: formattedDueDateCalculated,
         })
 
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
-          ...(checkFormFieldErrors.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value ? true : false } : {}),
           duedate: formattedDueDateCalculated ? true : false,
         })
       } else {
+        
         await setFormFields({
           ...formFields,
           [key]: value,
-          ...(checkFormFieldErrors.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
         })
 
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
-          ...(checkFormFieldErrors.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value ? true : false } : {}),
         })
       }
       return
@@ -1108,7 +1109,7 @@ const CreateBillPosting = ({
                 <div className='justify-end px-5 pb-[77px] pt-[34px]'>
                   <div className='mb-2 flex flex-row justify-end'>
                     <span className='w-[10%] text-sm font-proxima tracking-[0.02em]'>Sub Total</span>
-                    <span className='w-[15%] text-end text-sm font-bold font-proxima tracking-[0.02em]'>${Number(formattedTotalAmountValue).toFixed(2)}</span>
+                    <span className='w-[15%] text-end text-sm font-bold font-proxima tracking-[0.02em]'>${(Number(formattedTotalAmountValue).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
                   </div>
                   {AccountingTool === 3 && (
                     <div className='mb-2 flex flex-row justify-end'>
@@ -1121,8 +1122,8 @@ const CreateBillPosting = ({
                     <span className='w-[15%] text-end text-sm font-bold font-proxima tracking-[0.02em]'>
                       $
                       {formFields?.amountsare === '1'
-                        ? Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue) + parseFloat(formattedTotalTaxAmountValue))).toFixed(2)
-                        : Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue))).toFixed(2)}
+                        ? (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue) + parseFloat(formattedTotalTaxAmountValue))).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                        : (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue))).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                     </span>
                   </div>
                 </div>

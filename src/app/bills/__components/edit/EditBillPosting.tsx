@@ -78,7 +78,7 @@ const EditBillPosting = ({ processtype }: any) => {
   const [hasFormFieldLibraryErrors, setHasFormFieldLibraryErrors] = useState<{ [x: string]: boolean }>({})
 
   const [checkFormFieldErrors, setCheckFormFieldErrors] = useState<{ [x: string]: boolean }>({})
-  
+
   const [generateFormFieldsErrorObj, setGenerateFormFieldsErrorObj] = useState<any>([])
   const [generateLinetItemFieldsErrorObj, setGenerateLinetItemFieldsErrorObj] = useState<any>([])
 
@@ -880,25 +880,25 @@ const EditBillPosting = ({ processtype }: any) => {
         await setFormFields({
           ...formFields,
           [key]: value,
-          ...(checkFormFieldErrors.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
           duedate: formattedDueDateCalculated,
         })
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
-          ...(checkFormFieldErrors.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value ? true : false } : {}),
           duedate: formattedDueDateCalculated ? true : false,
         })
       } else {
         await setFormFields({
           ...formFields,
           [key]: value,
-          ...(checkFormFieldErrors.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
         })
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
-          ...(checkFormFieldErrors.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value ? true : false } : {}),
         })
       }
       return
@@ -1239,12 +1239,12 @@ const EditBillPosting = ({ processtype }: any) => {
       <div className='flex flex-col items-end px-5 pb-[77px] pt-[34px]'>
         <div className='mb-2 flex w-60 flex-row justify-between'>
           <span className='text-sm font-proxima tracking-[0.02em]'>Sub Total</span>
-          <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${Number(formattedTotalAmountValue).toFixed(2)}</span>
+          <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${(Number(formattedTotalAmountValue).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
         </div>
         {AccountingTool === 3 && (
           <div className='mb-2 flex w-60 flex-row justify-between'>
             <span className='text-sm font-proxima tracking-[0.02em]'>Tax Total</span>
-            <span className='w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${Number(formattedTotalTaxAmountValue).toFixed(2)}</span>
+            <span className='w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${(Number(formattedTotalTaxAmountValue).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
           </div>
         )}
         <div className='mb-2 flex w-60 flex-row justify-between'>
@@ -1252,8 +1252,8 @@ const EditBillPosting = ({ processtype }: any) => {
           <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>
             $
             {formFields?.amountsare === '1'
-              ? Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue) + parseFloat(formattedTotalTaxAmountValue))).toFixed(2)
-              : Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue))).toFixed(2)}
+              ? (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue) + parseFloat(formattedTotalTaxAmountValue))).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              : (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue))).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
           </span>
         </div>
       </div>

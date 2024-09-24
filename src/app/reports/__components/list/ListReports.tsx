@@ -18,23 +18,32 @@ import { locationListDropdown } from '@/store/features/master/dimensionSlice'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import { getLocationList, termDropdown, vendorDropdown } from '@/store/features/bills/billSlice'
 import { useSession } from 'next-auth/react'
-import { getModulePermissions, hasImportPermission, hasViewPermission } from '@/components/Common/Functions/ProcessPermission'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
+import { useRouter } from 'next/navigation'
 
 const ListReports = () => {
+  const router = useRouter()
   const dispatch = useAppDispatch()
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
   const AccountingTool = session?.user?.AccountingTool
 
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
-  const isReportView = getModulePermissions(processPermissionsMatrix, "Reports") ?? {}
+  const isReportPermission = getModulePermissions(processPermissionsMatrix, "Reports") ?? {}
 
-  const isAPLedgerImport = isReportView["AP Ledger"]?.Import ?? false;
-  const isBillAnalysisImport = isReportView["Bill Analysis"]?.Import ?? false;
-  const isBillPaymentsImport = isReportView["Bill Payments"]?.Import ?? false;
-  const isUnpaidBillsImport = isReportView["Unpaid Bills"]?.Import ?? false;
-  const isVendorAgingDetailedImport = isReportView["Vendor Aging Detailed"]?.Import ?? false;
-  const isVendorAgingSummaryImport = isReportView["Vendor Aging Summary"]?.Import ?? false;
+  const isAPLedgerView = isReportPermission["AP Ledger"]?.View ?? false;
+  const isBillAnalysisView = isReportPermission["Bill Analysis"]?.View ?? false;
+  const isBillPaymentsView = isReportPermission["Bill Payments"]?.View ?? false;
+  const isUnpaidBillsView = isReportPermission["Unpaid Bills"]?.View ?? false;
+  const isVendorAgingDetailedView = isReportPermission["Vendor Aging Detailed"]?.View ?? false;
+  const isVendorAgingSummaryView = isReportPermission["Vendor Aging Summary"]?.View ?? false;
+
+  const isAPLedgerImport = isReportPermission["AP Ledger"]?.Import ?? false;
+  const isBillAnalysisImport = isReportPermission["Bill Analysis"]?.Import ?? false;
+  const isBillPaymentsImport = isReportPermission["Bill Payments"]?.Import ?? false;
+  const isUnpaidBillsImport = isReportPermission["Unpaid Bills"]?.Import ?? false;
+  const isVendorAgingDetailedImport = isReportPermission["Vendor Aging Detailed"]?.Import ?? false;
+  const isVendorAgingSummaryImport = isReportPermission["Vendor Aging Summary"]?.Import ?? false;
 
   const dropdownExportRef = useRef<HTMLDivElement>(null)
   const API_REPORTS = process.env.API_REPORTS
@@ -56,6 +65,12 @@ const ListReports = () => {
   const [locationOption, setLocationOption] = useState<any[]>([])
   const [termOption, setTermOption] = useState<any[]>([])
   const [isDetailsView, setIsDetailsView] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (!isAPLedgerView && !isBillAnalysisView && !isBillPaymentsView && !isUnpaidBillsView && !isVendorAgingDetailedView && !isVendorAgingSummaryView) {
+      router.push('/manage/companies');
+    }
+  }, [isAPLedgerView, isBillAnalysisView, isBillPaymentsView, isUnpaidBillsView, isVendorAgingDetailedView, isVendorAgingSummaryView]);
 
   const handleOutsideClick = (event: MouseEvent) => {
     if (dropdownExportRef.current && !dropdownExportRef.current.contains(event.target as Node)) {

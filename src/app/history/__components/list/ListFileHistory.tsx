@@ -21,7 +21,7 @@ import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import HistoryDetails from './HistoryDetails'
-import { hasCreatePermission, hasImportPermission } from '@/components/Common/Functions/ProcessPermission'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
 
 export const nestedColumns: Column[] = [
   {
@@ -124,9 +124,10 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
   const dispatch = useAppDispatch()
   const router = useRouter()
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
-  const isCreate = hasCreatePermission(processPermissionsMatrix, "Files")
-  const isImport = hasImportPermission(processPermissionsMatrix, "Files")
-  
+  const isFilesPermission = getModulePermissions(processPermissionsMatrix, "Files") ?? {}
+  const isFilesView = isFilesPermission?.View ?? false;
+  const isFilesImport = isFilesPermission?.Import ?? false;
+
   const { data: session } = useSession()
   const CompanyId = session?.user?.CompanyId
   const [isFilterVisible, setIsFilterVisible] = useState(false)
@@ -139,8 +140,8 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
   const [userdetails, setUserDetails] = useState<any>({
     userId: 0,
     userName: '',
-    uploadedDate:'',
-    providerType:0
+    uploadedDate: '',
+    providerType: 0
   })
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -184,6 +185,12 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
   const [selectedBillNumber, setSelectedBillNumber] = useState<string>('')
 
   const [currentWindow, setCurrentWindow] = useState<any>(null)
+
+  useEffect(() => {
+    if (!isFilesView) {
+      router.push('/manage/companies');
+    }
+  }, [isFilesView]);
 
   const fetchHistoryData = async (pageIndex?: number) => {
     if (pageIndex === 1) {
@@ -331,8 +338,8 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
         setUserDetails({
           userId: d.UserId,
           userName: d.UserName,
-          uploadedDate:formattedUploadedDate,
-          ProviderType:d.ProviderType
+          uploadedDate: formattedUploadedDate,
+          ProviderType: d.ProviderType
         })
       }}>{d.UserName}</label>,
       ProviderTypeName: (
