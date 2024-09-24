@@ -91,14 +91,15 @@ const ViewBillPosting = () => {
 
   const [imgUrl, setImgUrl] = useState<string>('')
   const [pdfUrl, setPDFUrl] = useState<string>('')
-  const [isVisibleLeftSidebar, setIsVisibleLeftSidebar] = useState<boolean>(isVisibleSidebar)
 
+  const [isVisibleLeftSidebar, setIsVisibleLeftSidebar] = useState<boolean>(isVisibleSidebar)
   const [selectedBillItems, setSelectedBillItems] = useState<any>([])
   const [activeBill, setActiveBill] = useState(id)
 
   const [numberOfPages, setNumberOfPages] = useState<number | null>(null)
 
   const [fileBlob, setFileBlob] = useState<any>('')
+
   const [isPdfLoading, setIsPdfLoading] = useState<boolean>(false)
   const [PDFUrlModal, setPDFModalUrl] = useState<any>('')
 
@@ -154,7 +155,7 @@ const ViewBillPosting = () => {
           termOptions,
           accountOptions
         )
-        
+
         setLineItemsFieldsData(newLineItems)
         setFormFields(updatedDataObj)
         setIsFormFieldsChanged(true)
@@ -767,14 +768,27 @@ const ViewBillPosting = () => {
                                                 FileName: (
                                                   <div
                                                     className='flex cursor-pointer items-center gap-1'
-                                                    onClick={() => {
-                                                      handleFileOpen(d.FilePath, d.FileName)
+                                                    onClick={async () => {
+                                                      await getPDFUrl(
+                                                        d.FilePath,
+                                                        d.FileName,
+                                                        setPDFModalUrl,
+                                                        setImgUrl,
+                                                        (fileBlob: Blob) => {
+                                                          openInNewWindow(fileBlob, d.FilePath);
+                                                        },
+                                                        () => {},
+                                                        isNewWindowUpdate,
+                                                        currentWindow,
+                                                        openInNewWindow,
+                                                        setIsNewWindowUpdate
+                                                      );
                                                       setIsFileRecord({
                                                         FileName: d.FileName,
                                                         PageCount: d.PageCount,
                                                         BillNumber: value?.BillNumber,
                                                       })
-                                                      setOpenAttachFile(false)
+                                                      // setOpenAttachFile(false)
                                                     }}
                                                   >
                                                     <GetFileIcon FileName={d.FileName} />

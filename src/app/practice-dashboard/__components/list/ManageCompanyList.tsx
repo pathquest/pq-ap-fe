@@ -306,7 +306,7 @@ function ManageCompanyList({ orgIdValue, session, selectedAccountingTool, select
             Toast.error(`Invalid Credentials!`)
             setOpenIntacctModal(true)
           } else {
-            Toast.success(`Successfully Connceted`)
+            Toast.success(`Successfully Connected`)
             OpenComapnyModalIntacct()
             setIntacctComDropList(
               Data.map((item: Item) => ({

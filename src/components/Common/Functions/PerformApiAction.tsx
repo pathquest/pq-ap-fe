@@ -21,7 +21,7 @@ export const performApiAction = async (
       } else {
         const errorMessage = dataMessage ?? 'Something went wrong!'
         doNotShowToast ? undefined : Toast.error('Error', `${errorMessage}`)
-        onFailure(errorMessage)
+        onFailure(errorMessage, payload)
       }
     } else {
       doNotShowToast ? undefined : Toast.error(`${payload?.status} : ${payload?.statusText}`)

@@ -17,6 +17,7 @@ import { Badge, Button, DataTable, Loader, SearchBar, Switch, Toast, Tooltip, Ty
 import React, { useEffect, useRef, useState } from 'react';
 import GLAccount from "../drawer/GLAccountDrawer";
 import { hasSpecificPermission } from "@/components/Common/Functions/ProcessPermission";
+import { useRouter } from "next/navigation";
 
 interface AccountListProps {
   name: string
@@ -30,8 +31,10 @@ const ListGLAccount: React.FC = () => {
   const CompanyId = Number(session?.user?.CompanyId)
   const accountingTool = Number(session?.user?.AccountingTool)
   const dispatch = useAppDispatch()
+  const router = useRouter();
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
   const isGLAccountSync = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "GL Account", "Sync");
+  const isGLAccountView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "GL Account", "View");
 
   const [accountList, setAccountList] = useState<AccountListProps[]>([])
   const [isSyncModalOpen, setIsSyncModalOpen] = useState<boolean>(false)
@@ -107,6 +110,12 @@ const ListGLAccount: React.FC = () => {
       colalign: "right",
     },
   ].filter(Boolean)
+
+  useEffect(() => {
+    if (!isGLAccountView) {
+      router.push('/manage/companies');
+    }
+  }, [isGLAccountView]);
 
   useEffect(() => {
     setSearchValue('')

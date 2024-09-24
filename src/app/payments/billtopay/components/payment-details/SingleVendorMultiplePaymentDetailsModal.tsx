@@ -8,6 +8,7 @@ import { BasicTooltip, Button, Close, Datepicker, Modal, ModalTitle, Radio, Sele
 import React, { useEffect, useState } from 'react'
 import SingleVendorPartialPayModal from '../modals/SingleVendorPartialPayModal'
 import ReauthenticateModal from './ReauthenticateModal'
+import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 
 interface ActionsProps {
   onOpen: boolean
@@ -65,6 +66,10 @@ const SingleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
   const [previousCreditAmount, setPreviousCreditAmount] = useState<number>(0);
 
   const [isPaymentButtonDisabled, setIsPaymentButtonDisabled] = useState<boolean>(false)
+  const [isPaymentLoading, setIsPaymentLoading] = useState<boolean>(false)
+
+  const [isMergeBillsSelected, setMergeBillsSelected] = useState<boolean>(true)
+  const [isSingleBillSelected, setSingleBillSelected] = useState<boolean>(false)
 
   const handleResetAll = () => {
     setIsCreditAvailed(true)
@@ -92,6 +97,7 @@ const SingleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
     setPaymentMethodOption([])
     setBankMethodOption([])
     setIsPaymentButtonDisabled(false)
+    setIsPaymentLoading(false)
   }
 
   const handleCloseReauthenticateModal = () => {
@@ -305,6 +311,7 @@ const SingleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
 
   // API for send bill for pay
   const sendBillForPay = async () => {
+    setIsPaymentLoading(true)
     let creditsList: any = [];
 
     if (isFullPaymentSelected) {
@@ -438,22 +445,55 @@ const SingleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
       return automaticDetail
     }
 
-    const params = {
+    const params: any = {
       PaymentMasterList: isFullPaymentSelected ? calculateAutomaticDetail() : mainBillDetail,
-      PaymentGenrationType: 1,
+      PaymentGenrationType: isSingleBillSelected ? 1 : 2,
       PaymentDate: format(parse(selectedBillDate.trim(), 'MM/dd/yyyy', new Date()), "yyyy-MM-dd'T'HH:mm:ss"),
     }
 
-    performApiAction(dispatch, sendForPay, params, () => {
-      Toast.success(`Bill has been sent for approval!`)
-      onDataFetch()
-      clearLocalStorage()
-    })
+    try {
+      const { payload, meta } = await dispatch(sendForPay(params))
+      const dataMessage = payload?.Message
+      if (meta?.requestStatus === 'fulfilled') {
+        if (payload?.ResponseStatus === 'Success') {
+          Toast.success(`Bills has been sent for approval!`)
+          onDataFetch()
+          handleCloseModal()
+          setIsPaymentLoading(false)
+        } else {
+          const error = payload?.ErrorData?.ErrorDetail;
+          if (error != null) {
+            const errorBillNumber = error?.BillNumbers ?? [];
+            const formattedBillNumbers = errorBillNumber.join(', ');
+
+            Toast.error(`Payment already initiated from accounting tool for bill number(s) ${formattedBillNumbers}. Kindly check before proceeding.`, "", 60000)
+          } else {
+            Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
+          }
+          setIsPaymentLoading(false)
+        }
+      } else {
+        Toast.error(`${payload?.status} : ${payload?.statusText}`)
+        setIsPaymentLoading(false)
+      }
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   const isBankDropdownDisabled = (method: number) => {
     return method === 1 || method === 4 || method === 5;
   };
+
+  const handleMergeBillsSelected = () => {
+    setMergeBillsSelected(true)
+    setSingleBillSelected(false)
+  }
+
+  const handleSingleBillSelected = () => {
+    setMergeBillsSelected(false)
+    setSingleBillSelected(true)
+  }
 
   return (
     <div className='relative h-full w-full'>
@@ -574,22 +614,7 @@ const SingleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
                   </span>
                 </div>
               </div>
-              <div className={`${isCreditAvailed ? 'mt-5' : 'mt-0'} !pointer-events-none relative !opacity-80 select-none`}>
-                <Text
-                  label='Bill Amount'
-                  id='amount-to-pay'
-                  placeholder='Enter Amount'
-                  className='pl-3 '
-                  value={totalAmountToPay}
-                  getValue={() => { }}
-                  getError={() => { }}
-                  readOnly
-                  validate
-                  disabled
-                />
-                <span className={`absolute text-sm left-0 ${isCreditAvailed ? 'top-[33px]' : 'top-[34px]'} text-slatyGrey`}>$</span>
-              </div>
-              <div className='mt-5 mb-[30px]'>
+              <div className={`${isCreditAvailed ? 'mt-5' : 'mt-0'}`}>
                 <label className='text-sm font-bold text-darkCharcoal tracking-[0.02em] font-proxima'>AMOUNT TO PAY</label>
                 <div className={`flex mt-5`}>
                   <Radio
@@ -612,11 +637,51 @@ const SingleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
                   </div>
                 </div>
               </div>
+              <div className='!pointer-events-none relative !opacity-80 select-none mt-5'>
+                <Text
+                  label='Bill Amount'
+                  id='amount-to-pay'
+                  placeholder='Enter Amount'
+                  className='pl-3 '
+                  value={totalAmountToPay}
+                  getValue={() => { }}
+                  getError={() => { }}
+                  readOnly
+                  validate
+                  disabled
+                />
+                <span className={`absolute text-sm left-0 ${isCreditAvailed ? 'top-[33px]' : 'top-[34px]'} text-slatyGrey`}>$</span>
+              </div>
+              <div className='mt-5 mb-[30px]'>
+                <label htmlFor='amount-to-pay' className='font-proxima tracking-[0.02em] text-sm font-bold uppercase text-darkCharcoal'>
+                  Payment Request Type
+                </label>
+                <div className='flex py-5'>
+                  <Radio
+                    className='text-sm text-darkCharcoal font-proxima'
+                    checked={isMergeBillsSelected}
+                    onChange={handleMergeBillsSelected}
+                    id='merge-bills'
+                    label='Merge Bills by Vendor'
+                  />
+                  <Radio
+                    className='text-sm text-darkCharcoal font-proxima'
+                    checked={isSingleBillSelected}
+                    onChange={handleSingleBillSelected}
+                    id='single-bill'
+                    label='Single Bills'
+                  />
+                </div>
+              </div>
 
-              <Button variant='btn-primary' className={`font-proxima font-semibold laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base mb-4 flex items-center justify-center rounded-full tracking-[0.02em] ${isPaymentButtonDisabled ? 'pointer-events-none opacity-80' : ""}`} onClick={handlePayBill}>
-                <span className='border-r border-white pr-2  uppercase'>payable amount</span>
-                <span className='pl-2'>${(totalAmountToPay - manualRemainingAmount - creditAvailedAmount).toFixed(2)}
-                </span>
+              <Button variant='btn-primary' className={`${isPaymentLoading ? 'pointer-events-none opacity-80' : ""} ${isPaymentButtonDisabled ? 'pointer-events-none opacity-80' : ""} font-proxima font-semibold laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base mb-4 flex items-center justify-center rounded-full tracking-[0.02em] ${isPaymentButtonDisabled ? 'pointer-events-none opacity-80' : ""}`} onClick={handlePayBill}>
+                {isPaymentLoading
+                  ? <div className='animate-spin'> <SpinnerIcon bgColor='#FFF' /></div>
+                  : <>
+                    <span className='border-r border-white pr-2  uppercase'>payable amount</span>
+                    <span className='pl-2'>${(totalAmountToPay - manualRemainingAmount - creditAvailedAmount).toFixed(2)}
+                    </span>
+                  </>}
               </Button>
             </div>
           </div>
@@ -635,7 +700,6 @@ const SingleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
       <ReauthenticateModal
         onOpen={isReauthenticateModalOpen}
         onClose={handleCloseReauthenticateModal}
-        onPaymentDetailsClose={handleCloseModal}
         onSubmitPay={sendBillForPay}
         onUploadAttachments={() => { }}
       />

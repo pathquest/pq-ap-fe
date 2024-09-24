@@ -9,6 +9,7 @@ import { BasicTooltip, Button, Close, Datepicker, Modal, ModalTitle, Radio, Sele
 import React, { useEffect, useState } from 'react'
 import ReauthenticateModal from './ReauthenticateModal'
 import SingleBillPartialPayment from '../modals/SingleBillPartialPayment'
+import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 
 interface CurrentBillValueProps {
   billNumber: string
@@ -68,6 +69,7 @@ const SinglePaymentDetailsModal: React.FC<ActionsProps> = ({
   const [isAllocateCreditModalOpen, setAllocateCreditModalOpen] = useState<boolean>(false)
   const [previousCreditAmount, setPreviousCreditAmount] = useState<number>(0);
   const [isPaymentButtonDisabled, setIsPaymentButtonDisabled] = useState<boolean>(false)
+  const [isPaymentLoading, setIsPaymentLoading] = useState<boolean>(false)
 
   const handleResetAll = () => {
     setIsCreditAvailed(true)
@@ -92,6 +94,7 @@ const SinglePaymentDetailsModal: React.FC<ActionsProps> = ({
     setAllocateCreditModalOpen(false)
     setPreviousCreditAmount(0)
     setIsPaymentButtonDisabled(false)
+    setIsPaymentLoading(false)
   }
 
   // getting data from Allocate Credit Modal for single vendor with single bills
@@ -147,15 +150,10 @@ const SinglePaymentDetailsModal: React.FC<ActionsProps> = ({
     setAllocateCreditModalOpen(true)
   }
 
-  const handleCloseBothModals = () => {
-    onClose()
-    handleResetAll()
-    setIsReauthenticateModalOpen(false)
-  }
-
   const handleCloseModal = () => {
     onClose()
     handleResetAll()
+    clearLocalStorage()
   }
 
   const handleAllocateCreditModalClose = () => {
@@ -279,6 +277,7 @@ const SinglePaymentDetailsModal: React.FC<ActionsProps> = ({
 
   // API for send bill for pay
   const sendBillForPay = async () => {
+    setIsPaymentLoading(true)
     const storedAmount = localStorage.getItem('billAmount')
     const storedCredits = localStorage.getItem('availCredits')
 
@@ -287,7 +286,7 @@ const SinglePaymentDetailsModal: React.FC<ActionsProps> = ({
       : []
     creditsList = creditsList.map(({ CreditId, CreditAmount }: any) => ({ CreditId, CreditAmount }));
 
-    const params = {
+    const params: any = {
       PaymentMasterList: [{
         VendorId: vendorId,
         BillList: [{
@@ -302,11 +301,32 @@ const SinglePaymentDetailsModal: React.FC<ActionsProps> = ({
       PaymentDate: format(parse(selectedBillDate.trim(), 'MM/dd/yyyy', new Date()), "yyyy-MM-dd'T'HH:mm:ss"),
     }
 
-    performApiAction(dispatch, sendForPay, params, () => {
-      Toast.success(`Bill has been sent for approval!`)
-      onDataFetch()
-      clearLocalStorage()
-    })
+    try {
+      const { payload, meta } = await dispatch(sendForPay(params))
+      const dataMessage = payload?.Message
+      if (meta?.requestStatus === 'fulfilled') {
+        if (payload?.ResponseStatus === 'Success') {
+          Toast.success(`Bill has been sent for approval!`)
+          onDataFetch()
+          handleCloseModal()
+          setIsPaymentLoading(false)
+        } else {
+          const error = payload?.ErrorData?.ErrorDetail;
+          if (error != null) {
+            const errorBillNumber = error?.BillNumbers;
+            Toast.error(`Payment already initiated from accounting tool for bill number(s) ${errorBillNumber}. Kindly check before proceeding.`,"", 60000)
+          } else {
+            Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
+          }
+          setIsPaymentLoading(false)
+        }
+      } else {
+        setIsPaymentLoading(false)
+        Toast.error(`${payload?.status} : ${payload?.statusText}`)
+      }
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   // API for uploading attachments
@@ -537,11 +557,15 @@ const SinglePaymentDetailsModal: React.FC<ActionsProps> = ({
                 <Uploader variant='small' getValue={handleFileChange} multiSelect />
               </div>
 
-              <Button variant='btn-primary' className={`font-proxima font-semibold laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base mb-4 flex items-center justify-center rounded-full tracking-[0.02em] ${isPaymentButtonDisabled ? 'pointer-events-none opacity-80' : ""}`} onClick={handlePayBill}>
-                <span className='border-r border-white pr-2 uppercase'>payable amount</span>
-                <span className='pl-2'>
-                  ${manualAmountToPay > 0 ? (manualAmountToPay - creditAvailedAmount).toFixed(2) : (Number(remainingAmount) - creditAvailedAmount).toFixed(2)}
-                </span>
+              <Button variant='btn-primary' className={`${isPaymentLoading ? 'pointer-events-none opacity-80' : ""} font-proxima font-semibold laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base mb-4 flex items-center justify-center rounded-full tracking-[0.02em] ${isPaymentButtonDisabled ? 'pointer-events-none opacity-80' : ""}`} onClick={handlePayBill}>
+                {isPaymentLoading
+                  ? <div className='animate-spin'> <SpinnerIcon bgColor='#FFF' /></div>
+                  : <>
+                    <span className='border-r border-white pr-2 uppercase'>payable amount</span>
+                    <span className='pl-2'>
+                      ${manualAmountToPay > 0 ? (manualAmountToPay - creditAvailedAmount).toFixed(2) : (Number(remainingAmount) - creditAvailedAmount).toFixed(2)}
+                    </span>
+                  </>}
               </Button>
             </div>
           </div>
@@ -560,7 +584,6 @@ const SinglePaymentDetailsModal: React.FC<ActionsProps> = ({
       <ReauthenticateModal
         onOpen={isReauthenticateModalOpen}
         onClose={handleCloseReauthenticateModal}
-        onPaymentDetailsClose={handleCloseBothModals}
         onSubmitPay={sendBillForPay}
         onUploadAttachments={handleUploadAttachment}
       />

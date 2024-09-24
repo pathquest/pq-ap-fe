@@ -67,6 +67,8 @@ const CreateBillPosting = ({
   const [formFields, setFormFields] = useState<{ [x: string]: string | number | null | any }>({})
   const [hasFormFieldErrors, setHasFormFieldErrors] = useState<{ [x: string]: boolean }>({})
   const [hasFormFieldLibraryErrors, setHasFormFieldLibraryErrors] = useState<{ [x: string]: boolean }>({})
+ 
+  const [checkFormFieldErrors, setCheckFormFieldErrors] = useState<{ [x: string]: boolean }>({})
 
   const [lineItemsFieldsData, setLineItemsFieldsData] = useState<EditBillPostingDataProps[] | any>([])
 
@@ -136,6 +138,8 @@ const CreateBillPosting = ({
       })))
 
       await setFormFields(generateFormFields)
+      await setCheckFormFieldErrors(generateFormFieldsErrorObj)
+
       await setHasFormFieldErrors(generateFormFieldsErrorObj)
       await setHasFormFieldLibraryErrors(generateFormFieldsErrorObj)
 
@@ -565,7 +569,7 @@ const CreateBillPosting = ({
 
   const setFormValues = async (key: string, value: string | number) => {
     if (key === 'date') {
-      if (formFields.hasOwnProperty('term') && formFields.term) {
+      if (checkFormFieldErrors.hasOwnProperty('term') && formFields.term) {
         const filterTerm = defaultTermOptions?.find((t: any) => t.Id === formFields.term)
         let formattedDueDateCalculated = ''
 
@@ -582,25 +586,28 @@ const CreateBillPosting = ({
         await setFormFields({
           ...formFields,
           [key]: value,
-          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
           duedate: formattedDueDateCalculated,
         })
+
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
-          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value ? true : false } : {}),
           duedate: formattedDueDateCalculated ? true : false,
         })
       } else {
+        
         await setFormFields({
           ...formFields,
           [key]: value,
-          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
         })
+
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
-          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value ? true : false } : {}),
         })
       }
       return
@@ -625,6 +632,7 @@ const CreateBillPosting = ({
         [key]: value,
         duedate: formattedDueDateCalculated,
       })
+
       await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
         [key]: value ? true : false,
@@ -654,15 +662,16 @@ const CreateBillPosting = ({
       await setFormFields({
         ...formFields,
         [key]: value,
-        ...(lineItemsFieldsDataObj.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
-        ...(lineItemsFieldsDataObj.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
-        ...(lineItemsFieldsDataObj.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
+        ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
       })
+
       await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
-        ...(lineItemsFieldsDataObj.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
-        ...(lineItemsFieldsDataObj.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
-        ...(lineItemsFieldsDataObj.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
+        ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
       })
       await setLineItemsFieldsData(newLineItemsObj)
       await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
@@ -673,10 +682,12 @@ const CreateBillPosting = ({
       ...formFields,
       [key]: value,
     })
+
     await setHasFormFieldLibraryErrors({
       ...hasFormFieldLibraryErrors,
       [key]: value ? true : false,
     })
+
   }
 
   const onErrorLoader = (postSaveAs: number) => {
@@ -720,7 +731,6 @@ const CreateBillPosting = ({
       }
 
       const hasError = hasFormFieldErrors[item.Name] && !formFields[item.Name]
-
       let optionsObj: any = []
       switch (item?.Name) {
         case 'vendor':
@@ -737,6 +747,7 @@ const CreateBillPosting = ({
       if (item?.Value) {
         optionsObj = JSON.parse(item?.Value)
       }
+
 
       return {
         ...item,
@@ -814,6 +825,7 @@ const CreateBillPosting = ({
 
             if (key === 'term') {
               if (hasFormFieldErrors.hasOwnProperty(key)) {
+                console.log("term : ", hasFormFieldErrors)
                 setHasFormFieldLibraryErrors({
                   ...hasFormFieldLibraryErrors,
                   [key]: err,
@@ -1020,7 +1032,6 @@ const CreateBillPosting = ({
 
     setHasLineItemFieldErrors(newLineItemErrorValues)
     setHasFormFieldErrors(newErrorValues)
-
     if (validate(hasFormFieldLibraryErrors)) {
       if (errorInItems > 0) {
         let newLoaderSuccess
@@ -1061,7 +1072,7 @@ const CreateBillPosting = ({
             <BackIcon />
           </span>
           <span className='pl-5 !text-[14px] font-bold font-proxima tracking-[0.02em] text-darkCharcoal'>
-            {processtype === '1' ? 'Account Payable' : 'Account Adjustment'}
+            {processtype === '1' ? 'Accounts Payable' : 'Accounts Adjustment'}
           </span>
         </div>
       </div>

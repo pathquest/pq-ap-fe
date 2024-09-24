@@ -77,6 +77,8 @@ const EditBillPosting = ({ processtype }: any) => {
   const [hasFormFieldErrors, setHasFormFieldErrors] = useState<{ [x: string]: boolean }>({})
   const [hasFormFieldLibraryErrors, setHasFormFieldLibraryErrors] = useState<{ [x: string]: boolean }>({})
 
+  const [checkFormFieldErrors, setCheckFormFieldErrors] = useState<{ [x: string]: boolean }>({})
+
   const [generateFormFieldsErrorObj, setGenerateFormFieldsErrorObj] = useState<any>([])
   const [generateLinetItemFieldsErrorObj, setGenerateLinetItemFieldsErrorObj] = useState<any>([])
 
@@ -207,7 +209,6 @@ const EditBillPosting = ({ processtype }: any) => {
       setIsBillDataLoading(false)
     }
   }
-console.log("hasLineItemFieldLibraryErrors", hasLineItemFieldLibraryErrors);
 
   useEffect(() => {
     const fetchFieldMappingData = async () => {
@@ -252,6 +253,9 @@ console.log("hasLineItemFieldLibraryErrors", hasLineItemFieldLibraryErrors);
       await setGenerateLinetItemFieldsErrorObj(generateLinetItemFieldsErrorObj)
 
       await setFormFields(generateFormFields)
+
+      await setCheckFormFieldErrors(generateFormFieldsErrorObj)
+
       await setHasFormFieldErrors(generateFormFieldsErrorObj)
       await setHasFormFieldLibraryErrors(generateFormFieldsErrorObj)
 
@@ -645,7 +649,7 @@ console.log("hasLineItemFieldLibraryErrors", hasLineItemFieldLibraryErrors);
         return i
       })
 
-      await setLineItemsFieldsData(newArr)
+    await setLineItemsFieldsData(newArr)
   }
 
   const handleApplyFilter = async () => {
@@ -859,7 +863,7 @@ console.log("hasLineItemFieldLibraryErrors", hasLineItemFieldLibraryErrors);
 
   const setFormValues = async (key: string, value: string | number) => {
     if (key === 'date') {
-      if (formFields.hasOwnProperty('term') && formFields.term) {
+      if (checkFormFieldErrors.hasOwnProperty('term') && formFields.term) {
         const filterTerm = defaultTermOptions?.find((t: any) => t.Id === formFields.term)
         let formattedDueDateCalculated = ''
 
@@ -876,25 +880,25 @@ console.log("hasLineItemFieldLibraryErrors", hasLineItemFieldLibraryErrors);
         await setFormFields({
           ...formFields,
           [key]: value,
-          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
           duedate: formattedDueDateCalculated,
         })
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
-          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value ? true : false } : {}),
           duedate: formattedDueDateCalculated ? true : false,
         })
       } else {
         await setFormFields({
           ...formFields,
           [key]: value,
-          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
         })
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
-          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value ? true : false } : {}),
         })
       }
       return
@@ -948,15 +952,15 @@ console.log("hasLineItemFieldLibraryErrors", hasLineItemFieldLibraryErrors);
       await setFormFields({
         ...formFields,
         [key]: value,
-        ...(lineItemsFieldsDataObj.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
-        ...(lineItemsFieldsDataObj.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
-        ...(lineItemsFieldsDataObj.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
+        ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
       })
       await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
-        ...(lineItemsFieldsDataObj.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
-        ...(lineItemsFieldsDataObj.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
-        ...(lineItemsFieldsDataObj.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
+        ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
       })
       await setLineItemsFieldsData(newLineItemsObj)
       await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)

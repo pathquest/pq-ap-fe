@@ -55,7 +55,6 @@ const Drawer: React.FC<DrawerProps> = ({
   getCompanyList
 }: any) => {
   const { data: session } = useSession()
-
   const dispatch = useAppDispatch()
   const [Id, setId] = useState(0)
   const [companyName, setCompanyName] = useState('')
@@ -285,6 +284,7 @@ const Drawer: React.FC<DrawerProps> = ({
     setImageName('')
   }
 
+
   // save company for after edit and create new company
   const CompanySave = () => {
     setIsLoading(true)
@@ -318,7 +318,11 @@ const Drawer: React.FC<DrawerProps> = ({
       saveCompany,
       params,
       () => {
-        Toast.success(`${Id ? 'Company updated successfully' : `Master syncing for the ${companyName} is completed. please complete Manage Configuration and Field Mapping from action button before going ahead.`}`)
+        if (Id) {
+          Toast.success('Company updated successfully')
+        } else if (accountingTool !== 4) {
+          Toast.success(`Masters data has been synced for the ${companyName} is completed. Start by managing configurations and field mapping.`)
+        }
         setAccountToolCompanyId('')
         clearData()
         getCompanyList()

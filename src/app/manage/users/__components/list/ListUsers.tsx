@@ -17,6 +17,8 @@ import React, { useEffect, useRef, useState } from 'react'
 import Drawer from '../Drawer'
 import RoleDrawer from '../RoleDrawer'
 import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 interface UserData {
   id: number
@@ -34,7 +36,14 @@ interface UserData {
 }
 
 const ListUsers: React.FC = () => {
+  // For Dynamic Company Id & AccountingTool
+  const { data: session } = useSession()
+  const UserId = Number(session?.user?.user_id) ?? 0
+  const dispatch = useAppDispatch()
+  const router = useRouter();
+
   const { orgPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isManageUserView = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Users", "View");
   const isManageUserCreate = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Users", "Create");
   const isManageUserEdit = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Users", "Edit");
 
@@ -66,16 +75,18 @@ const ListUsers: React.FC = () => {
   })
   const [isSwitchClicked, setIsSwitchClicked] = useState<boolean>(false)
 
-  // For Dynamic Company Id & AccountingTool
-  const dispatch = useAppDispatch()
-  const userId = localStorage.getItem('UserId')
-  let nextPageIndex: number = 1
+  useEffect(() => {
+    if (!isManageUserView) {
+      router.push('/manage/companies');
+    }
+  }, [isManageUserView]);
 
   const status = [
     { label: 'Active', value: '1' },
     { label: 'Inactive', value: '0' },
   ]
 
+  let nextPageIndex: number = 1
   const lazyRows = 70
   const tableBottomRef = useRef<HTMLDivElement>(null)
 
@@ -130,7 +141,18 @@ const ListUsers: React.FC = () => {
           setApiDataCount(newTotalCount)
 
           let updatedData = updateData(newList, pageIndex)
-          setUserData(updatedData)
+
+          const sortedRoles = updatedData.sort((a: any, b: any) => {
+            // Sort "IsOrgAdmin": true roles first
+            if (a.IsOrgAdmin && !b.IsOrgAdmin) {
+              return -1; // a comes before b
+            } else if (!a.IsOrgAdmin && b.IsOrgAdmin) {
+              return 1; // b comes before a
+            } else {
+              return 0; // no change in order
+            }
+          });
+          setUserData(sortedRoles)
           setItemsLoaded(updatedData.length)
           setSelectedCompanies(payload?.ResponseData?.List.assignedCompanies)
 
@@ -258,7 +280,7 @@ const ListUsers: React.FC = () => {
     },
     {
       header: '',
-      accessor: 'action',
+      accessor: isManageUserEdit ? 'action' : "",
       sortable: false,
       colalign: 'right',
       colStyle: '!w-[30px]',
@@ -365,7 +387,7 @@ const ListUsers: React.FC = () => {
   }
 
   const isUserDisabled = (user: any) => {
-    const isCurrentUser = user?.id === Number(userId)
+    const isCurrentUser = user?.id === UserId
     const isAdminUser = user?.IsOrgAdmin
     return isCurrentUser || isAdminUser
   }
@@ -395,7 +417,7 @@ const ListUsers: React.FC = () => {
         role: e?.roleName,
         status: (
           <div
-            className={`${isSwitchClicked ? "pointer-events-none cursor-default" : " cursor-pointer"} ${e?.id == Number(userId) || e?.IsOrgAdmin === true ? 'pointer-events-none' : ''}`}
+            className={`${isSwitchClicked ? "pointer-events-none cursor-default" : " cursor-pointer"} ${e?.id == UserId || e?.IsOrgAdmin === true ? 'pointer-events-none' : ''}`}
             onClick={() => {
               setRowId(e?.id)
               updateStatus(e?.id, e?.is_Active)
@@ -412,8 +434,8 @@ const ListUsers: React.FC = () => {
                 id={e?.id}
                 actions={[
                   'Manage Rights',
-                  isManageUserEdit && 'Edit',
-                  Number(userId) !== rowId ? e?.IsOrgAdmin === false && 'Remove' : false,
+                  'Edit',
+                  UserId !== rowId ? e?.IsOrgAdmin === false && 'Remove' : false,
                 ].filter(Boolean)}
                 actionRowId={() => handleIdGet(e?.id)}
                 handleClick={handleMenuChange}

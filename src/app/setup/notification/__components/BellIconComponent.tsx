@@ -229,7 +229,7 @@ const BellIconComponent = () => {
       </div>
       {isNotificationOpen && (
         <div
-          className='absolute right-[253px] top-[63px] z-10 flex w-[500px] flex-col items-center rounded-md bg-white'
+          className='absolute right-[113px] top-[63px] z-10 flex w-[500px] flex-col items-center rounded-md bg-white'
           style={{ boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.2)' }}
         >
           <div className='flex w-full justify-between border-b border-lightSilver p-4'>

@@ -83,7 +83,7 @@ const Page = ({ onData, isFormOpen }: any) => {
     router.push('/manage/companies')
   }
 
-  
+
   const productRadioData = profileData?.products.map((product: any) => {
     const productClassName = selectedProduct === product.name ? 'text-primary' : ''
     return (
@@ -107,9 +107,8 @@ const Page = ({ onData, isFormOpen }: any) => {
     return (
       <Link href='/products' key={product.id}>
         <li
-          className={`flex w-full px-3 py-2 ${
-            index < profileData.products.length - 1 ? 'border-b border-b-lightSilver' : ''
-          }  cursor-pointer hover:bg-lightGray`}
+          className={`flex w-full px-3 py-2 ${index < profileData.products.length - 1 ? 'border-b border-b-lightSilver' : ''
+            }  cursor-pointer hover:bg-lightGray`}
           key={product.id}
         >
           {product.name === 'PathQuest BI' && <BiIcon bgColor={'white'} />}
@@ -152,7 +151,7 @@ const Page = ({ onData, isFormOpen }: any) => {
     localStorage.removeItem('OrgId')
     localStorage.removeItem('IsAdmin')
     localStorage.removeItem('IsOrgAdmin')
-    
+
     await handleSignOut()
   }
 
@@ -181,7 +180,7 @@ const Page = ({ onData, isFormOpen }: any) => {
               Manage Companies
             </button>
           )} */}
-          <div className='flex h-8 w-8 cursor-pointer items-center justify-center' onClick={() => handleToggleChange('CandyBox')}>
+          {/* <div className='flex h-8 w-8 cursor-pointer items-center justify-center' onClick={() => handleToggleChange('CandyBox')}>
             <Tooltip content='PathQuest Apps' position='left'>
               <CandyBox />
             </Tooltip>
@@ -190,7 +189,7 @@ const Page = ({ onData, isFormOpen }: any) => {
             <div>
               <HelpIcon />
             </div>
-          </div>
+          </div> */}
           <div
             className='flex h-8 w-8 cursor-pointer items-center justify-center'
             onClick={() => handleToggleChange('ProfileMenu')}
@@ -234,19 +233,16 @@ const Page = ({ onData, isFormOpen }: any) => {
             }}
           >
             <div
-              className={`ease my-0.5 h-1 w-5 transform rounded-full bg-[#333333] transition duration-300 ${
-                isOpen ? 'translate-y-2 rotate-45 opacity-50 group-hover:opacity-100' : 'opacity-50 group-hover:opacity-100'
-              }`}
+              className={`ease my-0.5 h-1 w-5 transform rounded-full bg-[#333333] transition duration-300 ${isOpen ? 'translate-y-2 rotate-45 opacity-50 group-hover:opacity-100' : 'opacity-50 group-hover:opacity-100'
+                }`}
             />
             <div
-              className={`ease my-0.5 h-1 w-5 transform rounded-full bg-[#333333] transition duration-300 ${
-                isOpen ? 'opacity-0' : 'opacity-50 group-hover:opacity-100'
-              }`}
+              className={`ease my-0.5 h-1 w-5 transform rounded-full bg-[#333333] transition duration-300 ${isOpen ? 'opacity-0' : 'opacity-50 group-hover:opacity-100'
+                }`}
             />
             <div
-              className={`ease my-0.5 h-1 w-5 transform rounded-full bg-[#333333] transition duration-300 ${
-                isOpen ? '-translate-y-2 -rotate-45 opacity-50 group-hover:opacity-100' : 'opacity-50 group-hover:opacity-100'
-              }`}
+              className={`ease my-0.5 h-1 w-5 transform rounded-full bg-[#333333] transition duration-300 ${isOpen ? '-translate-y-2 -rotate-45 opacity-50 group-hover:opacity-100' : 'opacity-50 group-hover:opacity-100'
+                }`}
             />
           </button>
         </div>
@@ -255,9 +251,8 @@ const Page = ({ onData, isFormOpen }: any) => {
       {/* CandyBox List Group */}
       <div className={`absolute z-50 flex ${isOpen && 'right-4 top-24'} right-24 -mt-3`} ref={toggleRef}>
         <div
-          className={`${
-            toggleCandyBoxChange ? 'visible flex items-center justify-center' : 'hidden'
-          } h-auto w-fit rounded-md border border-lightSilver bg-white p-4 shadow-md`}
+          className={`${toggleCandyBoxChange ? 'visible flex items-center justify-center' : 'hidden'
+            } h-auto w-fit rounded-md border border-lightSilver bg-white p-4 shadow-md`}
         >
           <div className='h-auto w-52'>
             <ul className='w-52'>{productItems}</ul>
@@ -268,9 +263,8 @@ const Page = ({ onData, isFormOpen }: any) => {
       {/* Help List Group */}
       <div className={`absolute z-50 flex ${isOpen && 'right-4 top-24'} right-16 -mt-3 `} ref={toggleRef}>
         <div
-          className={`${
-            toggleHelpChange ? 'visible flex items-center justify-center' : 'hidden'
-          } h-auto w-fit rounded-md border border-lightSilver bg-white py-2 shadow-md`}
+          className={`${toggleHelpChange ? 'visible flex items-center justify-center' : 'hidden'
+            } h-auto w-fit rounded-md border border-lightSilver bg-white py-2 shadow-md`}
         >
           <div className='h-auto w-40'>
             <ul className='w-40'>
@@ -302,9 +296,8 @@ const Page = ({ onData, isFormOpen }: any) => {
       {/* Profile Menu List Group */}
       <div className={`absolute z-50 flex ${isOpen && 'right-4 top-24'} right-4 -mt-3`} ref={toggleRef}>
         <div
-          className={`${
-            toggleProfileChange ? 'visible flex items-center justify-center' : 'hidden'
-          } h-auto w-fit rounded-md border border-lightSilver bg-white pt-4 shadow-md`}
+          className={`${toggleProfileChange ? 'visible flex items-center justify-center' : 'hidden'
+            } h-auto w-fit rounded-md border border-lightSilver bg-white pt-4 shadow-md`}
         >
           <div className='h-auto w-[220px]'>
             <ul className='w-[220px]'>
@@ -319,7 +312,7 @@ const Page = ({ onData, isFormOpen }: any) => {
                 </div>
               </li>
               <Link href='/profile'>
-                <li className='flex h-12 w-auto border-b border-b-lightSilver px-3 py-2 hover:bg-lightGray hover:text-primary'>
+                <li className={`${pathname === "/profile" ? "bg-whiteSmoke text-primary" : ""} flex h-12 w-auto border-b border-b-lightSilver px-3 py-2 hover:bg-lightGray hover:text-primary`}>
                   <div className='ml-2 flex items-center justify-center'>
                     <Typography type='label' className='inline-block cursor-pointer text-sm font-normal'>
                       My Profile
@@ -327,7 +320,7 @@ const Page = ({ onData, isFormOpen }: any) => {
                   </div>
                 </li>
               </Link>
-              <li className='flex h-12 w-auto border-b border-b-lightSilver px-3 py-2 hover:bg-lightGray hover:text-primary'>
+              {/* <li className='flex h-12 w-auto border-b border-b-lightSilver px-3 py-2 hover:bg-lightGray hover:text-primary'>
                 <div className='ml-2 flex items-center justify-center '>
                   <Typography type='label' className='inline-block cursor-pointer text-sm font-normal'>
                     Manage User
@@ -341,7 +334,7 @@ const Page = ({ onData, isFormOpen }: any) => {
                   </Typography>
                   {productRadioData}
                 </div>
-              </li>
+              </li> */}
               <li className='flex h-12 w-full select-none rounded-b-md px-3 hover:bg-lightGray'>
                 <div className='ml-3 flex items-center justify-center'>
                   <LogoutVector />

@@ -76,9 +76,9 @@ const BillApprovalStatus: React.FC<any> = ({ LocationOption }) => {
 
     const handleChartRedirect = (seriesName: string) => {
         const statusMap: any = {
-            "Bills Approval Pending": '0',
-            "Bills Approved": '1',
-            "Bills Rejected": '2'
+            "Pending": '0',
+            "Approved": '1',
+            "Rejected": '2'
         };
 
         const approvalStatusId = statusMap[seriesName] || '0';
@@ -245,17 +245,17 @@ const BillApprovalStatus: React.FC<any> = ({ LocationOption }) => {
             }],
             series: [
                 {
-                    name: 'Bills Approval Pending',
+                    name: 'Pending',
                     color: '#005EB5',
                     data: billApprovalPending
                 },
                 {
-                    name: 'Bills Approved',
+                    name: 'Approved',
                     color: '#53BB77',
                     data: billApproved
                 },
                 {
-                    name: 'Bills Rejected',
+                    name: 'Rejected',
                     color: '#CF815F',
                     data: billRejected
                 },
@@ -397,17 +397,17 @@ const BillApprovalStatus: React.FC<any> = ({ LocationOption }) => {
                 colorByPoint: true,
                 data: [
                     {
-                        name: 'Bills Approval Pending',
+                        name: 'Pending',
                         y: pieChartDataCount.BillApprovalPending ?? 0,
                         color: '#005EB5'
                     },
                     {
-                        name: 'Bills Approved',
+                        name: 'Approved',
                         y: pieChartDataCount.BillApproved ?? 0,
                         color: '#53BB77'
                     },
                     {
-                        name: 'Bills Rejected',
+                        name: 'Rejected',
                         y: pieChartDataCount.BillRejected ?? 0,
                         color: '#CF815F'
                     }
@@ -468,7 +468,7 @@ const BillApprovalStatus: React.FC<any> = ({ LocationOption }) => {
                 <div className='laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 flex justify-between w-full chart_header'>
                     <div className="header items-center flex">
                         <Typography type='h5' className='title !text-base hd:!text-lg 2xl:!text-lg 3xl:!text-lg font-proxima font-semibold tracking-[0.02em] text-darkCharcoal'>
-                            Bill Approval Status
+                            Bill approval status
                         </Typography>
                     </div>
                     <div className='flex justify-center items-center'>
