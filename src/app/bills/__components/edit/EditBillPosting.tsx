@@ -78,7 +78,7 @@ const EditBillPosting = ({ processtype }: any) => {
   const [hasFormFieldLibraryErrors, setHasFormFieldLibraryErrors] = useState<{ [x: string]: boolean }>({})
 
   const [checkFormFieldErrors, setCheckFormFieldErrors] = useState<{ [x: string]: boolean }>({})
-  
+
   const [generateFormFieldsErrorObj, setGenerateFormFieldsErrorObj] = useState<any>([])
   const [generateLinetItemFieldsErrorObj, setGenerateLinetItemFieldsErrorObj] = useState<any>([])
 
@@ -209,7 +209,6 @@ const EditBillPosting = ({ processtype }: any) => {
       setIsBillDataLoading(false)
     }
   }
-  console.log("hasLineItemFieldLibraryErrors", hasLineItemFieldLibraryErrors);
 
   useEffect(() => {
     const fetchFieldMappingData = async () => {
