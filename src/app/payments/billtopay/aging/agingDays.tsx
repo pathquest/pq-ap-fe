@@ -229,7 +229,7 @@ const AgingDays: React.FC<ActionsProps> = ({
       VendorIds: convertStringsToIntegers(currentVendorId as string[]),
       FiterType: currentFilter,
       StartDay: Number(startDay),
-      EndDay: Number(endDay),
+      EndDay: endDay == null ? null : Number(endDay),
       TypeOfAging: 2,
       PageSize: null,
     }
