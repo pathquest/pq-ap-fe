@@ -545,7 +545,7 @@ const ListPaymentSetup: React.FC = () => {
       {/* KYC Modal */}
       <ConfirmationModal
         title='Company KYC Form'
-        content='Click on yes to redirect on KYC form filling page.'
+        content='By clicking OK, you will be redirected to KYC Form'
         isModalOpen={isKYCModalOpen}
         modalClose={modalClose}
         handleSubmit={handleKYCFormSubmit}

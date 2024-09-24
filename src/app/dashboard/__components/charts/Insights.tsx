@@ -134,7 +134,7 @@ const Insights: React.FC = () => {
                 </Typography>
             </div>
             {isLoading ? <div className='h-full w-full flex justify-center items-center'>
-                <Loader size='sm' helperText/>
+                <Loader size='sm' />
             </div>
                 : updatedCardData.map((data, index) => (
                     <div className='pointer-events-none w-full px-4 hd:px-5 2xl:px-5 3xl:px-5' key={data.amount + index} onClick={() => handleInsightClick(data.description)}>

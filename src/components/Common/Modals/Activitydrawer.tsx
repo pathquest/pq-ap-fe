@@ -30,6 +30,7 @@ import { getActivityList, getWatcherList, saveActivityList, saveWatcherList } fr
 import WatcherListDropdown from '../Dropdown/WatcherListDropdown'
 import { performApiAction } from '../Functions/PerformApiAction'
 import { getModulePermissions, hasSpecificPermission } from '../Functions/ProcessPermission'
+import DrawerOverlay from '../DrawerOverlay'
 
 const extensionToIconMap: any = {
   pdf: <PdfIcon />,
@@ -687,24 +688,20 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
       </div>
 
       {isSummaryModalOpen && (
-        <div
-          className={`bg-[rgba(0, 0, 0, 0.4)] fixed right-0 top-0 z-30 h-screen transform overflow-y-auto border-lightSilver text-black lg:w-5/12 ${isOpen ? 'translate-x-0' : 'translate-x-full'
-            } transition-transform duration-300 ease-in-out`}
-        >
-          <Modal isOpen={isSummaryModalOpen} onClose={modalClose} className='flex w-[70%] justify-center'>
-            <ModalTitle className='py-3 pl-4 pr-1 font-bold'>
-              <div>Activity Summary</div>
-              <div onClick={modalClose}>
-                <Close variant='medium' />
-              </div>
-            </ModalTitle>
+        <Modal isOpen={isSummaryModalOpen} onClose={modalClose} className='flex w-[70%] justify-center'>
+          <ModalTitle className='py-3 pl-4 pr-1 font-bold'>
+            <div>Activity Summary</div>
+            <div onClick={modalClose}>
+              <Close variant='medium' />
+            </div>
+          </ModalTitle>
 
-            <ModalContent className='custom-scroll-PDF my-5 max-h-[200px] overflow-y-scroll px-4'>
-              {summaryModelData}
-            </ModalContent>
-          </Modal>
-        </div>
+          <ModalContent className='custom-scroll-PDF my-5 max-h-[200px] overflow-y-scroll px-4'>
+            {summaryModelData}
+          </ModalContent>
+        </Modal>
       )}
+      <DrawerOverlay isOpen={isSummaryModalOpen} />
     </>
   )
 }

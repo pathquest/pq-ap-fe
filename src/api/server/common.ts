@@ -304,4 +304,5 @@ export async function getUserProfile() {
   return handleResponse(response)
 }
 
-export const ssoUrl = process.env.AP_REDIRECT_URL
+// export const ssoUrl = process.env.AP_REDIRECT_URL
+export const ssoUrl = 'http://localhost:3000'

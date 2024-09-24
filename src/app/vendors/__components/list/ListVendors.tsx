@@ -656,7 +656,7 @@ const ListVendors: React.FC = () => {
           {/* Inactive Modal */}
           {isInactiveModalOpen && <ConfirmationModal
             title='Inactive Vendor'
-            content={`Are you sure you want to inactive ${inactiveId > 0 ? "this" : "all"} vendor`}
+            content={`Are you sure you want to inactive ${inactiveId > 0 ? "this vendor?" : "these vendors?"}`}
             isModalOpen={isInactiveModalOpen}
             modalClose={modalClose}
             handleSubmit={() => handleInactiveVendor(inactiveId, recordNumber, vendorStatus, vendorName)}

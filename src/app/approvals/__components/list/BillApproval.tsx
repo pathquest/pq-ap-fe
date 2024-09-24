@@ -920,7 +920,7 @@ const BillApproval: React.FC = () => {
       <ConfirmationModal
         title='Approve'
         content={selectedRows.length > 1
-          ? `Are you sure you want to approve the selected bills?`
+          ? `Are you sure you want to approve these bills?`
           : `Are you sure you want to approve this bill?`}
         isModalOpen={isApprovalModalOpen}
         modalClose={modalClose}
@@ -948,7 +948,10 @@ const BillApproval: React.FC = () => {
             }}
             hasError={reasonError}
             rows={5}
-            placeholder='Please enter the reason for rejecting this bill.'
+            placeholder={selectedRows.length > 1
+              ? `Please enter the reason for rejecting these bills`
+              : `Please enter the reason for rejecting this bill`}
+
           />
         }
       />

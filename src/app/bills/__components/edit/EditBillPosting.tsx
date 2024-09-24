@@ -209,7 +209,6 @@ const EditBillPosting = ({ processtype }: any) => {
       setIsBillDataLoading(false)
     }
   }
-  console.log("hasLineItemFieldLibraryErrors", hasLineItemFieldLibraryErrors);
 
   useEffect(() => {
     const fetchFieldMappingData = async () => {

@@ -275,7 +275,7 @@ const TotalPostedBillsByMonth: React.FC<any> = ({ LocationOption }) => {
             </div>
             {isLoading
                 ? <div className='h-[400px] w-full flex justify-center'>
-                    <Loader size='md' helperText/>
+                    <Loader size='md'/>
                 </div>
                 : <div className='main_chart w-full'>
                     <HighchartsReact highcharts={Highcharts} options={getChartOptions()} />
