@@ -12,6 +12,7 @@ import { getNotificationMatrix, getSummaryData, saveNotificationMatrix, saveSumm
 import { useSession } from 'next-auth/react'
 import ViewEmailPreview from '../ViewEmailPreview'
 import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
+import { useRouter } from 'next/navigation'
 
 // import Icons
 const DoubleArrowDown = lazy(() => import('@/assets/Icons/notification/DoubleArrowDown'))
@@ -78,13 +79,16 @@ const expandColumns: TableColumn[] = [
 ]
 
 const ListNotification: React.FC = () => {
-  const dispatch = useAppDispatch()
 
   // For Dynamic Company Id & AccountingTool
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
   const isNotificationEdit = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Notification", "Edit");
+  const isNotificationView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Notification", "View");
+
+  const dispatch = useAppDispatch()
+  const router = useRouter()
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isFooterLoader, setIsFooterLoader] = useState<boolean>(false)
@@ -101,6 +105,12 @@ const ListNotification: React.FC = () => {
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5])
   const [monthValue, setMonthValue] = useState<string>('1')
   const [data, setData] = useState<ModuleData[]>([])
+
+  useEffect(() => {
+    if (!isNotificationView) {
+      router.push('/manage/companies');
+    }
+  }, [isNotificationView]);
 
   // Fetch List Of Triggeres in Datatable Api
   const getListOfTriggers = async () => {

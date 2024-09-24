@@ -17,19 +17,36 @@ import ProcessedVsPaymentNotApproved from '../charts/ProcessedVsPaymentNotApprov
 import Summary from '../charts/Summary'
 import TotalPostedBillsByMonth from '../charts/TotalPostedBillsByMonth'
 import VendorWiseMonthlyPayment from '../charts/VendorWiseMonthlyPayment'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
+import { useRouter } from 'next/navigation'
 
 const Dashboard: React.FC = () => {
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
+  const router = useRouter()
   const dispatch = useAppDispatch()
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
   const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-500px)] laptopMd:w-[calc(100vw-85px)]')
+
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isDashboardPermission = getModulePermissions(processPermissionsMatrix, "Dashboard") ?? {}
+
+  const isStaffAccountantView = isDashboardPermission["Staff Accountant"]?.View ?? false;
+  const isManagerView = isDashboardPermission["Manager"]?.View ?? false;
+  const isPracticeView = isDashboardPermission["Practice"]?.View ?? false;
+
+  const [locationOption, setLocationOption] = useState<Option[]>([])
 
   useEffect(() => {
     setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-[calc(100vw-85px)] laptop:w-[calc(100vw-85px)] laptopMd:w-[calc(100vw-85px)]' : 'laptop:w-[calc(100vw-200px)] laptopMd:w-[calc(100vw-200px)]')
   }, [isLeftSidebarCollapsed])
 
-  const [locationOption, setLocationOption] = useState<Option[]>([])
+
+  useEffect(() => {
+    if (!isStaffAccountantView && !isManagerView && !isPracticeView) {
+      router.push('/manage/companies');
+    }
+  }, [isStaffAccountantView, isManagerView, isPracticeView]);
 
   const getLocationDropdownList = () => {
     const params = {

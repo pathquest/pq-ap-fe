@@ -17,6 +17,7 @@ import Class from '../content/ClassContent'
 import Department from '../content/DepartmentContent'
 import Location from '../content/LocationContent'
 import Project from '../content/ProjectContent'
+import { useRouter } from 'next/navigation'
 
 const ListDimentions: React.FC = () => {
   // For Dynamic Company Id & AccountingTool
@@ -24,8 +25,11 @@ const ListDimentions: React.FC = () => {
   const CompanyId = Number(session?.user?.CompanyId)
   const accountingTool = session?.user?.AccountingTool
   const dispatch = useAppDispatch()
+  const router = useRouter();
+
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
   const isDimensionSync = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "Dimension", "Sync");
+  const isDimensionView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "Dimension", "View");
 
   const [tab, setTab] = useState<string>('class')
   const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false)
@@ -46,6 +50,12 @@ const ListDimentions: React.FC = () => {
     accountingTool === 1 && { id: 'department', label: 'DEPARTMENT' },
     accountingTool === 1 && { id: 'project', label: 'PROJECT' },
   ].filter(Boolean)
+
+  useEffect(() => {
+    if (!isDimensionView) {
+      router.push('/manage/companies');
+    }
+  }, [isDimensionView]);
 
   useEffect(() => {
     setSearchValue('')
