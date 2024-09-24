@@ -9,9 +9,8 @@ import { GLAccountDropdown } from '@/store/features/master/glAccountSlice'
 import { cityListDropdown, countryListDropdown, stateListDropdown } from '@/store/features/user/userSlice'
 import { accountClassification, saveVendor, vendorGetById } from '@/store/features/vendor/vendorSlice'
 import { useSession } from 'next-auth/react'
-import { BasicTooltip, Button, CheckBox, Email, Select, Text, Toast, Typography } from 'pq-ap-lib'
+import { BasicTooltip, Button, CheckBox, Email, Select, Text, Toast, Typography, Uploader } from 'pq-ap-lib'
 import React, { useEffect, useState } from 'react'
-import Uploader from './Fileupload/Fileupload'
 
 interface DrawerProps {
     isOpen: boolean
@@ -810,10 +809,10 @@ const VendorAddScreen: React.FC<DrawerProps> = ({ isOpen, EditId, onClose }) => 
                                 value={vendorName}
                                 validate
                                 minChar={3}
-                                maxLength={25}
+                                maxLength={50}
                                 hasError={vendorNameError}
                                 getValue={(value) => {
-                                    /^[a-zA-Z ]*$/.test(value) && setVendorName(value)
+                                    setVendorName(value)
                                     setVendorNameError(false)
                                 }}
                                 getError={() => { }}
@@ -826,7 +825,7 @@ const VendorAddScreen: React.FC<DrawerProps> = ({ isOpen, EditId, onClose }) => 
                                 value={displayName}
                                 validate
                                 minChar={3}
-                                maxLength={25}
+                                maxLength={50}
                                 hasError={displayNameError}
                                 getValue={(value) => {
                                     /^[a-zA-Z ]*$/.test(value) && setDisplayName(value)
@@ -842,7 +841,7 @@ const VendorAddScreen: React.FC<DrawerProps> = ({ isOpen, EditId, onClose }) => 
                                 value={nameOnCheck}
                                 validate
                                 minChar={3}
-                                maxLength={25}
+                                maxLength={50}
                                 hasError={nameOnCheckError}
                                 getValue={(value) => {
                                     /^[a-zA-Z ]*$/.test(value) && setNameOnCheck(value)

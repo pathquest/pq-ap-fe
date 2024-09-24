@@ -76,8 +76,8 @@ const AssignedFilterData = [
 ]
 
 const FilterOverviewProcessType = [
-  { value: '1', label: 'Account Payable' },
-  { value: '2', label: 'Account Adjustment' },
+  { value: '1', label: 'Accounts Payable' },
+  { value: '2', label: 'Accounts Adjustment' },
 ]
 
 const FilterOverviewStatus = [
@@ -98,7 +98,7 @@ const moveToOptions = [
     value: 2,
   },
   {
-    label: 'Other',
+    label: 'Others',
     value: 3,
   },
 ]

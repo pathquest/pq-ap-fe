@@ -10,21 +10,13 @@ export default function VerifyTokenPage() {
     const { data: session } = useSession()
     const searchParams = useSearchParams()
     const urlToken = searchParams.get('token') ?? ''
-
-    useEffect(()=> {
-        if(session?.user?.access_token) {
-            router.push('/profile')
-        }
-    }, [session])
+    const isFirstConfig = searchParams.get('isFirstConfig') ?? 'false'
 
     const checkUrlToken = async () => {
         if (urlToken) {
             await handleTokenSave({
                 token: urlToken,
-            }).then(() => {
-                if(session?.user?.access_token) {
-                    router.push('/profile')
-                }
+                isFirstConfig:isFirstConfig
             })
         }
     }

@@ -5,9 +5,9 @@ import SortIcon from '@/assets/Icons/SortIcon'
 import SyncIcon from '@/assets/Icons/SyncIcon'
 import CreateIcon from '@/assets/Icons/billposting/CreateIcon'
 import FilterIcon from '@/assets/Icons/billposting/FilterIcon'
-import DataLoadingStatus from '@/components/Common/Functions/DataLoadingStatus'
 import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
 import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 import ImportModal from '@/components/Common/Modals/ImportModal'
 import Wrapper from '@/components/Common/Wrapper'
@@ -17,23 +17,25 @@ import { getPaymentMethods } from '@/store/features/billsToPay/billsToPaySlice'
 import { importVendorData, syncVendor, vendorGetList, vendorUpdateStatus } from '@/store/features/vendor/vendorSlice'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Button, CheckBox, DataTable, Loader, Toast, BasicTooltip } from 'pq-ap-lib'
+import { BasicTooltip, Button, CheckBox, DataTable, Loader, Toast } from 'pq-ap-lib'
 import React, { useEffect, useRef, useState } from 'react'
 import { Actions } from '../DataTableActions'
 import Filter from '../Filter'
 import VendorAddScreen from '../VendorAddScreen'
-import { hasCreatePermission, hasEditPermission, hasImportPermission, hasSyncPermission } from '@/components/Common/Functions/ProcessPermission'
 
 const ListVendors: React.FC = () => {
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
   const accountingTool = session?.user?.AccountingTool
   const { filterFields } = useAppSelector((state) => state.vendor)
+
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
-  const isCreate = hasCreatePermission(processPermissionsMatrix, "Vendor")
-  const isEdit = hasEditPermission(processPermissionsMatrix, "Vendor")
-  const isSync = hasSyncPermission(processPermissionsMatrix, "Vendor")
-  const isImport = hasImportPermission(processPermissionsMatrix, "Vendor")
+  const isVendorPermission = getModulePermissions(processPermissionsMatrix, "Vendor") ?? {}
+  const isVendorView = isVendorPermission?.View ?? false;
+  const isVendorCreate = isVendorPermission?.Create ?? false;
+  const isVendorEdit = isVendorPermission?.Edit ?? false;
+  const isVendorSync = isVendorPermission?.Sync ?? false;
+  const isVendorImport = isVendorPermission?.Import ?? false;
 
   const dispatch = useAppDispatch()
   const router = useRouter()
@@ -156,12 +158,18 @@ const ListVendors: React.FC = () => {
     },
     {
       header: '',
-      accessor: 'action',
+      accessor: isVendorEdit ? 'action' : "",
       sortable: false,
       colStyle: '!w-[50px]',
       colalign: "right"
     }
   ]
+
+  useEffect(() => {
+    if (!isVendorView) {
+      router.push('/manage/companies');
+    }
+  }, [isVendorView]);
 
   useEffect(() => {
     if (vendorEditid) {
@@ -472,7 +480,7 @@ const ListVendors: React.FC = () => {
       Payables: <label className={`font-proxima text-sm !font-bold !tracking-[0.02em] ${d?.Status ? '' : 'opacity-50'}`}>
         ${formatCurrency(d?.Payables)}
       </label>,
-      action: <Actions id={d?.Id} vendorName={d?.Name} recordNumber={d?.RecordNo} status={d?.Status} actions={d?.Status ? [isEdit && 'Edit Details', 'Inactive'].filter(Boolean) : ['Active']} handleClick={handleMenuChange} />
+      action: <Actions id={d?.Id} vendorName={d?.Name} recordNumber={d?.RecordNo} status={d?.Status} actions={d?.Status ? ['Edit Details', 'Inactive'].filter(Boolean) : ['Active']} handleClick={handleMenuChange} />
     })
   )
 
@@ -548,6 +556,26 @@ const ListVendors: React.FC = () => {
     router.push('/vendors-duplication')
   }
 
+  let noDataContent
+
+  if (vendorListData.length === 0) {
+    if (isLoading) {
+      noDataContent = (
+        <div className='flex h-full w-full items-center justify-center'>
+          <Loader size='md' helperText />
+        </div>
+      )
+    } else {
+      noDataContent = (
+        <div className='sticky flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]'>
+          No records available at the moment.
+        </div>
+      )
+    }
+  } else {
+    noDataContent = ''
+  }
+
   return (
     <Wrapper>
       {/* Navbar */}
@@ -578,19 +606,19 @@ const ListVendors: React.FC = () => {
                       <FilterIcon />
                     </div>
                   </BasicTooltip>
-                  {isCreate && <BasicTooltip position='bottom' content='Create' className='!z-[6] !cursor-pointer !px-0'>
+                  {isVendorCreate && <BasicTooltip position='bottom' content='Create' className='!z-[6] !cursor-pointer !px-0'>
                     <div className='flex justify-center items-center cursor-pointer' onClick={handleDrawerOpen}>
                       <CreateIcon />
                     </div>
                   </BasicTooltip>}
-                  {(accountingTool === 4 && isImport) ? <BasicTooltip content={`Import`} position='bottom' className='!z-[6] !px-0'>
+                  {(accountingTool === 4 && isVendorImport) ? <BasicTooltip content={`Import`} position='bottom' className='!z-[6] !px-0'>
                     <div className="overflow-hidden flex justify-center items-center">
                       <div className={`${isImporting && 'animate-spin-y'}`} onClick={() => setIsImportModalOpen(true)}>
                         <ImportIcon />
                       </div>
                     </div>
                   </BasicTooltip>
-                    : accountingTool != 4 && isSync && <BasicTooltip position='bottom' content='Sync' className='!z-[6] !cursor-pointer !px-0'>
+                    : accountingTool != 4 && isVendorSync && <BasicTooltip position='bottom' content='Sync' className='!z-[6] !cursor-pointer !px-0'>
                       <div className={`flex justify-center items-center cursor-pointer ${isSyncing && 'animate-spin'}`} onClick={() => setIsSyncModalOpen(true)}>
                         <SyncIcon />
                       </div>
@@ -618,7 +646,8 @@ const ListVendors: React.FC = () => {
               )}
               <div ref={tableBottomRef} />
             </div>
-            <DataLoadingStatus isLoading={isLoading} data={vendorList} />
+            {noDataContent}
+            {/* <DataLoadingStatus isLoading={isLoading} data={vendorList} /> */}
           </div>
 
           {/* Sync Modal */}

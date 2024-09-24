@@ -49,7 +49,7 @@ export const BillsPaymentData = [
     Vendor: 'The Home Depot Inc.',
     BillNumber: 'INV1941',
     BillDate: 'June 10, 2024',
-    TransactionType: 'Account Payable',
+    TransactionType: 'Accounts Payable',
     CreatedDate: 'June 10, 2024',
     CreatedBy: 'Bhavik Shah',
     ModifiedBy: 'Ajay Shah',

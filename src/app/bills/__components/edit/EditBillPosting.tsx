@@ -36,7 +36,7 @@ import {
 import { format } from 'date-fns'
 import { useSession } from 'next-auth/react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { BasicTooltip, DataTable, Toast } from 'pq-ap-lib'
+import { BasicTooltip, DataTable, Loader, Toast } from 'pq-ap-lib'
 import { Resizable } from 're-resizable'
 import { RefObject, useEffect, useRef, useState } from 'react'
 
@@ -76,6 +76,8 @@ const EditBillPosting = ({ processtype }: any) => {
   const [formFields, setFormFields] = useState<{ [x: string]: string | number | null }>({})
   const [hasFormFieldErrors, setHasFormFieldErrors] = useState<{ [x: string]: boolean }>({})
   const [hasFormFieldLibraryErrors, setHasFormFieldLibraryErrors] = useState<{ [x: string]: boolean }>({})
+
+  const [checkFormFieldErrors, setCheckFormFieldErrors] = useState<{ [x: string]: boolean }>({})
 
   const [generateFormFieldsErrorObj, setGenerateFormFieldsErrorObj] = useState<any>([])
   const [generateLinetItemFieldsErrorObj, setGenerateLinetItemFieldsErrorObj] = useState<any>([])
@@ -118,6 +120,8 @@ const EditBillPosting = ({ processtype }: any) => {
   const rightBoxRef = useRef<any>(null)
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isBillDataLoading, setIsBillDataLoading] = useState<boolean>(false)
+  const [isLineItemDataLoading, setIsLineItemDataLoading] = useState<boolean>(false)
   const [processCheck, setProcessCheck] = useState<boolean>(false)
 
   const [fileBlob, setFileBlob] = useState<any>('')
@@ -151,6 +155,7 @@ const EditBillPosting = ({ processtype }: any) => {
   const lazyRows = 10
 
   const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any, mainFieldListOptions: any, generateLinetItemFieldsErrorObj: any, vendorOptions: any) => {
+    setIsBillDataLoading(true)
     try {
       const response = await agent.APIs.getDocumentDetails({
         Id: Number(activeBill as string),
@@ -171,19 +176,20 @@ const EditBillPosting = ({ processtype }: any) => {
         )
 
         if (newLineItems.length === 0) {
-          setLineItemsFieldsData([
+          await setLineItemsFieldsData([
             {
               ...lineItemsFieldsDataObj,
               Index: 1,
             },
           ])
         } else {
-          setLineItemsFieldsData(newLineItems)
-          setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
+          await setLineItemsFieldsData(newLineItems)
+          await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
         }
+        setIsBillDataLoading(false)
 
-        setFormFields(updatedDataObj)
-        setHasFormFieldLibraryErrors(updatedDataErrorObj)
+        await setFormFields(updatedDataObj)
+        await setHasFormFieldLibraryErrors(updatedDataErrorObj)
 
         await getPDFUrl(
           responseData?.FilePath,
@@ -200,6 +206,7 @@ const EditBillPosting = ({ processtype }: any) => {
       }
     } catch (error) {
       Toast.error('Something Went Wrong!')
+      setIsBillDataLoading(false)
     }
   }
 
@@ -223,40 +230,43 @@ const EditBillPosting = ({ processtype }: any) => {
         lineItemsFieldsDataObj,
       } = await fetchAPIsData(processtype, AccountingTool as number, 'edit', CompanyId as number)
 
-      setVendorOptions(vendorOptions.map((value: any) => ({
+      await setVendorOptions(vendorOptions.map((value: any) => ({
         value: value.value,
         label: value.code ? `${value.code} - ${value.label}` : value.label
       })))
-      setVendorGLTermOptions(vendorOptions)
-      setTermOptions(termOptions)
-      setDefaultTermOptions(defaultTermOptions)
-      setAccountOptions(accountOptions.map((value: any) => ({
+      await setVendorGLTermOptions(vendorOptions)
+      await setTermOptions(termOptions)
+      await setDefaultTermOptions(defaultTermOptions)
+      await setAccountOptions(accountOptions.map((value: any) => ({
         value: value.value,
         label: value.code ? `${value.code} - ${value.label}` : value.label
       })))
-      setLocationOptions(locationOptions.map((value: any) => ({
+      await setLocationOptions(locationOptions.map((value: any) => ({
         value: value.value,
         label: value.code ? `${value.code} - ${value.label}` : value.label
       })))
-      setProcessOptions(processOptions)
-      setStatusOptions(statusOptions)
-      setUserOptions(userOptions)
+      await setProcessOptions(processOptions)
+      await setStatusOptions(statusOptions)
+      await setUserOptions(userOptions)
 
-      setGenerateFormFieldsErrorObj(generateFormFieldsErrorObj)
-      setGenerateLinetItemFieldsErrorObj(generateLinetItemFieldsErrorObj)
+      await setGenerateFormFieldsErrorObj(generateFormFieldsErrorObj)
+      await setGenerateLinetItemFieldsErrorObj(generateLinetItemFieldsErrorObj)
 
-      setFormFields(generateFormFields)
-      setHasFormFieldErrors(generateFormFieldsErrorObj)
-      setHasFormFieldLibraryErrors(generateFormFieldsErrorObj)
+      await setFormFields(generateFormFields)
 
-      setHasLineItemFieldErrors([generateLinetItemFieldsErrorObj])
-      setHasLineItemFieldLibraryErrors([generateLinetItemFieldsErrorObj])
+      await setCheckFormFieldErrors(generateFormFieldsErrorObj)
 
-      setLineItemFieldColumns(lineItemFieldColumns)
-      setLineItemsFieldsDataObj(lineItemsFieldsDataObj)
+      await setHasFormFieldErrors(generateFormFieldsErrorObj)
+      await setHasFormFieldLibraryErrors(generateFormFieldsErrorObj)
+
+      await setHasLineItemFieldErrors([generateLinetItemFieldsErrorObj])
+      await setHasLineItemFieldLibraryErrors([generateLinetItemFieldsErrorObj])
+
+      await setLineItemFieldColumns(lineItemFieldColumns)
+      await setLineItemsFieldsDataObj(lineItemsFieldsDataObj)
 
       if (lineItemsFieldsData.length === 0 || lineItemsFieldsData === null) {
-        setLineItemsFieldsData([
+        await setLineItemsFieldsData([
           {
             ...lineItemsFieldsDataObj,
             Index: 1,
@@ -278,11 +288,11 @@ const EditBillPosting = ({ processtype }: any) => {
         lineItemConfiguration
       )
 
-      setMainFieldListOptions(mainFieldConfiguration)
-      setLineItemFieldListOptions(lineItemConfiguration)
+      await setMainFieldListOptions(mainFieldConfiguration)
+      await setLineItemFieldListOptions(lineItemConfiguration)
 
       if (activeBill) {
-        getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldConfiguration, generateLinetItemFieldsErrorObj, vendorOptions)
+        await getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldConfiguration, generateLinetItemFieldsErrorObj, vendorOptions)
       }
 
       setIsLoading(false)
@@ -339,6 +349,7 @@ const EditBillPosting = ({ processtype }: any) => {
   }, [selectedProcessTypeInList])
 
   const fetchBillsData = async (pageIndex?: number) => {
+    setIsLineItemDataLoading(true)
     const dateRangeVal = filterFormFields.ft_datepicker.split('to')
     let UserId
     switch (filterFormFields.ft_assignee) {
@@ -385,6 +396,7 @@ const EditBillPosting = ({ processtype }: any) => {
 
           setApiDataCount(newTotalCount)
 
+          setIsLineItemDataLoading(false)
           let updatedData = []
           if (pageIndex === 1) {
             updatedData = [...newList]
@@ -437,7 +449,7 @@ const EditBillPosting = ({ processtype }: any) => {
         const newTotalCount = responseData?.ListCount || 0
 
         setApiDataCount(newTotalCount)
-
+        setIsLineItemDataLoading(false)
         let updatedData = []
         if (pageIndex === 1) {
           updatedData = [...newList]
@@ -556,7 +568,7 @@ const EditBillPosting = ({ processtype }: any) => {
     }
   }
 
-  const onChangeTableFieldValue = (currentIndex: any, value: any, key: string) => {
+  const onChangeTableFieldValue = async (currentIndex: any, value: any, key: string) => {
     if (key === 'quantity') {
       if (value.includes('.') || value.toString().length > 3 || value < 0 || value > 500 || value === '000' || value === '00') {
         return
@@ -591,9 +603,9 @@ const EditBillPosting = ({ processtype }: any) => {
               const newLineItemsFieldArray = hasLineItemFieldLibraryErrors.map((item) => {
                 return {
                   ...item,
-                  amount: isNaN(parseFloat(`${calculatedAmount}`))
-                    ? false
-                    : true,
+                  // amount: isNaN(parseFloat(`${calculatedAmount}`))
+                  //   ? false
+                  //   : true,
                 }
               })
               setHasLineItemFieldLibraryErrors(newLineItemsFieldArray)
@@ -601,9 +613,9 @@ const EditBillPosting = ({ processtype }: any) => {
             return {
               ...i,
               [key]: fractionColumn.includes(key) ? convertFractionToRoundValue(value) : value,
-              amount: isNaN(parseFloat(`${calculatedAmount}`))
-                ? '0'
-                : convertFractionToRoundValue(parseFloat(`${calculatedAmount}`)),
+              // amount: isNaN(parseFloat(`${calculatedAmount}`))
+              //   ? '0'
+              //   : convertFractionToRoundValue(parseFloat(`${calculatedAmount}`)),
             }
           } else {
             const calculatedAmount =
@@ -637,7 +649,7 @@ const EditBillPosting = ({ processtype }: any) => {
         return i
       })
 
-    setLineItemsFieldsData(newArr)
+    await setLineItemsFieldsData(newArr)
   }
 
   const handleApplyFilter = async () => {
@@ -849,9 +861,9 @@ const EditBillPosting = ({ processtype }: any) => {
     }
   }
 
-  const setFormValues = (key: string, value: string | number) => {
+  const setFormValues = async (key: string, value: string | number) => {
     if (key === 'date') {
-      if (formFields.hasOwnProperty('term') && formFields.term) {
+      if (checkFormFieldErrors.hasOwnProperty('term') && formFields.term) {
         const filterTerm = defaultTermOptions?.find((t: any) => t.Id === formFields.term)
         let formattedDueDateCalculated = ''
 
@@ -865,17 +877,28 @@ const EditBillPosting = ({ processtype }: any) => {
             dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
         }
 
-        setFormFields({
+        await setFormFields({
           ...formFields,
           [key]: value,
-          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
           duedate: formattedDueDateCalculated,
         })
+        await setHasFormFieldLibraryErrors({
+          ...hasFormFieldLibraryErrors,
+          [key]: value ? true : false,
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value ? true : false } : {}),
+          duedate: formattedDueDateCalculated ? true : false,
+        })
       } else {
-        setFormFields({
+        await setFormFields({
           ...formFields,
           [key]: value,
-          ...(lineItemsFieldsDataObj.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
+        })
+        await setHasFormFieldLibraryErrors({
+          ...hasFormFieldLibraryErrors,
+          [key]: value ? true : false,
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value ? true : false } : {}),
         })
       }
       return
@@ -895,10 +918,15 @@ const EditBillPosting = ({ processtype }: any) => {
           dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
       }
 
-      setFormFields({
+      await setFormFields({
         ...formFields,
         [key]: value,
         duedate: formattedDueDateCalculated,
+      })
+      await setHasFormFieldLibraryErrors({
+        ...hasFormFieldLibraryErrors,
+        [key]: value ? true : false,
+        duedate: formattedDueDateCalculated ? true : false,
       })
       return
     }
@@ -921,27 +949,31 @@ const EditBillPosting = ({ processtype }: any) => {
         }
       })
 
-      setFormFields({
+      await setFormFields({
         ...formFields,
         [key]: value,
-        term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '',
-        [payToName]: value,
-        [returnToName]: value,
+        ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
       })
-      setHasFormFieldLibraryErrors({
+      await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
-        term: selectedVendorObj?.Term ? true : false,
-        [payToName]: true,
-        [returnToName]: true,
+        ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
       })
-      setLineItemsFieldsData(newLineItemsObj)
-      setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
+      await setLineItemsFieldsData(newLineItemsObj)
+      await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
       return
     }
 
-    setFormFields({
+    await setFormFields({
       ...formFields,
       [key]: value,
+    })
+    await setHasFormFieldLibraryErrors({
+      ...hasFormFieldLibraryErrors,
+      [key]: value ? true : false,
     })
   }
 
@@ -1164,40 +1196,44 @@ const EditBillPosting = ({ processtype }: any) => {
             </div>
           </Resizable>
         )}
-        <div className='custom-scroll !z-0 h-[100vh] w-full overflow-auto border-l border-solid border-lightSilver'>
-          <EditBillForm
-            selectedProcessTypeInList={selectedProcessTypeInList}
-            mainFieldListOptions={mainFieldListOptions}
-            formFields={formFields}
-            setFormValues={setFormValues}
-            hasFormFieldErrors={hasFormFieldErrors}
-            setHasFormFieldErrors={setHasFormFieldErrors}
-            hasFormFieldLibraryErrors={hasFormFieldLibraryErrors}
-            setHasFormFieldLibraryErrors={setHasFormFieldLibraryErrors}
-            documentDetailByIdData={documentDetailByIdData}
-            vendorOptions={vendorOptions}
-            termOptions={termOptions}
-            defaultFormFieldErrorObj={generateFormFieldsErrorObj}
-          />
-        </div>
+        {isLoading || isLineItemDataLoading || isBillDataLoading
+          ? <div className='h-[80vh] w-full flex justify-center'>
+            <Loader size='md' helperText />
+          </div> : <div className='custom-scroll !z-0 h-[100vh] w-full overflow-auto border-l border-solid border-lightSilver'>
+            <EditBillForm
+              selectedProcessTypeInList={selectedProcessTypeInList}
+              mainFieldListOptions={mainFieldListOptions}
+              formFields={formFields}
+              setFormValues={setFormValues}
+              hasFormFieldErrors={hasFormFieldErrors}
+              setHasFormFieldErrors={setHasFormFieldErrors}
+              hasFormFieldLibraryErrors={hasFormFieldLibraryErrors}
+              setHasFormFieldLibraryErrors={setHasFormFieldLibraryErrors}
+              documentDetailByIdData={documentDetailByIdData}
+              vendorOptions={vendorOptions}
+              termOptions={termOptions}
+              defaultFormFieldErrorObj={generateFormFieldsErrorObj}
+            />
+          </div>}
       </div>
 
       <div className='custom-scroll !min-h-[253px] overflow-auto' style={{ width: '100%' }}>
-        {table_data && (
-          <DataTable
-            data={table_data ?? []}
-            getExpandableData={() => { }}
-            columns={lineItemFieldColumns}
-            sticky
-            hoverEffect
-            userClass='!z-[1] !top-[56px] unset'
-            getRowId={(value: any) => {
-              setHoveredRow(value)
-            }}
-            isTableLayoutFixed={true}
-            isHeaderTextBreak={true}
-          />
-        )}
+        {isLoading || isLineItemDataLoading || isBillDataLoading ? <div className='h-full w-full flex justify-center items-center'> <Loader size='md' helperText /></div>
+          : table_data && (
+            <DataTable
+              data={table_data ?? []}
+              getExpandableData={() => { }}
+              columns={lineItemFieldColumns}
+              sticky
+              hoverEffect
+              userClass='!z-[1] !top-[56px] unset'
+              getRowId={(value: any) => {
+                setHoveredRow(value)
+              }}
+              isTableLayoutFixed={true}
+              isHeaderTextBreak={true}
+            />
+          )}
       </div>
 
       <div className='flex flex-col items-end px-5 pb-[77px] pt-[34px]'>

@@ -13,7 +13,7 @@ import React, { useEffect, useState } from 'react';
 import ChartTypeDropdown from '../modal/ChartType';
 import DashboardFilter from '../modal/DashboardFilter';
 import ExpandModal from '../modal/ExpandModal';
-import { Typography } from 'pq-ap-lib';
+import { Loader, Typography } from 'pq-ap-lib';
 
 const OnTimeVsMissedProcessing: React.FC<any> = ({ LocationOption }) => {
     const { data: session } = useSession()
@@ -28,6 +28,7 @@ const OnTimeVsMissedProcessing: React.FC<any> = ({ LocationOption }) => {
     const [chartType, setChartType] = useState<string>('column');
     const [isStacked, setIsStacked] = useState<boolean>(false);
     const [isMonthWise, setIsMonthWise] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false)
 
     const getOnTimeVsMissedDashboard = (newFilterFields: any) => {
         const startDate = new Date(newFilterFields?.StartDate);
@@ -35,6 +36,7 @@ const OnTimeVsMissedProcessing: React.FC<any> = ({ LocationOption }) => {
         const dayDifference = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
         const isMonthWiseData = dayDifference > 31;
         setIsMonthWise(isMonthWiseData);
+        setIsLoading(true)
 
         const params = {
             IsMonthWise: isMonthWiseData,
@@ -45,6 +47,9 @@ const OnTimeVsMissedProcessing: React.FC<any> = ({ LocationOption }) => {
         }
         performApiAction(dispatch, getOnTimeProcessingVsMissedProcessingBills, params, (responseData: any) => {
             setChartData(responseData)
+            setIsLoading(false)
+        }, () => {
+            setIsLoading(false)
         })
     }
 
@@ -255,7 +260,7 @@ const OnTimeVsMissedProcessing: React.FC<any> = ({ LocationOption }) => {
                 <div className='laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 flex justify-between border-lightSilver w-full border-b-2 chart_header'>
                     <div className="header items-center flex">
                         <Typography type='h5' className='title !text-base hd:!text-lg 2xl:!text-lg 3xl:!text-lg font-proxima font-semibold tracking-[0.02em] text-darkCharcoal'>
-                            On-time Processing vs. Missed Processing Bills
+                            On-time processing vs. missed processing bills
                         </Typography>
                     </div>
                     <div className='flex justify-center items-center'>
@@ -273,7 +278,11 @@ const OnTimeVsMissedProcessing: React.FC<any> = ({ LocationOption }) => {
                 </div>
             </div>
             <div className='main_chart w-full'>
-                <HighchartsReact highcharts={Highcharts} options={getChartOptions()} />
+                {isLoading
+                    ? <div className='h-[400px] w-full flex justify-center'>
+                        <Loader size='md' helperText/>
+                    </div>
+                    : <HighchartsReact highcharts={Highcharts} options={getChartOptions()} />}
             </div>
 
             <ExpandModal

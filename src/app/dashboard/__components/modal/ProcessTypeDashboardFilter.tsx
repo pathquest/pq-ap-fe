@@ -6,11 +6,11 @@ import React, { useEffect, useRef, useState } from 'react';
 
 export const processOptions = [
     {
-        label: 'Account Payable',
+        label: 'Accounts Payable',
         value: '1',
     },
     {
-        label: 'Account Adjustment',
+        label: 'Accounts Adjustment',
         value: '2',
     }
 ]
@@ -50,26 +50,16 @@ const ProcessTypeDashboardFilter: React.FC<any> = ({
     }, [filterFields]);
 
     useEffect(() => {
-        // if (locationOption.length > 0) {
-        //     // const allLocation = locationOption.map((option: any) => option.value)
-        //     setSelectedLocation([]);
-        //     let newFilterFields = {
-        //         LocationIds: [],
-        //         Date: selectedDate,
-        //         ProcessType: processType,
-        //     }
-        //     dispatch(setSummaryFilter(newFilterFields));
-        // }
-        // else {
-            setSelectedLocation([]);
+        if (locationOption.length > 0) {
+            const allLocation = locationOption.map((option: any) => option.value)
             let newFilterFields = {
-                LocationIds: [],
+                LocationIds: allLocation,
                 Date: selectedDate,
                 ProcessType: processType,
             }
             dispatch(setSummaryFilter(newFilterFields));
-        // }
-    }, [CompanyId])
+        }
+    }, [CompanyId, locationOption])
 
     useEffect(() => {
         const handleOutsideClick = (event: MouseEvent) => {
@@ -112,8 +102,7 @@ const ProcessTypeDashboardFilter: React.FC<any> = ({
     }
 
     const resetFilter = () => {
-        // setSelectedLocation(locationOption.map((option: any) => option.value));
-        setSelectedLocation([]);
+        setSelectedLocation(locationOption.map((option: any) => option.value));
         setProcessType(processOptions.map((option: any) => option.value))
         setSelectedDate(formattedDate)
         setIsResetClicked(true);

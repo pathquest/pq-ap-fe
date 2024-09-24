@@ -83,6 +83,7 @@ export interface ColumnFilterDropdownProps {
 
 export interface StatusType {
   statusList: Option[];
+  onSuccessApply:any
 }
 export interface StatusListData {
   label: string

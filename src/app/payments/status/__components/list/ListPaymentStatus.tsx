@@ -31,15 +31,23 @@ import Filter from '../modal/Filter'
 import PaymentInfoIcon from '@/assets/Icons/PaymentInfoIcon'
 import Download from '../dropdown/Download'
 import RowDownload from '@/components/Common/Custom/Download'
+import { useRouter } from 'next/navigation'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
 
 const ListPaymentStatus: React.FC = () => {
   // For Dynamic Company Id & AccountingTool
   const { selectedCompany } = useAppSelector((state) => state.user)
   const { filterFields, statusIdList } = useAppSelector((state) => state.paymentStatus)
   const CompanyId = selectedCompany?.value
-  const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
   const dispatch = useAppDispatch()
+  const router = useRouter()
+
+  const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
   const { showPDFViewerModal, PDFUrl, setPDFUrl, fileBlob, isPdfLoading } = usePdfViewer()
+
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isPaymentPermission = getModulePermissions(processPermissionsMatrix, "Payments") ?? {}
+  const isPaymentStatusView = isPaymentPermission["Payment Status"]?.View ?? false;
 
   const userId = localStorage.getItem('UserId')
   const selectRef = useRef<HTMLDivElement>(null)
@@ -179,6 +187,12 @@ const ListPaymentStatus: React.FC = () => {
     OrderColumn: '',
     OrderBy: 0,
   }
+
+  useEffect(() => {
+    if (!isPaymentStatusView) {
+      router.push('/manage/companies');
+    }
+  }, [isPaymentStatusView]);
 
   useEffect(() => {
     setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-full laptop:w-[calc(100vw-85px)]' : 'w-full laptop:w-[calc(100vw-200px)]')
@@ -417,7 +431,7 @@ const ListPaymentStatus: React.FC = () => {
 
   useEffect(() => {
     getPaymentStatusList(1)
-  }, [refreshTable, statusIdList, CompanyId, filterFields, orderBy])
+  }, [refreshTable, CompanyId, filterFields, orderBy])
 
   useEffect(() => {
     if (CompanyId) {
@@ -723,6 +737,10 @@ const ListPaymentStatus: React.FC = () => {
     openPDFInNewWindow(URL.createObjectURL(new Blob([blob], { type: 'application/pdf' })), fileName)
   }
 
+  const onSuccessApply = () => {
+    getPaymentStatusList(1)
+  }
+
   return (
     <Wrapper>
       <div className={`sticky top-0 ${isDownloadClicked ? "z-[7]" : "z-[6]"} flex h-[66px] w-full items-center justify-between bg-whiteSmoke px-5`}>
@@ -734,7 +752,7 @@ const ListPaymentStatus: React.FC = () => {
         ) : (
           <>
             <div className='w-1/3'>
-              <Status key={CompanyId} statusList={statusList} />
+              <Status key={CompanyId} statusList={statusList} onSuccessApply={onSuccessApply} />
             </div>
             <div className='w-full h-full flex justify-end items-center laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5'>
               <div className='flex items-center h-full relative cursor-pointer'
@@ -758,35 +776,6 @@ const ListPaymentStatus: React.FC = () => {
           </>
         )}
       </div>
-      {/* <div className={`custom-scroll h-[calc(100vh-145px)] approvalMain overflow-auto ${tableDynamicWidth}`}>
-        <div className={`expandableTable ${paymentStatusData.length === 0 ? 'h-11' : 'h-auto'}`}>
-          <DataTable
-            columns={columns}
-            data={paymentStatusData ?? []}
-            hoverEffect
-            sticky
-            zIndex={5}
-            lazyLoadRows={lazyRows}
-            isTableLayoutFixed={true}
-            expandable
-            getExpandableData={() => { }}
-            getRowId={() => { }}
-          />
-          {isLazyLoading && !isLoading && (
-            <Loader size='sm' helperText />
-          )}
-          <div ref={tableBottomRef} />
-        </div>
-        {paymentStatusData.length === 0 ? (
-          isLoading ?
-            <div className='flex h-[calc(94vh-150px)] w-full items-center justify-center'>
-              <Loader size='md' helperText />
-            </div>
-            : <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
-              No records available at the moment.
-            </div>
-        ) : ''}
-      </div> */}
 
       {isOpenDetailsView ? (
         <>

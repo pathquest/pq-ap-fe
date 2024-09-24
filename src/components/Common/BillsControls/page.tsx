@@ -1,12 +1,49 @@
 'use client'
 
+import { Select } from '@/app/vendors/__components/Selectdropdown/Select'
 import { todayDate } from '@/data/billPosting'
 import { isDateInFormat } from '@/utils'
+import { getPDFUrl } from '@/utils/billposting'
 import { format, parse, parseISO } from 'date-fns'
-import { CheckBox, Datepicker, Radio, Select, Text, Typography, Uploader } from 'pq-ap-lib'
-import React from 'react'
+import { CheckBox, Datepicker, Radio, Text, Typography, Uploader } from 'pq-ap-lib'
+import React, { useState } from 'react'
 
 const BillsControlFields = ({ formFields }: billsFormFieldsProps) => {
+  const [PDFUrlModal, setPDFModalUrl] = useState<any>('')
+
+  const [isNewWindowUpdate, setIsNewWindowUpdate] = useState(false)
+  const [currentWindow, setCurrentWindow] = useState<any>(null)
+
+  const openPDFInNewWindow = (pdfUrl: string | URL | undefined, fileName: string) => {
+    const newWindow: any = window.open(pdfUrl, '_blank', 'width=800,height=600')
+
+    setTimeout(() => {
+      if (newWindow && newWindow.document) {
+        newWindow.document.title = fileName
+      }
+    }, 1000)
+
+    setCurrentWindow(newWindow)
+
+    const intervalId = setInterval(() => {
+      if (newWindow.closed) {
+        clearInterval(intervalId)
+        setCurrentWindow(null)
+      }
+    }, 500)
+  }
+
+  const openInNewWindow = (blob: Blob, fileName: string) => {
+    if (currentWindow && !currentWindow.closed) {
+      currentWindow.location.href = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }))
+      setTimeout(function () {
+        currentWindow.document.title = fileName
+      }, 1000)
+    } else {
+      openPDFInNewWindow(URL.createObjectURL(new Blob([blob], { type: 'application/pdf' })), fileName)
+    }
+  }
+
   return (
     <>
       {formFields &&
@@ -172,10 +209,27 @@ const BillsControlFields = ({ formFields }: billsFormFieldsProps) => {
                               {Array.isArray(item?.Value) &&
                                 item.Value.length > 0 &&
                                 item.Value?.map((file: FileObj) => {
+                                  const fileExtension = file.FilePath?.split('.').pop()?.toLowerCase()
                                   return (
                                     <div
                                       key={file.Id}
-                                      className='mb-2 mr-2  flex items-center gap-2 rounded-[2px] bg-whiteSmoke px-[12px] py-[2.5px] text-[14px] text-darkCharcoal'
+                                      className={`${!['jpeg', 'png', 'jpg'].includes(fileExtension) && 'hover:cursor-pointer'} mb-2 mr-2 flex items-center gap-2 rounded-[2px] bg-whiteSmoke px-[12px] py-[2.5px] text-[14px] text-darkCharcoal`}
+                                      onClick={async () => {
+                                        await getPDFUrl(
+                                          file.FilePath,
+                                          file.FileName,
+                                          setPDFModalUrl,
+                                          null,
+                                          (fileBlob: Blob) => {
+                                            openInNewWindow(fileBlob, file.FilePath);
+                                          },
+                                          () => { },
+                                          isNewWindowUpdate,
+                                          currentWindow,
+                                          openInNewWindow,
+                                          setIsNewWindowUpdate
+                                        );
+                                      }}
                                     >
                                       {file.FileName}
                                     </div>

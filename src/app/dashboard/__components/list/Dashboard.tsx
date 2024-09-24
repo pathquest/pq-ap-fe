@@ -17,30 +17,44 @@ import ProcessedVsPaymentNotApproved from '../charts/ProcessedVsPaymentNotApprov
 import Summary from '../charts/Summary'
 import TotalPostedBillsByMonth from '../charts/TotalPostedBillsByMonth'
 import VendorWiseMonthlyPayment from '../charts/VendorWiseMonthlyPayment'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
+import { useRouter } from 'next/navigation'
 
 const Dashboard: React.FC = () => {
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
+  const router = useRouter()
   const dispatch = useAppDispatch()
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
-  const [isLoading, setIsLoading] = useState(true)
-
   const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-500px)] laptopMd:w-[calc(100vw-85px)]')
+
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isDashboardPermission = getModulePermissions(processPermissionsMatrix, "Dashboard") ?? {}
+
+  const isStaffAccountantView = isDashboardPermission["Staff Accountant"]?.View ?? false;
+  const isManagerView = isDashboardPermission["Manager"]?.View ?? false;
+  const isPracticeView = isDashboardPermission["Practice"]?.View ?? false;
+
+  const [locationOption, setLocationOption] = useState<Option[]>([])
+
   useEffect(() => {
     setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-[calc(100vw-85px)] laptop:w-[calc(100vw-85px)] laptopMd:w-[calc(100vw-85px)]' : 'laptop:w-[calc(100vw-200px)] laptopMd:w-[calc(100vw-200px)]')
   }, [isLeftSidebarCollapsed])
 
-  const [locationOption, setLocationOption] = useState<Option[]>([])
+
+  useEffect(() => {
+    if (!isStaffAccountantView && !isManagerView && !isPracticeView) {
+      router.push('/manage/companies');
+    }
+  }, [isStaffAccountantView, isManagerView, isPracticeView]);
 
   const getLocationDropdownList = () => {
-    setIsLoading(true)
     const params = {
       CompanyId: CompanyId,
       IsActive: true,
     }
     performApiAction(dispatch, locationListDropdown, params, (responseData: any) => {
       setLocationOption(responseData)
-      setIsLoading(false)
     })
   }
 
@@ -59,50 +73,39 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {
-        isLoading ? (
-          <div className='flex h-[calc(100vh-145px)] w-full items-center justify-center'>
-            <Loader size='md' helperText />
-          </div>
-        ) : (
-          <>
-            <div className={`${tableDynamicWidth}`}>
-              <Summary LocationOption={locationOption} />
-            </div>
+      <div className={`${tableDynamicWidth}`}>
+        <Summary LocationOption={locationOption} />
+      </div>
 
-            <div className={`flex px-4 hd:px-5 2xl:px-5 3xl:px-5 laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5`}>
-              <div>
-                <Insights />
-              </div>
-              <div className={`overflow-auto ${isLeftSidebarCollapsed ? "w-[calc(100vw-373px)] hd:w-[calc(100vw-389px)] 2xl:w-[calc(100vw-389px)] 3xl:w-[calc(100vw-389px)]" : "md:w-[calc(75vw)] laptop:w-[calc(100vw-488px)] laptopMd:w-[calc(100vw-488px)] hd:w-[calc(100vw-504px)] 2xl:w-[calc(100vw-504px)] 3xl:w-[calc(100vw-504px)]"}`}>
-                <TotalPostedBillsByMonth LocationOption={locationOption} />
-              </div>
-            </div>
+      <div className={`flex px-4 hd:px-5 2xl:px-5 3xl:px-5 laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5`}>
+        <div>
+          <Insights />
+        </div>
+        <div className={`overflow-auto ${isLeftSidebarCollapsed ? "w-[calc(100vw-373px)] hd:w-[calc(100vw-389px)] 2xl:w-[calc(100vw-389px)] 3xl:w-[calc(100vw-389px)]" : "md:w-[calc(75vw)] laptop:w-[calc(100vw-488px)] laptopMd:w-[calc(100vw-488px)] hd:w-[calc(100vw-504px)] 2xl:w-[calc(100vw-504px)] 3xl:w-[calc(100vw-504px)]"}`}>
+          <TotalPostedBillsByMonth LocationOption={locationOption} />
+        </div>
+      </div>
 
-            <div className={`flex py-4 hd:py-5 2xl:py-5 3xl:py-5 px-4 hd:px-5 2xl:px-5 3xl:px-5 laptop:h-[600px] laptopMd:h-[600px] lg:h-[600px] xl:h-[600px] hd:h-[720px] 2xl:h-[720px] 3xl:h-[720px] laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5 overflow-auto ${tableDynamicWidth}`}>
-              <div className='w-1/2 rounded shadow-md overflow-auto border border-lightSilver'>
-                <VendorWiseMonthlyPayment LocationOption={locationOption} />
-              </div>
-              <div className='w-1/2 rounded shadow-md overflow-auto border-y border-r border-lightSilver'>
-                <BillApprovalStatus LocationOption={locationOption} />
-              </div>
-            </div>
+      <div className={`flex py-4 hd:py-5 2xl:py-5 3xl:py-5 px-4 hd:px-5 2xl:px-5 3xl:px-5 laptop:h-[600px] laptopMd:h-[600px] lg:h-[600px] xl:h-[600px] hd:h-[720px] 2xl:h-[720px] 3xl:h-[720px] laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5 overflow-auto ${tableDynamicWidth}`}>
+        <div className='w-1/2 rounded shadow-md overflow-auto border border-lightSilver'>
+          <VendorWiseMonthlyPayment LocationOption={locationOption} />
+        </div>
+        <div className='w-1/2 rounded shadow-md overflow-auto border-y border-r border-lightSilver'>
+          <BillApprovalStatus LocationOption={locationOption} />
+        </div>
+      </div>
 
-            <div className={`px-4 hd:px-5 2xl:px-5 3xl:px-5 ${tableDynamicWidth}`}>
-              <OnTimeVsMissedProcessing LocationOption={locationOption} />
-            </div>
+      <div className={`px-4 hd:px-5 2xl:px-5 3xl:px-5 ${tableDynamicWidth}`}>
+        <OnTimeVsMissedProcessing LocationOption={locationOption} />
+      </div>
 
-            <div className={`py-4 hd:py-5 2xl:py-5 3xl:py-5 px-4 hd:px-5 2xl:px-5 3xl:px-5 ${tableDynamicWidth}`}>
-              <PaidAfterVsPaidBeforeDueDate LocationOption={locationOption} />
-            </div>
+      <div className={`py-4 hd:py-5 2xl:py-5 3xl:py-5 px-4 hd:px-5 2xl:px-5 3xl:px-5 ${tableDynamicWidth}`}>
+        <PaidAfterVsPaidBeforeDueDate LocationOption={locationOption} />
+      </div>
 
-            <div className={`px-4 pb-5 hd:px-5 2xl:px-5 3xl:px-5 ${tableDynamicWidth}`}>
-              <ProcessedVsPaymentNotApproved LocationOption={locationOption} />
-            </div>
-          </>
-        )
-      }
-
+      <div className={`px-4 pb-5 hd:px-5 2xl:px-5 3xl:px-5 ${tableDynamicWidth}`}>
+        <ProcessedVsPaymentNotApproved LocationOption={locationOption} />
+      </div>
     </Wrapper>
   )
 }

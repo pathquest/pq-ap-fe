@@ -6,7 +6,7 @@ import { setStatusIdList } from '@/store/features/paymentstatus/paymentStatusSli
 import { Button, CheckBox } from 'pq-ap-lib'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
-const Status: React.FC<StatusType> = ({ statusList }) => {
+const Status: React.FC<StatusType> = ({ statusList, onSuccessApply }) => {
     // For Dynamic Company Id & AccountingTool
     const { selectedCompany } = useAppSelector((state) => state.user)
     const { statusIdList } = useAppSelector((state) => state.paymentStatus)
@@ -108,7 +108,7 @@ const Status: React.FC<StatusType> = ({ statusList }) => {
     };
 
     const handleListItemKeyDown = (e: React.KeyboardEvent<HTMLLIElement>, option: any, index: number) => {
-        if ((e.key === 'Enter' || e.key === ' ') && e.target instanceof HTMLElement && e.target.tagName == "LI") {
+        if ((e.key === 'Enter') && e.target instanceof HTMLElement && e.target.tagName == "LI") {
             setFocusedIndex(-1);
             handleSelect(option.value)
         } else if (e.key === "ArrowUp" && index > 0 && isOpen) {
@@ -130,6 +130,7 @@ const Status: React.FC<StatusType> = ({ statusList }) => {
     const handleApply = () => {
         setIsOpen(false)
         dispatch(setStatusIdList(selectedValues))
+        onSuccessApply(selectedValues)
     };
 
     return (

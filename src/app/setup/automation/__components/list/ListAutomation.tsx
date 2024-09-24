@@ -20,6 +20,7 @@ import { locationListDropdown } from '@/store/features/master/dimensionSlice'
 import { vendorDropdownList, vendorGetDropdownList } from '@/store/features/vendor/vendorSlice'
 import { Dropdown, Menu, MenuButton, MenuItem } from '@mui/joy'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Button, DataTable, Select, Toast, Typography } from 'pq-ap-lib'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -28,16 +29,18 @@ const ListAutomation: React.FC = () => {
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
   const dispatch = useAppDispatch()
+  const router = useRouter()
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
   const isAutomationEdit = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Automation", "Edit");
   const isAutomationCreate = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Automation", "Create");
+  const isAutomationView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Automation", "View");
 
   const automationOptions = [
     { label: 'All Automation Rules', value: 'AllAutomationRules' },
     { label: 'Workflow', value: 'WorkFlow', isEnable: true },
     { label: 'Bill Approval', value: 'BillApproval', isEnable: true },
     { label: 'Payment Approval', value: 'PaymentApproval', isEnable: true },
-    { label: 'Purchase Order Approval', value: 'PurchaseOrderApproval', isEnable: false }
+    // { label: 'Purchase Order Approval', value: 'PurchaseOrderApproval', isEnable: false }
   ]
 
   const divRef = useRef<HTMLDivElement>(null);
@@ -93,6 +96,12 @@ const ListAutomation: React.FC = () => {
       colalign: "right"
     }
   ]
+
+  useEffect(() => {
+    if (!isAutomationView) {
+      router.push('/manage/companies');
+    }
+  }, [isAutomationView]);
 
   const handleMenuChange = (actionName: string, id: number, optionalData: any, defaultCompany: any) => {
     switch (actionName) {
@@ -184,7 +193,7 @@ const ListAutomation: React.FC = () => {
     }
     modalClose()
     performApiAction(dispatch, ruleActiveInactive, params, () => {
-      Toast.success(`Rule ${ruleStatus === 0 ? isDefaultCompany ? "Inactivated" : "removed" : "activated"} successfully.`)
+      Toast.success(`Rule ${ruleStatus === 0 ? isDefaultCompany ? "inactivated" : "removed" : "activated"} successfully.`)
       setRefreshTable(!refreshTable)
     });
   };
@@ -544,7 +553,7 @@ const ListAutomation: React.FC = () => {
       {/* Sync Modal */}
       <ConfirmationModal
         title='Status'
-        content={`Are you sure you want to ${ruleStatus === 0 ? "Inactive" : "Active"} this company rule?`}
+        content={`Are you sure you want to ${ruleStatus === 0 ? "inactive" : "active"} this company rule?`}
         isModalOpen={isStatusModalOpen}
         modalClose={modalClose}
         handleSubmit={ruleStatusUpdate}

@@ -51,8 +51,6 @@ const Navbar = ({ onData }: any) => {
   const isCloudConfigurationView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Cloud Configuration", "View");
   const isAutomationView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Automation", "View");
   const isPaymentSetupView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Payment Setup", "View");
-  // const isManageUserView = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Users", "View");
-  // const isManageRolesView = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Roles", "View");
 
   const router = useRouter()
   const userId = localStorage.getItem('UserId')
@@ -85,10 +83,10 @@ const Navbar = ({ onData }: any) => {
     },
   ]
 
-  const settingsData = [
+  const masterItems = [
     {
       heading: 'Masters',
-      isHeadingVisible: (isDimensionView || isGLAccountView || isAPTermView || true) ? true : false,
+      isHeadingVisible: (isDimensionView || isGLAccountView || isAPTermView) ? true : false,
       items: [
         {
           name: 'Dimension',
@@ -105,11 +103,11 @@ const Navbar = ({ onData }: any) => {
           href: '/master/apterm',
           isVisible: isAPTermView
         },
-        {
-          name: 'Product Service',
-          href: '/master/productservice',
-          isVisible: true
-        },
+        // {
+        //   name: 'Product Service',
+        //   href: '/master/productservice',
+        //   isVisible: true
+        // },
         // {
         //   name: 'Customers',
         //   href: '/master/customers',
@@ -120,16 +118,16 @@ const Navbar = ({ onData }: any) => {
       heading: 'Payment Policies',
       isHeadingVisible: (isCurrencyView || isTaxRateView || isPaymentSetupView) ? true : false,
       items: [
-        {
-          name: 'Currency',
-          href: '/paymentsetting/currency',
-          isVisible: isCurrencyView
-        },
-        {
-          name: 'Tax Rate',
-          href: '/paymentsetting/taxrate',
-          isVisible: isTaxRateView
-        },
+        // {
+        //   name: 'Currency',
+        //   href: '/paymentsetting/currency',
+        //   isVisible: isCurrencyView
+        // },
+        // {
+        //   name: 'Tax Rate',
+        //   href: '/paymentsetting/taxrate',
+        //   isVisible: isTaxRateView
+        // },
         // {
         //   name: 'Payment Method',
         //   href: '/paymentsetting/paymentmethod',
@@ -155,11 +153,11 @@ const Navbar = ({ onData }: any) => {
           href: '/setup/notification',
           isVisible: isNotificationView
         },
-        {
-          name: 'Cloud Configuration',
-          href: '/setup/cloudconfiguration',
-          isVisible: isCloudConfigurationView
-        },
+        // {
+        //   name: 'Cloud Configuration',
+        //   href: '/setup/cloudconfiguration',
+        //   isVisible: isCloudConfigurationView
+        // },
         {
           name: 'Automation',
           href: '/setup/automation',
@@ -268,7 +266,7 @@ const Navbar = ({ onData }: any) => {
 
   useEffect(() => {
     getRolePermissionData()
-  }, [])
+  }, [RoleId])
 
   const settingsFocusedArr = ['/manage/users', '/manage/roles', '/manage/companies', '/practice-dashboard']
 
@@ -307,7 +305,7 @@ const Navbar = ({ onData }: any) => {
             {!settingsFocusedArr.includes(pathname) && <BellIconComponent />}
             <div
               ref={settingRef}
-              className={`relative z-10 flex h-full w-8 2xl:w-10 cursor-pointer items-center justify-center border-b-2 ${isSettingOpen ? 'border-primary bg-whiteSmoke' : 'border-transparent bg-transparent'
+              className={`relative z-10 flex h-full w-8 2xl:w-10 items-center justify-center border-b-2 ${isSettingOpen ? 'border-primary bg-whiteSmoke' : 'border-transparent bg-transparent'
                 } `}
               onClick={() => {
                 setIsSettingOpen(true)
@@ -329,13 +327,11 @@ const Navbar = ({ onData }: any) => {
                 <div
                   style={{ boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.2)' }}
                   className={`flex ${settingsFocusedArr.includes(pathname) ? 'w-44' : 'h-[326px] w-auto'
-                    } absolute right-0 top-[63px] bg-white`}
-                >
+                    } absolute right-0 top-[63px] bg-white gap-6`}>
                   {globalSetting.map((data) => (
                     <div className={`${(!isManageCompanyView && !isManageUserView && !isManageRolesView) ? "hidden" : ""} flex bg-whiteSmoke ${settingsFocusedArr.includes(pathname) ? 'w-full' : 'w-[190px] border-r border-lightSilver '
                       } flex-col gap-4 px-6 py-7`}
-                      key={data.heading}
-                    >
+                      key={data.heading}>
                       <span className='border-b border-lightSilver pb-3 font-semibold font-proxima tracking-[0.02em]'>{data.heading}</span>
                       {data.items.map((element) => (
                         <Link
@@ -353,9 +349,9 @@ const Navbar = ({ onData }: any) => {
                     </div>
                   ))}
                   {!settingsFocusedArr.includes(pathname) &&
-                    settingsData.map((data) => (
+                    masterItems.map((data) => (
                       <div
-                        className={`${data.isHeadingVisible ? "block" : "hidden"} flex w-[190px] ${data.heading != 'Payment Policies' && 'pl-6 pr-6'}  flex-col gap-4 py-7`}
+                        className={`${data.isHeadingVisible ? "block" : "hidden"} flex w-[190px] ${data.heading == 'Setup' ? 'pr-6' : ""}  flex-col gap-4 py-7`}
                         key={data.heading}
                       >
                         <span className='border-b border-lightSilver pb-3 font-proxima text-[16px] font-bold tracking-[0.02em]'>
@@ -391,8 +387,8 @@ const Navbar = ({ onData }: any) => {
                     ))}
                 </div >
               )}
-            </div >
-            <div
+            </div>
+            {/* <div
               ref={helpRef}
               className={`relative z-10 flex h-full w-8 2xl:w-10 cursor-pointer items-center justify-center border-b-2  ${isHelpOpen ? 'border-primary bg-whiteSmoke' : 'border-transparent bg-transparent'
                 } `}
@@ -420,17 +416,17 @@ const Navbar = ({ onData }: any) => {
                   </Typography>
                 </div>
               )}
-            </div>
-            <div className='flex h-10 w-8 2xl:w-10 cursor-pointer items-center justify-center'>
+            </div> */}
+            {/* <div className='flex h-10 w-8 2xl:w-10 cursor-pointer items-center justify-center'>
               <Tooltip content={`Last Synced`} position='bottom' className='z-10'>
                 <SyncIcon />
               </Tooltip>
-            </div>
-            <div className='flex h-10 w-8 2xl:w-10 cursor-pointer items-center justify-center'>
+            </div> */}
+            {/* <div className='flex h-10 w-8 2xl:w-10 cursor-pointer items-center justify-center'>
               <Tooltip content={`Switch to BI`} position='bottom' className='z-10'>
                 <BIIcon />
               </Tooltip>
-            </div>
+            </div> */}
             <div
               ref={profileRef}
               className={`relative z-10 flex h-full w-8 2xl:w-10 cursor-pointer items-center justify-center border-b-2  ${isProfileOpen ? 'border-primary bg-whiteSmoke' : 'border-transparent bg-transparent'
@@ -465,6 +461,7 @@ const Navbar = ({ onData }: any) => {
                 <ul className='absolute right-0 top-[63px] w-44 bg-white' style={{ boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.2)' }}>
                   <Link
                     href='/profile'
+                    onClick={() => localStorage.setItem('profilePreviousUrl', window.location.href)}
                     onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) =>
                       (e.key === 'Enter' || e.key === ' ') && router.push('/profile')
                     }

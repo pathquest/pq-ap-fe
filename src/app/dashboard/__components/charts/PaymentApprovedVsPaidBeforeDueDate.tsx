@@ -9,7 +9,7 @@ import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Typography } from 'pq-ap-lib';
+import { Loader, Typography } from 'pq-ap-lib';
 import React, { useEffect, useState } from 'react';
 import ChartTypeDropdown from '../modal/ChartType';
 import DashboardFilter from '../modal/DashboardFilter';
@@ -28,6 +28,7 @@ const PaidAfterVsPaidBeforeDueDate: React.FC<any> = ({ LocationOption }) => {
   const [chartType, setChartType] = useState<string>('spline');
   const [isStacked, setIsStacked] = useState<boolean>(false);
   const [isMonthWise, setIsMonthWise] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const getPaymentApprovedDashboard = (newFilterFields: any) => {
     const startDate = new Date(newFilterFields?.StartDate);
@@ -35,6 +36,8 @@ const PaidAfterVsPaidBeforeDueDate: React.FC<any> = ({ LocationOption }) => {
     const dayDifference = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
     const isMonthWiseData = dayDifference > 31;
     setIsMonthWise(isMonthWiseData);
+    setIsLoading(true)
+
     const params = {
       IsMonthWise: isMonthWiseData,
       CompanyIds: [CompanyId],
@@ -44,6 +47,9 @@ const PaidAfterVsPaidBeforeDueDate: React.FC<any> = ({ LocationOption }) => {
     }
     performApiAction(dispatch, getPayAfterDueDateVsPaidBeforeDueDateByMonth, params, (responseData: any) => {
       setChartData(responseData)
+      setIsLoading(false)
+    }, () => {
+      setIsLoading(false)
     })
   }
 
@@ -263,7 +269,11 @@ const PaidAfterVsPaidBeforeDueDate: React.FC<any> = ({ LocationOption }) => {
         </div>
       </div>
       <div className='main_chart w-full'>
-        <HighchartsReact highcharts={Highcharts} options={getChartOptions()} />
+        {isLoading
+          ? <div className='h-[400px] w-full flex justify-center'>
+            <Loader size='md' helperText/>
+          </div>
+          : <HighchartsReact highcharts={Highcharts} options={getChartOptions()} />}
       </div>
       <ExpandModal
         onOpen={isExpandChartOpen}

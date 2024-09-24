@@ -31,7 +31,7 @@ const ListCloudConfiguration: React.FC = () => {
   const options = [
     {
       Id: 1,
-      label: 'Account Payable',
+      label: 'Accounts Payable',
       value: 'account_payable',
     },
     {

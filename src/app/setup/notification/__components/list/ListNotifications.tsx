@@ -12,6 +12,7 @@ import { getNotificationMatrix, getSummaryData, saveNotificationMatrix, saveSumm
 import { useSession } from 'next-auth/react'
 import ViewEmailPreview from '../ViewEmailPreview'
 import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
+import { useRouter } from 'next/navigation'
 
 // import Icons
 const DoubleArrowDown = lazy(() => import('@/assets/Icons/notification/DoubleArrowDown'))
@@ -78,13 +79,16 @@ const expandColumns: TableColumn[] = [
 ]
 
 const ListNotification: React.FC = () => {
-  const dispatch = useAppDispatch()
 
   // For Dynamic Company Id & AccountingTool
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
   const isNotificationEdit = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Notification", "Edit");
+  const isNotificationView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Notification", "View");
+
+  const dispatch = useAppDispatch()
+  const router = useRouter()
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isFooterLoader, setIsFooterLoader] = useState<boolean>(false)
@@ -101,6 +105,12 @@ const ListNotification: React.FC = () => {
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5])
   const [monthValue, setMonthValue] = useState<string>('1')
   const [data, setData] = useState<ModuleData[]>([])
+
+  useEffect(() => {
+    if (!isNotificationView) {
+      router.push('/manage/companies');
+    }
+  }, [isNotificationView]);
 
   // Fetch List Of Triggeres in Datatable Api
   const getListOfTriggers = async () => {
@@ -335,7 +345,7 @@ const ListNotification: React.FC = () => {
 
     const createTriggerCheckBox = (type: any) => {
       const enabledTriggers = e.Triggers.filter((trigger: any) => !trigger[`${type}Disable`])
-      const allEnabledTriggersChecked = enabledTriggers.every((trigger: any) => trigger[type])
+      const allEnabledTriggersChecked = type == "Mobile" ? false : enabledTriggers.every((trigger: any) => trigger[type])
       const someEnabledTriggersChecked = enabledTriggers.some((trigger: any) => trigger[type])
       const allTriggersDisabled = e.Triggers.every((trigger: any) => trigger[`${type}Disable`])
 
@@ -376,14 +386,14 @@ const ListNotification: React.FC = () => {
                     <div className='tooltip_text h-10 cursor-pointer'>
                       {nestedData.Email && !nestedData.EmailDisable && (
                         <div className='flex items-center justify-center gap-2'>
-                          <span className={`${isNotificationEdit ? "flex" : "hidden"}`} onClick={() => handleEditEmail(nestedData.MatrixId)}>
-                            <Tooltip position='bottom' content='Edit Email'>
+                          <span className={`flex justify-center items-center h-full ${isNotificationEdit ? "flex" : "hidden"}`} onClick={() => handleEditEmail(nestedData.MatrixId)}>
+                            <Tooltip position='bottom' content='Edit Email' className='!px-0'>
                               <EditIcon />
                             </Tooltip>
                           </span>
 
-                          <span onClick={() => { setViewTemplateId(nestedData.MatrixId); setIsViewTemplate(true) }}>
-                            <Tooltip position='left' content='View Template'>
+                          <span className='flex justify-center items-center h-full' onClick={() => { setViewTemplateId(nestedData.MatrixId); setIsViewTemplate(true) }}>
+                            <Tooltip position='left' content='View Template' className='!pr-0'>
                               <VisibilityIcon />
                             </Tooltip>
                           </span>
@@ -468,7 +478,7 @@ const ListNotification: React.FC = () => {
             </div>
             {/* Data Table */}
             <div
-              className={`approvalMain ${isExpanded ? 'h-[calc(100vh-380px)]' : 'h-[calc(100vh-204px)]'
+              className={`approvalMain ${isExpanded ? 'h-[calc(100vh-380px)]' : 'h-[calc(100vh-130px)]'
                 } overflow-auto duration-700 ease-in-out max-[425px]:mx-1`}
             >
               <div className={`${data?.length !== 0 && 'h-0'}`}>
@@ -500,7 +510,7 @@ const ListNotification: React.FC = () => {
             </div>
 
             {/* Footer component */}
-            <div
+            {/* <div
               className={`sticky bottom-0 z-[6] flex flex-col px-5 duration-700 ease-in-out ${isExpanded ? 'h-[240px]' : 'h-[74px]'
                 } items-start border-t border-lightSilver  `}
               style={{
@@ -579,7 +589,7 @@ const ListNotification: React.FC = () => {
                     </div>
                   </div>
                 ))}
-            </div>
+            </div> */}
           </>
         )}
       </div>

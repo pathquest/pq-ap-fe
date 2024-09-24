@@ -49,6 +49,7 @@ export interface Product {
 const ProfileForm = ({ session }: any) => {
   const user = session ? session?.user : {}
   const token = session?.user?.access_token
+  const profilePreviousUrl = localStorage.getItem('profilePreviousUrl') ?? ''
 
   const router = useRouter()
   const { update } = useSession()
@@ -106,7 +107,7 @@ const ProfileForm = ({ session }: any) => {
 
   const getRolePermissionData = (roleId: any) => {
     const params = {
-      RoleId: roleId,
+      RoleId: roleId ?? 0,
     }
     performApiAction(dispatch, permissionGetList, params, (responseData: any) => {
       const processedData = processPermissions(responseData);
@@ -135,12 +136,24 @@ const ProfileForm = ({ session }: any) => {
       {/* Navigation Bar */}
       <NavBar onData={globalData} isFormOpen={isOpen} />
       <div className='relative flex !flex-col items-center justify-center pb-5'>
-        <div className='relative flex h-36 w-full bg-[#02B89D]'>
-          <div className='flex items-center justify-start pl-[148px]'>
-            <span className='mr-2.5 cursor-pointer' onClick={() => router.push('/manage/companies')}>
-              <ChevronLeftIcon bgColor='whiteSmoke' />
-            </span>
+        <div className={`relative flex h-36 w-full items-center ${profilePreviousUrl ? 'justify-start' : 'justify-center'} bg-[#F4F4F4]`}>
+          {profilePreviousUrl ? (
+            <div className='flex items-center !justify-start pl-[148px]'>
+              <span className='mr-2.5 cursor-pointer' onClick={() => {
+                router.push(`${profilePreviousUrl}`)
+                localStorage.removeItem('profilePreviousUrl')
+              }}>
+                <ChevronLeftIcon bgColor='white' />
+              </span>
+            </div>
+          ) : (
+          <div
+            className={`absolute rounded-md justify-center font-semibold items-center flex bg-[#02B89D] w-[50%] p-4 text-white top-0 select-none animate-slideDown`}
+          >
+            We're happy to see you on board! <u onClick={() => router.push('/manage/companies')} className='cursor-pointer pl-1'>Click here</u> &nbsp; to start with the process.
           </div>
+          )}
+
           <div className='absolute bottom-[-50px] left-1/2 -translate-x-1/2 transform'>
             <div className='flex h-28 w-28 items-center justify-center rounded-full bg-white'>
               {profileData && profileData?.user_image !== '' ? (
@@ -212,8 +225,7 @@ const ProfileForm = ({ session }: any) => {
           <div className='mt-8 flex w-[50%] flex-col items-center border-t border-[#D8D8D8] p-5'>
             <span className='text-[18px] font-semibold !uppercase'>Profile Password</span>
             <span className='flex pt-5 text-center text-[14px] text-[#6E6D7A]'>
-              Changing your password will sign you out of all your devices. You will need to enter your new password on all your
-              devices.
+              Changing your password will sign you out of all devices. Please log in again with the new password on each device.
             </span>
             <Button
               tabIndex={0}

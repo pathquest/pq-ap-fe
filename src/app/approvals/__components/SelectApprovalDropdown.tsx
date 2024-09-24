@@ -2,11 +2,13 @@
 import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { setApprovalDropdownFields } from '@/store/features/billApproval/approvalSlice'
+import { useRouter } from 'next/navigation'
 import { Select } from 'pq-ap-lib'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 const SelectApprovalDropdown: React.FC = () => {
     const dispatch = useAppDispatch()
+    const router = useRouter();
     const { approvalDropdownFields } = useAppSelector((state) => state.billApproval)
 
     const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
@@ -17,6 +19,12 @@ const SelectApprovalDropdown: React.FC = () => {
     const handleValue = (value: string) => {
         dispatch(setApprovalDropdownFields(value))
     }
+
+    useEffect(() => {
+        if (!isBillApprovalView && !isBillApprovalView) {
+            router.push('/manage/companies');
+        }
+    }, [isBillApprovalView, isBillApprovalView]);
 
     const approvalOptions = [
         {
@@ -29,12 +37,12 @@ const SelectApprovalDropdown: React.FC = () => {
             value: '2',
             isHidden: !isPaymentApprovalView,
         },
-        {
-            label: 'Purchase Order Approval',
-            value: '3',
-            isEnable: false,
-            isHidden: false
-        },
+        // {
+        //     label: 'Purchase Order Approval',
+        //     value: '3',
+        //     isEnable: false,
+        //     isHidden: false
+        // },
     ].filter(option => !option.isHidden)
 
     return (

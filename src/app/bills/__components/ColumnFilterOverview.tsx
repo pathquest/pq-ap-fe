@@ -44,16 +44,16 @@ const ColumnFilterOverview: React.FC<ColumnFilterDropdownProps & { maxHeight?: s
     }
   }, [handleOutsideClick])
 
-  useEffect(() => {
-    if (selectedHeaders.includes('Adjustment Number') && filterFormFields.ft_process === '1') {
-      const newSelectedHeaders = selectedHeaders.map((item: any) => (item === 'Adjustment Number' ? 'Bill Number' : item))
-      setSelectedHeaders(newSelectedHeaders)
-    }
-    if (selectedHeaders.includes('Bill Number') && filterFormFields.ft_process === '2') {
-      const newSelectedHeaders = selectedHeaders.map((item: any) => (item === 'Bill Number' ? 'Adjustment Number' : item))
-      setSelectedHeaders(newSelectedHeaders)
-    }
-  }, [selectedProcessTypeInList,filterFormFields.ft_process])
+  // useEffect(() => {
+  //   if (selectedHeaders.includes('Adjustment Number') && filterFormFields.ft_process === '1') {
+  //     const newSelectedHeaders = selectedHeaders.map((item: any) => (item === 'Adjustment Number' ? 'Bill Number' : item))
+  //     setSelectedHeaders(newSelectedHeaders)
+  //   }
+  //   if (selectedHeaders.includes('Bill Number') && filterFormFields.ft_process === '2') {
+  //     const newSelectedHeaders = selectedHeaders.map((item: any) => (item === 'Bill Number' ? 'Adjustment Number' : item))
+  //     setSelectedHeaders(newSelectedHeaders)
+  //   }
+  // }, [selectedProcessTypeInList, filterFormFields.ft_process])
 
   const toggleHeader = (header: Object) => {
     const updatedHeaders = selectedHeaders.includes(header)
@@ -65,15 +65,17 @@ const ColumnFilterOverview: React.FC<ColumnFilterDropdownProps & { maxHeight?: s
   }
 
   function getKeyFromLabel(label: any) {
-    if (label === 'Adjustment Number') {
-      return 'Bill Number'
-    }
+    // if (label === 'Adjustment Number') {
+    //   return 'Bill Number'
+    // }
 
     if (label.props !== undefined) {
       const children = label.props.children
       switch (children) {
-        case 'Bill Number':
-        case 'Adjustment Number':
+        // case 'Bill Number':
+        // case 'Adjustment Number':
+        //   return 'Bill Number'
+        case 'Bill/Adjustment Number':
           return 'Bill Number'
         default:
           return label
