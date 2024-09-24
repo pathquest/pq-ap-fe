@@ -1239,12 +1239,12 @@ const EditBillPosting = ({ processtype }: any) => {
       <div className='flex flex-col items-end px-5 pb-[77px] pt-[34px]'>
         <div className='mb-2 flex w-60 flex-row justify-between'>
           <span className='text-sm font-proxima tracking-[0.02em]'>Sub Total</span>
-          <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${Number(formattedTotalAmountValue).toFixed(2)}</span>
+          <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${(Number(formattedTotalAmountValue).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
         </div>
         {AccountingTool === 3 && (
           <div className='mb-2 flex w-60 flex-row justify-between'>
             <span className='text-sm font-proxima tracking-[0.02em]'>Tax Total</span>
-            <span className='w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${Number(formattedTotalTaxAmountValue).toFixed(2)}</span>
+            <span className='w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${(Number(formattedTotalTaxAmountValue).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
           </div>
         )}
         <div className='mb-2 flex w-60 flex-row justify-between'>
@@ -1252,8 +1252,8 @@ const EditBillPosting = ({ processtype }: any) => {
           <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>
             $
             {formFields?.amountsare === '1'
-              ? Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue) + parseFloat(formattedTotalTaxAmountValue))).toFixed(2)
-              : Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue))).toFixed(2)}
+              ? (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue) + parseFloat(formattedTotalTaxAmountValue))).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              : (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue))).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
           </span>
         </div>
       </div>

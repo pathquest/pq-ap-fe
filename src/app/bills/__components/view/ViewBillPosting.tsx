@@ -427,8 +427,8 @@ const ViewBillPosting = () => {
   let totalAmount = totalAmountCalculate(lineItemsFieldsData)
   let taxTotalAmount = taxTotalAmountCalculate(lineItemsFieldsData)
 
-  const formattedTotalAmountValue = String(getRoundValue(totalAmount)).slice(0, 13)
-  const formattedTotalTaxAmountValue = String(getRoundValue(taxTotalAmount)).slice(0, 13)
+  const formattedTotalAmountValue = String(getRoundValue(totalAmount).toFixed(2)).slice(0, 13)
+  const formattedTotalTaxAmountValue = String(getRoundValue(taxTotalAmount).toFixed(2)).slice(0, 13)
 
   const onHandleForward = (activeBill: any) => {
     dispatch(setIsVisibleSidebar(isVisibleLeftSidebar))
@@ -833,17 +833,17 @@ const ViewBillPosting = () => {
                     <div className='flex flex-col items-end px-5 pb-[40px] pt-[30px]'>
                       <div className='mb-2 flex w-60 flex-row justify-between'>
                         <span className='text-sm font-proxima tracking-[0.02em]'>Sub Total</span>
-                        <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${formattedTotalAmountValue}</span>
+                        <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${formattedTotalAmountValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
                       </div>
                       {AccountingTool === 3 && (
                         <div className='mb-2 flex w-60 flex-row justify-between'>
                           <span className='text-sm font-proxima tracking-[0.02em]'>Tax Total</span>
-                          <span className='w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${formattedTotalTaxAmountValue}</span>
+                          <span className='w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${formattedTotalTaxAmountValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
                         </div>
                       )}
                       <div className='mb-2 flex w-60 flex-row justify-between'>
                         <span className={`text-sm font-proxima tracking-[0.02em]`}>Total Amount</span>
-                        <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${formattedTotalAmountValue}</span>
+                        <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${formattedTotalAmountValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
                       </div>
                     </div>
                   </div>
