@@ -1580,7 +1580,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
       if (meta?.requestStatus === 'fulfilled') {
         if (payload?.ResponseStatus === 'Success') {
           fetchBillsData(1)
-          Toast.success('Successfully item moved!!')
+          Toast.success('Bill(s) Moved!')
         } else {
           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
         }
@@ -1636,7 +1636,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
               isChecked: false,
             })
           }
-          Toast.success(`Assignee has been changed successfully`)
+          Toast.success(`Assignee Changed!`)
         } else {
           setSelectedStates([])
           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
@@ -1752,7 +1752,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                 setDeleteModal(false)
                 setDeleteOverviewId(0)
                 fetchBillsOverviewData(1)
-                Toast.success('Successfully item deleted!!')
+                Toast.success('Bill(s) Deleted!')
               } else {
                 setDeleteModal(false)
                 Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
@@ -1813,7 +1813,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                 setDeleteIds([])
                 fetchBillsData(1)
                 processSelection === '4' && fetchBillsOverviewData(1)
-                Toast.success('Successfully item deleted!!')
+                Toast.success('Bill(s) Deleted!')
               } else {
                 setDeleteModal(false)
                 Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
@@ -1857,7 +1857,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                     isChecked: false,
                   })
                 }
-                Toast.success('Successfully items deleted!!')
+                Toast.success('Bill(s) Deleted!')
               } else {
                 setDeleteModal(false)
                 Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
@@ -1900,7 +1900,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
       if (meta?.requestStatus === 'fulfilled') {
         if (payload?.ResponseStatus === 'Success') {
           fetchBillsData(1)
-          Toast.success(`Assignee has been changed successfully`)
+          Toast.success(`Assignee Changed!`)
         } else {
           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
         }
@@ -1971,7 +1971,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
               isChecked: false,
             })
           }
-          Toast.success('Successfully items moved!!')
+          Toast.success('Bill(s) Moved!')
         } else {
           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
         }
@@ -2012,7 +2012,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
           setIsRestoreModalOpen(false)
           setIsRestoreFields({})
           fetchBillsData(1)
-          Toast.success('Successfully item restored!!')
+          Toast.success('Bill Restored!')
         } else {
           setDeleteModal(false)
           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)

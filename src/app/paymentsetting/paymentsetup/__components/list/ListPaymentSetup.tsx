@@ -318,7 +318,7 @@ const ListPaymentSetup: React.FC = () => {
       PaymentSetupId: activateId,
     }
     performApiAction(dispatch, deactivateBankAccount, params, () => {
-      Toast.success('Bank account deactivated successfully.')
+      Toast.success('Bank account deactivated!')
       setRefreshTable(!refreshTable)
       setAactivateId(0)
     }, () => {
@@ -332,7 +332,7 @@ const ListPaymentSetup: React.FC = () => {
       PaymentSetupId: id,
     }
     performApiAction(dispatch, activateBankAccount, params, () => {
-      Toast.success('Bank account activated successfully.')
+      Toast.success('Bank account activated!')
       setRefreshTable(!refreshTable)
     }, () => {
       setIsStatusLoading(false)
@@ -401,7 +401,7 @@ const ListPaymentSetup: React.FC = () => {
 
     performApiAction(dispatch, savePaymentMethod, params, () => {
       setRefreshTable(!refreshTable)
-      Toast.success(`Payment method status updated successfully.`)
+      Toast.success(`Status of payment method updated!.`)
     }, () => {
       setIsStatusLoading(false)
     })
@@ -431,7 +431,7 @@ const ListPaymentSetup: React.FC = () => {
       if (responseData == true) {
         setIsSyncing(false)
         setRefreshTable(!refreshTable)
-        Toast.success('Bank Account sync successfully')
+        Toast.success('Bank Account Synced!')
       }
     }, () => {
       // ErrorData

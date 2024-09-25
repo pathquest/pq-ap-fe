@@ -217,7 +217,7 @@ const ListAPTerm: React.FC = () => {
       if (responseData.ResponseStatus === 'Success') {
         setIsSyncing(false)
         getApTermList(1)
-        Toast.success('APTerm sync successfully')
+        Toast.success('Term Synced!')
       }
       else {
         setIsSyncing(false)
@@ -263,7 +263,7 @@ const ListAPTerm: React.FC = () => {
 
   const handleSuccessfulImport = (payload: any) => {
     if (payload?.ResponseData.SuccessCount > 0) {
-      Toast.success(`${payload?.ResponseData.SuccessCount} record imported successfully`)
+      Toast.success(`${payload?.ResponseData.SuccessCount} Record Imported!`)
     }
     getApTermList(1)
     setIsImport(false);
@@ -272,7 +272,7 @@ const ListAPTerm: React.FC = () => {
 
   const handleWarningImport = (payload: any) => {
     if (payload?.ResponseData.SuccessCount > 0) {
-      Toast.success(`${payload?.ResponseData.SuccessCount} record imported successfully`)
+      Toast.success(`${payload?.ResponseData.SuccessCount} Record Imported!`)
     }
     payload?.ResponseData.InSufficientData.map((data: any) => {
       Toast.warning(`${data.ErrorMessage}`)
@@ -304,7 +304,7 @@ const ListAPTerm: React.FC = () => {
       if (responseData.ResponseStatus === 'Success') {
         setIsLoading(false)
         getApTermList(1)
-        Toast.success(`Status updated successfully.`)
+        Toast.success(`Status Updated!`)
       } else {
         setIsLoading(false)
         getApTermList(1)

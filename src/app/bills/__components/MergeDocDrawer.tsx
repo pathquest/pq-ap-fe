@@ -124,7 +124,7 @@ function MergeDocDrawer({ isOpen, onClose, selectedBillItems, removeItem, billLi
           if (responseOcr?.ResponseStatus === 'Success') {
             setIsLoader(false)
             setNameOfTheMergeDocument('')
-            Toast.success('Documents Merged Successfully!')
+            Toast.success('Documents Merged!')
             router.push('/bills')
           }
         }

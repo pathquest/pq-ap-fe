@@ -126,7 +126,7 @@ const ColumnFilterDropdown: React.FC<ColumnFilterDropdownProps> = ({
       try {
         const response = await agent.APIs.saveColumnMappingList(params)
         if (response?.ResponseStatus === 'Success') {
-          Toast.success('Columns Updated !!')
+          Toast.success('Columns Updated!')
           getMappingListData()
           setMapColId()
           setInitialHeaders([...selectedHeaders]);

@@ -77,7 +77,7 @@ const ListProductService: React.FC = () => {
       if (responseData.ResponseStatus === 'Success') {
         setIsSyncing(false)
         getProductList(1)
-        Toast.success('Product & Service Sync successfully')
+        Toast.success('Product & Service Synced!')
       }
       else {
         setIsSyncing(false)

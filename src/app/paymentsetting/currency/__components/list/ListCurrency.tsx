@@ -182,7 +182,7 @@ const ListCurrency: React.FC = () => {
       if (responseData.ResponseStatus === 'Success') {
         setIsSyncing(false)
         getCurrencyList(1)
-        Toast.success(`Currency sync successfully`)
+        Toast.success(`Currency Synced!`)
       }
       else {
         setIsSyncing(false)

@@ -107,7 +107,7 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
           ft_select_users: [],
           ft_vendor: null,
           ft_location: null,
-          ft_overview_status: ['2'],
+          ft_overview_status: ['2','3','4','5'],
           ft_process: filterFields?.ProcessType,
           ft_datepicker: `${startDate} to ${formattedLastDayOfNextMonth}`
         }));

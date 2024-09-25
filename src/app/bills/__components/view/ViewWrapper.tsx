@@ -418,12 +418,12 @@ const ViewWrapper = ({
 
           router.push(`/bills/view/${nextBillId}`)
           if (postSaveAs === 2) {
-            Toast.success('Successfully bill drafted!!')
+            Toast.success('Bill Drafted!')
           } else if (postSaveAs === 12) {
             setPostaspaidModal(false)
-            Toast.success('Successfully bill posted!!')
+            Toast.success('Bill Posted!')
           } else {
-            Toast.success('Successfully bill posted!!')
+            Toast.success('Bill Posted!')
           }
           let newLoaderSuccess
           switch (postSaveAs) {
@@ -481,7 +481,7 @@ const ViewWrapper = ({
 
           if (meta?.requestStatus === 'fulfilled') {
             if (payload?.ResponseStatus === 'Success') {
-              Toast.success('Items successfully deleted!!')
+              Toast.success('Bill(s) Deleted!')
               router.push('/bills')
             } else {
               Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
@@ -513,7 +513,7 @@ const ViewWrapper = ({
 
           if (meta?.requestStatus === 'fulfilled') {
             if (payload?.ResponseStatus === 'Success') {
-              Toast.success('Items successfully deleted!!')
+              Toast.success('Bill(s) Deleted!')
               router.push('/bills')
             } else {
               Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
@@ -548,7 +548,7 @@ const ViewWrapper = ({
 
       if (meta?.requestStatus === 'fulfilled') {
         if (payload?.ResponseStatus === 'Success') {
-          Toast.success('Successfully items moved!!')
+          Toast.success('Bill(s) Moved!')
           router.push(`/bills`)
         } else {
           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
@@ -601,10 +601,10 @@ const ViewWrapper = ({
             setIsAssigneeModal(false)
             const isFormDocument = billLists.filter((value: any) => (value.Id === nextBillId ? value : null))
             dispatch(setIsFormDocuments(isFormDocument[0].IsFromDocuments))
-            Toast.success(`Assignee has been changed successfully`)
+            Toast.success(`Assignee Changed!`)
             router.push(`/bills/view/${nextBillId}`)
           } else {
-            Toast.success(`Assignee has been changed successfully`)
+            Toast.success(`Assignee Changed!`)
             router.push(`/bills`)
             setIsAssigneeModal(false)
           }

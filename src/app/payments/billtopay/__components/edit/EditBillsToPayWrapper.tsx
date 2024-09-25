@@ -263,12 +263,12 @@ const EditBillsToPayWrapper = ({
 
   const showSuccessMessage = (postSaveAs: number) => {
     if (postSaveAs === 2) {
-      Toast.success('Successfully bill drafted!!')
+      Toast.success('Bill Drafted!')
     } else if (postSaveAs === 12) {
       setPostaspaidModal(false)
-      Toast.success('Successfully bill posted!!')
+      Toast.success('Bill Posted!')
     } else {
-      Toast.success('Successfully bill posted!!')
+      Toast.success('Bill Posted!')
     }
   }
 
@@ -436,7 +436,7 @@ const EditBillsToPayWrapper = ({
 
           if (meta?.requestStatus === 'fulfilled') {
             if (payload?.ResponseStatus === 'Success') {
-              Toast.success('Items successfully deleted!!')
+              Toast.success('Bill(s) Deleted!')
               router.push('/payments/billtopay')
             } else {
               Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)

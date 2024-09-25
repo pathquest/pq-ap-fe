@@ -250,7 +250,7 @@ const RuleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId, ruleProces
         Description: completeDescription
       }
       performApiAction(dispatch, saveRule, params, () => {
-        Toast.success(`Rule ${EditId ? 'updated' : 'added'} successfully.`)
+        Toast.success(`${EditId ? 'Details Updated!' : 'Rule Added!'}`)
         setRuleName('')
         setDescription('')
         clearAllData("Save")
