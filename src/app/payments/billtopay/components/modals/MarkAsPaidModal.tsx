@@ -139,7 +139,7 @@ const MarkAsPaidModal: React.FC<ActionsProps> = ({ onOpen, onClose, onDataFetch,
     }
     performApiAction(dispatch, markAsPaidBill, params, () => {
       setIsLoading(false)
-      Toast.success('Bills has been successfully marked as paid.')
+      Toast.success('Bills marked as paid!')
       handleReset()
       router.push(billsToPayReducer.currentPath)
       onDataFetch && onDataFetch()

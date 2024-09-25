@@ -564,7 +564,7 @@ const EditBillPosting = ({ processtype }: any) => {
         setLineItemsFieldsData(dataAfterRemoveItem)
         setHasLineItemFieldErrors(dataAfterRemoveFormFieldErrors)
         setHasLineItemFieldLibraryErrors(dataAfterRemoveFormFieldLibraryErrors)
-        Toast.success(`Line Item Deleted!`)
+        Toast.success(`Line-item Deleted!`)
       }
     } catch (error) {
       Toast.error(`Something Went Wrong!`)

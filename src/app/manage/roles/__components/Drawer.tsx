@@ -237,7 +237,7 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId, DuplicateI
 
     switch (payload.ResponseStatus) {
       case 'Success':
-        Toast.success(`Role ${EditId ? 'updated' : 'added'} successfully.`)
+        Toast.success(`${EditId ? 'Details Updated!' : 'Role Created!'}`)
         initialData()
         onClose()
         break

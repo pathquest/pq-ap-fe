@@ -1042,7 +1042,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
             if (meta?.requestStatus === 'fulfilled') {
                 if (payload?.ResponseStatus === 'Success') {
                     fetchBillsData(1)
-                    Toast.success('Successfully item moved!!')
+                    Toast.success('Bill Moved!')
                 } else {
                     Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
                 }
@@ -1148,7 +1148,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
                                 setDeleteId(0)
                                 setDeleteIds([])
                                 fetchBillsData(1)
-                                Toast.success('Successfully item deleted!!')
+                                Toast.success('Bill Deleted!')
                             } else {
                                 setDeleteModal(false)
                                 Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
@@ -1191,7 +1191,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
             if (meta?.requestStatus === 'fulfilled') {
                 if (payload?.ResponseStatus === 'Success') {
                     fetchBillsData(1)
-                    Toast.success(`Assignee has been changed successfully`)
+                    Toast.success(`Assignee Changed!`)
                 } else {
                     Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
                 }
@@ -1262,7 +1262,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
                     setIsRestoreModalOpen(false)
                     setIsRestoreFields({})
                     fetchBillsData(1)
-                    Toast.success('Successfully item restored!!')
+                    Toast.success('Bill Restored!')
                 } else {
                     setDeleteModal(false)
                     Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)

@@ -137,7 +137,7 @@ const PaymentSetupDrawer: React.FC<DrawerProps> = ({ paymentMethodName, isOpen, 
           const dataMessage = payload?.Message
           if (meta?.requestStatus === 'fulfilled') {
             if (payload?.ResponseStatus === 'Success') {
-              Toast.success(`Payment method has been added successfully.`)
+              Toast.success(`Payment method added!`)
               clearAllData("Save")
               setIsLoading(false)
             } else {

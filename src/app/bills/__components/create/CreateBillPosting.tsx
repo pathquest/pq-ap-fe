@@ -312,7 +312,7 @@ const CreateBillPosting = ({
           await setLineItemsFieldsData(dataAfterRemoveItem)
           await setHasLineItemFieldErrors(dataAfterRemoveFormFieldErrors)
           await setHasLineItemFieldLibraryErrors(dataAfterRemoveFormFieldLibraryErrors)
-          Toast.success(`Line Item Deleted!`)
+          Toast.success(`Line-item Deleted!`)
         }
       } catch (error) {
         Toast.error(`Something Went Wrong!`)
@@ -873,12 +873,12 @@ const CreateBillPosting = ({
         if (!formFields?.attachment) {
           setLoaderState(postSaveAs, loader, setLoader)
           if (postSaveAs === 2) {
-            Toast.success('Successfully bill drafted!!')
+            Toast.success('Bill Drafted!')
           } else if (postSaveAs === 12) {
             setPostaspaidModal(false)
-            Toast.success('Successfully bill posted!!')
+            Toast.success('Bill Posted!')
           } else {
-            Toast.success('Successfully bill posted!!')
+            Toast.success('Bill Posted!')
           }
           router.push('/bills')
           return

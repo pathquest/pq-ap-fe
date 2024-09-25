@@ -100,8 +100,19 @@ const ChatBox = ({ chatItem, className, watcherList, tabId, getSummaryData }: Ch
     const weekChats = chatsByWeek[weekStart]
     weekChats.forEach((chat: ActivityList, index: number) => {
       const dateTime = new Date(chat.CreatedOn)
-      const date = dateTime.toLocaleDateString('en-US')
-      const time = dateTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric' })
+      // Convert the UTC dateTime to local time
+      const dateTimeLocal = new Date(dateTime.getTime() - dateTime.getTimezoneOffset() * 60000)
+
+      // Extract local date and time
+      const date = dateTimeLocal.toLocaleDateString('en-US')
+      const hours = dateTimeLocal.getHours()
+      const minutes = dateTimeLocal.getMinutes()
+
+      const ampm = hours >= 12 ? 'PM' : 'AM'
+      const formattedHours = hours % 12 || 12 // Convert hour to 12-hour format
+      const formattedMinutes = minutes < 10 ? '0' + minutes : minutes // Pad minutes with zero if needed
+      const formattedTime = `${formattedHours}:${formattedMinutes} ${ampm}`
+
       const commentWithUsernames = chat?.Comment?.split(/(@\[\([^\]]+\)\])/).map((text: any, i: number) => {
         if (text.startsWith('@[(') && text.endsWith(')]')) {
           const id = text.substring(3, text.length - 2)
@@ -113,7 +124,7 @@ const ChatBox = ({ chatItem, className, watcherList, tabId, getSummaryData }: Ch
           return text
         }
       })
-      formattedChats.push(`Chat ${index + 1}: ${date} ${time} - ${commentWithUsernames}`)
+      formattedChats.push(`Chat ${index + 1}: ${formattedTime} - ${commentWithUsernames}`)
     })
   })
 
