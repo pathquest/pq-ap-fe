@@ -746,10 +746,10 @@ const BillApproval: React.FC = () => {
         setRefreshTable(!refreshTable)
         setSelectedRows([])
         setIsAllChecked(false)
-        const action = status == 1 ? 'approved' : 'rejected'
+        const action = status == 1 ? 'Approved!' : 'Rejected!'
         const message = selectedRows.length > 1
-          ? `${selectedRows.length} bills has been ${action} sucessfully`
-          : `Bill No.${selectedRows.length == 1 ? singleBillNumber : rowBillNumber} has been ${action} sucessfully`
+          ? `${selectedRows.length} Bills ${action}`
+          : `Bill No.${selectedRows.length == 1 ? singleBillNumber : rowBillNumber} ${action}`
         Toast.success(message)
       }, () => {
         setIsLoading(false)
@@ -774,8 +774,8 @@ const BillApproval: React.FC = () => {
         setSelectedRows([])
         setIsAllChecked(false)
         const message = selectedRows.length > 1
-          ? `${selectedRows.length} bills has been Re-assign sucessfully`
-          : `Bill No.${rowBillNumber} has been Re-assign sucessfully`
+          ? `${selectedRows.length} Bills Re-assigned!`
+          : `Bill No.${rowBillNumber} Re-assigned!`
         Toast.success(message)
       }, () => {
         setIsLoading(false)
@@ -920,7 +920,7 @@ const BillApproval: React.FC = () => {
       <ConfirmationModal
         title='Approve'
         content={selectedRows.length > 1
-          ? `Are you sure you want to approve the selected bills?`
+          ? `Are you sure you want to approve these bills?`
           : `Are you sure you want to approve this bill?`}
         isModalOpen={isApprovalModalOpen}
         modalClose={modalClose}
@@ -948,7 +948,10 @@ const BillApproval: React.FC = () => {
             }}
             hasError={reasonError}
             rows={5}
-            placeholder='Please enter the reason for rejecting this bill.'
+            placeholder={selectedRows.length > 1
+              ? `Please enter the reason for rejecting these bills`
+              : `Please enter the reason for rejecting this bill`}
+
           />
         }
       />

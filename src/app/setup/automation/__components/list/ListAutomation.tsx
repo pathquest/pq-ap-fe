@@ -193,7 +193,7 @@ const ListAutomation: React.FC = () => {
     }
     modalClose()
     performApiAction(dispatch, ruleActiveInactive, params, () => {
-      Toast.success(`Rule ${ruleStatus === 0 ? isDefaultCompany ? "inactivated" : "removed" : "activated"} successfully.`)
+      Toast.success(`Rule ${ruleStatus === 0 ? isDefaultCompany ? "Inactivated!" : "Removed!" : "Activated!"}`)
       setRefreshTable(!refreshTable)
     });
   };

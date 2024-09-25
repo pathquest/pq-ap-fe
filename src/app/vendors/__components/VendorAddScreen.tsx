@@ -684,7 +684,7 @@ const VendorAddScreen: React.FC<DrawerProps> = ({ isOpen, EditId, onClose }) => 
 
         performApiAction(dispatch, saveVendor, params, (responseData: any) => {
             if (responseData.ResponseStatus === 'Success') {
-                Toast.success(`Vendor ${EditId ? 'updated' : 'added'} successfully.`)
+                Toast.success(`${EditId ? 'Details Updated!' : 'Vendor Created!'}`)
                 clearAllData("Save")
                 setIsLoading(false)
             }

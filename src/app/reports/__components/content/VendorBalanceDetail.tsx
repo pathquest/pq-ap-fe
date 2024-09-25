@@ -155,6 +155,7 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
         details: (
           <div className={``}>
             <DataTable
+              zIndex={2}
               expandable
               getExpandableData={() => { }}
               sticky

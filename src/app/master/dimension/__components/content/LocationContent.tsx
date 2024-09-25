@@ -204,7 +204,7 @@ const Location: React.FC<LocationProps> = ({ onDrawerOpen, onDrawerClose, isSync
       if (responseData.ResponseStatus === 'Success') {
         setIsLoading(false)
         setRefreshTable(!refreshTable)
-        Toast.success(`Status updated successfully.`)
+        Toast.success(`Status Updated!`)
       } else {
         setIsLoading(false)
         setRefreshTable(!refreshTable)
