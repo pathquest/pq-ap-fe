@@ -1,0 +1,32 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI build frontend
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: ['dev']
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+# Providing permission for git
+permissions:
+  contents: write
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+
+jobs:
+  Dev:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v1
+        # uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

@@ -356,9 +356,15 @@ const CreateBillPosting = ({
               const newLineItemsFieldArray = hasLineItemFieldLibraryErrors.map((item) => {
                 return {
                   ...item,
+<<<<<<< HEAD
                   amount: isNaN(parseFloat(`${calculatedAmount}`))
                     ? false
                     : true,
+=======
+                  // amount: isNaN(parseFloat(`${calculatedAmount}`))
+                  //   ? false
+                  //   : true,
+>>>>>>> uat_to_develop_25_sep_24
                 }
               })
               setHasLineItemFieldLibraryErrors(newLineItemsFieldArray)
@@ -1109,7 +1115,11 @@ const CreateBillPosting = ({
                 <div className='justify-end px-5 pb-[77px] pt-[34px]'>
                   <div className='mb-2 flex flex-row justify-end'>
                     <span className='w-[10%] text-sm font-proxima tracking-[0.02em]'>Sub Total</span>
+<<<<<<< HEAD
                     <span className='w-[15%] text-end text-sm font-bold font-proxima tracking-[0.02em]'>${Number(formattedTotalAmountValue).toFixed(2)}</span>
+=======
+                    <span className='w-[15%] text-end text-sm font-bold font-proxima tracking-[0.02em]'>${(Number(formattedTotalAmountValue).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+>>>>>>> uat_to_develop_25_sep_24
                   </div>
                   {AccountingTool === 3 && (
                     <div className='mb-2 flex flex-row justify-end'>
@@ -1122,8 +1132,13 @@ const CreateBillPosting = ({
                     <span className='w-[15%] text-end text-sm font-bold font-proxima tracking-[0.02em]'>
                       $
                       {formFields?.amountsare === '1'
+<<<<<<< HEAD
                         ? Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue) + parseFloat(formattedTotalTaxAmountValue))).toFixed(2)
                         : Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue))).toFixed(2)}
+=======
+                        ? (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue) + parseFloat(formattedTotalTaxAmountValue))).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                        : (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue))).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+>>>>>>> uat_to_develop_25_sep_24
                     </span>
                   </div>
                 </div>

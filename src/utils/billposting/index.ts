@@ -53,7 +53,11 @@ const initialBillPostingFilterFormFields: BillPostingFilterFormFieldsProps = {
   ft_status: ['1', '2', '6', '8'],
   ft_assignee: '1',
   ft_select_users: [],
+<<<<<<< HEAD
   ft_process: ['1','2'],
+=======
+  ft_process: ['1', '2'],
+>>>>>>> uat_to_develop_25_sep_24
   ft_overview_status: ['1', '2', '3', '4', '5'],
   ft_vendor: null,
   ft_datepicker: `${formattedDate} to ${formattedCurrentDate}`,
@@ -153,7 +157,13 @@ const getUpdatedDataFromDetailsResponse = (
                 : filterObject?.key === 'glPostingDate'
                   ? data?.GLPostingDate
                     ? format(data?.GLPostingDate, 'MM/dd/yyyy')
+<<<<<<< HEAD
                     : format(currentDate, 'MM/dd/yyyy')
+=======
+                    : (filterObject?.key === 'glPostingDate' && data['BillDate'])
+                      ? format(data['BillDate'], 'MM/dd/yyyy') 
+                      : format(currentDate, 'MM/dd/yyyy')
+>>>>>>> uat_to_develop_25_sep_24
                   : (filterObject.mappedWith === 2 || filterObject.mappedWith === 3 || filterObject.mappedWith === 14 || filterObject.mappedWith === 15) && data['VendorId']
                     ? data['VendorId']
                     : (filterObject?.key === 'term' && data['VendorId'] && !data['TermId'])
@@ -199,11 +209,19 @@ const getUpdatedDataFromDetailsResponse = (
               Id: items?.Id,
               [filterLineItemObject.key]: filterLineItemObject.key === 'releasetopay' && !value
                 ? false
+<<<<<<< HEAD
                   : (filterLineItemObject.mappedWith === 11 || filterLineItemObject.mappedWith === 23) && !value && data.LocationId 
                     ? data.LocationId.toString()
                     : (filterLineItemObject?.key === 'account' && data['VendorId'] && !items['GLAccount'] && selectedVendor?.GLAccount)
                       ? selectedVendor?.GLAccount
                       : (filterLineItemObject?.key === 'account' && value) ? Number(value) : value,
+=======
+                : (filterLineItemObject.mappedWith === 11 || filterLineItemObject.mappedWith === 23) && !value && data.LocationId
+                  ? data.LocationId.toString()
+                  : (filterLineItemObject?.key === 'account' && data['VendorId'] && !items['GLAccount'] && selectedVendor?.GLAccount)
+                    ? selectedVendor?.GLAccount
+                    : (filterLineItemObject?.key === 'account' && value) ? Number(value) : value,
+>>>>>>> uat_to_develop_25_sep_24
             }
           }
 

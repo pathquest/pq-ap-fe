@@ -89,6 +89,10 @@ const EditBillPosting = ({ processtype }: any) => {
   const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false)
   const [processSelection, setProcessSelection] = useState<string>('1')
   const [isOpenFilter, setIsOpenFilter] = useState<boolean>(false)
+<<<<<<< HEAD
+=======
+  const [mainFieldAmount, setMainFieldAmount] = useState<any>(null)
+>>>>>>> uat_to_develop_25_sep_24
 
   const [isSubmitClick, setIsSubmitClick] = useState<boolean>(false)
   const [isOpenInNewWindow, setOpenInNewWindow] = useState<boolean>(false)
@@ -162,6 +166,10 @@ const EditBillPosting = ({ processtype }: any) => {
         UserId: Number(userId as string),
         ApprovalType: 0,
       })
+<<<<<<< HEAD
+=======
+
+>>>>>>> uat_to_develop_25_sep_24
       if (response?.ResponseStatus === 'Success') {
         const responseData = response?.ResponseData
         setDocumentDetailByIdData(responseData)
@@ -176,6 +184,10 @@ const EditBillPosting = ({ processtype }: any) => {
         )
 
         if (newLineItems.length === 0) {
+<<<<<<< HEAD
+=======
+          setMainFieldAmount(responseData?.Amount)
+>>>>>>> uat_to_develop_25_sep_24
           await setLineItemsFieldsData([
             {
               ...lineItemsFieldsDataObj,
@@ -1239,21 +1251,44 @@ const EditBillPosting = ({ processtype }: any) => {
       <div className='flex flex-col items-end px-5 pb-[77px] pt-[34px]'>
         <div className='mb-2 flex w-60 flex-row justify-between'>
           <span className='text-sm font-proxima tracking-[0.02em]'>Sub Total</span>
+<<<<<<< HEAD
           <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${Number(formattedTotalAmountValue).toFixed(2)}</span>
+=======
+          <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>
+            {
+              lineItemsFieldsData?.length > 0
+                ? !lineItemsFieldsData?.[0]?.amount ? '$' + mainFieldAmount?.toFixed(2)?.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '$' + (Number(formattedTotalAmountValue).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                : '$' + mainFieldAmount
+            }
+          </span>
+>>>>>>> uat_to_develop_25_sep_24
         </div>
         {AccountingTool === 3 && (
           <div className='mb-2 flex w-60 flex-row justify-between'>
             <span className='text-sm font-proxima tracking-[0.02em]'>Tax Total</span>
+<<<<<<< HEAD
             <span className='w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${Number(formattedTotalTaxAmountValue).toFixed(2)}</span>
+=======
+            <span className='w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${(Number(formattedTotalTaxAmountValue)?.toFixed(2))?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+>>>>>>> uat_to_develop_25_sep_24
           </div>
         )}
         <div className='mb-2 flex w-60 flex-row justify-between'>
           <span className={`text-sm font-proxima tracking-[0.02em]`}>Total Amount</span>
           <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>
+<<<<<<< HEAD
             $
             {formFields?.amountsare === '1'
               ? Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue) + parseFloat(formattedTotalTaxAmountValue))).toFixed(2)
               : Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue))).toFixed(2)}
+=======
+            {lineItemsFieldsData?.length > 0
+              ? !lineItemsFieldsData?.[0]?.amount ? '$' + mainFieldAmount?.toFixed(2)?.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : formFields?.amountsare === '1'
+                ? '$' + (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue) + parseFloat(formattedTotalTaxAmountValue)))?.toFixed(2))?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                : '$' + (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue)))?.toFixed(2))?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              : '$' + mainFieldAmount
+            }
+>>>>>>> uat_to_develop_25_sep_24
           </span>
         </div>
       </div>
