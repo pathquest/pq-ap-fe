@@ -520,7 +520,7 @@ const ListPaymentStatus: React.FC = () => {
       PaymentId: cancelPaymentId
     }
     performApiAction(dispatch, setCancelPayment, params, () => {
-      Toast.success('Payment Transaction has been cancelled successfully!')
+      Toast.success('Payment Transaction Cancelled!')
       setCancelPaymentId(0)
       setRefreshTable(!refreshTable)
     }, () => {

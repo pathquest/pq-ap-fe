@@ -302,7 +302,7 @@ const UserDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId }) => {
         is_Active: isEditStatus,
       }
       performApiAction(dispatch, userSaveData, params, () => {
-        Toast.success(`User ${EditId ? 'updated' : 'added'} successfully.`)
+        Toast.success(`${EditId ? 'Details Updated!' : 'User Added!'}`)
         clearAllData('Save')
       })
     }

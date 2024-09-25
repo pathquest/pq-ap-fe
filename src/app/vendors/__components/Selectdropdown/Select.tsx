@@ -345,7 +345,7 @@ const Select: React.FC<SelectProps> = ({
       setIsOpen(true);
       setFocusedIndex(0);
     }
-    else if (/^[a-zA-Z0-9\s]$/.test(e.key) || e.key === " ") {
+    else if (/^[a-zA-Z0-9\s\-@&#._]$/.test(e.key) || e.key === " ") {
       e.preventDefault();
       // If the key is an alphanumeric character
       setIsOpen(true);
@@ -473,7 +473,7 @@ const Select: React.FC<SelectProps> = ({
           )}
         </div>
         <ul
-          className={`bottomAnimation absolute !z-10 w-full bg-pureWhite mt-[${noborder ? 13 : 1
+          className={`absolute !z-10 w-full bg-pureWhite mt-[${noborder ? 13 : 1
             }px] overflow-y-auto shadow-md transition-transform ${isOpen
               ? `${heightClass ? heightClass : "max-h-60"} translate-y-0 transition-opacity opacity-100 duration-500`
               : "max-h-0 translate-y-10 transition-opacity opacity-0 duration-500"

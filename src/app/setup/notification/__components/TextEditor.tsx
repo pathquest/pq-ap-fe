@@ -112,7 +112,7 @@ const TextEditor: React.FC<DrawerProps> = ({ setIsEdit, matrixId }) => {
       // SuccessData
       setIsBtnLoading(false)
       setIsEdit(false)
-      Toast.success('Your recent changes have been successfully implemented.')
+      Toast.success('Changes Updated!')
     }, () => {
       // ErrorData
       setIsBtnLoading(false)

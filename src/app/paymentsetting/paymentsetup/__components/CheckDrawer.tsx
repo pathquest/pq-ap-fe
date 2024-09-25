@@ -345,7 +345,7 @@ const AccountDrawer: React.FC<DrawerProps> = ({ isOpen, onClose, ModeId, Mode, c
                 Mode === "Add" && setIsConfirmationModalOpen(true)
                 clearAllData("Save")
                 setIsLoading(false)
-                Toast.success(`Payment method setup added successfully.`)
+                Toast.success(`Payment method setup added!`)
               } else {
                 Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
                 setIsLoading(false)
@@ -377,7 +377,7 @@ const AccountDrawer: React.FC<DrawerProps> = ({ isOpen, onClose, ModeId, Mode, c
       }
       performApiAction(dispatch, saveCheckMicroDeposit, params, () => {
         // Save Data
-        Toast.success(`Micro deposit added successfully.`)
+        Toast.success(`Micro deposit added!`)
         clearAllData("Save")
         setIsLoading(false)
       }, () => {

@@ -245,7 +245,7 @@ const ListGLAccount: React.FC = () => {
       if (responseData.ResponseStatus === 'Success') {
         setIsSyncing(false)
         setRefreshTable(!refreshTable)
-        Toast.success('GL Account sync successfully')
+        Toast.success('GL Account Synced!')
       }
       else {
         setIsSyncing(false)
@@ -270,7 +270,7 @@ const ListGLAccount: React.FC = () => {
 
       performApiAction(dispatch, importGLAccountData, params, (responseData: any) => {
         if (responseData.SuccessCount > 0) {
-          Toast.success(`${responseData.SuccessCount} record imported successfully`)
+          Toast.success(`${responseData.SuccessCount} Record Imported!`)
         }
         setRefreshTable(!refreshTable)
         setIsImport(false);
@@ -281,7 +281,7 @@ const ListGLAccount: React.FC = () => {
         setSelectedFile(null);
       }, (WarningData: any) => {
         if (WarningData.SuccessCount > 0) {
-          Toast.success(`${WarningData.SuccessCount} record imported successfully`)
+          Toast.success(`${WarningData.SuccessCount} Record Imported!`)
         }
         WarningData.InSufficientData.map((data: any) => {
           Toast.warning(`${data.ErrorMessage}`)
@@ -315,7 +315,7 @@ const ListGLAccount: React.FC = () => {
       if (responseData.ResponseStatus === 'Success') {
         setIsLoading(false)
         setRefreshTable(!refreshTable)
-        Toast.success(`Status updated successfully.`)
+        Toast.success(`Status Updated!`)
       } else {
         setIsLoading(false)
         setRefreshTable(!refreshTable)

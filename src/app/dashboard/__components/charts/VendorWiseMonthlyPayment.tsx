@@ -209,7 +209,7 @@ const VendorWiseMonthlyPayment: React.FC<any> = ({ LocationOption }) => {
                 </div>
                 {vendorList.length === 0 ? isLoading ?
                     <div className='flex h-[calc(52vh-5px)] w-full items-center justify-center'>
-                        <Loader size='md' helperText />
+                        <Loader size='md' />
                     </div>
                     : <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
                         No records available at the moment.

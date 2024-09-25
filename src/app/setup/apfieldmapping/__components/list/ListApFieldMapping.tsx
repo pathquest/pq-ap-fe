@@ -348,7 +348,7 @@ const ListAPFieldMapping: React.FC = () => {
         (responseData: any) => {
           IsFieldMappingSet === 'false' && router.push('/manage/companies')
           localStorage.removeItem('IsFieldMappingSet')
-          Toast.success('Fields Saved Successfully!')
+          Toast.success('Fields Saved!')
         },
         (err: any) => {
           Toast.error('Error', `${err}`)

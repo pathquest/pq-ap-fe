@@ -202,7 +202,7 @@ const Department: React.FC<DepartmentProps> = ({ onDrawerOpen, onDrawerClose, is
       if (responseData.ResponseStatus === 'Success') {
         setIsLoading(false)
         setRefreshTable(!refreshTable)
-        Toast.success(`Status updated successfully.`)
+        Toast.success(`Status Updated!`)
       } else {
         setIsLoading(false)
         setRefreshTable(!refreshTable)
