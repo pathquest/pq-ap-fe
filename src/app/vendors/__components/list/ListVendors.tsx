@@ -374,7 +374,7 @@ const ListVendors: React.FC = () => {
     performApiAction(dispatch, syncVendor, null, (responseData: any) => {
       if (responseData.ResponseStatus === 'Success') {
         getVendorList(1)
-        Toast.success(`Vendor sync successfully`)
+        Toast.success(`Vendor(s) Synced!`)
         setIsSyncing(false)
       }
       else {
@@ -500,7 +500,7 @@ const ListVendors: React.FC = () => {
     performApiAction(dispatch, vendorUpdateStatus, params, () => {
       // SuccessData
       getVendorList(1)
-      Toast.success('Vendor Status Updated')
+      Toast.success('Status Updated!')
       setInactiveId(0)
       setVendorName('')
       setRecordNumber('')
@@ -528,7 +528,7 @@ const ListVendors: React.FC = () => {
       performApiAction(dispatch, importVendorData, params, (responseData: any) => {
         // SuccessData
         if (responseData.SuccessCount > 0) {
-          Toast.success(`${responseData.SuccessCount} record imported successfully`)
+          Toast.success(`${responseData.SuccessCount} Record Imported!`)
         }
         getVendorList(1)
         setIsImporting(false);
@@ -540,7 +540,7 @@ const ListVendors: React.FC = () => {
       }, (WarningData: any) => {
         // WarningData
         if (WarningData.SuccessCount > 0) {
-          Toast.success(`${WarningData.SuccessCount} record imported successfully`)
+          Toast.success(`${WarningData.SuccessCount} Record Imported!`)
         }
         WarningData.InSufficientData.map((data: any) => {
           Toast.warning(`${data.ErrorMessage}`)
@@ -664,7 +664,7 @@ const ListVendors: React.FC = () => {
           {/* Inactive Modal */}
           {isInactiveModalOpen && <ConfirmationModal
             title='Inactive Vendor'
-            content={`Are you sure you want to inactive ${inactiveId > 0 ? "this" : "all"} vendor`}
+            content={`Are you sure you want to inactive ${inactiveId > 0 ? "this vendor?" : "these vendors?"}`}
             isModalOpen={isInactiveModalOpen}
             modalClose={modalClose}
             handleSubmit={() => handleInactiveVendor(inactiveId, recordNumber, vendorStatus, vendorName)}

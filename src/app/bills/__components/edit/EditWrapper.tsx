@@ -319,7 +319,7 @@ const EditWrapper = ({
             setIsAssigneeModal(false)
             const isFormDocument = billLists.filter((value: any) => (value.Id === nextBillId ? value : null))
             dispatch(setIsFormDocuments(isFormDocument[0].IsFromDocuments))
-            Toast.success(`Assignee has been changed successfully`)
+            Toast.success(`Assignee Changed!`)
 
             setActiveBill(nextBillId)
             setIsNewWindowUpdate(true)
@@ -329,7 +329,7 @@ const EditWrapper = ({
             window.history.replaceState(null, '', `/bills/edit/${nextBillId}?module=bills`)
             // router.push(`/bills/edit/${nextBillId}`)
           } else {
-            Toast.success(`Assignee has been changed successfully`)
+            Toast.success(`Assignee Changed!`)
             router.push(`/bills`)
             setIsAssigneeModal(false)
           }
@@ -444,12 +444,12 @@ const EditWrapper = ({
 
   const showSuccessMessage = (postSaveAs: number) => {
     if (postSaveAs === 2) {
-      Toast.success('Successfully bill drafted!!')
+      Toast.success('Bill Drafted!')
     } else if (postSaveAs === 12) {
       setPostaspaidModal(false)
-      Toast.success('Successfully bill posted!!')
+      Toast.success('Bill Posted!')
     } else {
-      Toast.success('Successfully bill posted!!')
+      Toast.success('Bill Posted!')
     }
   }
 
@@ -664,7 +664,7 @@ const EditWrapper = ({
 
       if (meta?.requestStatus === 'fulfilled') {
         if (payload?.ResponseStatus === 'Success') {
-          Toast.success('Successfully items moved!!')
+          Toast.success('Bill(s) Moved!')
           router.push(`/bills`)
         } else {
           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
@@ -691,7 +691,7 @@ const EditWrapper = ({
 
           if (meta?.requestStatus === 'fulfilled') {
             if (payload?.ResponseStatus === 'Success') {
-              Toast.success('Items successfully deleted!!')
+              Toast.success('Bill(s) Deleted!')
               router.push('/bills')
             } else {
               Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)

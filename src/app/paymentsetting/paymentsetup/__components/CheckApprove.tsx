@@ -58,7 +58,7 @@ const CheckApprove: React.FC<DrawerProps> = ({ onClose, Mode, accountId, payment
                 RejectReason: ""
             }
             performApiAction(dispatch, approveRejectCheck, params, () => {
-                Toast.success("Check payment method has been approved.")
+                Toast.success("Payment method approved!")
                 handleModalClose("Save")
             }, () => {
                 setIsRejectLoading(false)
@@ -77,7 +77,7 @@ const CheckApprove: React.FC<DrawerProps> = ({ onClose, Mode, accountId, payment
                     RejectReason: rejectReason
                 }
                 performApiAction(dispatch, approveRejectCheck, params, () => {
-                    Toast.success("Check payment method has been rejected.")
+                    Toast.success("Payment method rejected!")
                     handleModalClose("Save")
                 }, () => {
                     setIsRejectLoading(false)

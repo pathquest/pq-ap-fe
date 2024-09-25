@@ -240,7 +240,7 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
       ProcessList: permissionList,
     }
     performApiAction(dispatch, SaveAssignRoles, params, () => {
-      Toast.success(`Role ${usersId ? 'updated' : 'added'} successfully.`)
+      Toast.success(`${usersId ? 'Details Updated!' : 'Role Added!'} successfully.`)
       onClose()
     })
   }

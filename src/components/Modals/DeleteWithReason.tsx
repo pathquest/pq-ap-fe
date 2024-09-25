@@ -9,6 +9,7 @@ const DeleteWithReason = ({
   editedValues,
   setEditedValues,
   setHandleErrorMsg,
+  deleteIds,
 }: any) => {
   const handleInputChange = (field: any, newValue: any) => {
     setEditedValues((prevState: any) => ({
@@ -45,7 +46,7 @@ const DeleteWithReason = ({
 
           <ModalContent>
             <div className='p-4'>
-              <div className='mb-3'>Are you sure you want to delete the bill?</div>
+              <div className='mb-3'>Are you sure you want to delete {(deleteIds && deleteIds.length > 1) ? 'these bills?' : 'this bill?'}</div>
               {isTextVisible && (
                 <div>
                   <Textarea

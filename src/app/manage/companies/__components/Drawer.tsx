@@ -319,9 +319,9 @@ const Drawer: React.FC<DrawerProps> = ({
       params,
       () => {
         if (Id) {
-          Toast.success('Company updated successfully')
+          Toast.success('Details Updated!')
         } else if (accountingTool !== 4) {
-          Toast.success(`Masters data has been synced for the ${companyName} is completed. Start by managing configurations and field mapping.`)
+          Toast.success(`Syncing data of masters has been synced for the ${companyName}. Start by managing configurations and field mapping.`)
         }
         setAccountToolCompanyId('')
         clearData()
