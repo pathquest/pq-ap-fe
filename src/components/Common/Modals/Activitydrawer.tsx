@@ -275,51 +275,51 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
         break
     }
 
-    // if (summaryMessage.length > 0 && value === 'summary') {
-    //   setSummaryLoader(true)
-    //   try {
-    //     const data = await openai.createChatCompletion({
-    //       model: 'gpt-4o-mini',
-    //       messages: [{ role: 'user', content: summaryMessage }],
-    //       temperature: 0.5,
-    //       max_tokens: 3000,
-    //     });
+    if (summaryMessage.length > 0 && value === 'summary') {
+      setSummaryLoader(true)
+      try {
+        const data = await openai.createChatCompletion({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: summaryMessage }],
+          temperature: 0.5,
+          max_tokens: 3000,
+        });
 
-    //     if (data.data && data.data.choices && data.data.choices.length > 0) {
-    //       setSummaryLoader(false)
-    //       const apiResponse = data.data.choices[0].message?.content ?? '';
-    //       setIsSummaryModalIcon(false);
-    //       setIsSummaryModalOpen(true);
-    //       setSummaryModalData(String(apiResponse));
-    //     } else {
-    //       setSummaryLoader(false)
-    //       setNewText('Nothing found in the response.');
-    //     }
-    //   } catch (error) {
-    //     setNewText('');
-    //     setSummaryLoader(false)
-    //     console.error("Error:", error);
-    //   }
-    // } else {
-    //   try {
-    //     const data = await openai.createChatCompletion({
-    //       model: 'gpt-4o-mini',
-    //       messages: [{ role: 'user', content: actionMessage }],
-    //       temperature: 0.5,
-    //       max_tokens: 4000,
-    //     });
+        if (data.data && data.data.choices && data.data.choices.length > 0) {
+          setSummaryLoader(false)
+          const apiResponse = data.data.choices[0].message?.content ?? '';
+          setIsSummaryModalIcon(false);
+          setIsSummaryModalOpen(true);
+          setSummaryModalData(String(apiResponse));
+        } else {
+          setSummaryLoader(false)
+          setNewText('Nothing found in the response.');
+        }
+      } catch (error) {
+        setNewText('');
+        setSummaryLoader(false)
+        console.error("Error:", error);
+      }
+    } else {
+      try {
+        const data = await openai.createChatCompletion({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: actionMessage }],
+          temperature: 0.5,
+          max_tokens: 4000,
+        });
 
-    //     if (data.data && data.data.choices && data.data.choices.length > 0) {
-    //       const apiResponse = data.data.choices[0].message?.content ?? '';
-    //       setNewText(String(apiResponse));
-    //     } else {
-    //       setNewText('Nothing found in the response.');
-    //     }
-    //   } catch (error) {
-    //     setNewText('');
-    //     console.error("Error:", error);
-    //   }
-    // }
+        if (data.data && data.data.choices && data.data.choices.length > 0) {
+          const apiResponse = data.data.choices[0].message?.content ?? '';
+          setNewText(String(apiResponse));
+        } else {
+          setNewText('Nothing found in the response.');
+        }
+      } catch (error) {
+        setNewText('');
+        console.error("Error:", error);
+      }
+    }
   }
 
   const handleOutsideClick = (event: MouseEvent) => {
