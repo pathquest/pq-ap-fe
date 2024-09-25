@@ -89,6 +89,7 @@ const EditBillPosting = ({ processtype }: any) => {
   const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false)
   const [processSelection, setProcessSelection] = useState<string>('1')
   const [isOpenFilter, setIsOpenFilter] = useState<boolean>(false)
+  const [mainFieldAmount, setMainFieldAmount] = useState<any>(null)
 
   const [isSubmitClick, setIsSubmitClick] = useState<boolean>(false)
   const [isOpenInNewWindow, setOpenInNewWindow] = useState<boolean>(false)
@@ -162,6 +163,7 @@ const EditBillPosting = ({ processtype }: any) => {
         UserId: Number(userId as string),
         ApprovalType: 0,
       })
+
       if (response?.ResponseStatus === 'Success') {
         const responseData = response?.ResponseData
         setDocumentDetailByIdData(responseData)
@@ -176,6 +178,7 @@ const EditBillPosting = ({ processtype }: any) => {
         )
 
         if (newLineItems.length === 0) {
+          setMainFieldAmount(responseData?.Amount)
           await setLineItemsFieldsData([
             {
               ...lineItemsFieldsDataObj,
@@ -1239,21 +1242,29 @@ const EditBillPosting = ({ processtype }: any) => {
       <div className='flex flex-col items-end px-5 pb-[77px] pt-[34px]'>
         <div className='mb-2 flex w-60 flex-row justify-between'>
           <span className='text-sm font-proxima tracking-[0.02em]'>Sub Total</span>
-          <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${(Number(formattedTotalAmountValue).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+          <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>
+            {
+              lineItemsFieldsData?.length > 0
+                ? !lineItemsFieldsData?.[0]?.amount ? '$' + mainFieldAmount?.toFixed(2)?.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '$' + (Number(formattedTotalAmountValue).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                : '$' + mainFieldAmount
+            }
+          </span>
         </div>
         {AccountingTool === 3 && (
           <div className='mb-2 flex w-60 flex-row justify-between'>
             <span className='text-sm font-proxima tracking-[0.02em]'>Tax Total</span>
-            <span className='w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${(Number(formattedTotalTaxAmountValue).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+            <span className='w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>${(Number(formattedTotalTaxAmountValue)?.toFixed(2))?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
           </div>
         )}
         <div className='mb-2 flex w-60 flex-row justify-between'>
           <span className={`text-sm font-proxima tracking-[0.02em]`}>Total Amount</span>
           <span className='min-w-[20%] text-end text-sm font-semibold font-proxima tracking-[0.02em]'>
-            $
-            {formFields?.amountsare === '1'
-              ? (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue) + parseFloat(formattedTotalTaxAmountValue))).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              : (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue))).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+            {lineItemsFieldsData?.length > 0
+              ? !lineItemsFieldsData?.[0]?.amount ? '$' + mainFieldAmount?.toFixed(2)?.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : formFields?.amountsare === '1'
+                ? '$' + (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue) + parseFloat(formattedTotalTaxAmountValue)))?.toFixed(2))?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                : '$' + (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue)))?.toFixed(2))?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              : '$' + mainFieldAmount
+            }
           </span>
         </div>
       </div>
