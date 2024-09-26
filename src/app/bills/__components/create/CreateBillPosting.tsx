@@ -67,7 +67,7 @@ const CreateBillPosting = ({
   const [formFields, setFormFields] = useState<{ [x: string]: string | number | null | any }>({})
   const [hasFormFieldErrors, setHasFormFieldErrors] = useState<{ [x: string]: boolean }>({})
   const [hasFormFieldLibraryErrors, setHasFormFieldLibraryErrors] = useState<{ [x: string]: boolean }>({})
- 
+
   const [checkFormFieldErrors, setCheckFormFieldErrors] = useState<{ [x: string]: boolean }>({})
 
   const [lineItemsFieldsData, setLineItemsFieldsData] = useState<EditBillPostingDataProps[] | any>([])
@@ -597,7 +597,7 @@ const CreateBillPosting = ({
           duedate: formattedDueDateCalculated ? true : false,
         })
       } else {
-        
+
         await setFormFields({
           ...formFields,
           [key]: value,
@@ -669,6 +669,7 @@ const CreateBillPosting = ({
 
       await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
+        [key]: value ? true : false,
         ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
         ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
         ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
@@ -825,7 +826,6 @@ const CreateBillPosting = ({
 
             if (key === 'term') {
               if (hasFormFieldErrors.hasOwnProperty(key)) {
-                console.log("term : ", hasFormFieldErrors)
                 setHasFormFieldLibraryErrors({
                   ...hasFormFieldLibraryErrors,
                   [key]: err,

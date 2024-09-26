@@ -85,6 +85,7 @@ const ProfileForm = ({ session }: any) => {
         dispatch(setRoleId(response.ResponseData.RoleId))
         await update({
           ...user,
+          email:response.ResponseData.UserEmail,
           org_id: response.ResponseData.OrganizationId,
           org_name: response.ResponseData.OrganizationName,
           user_id: response.ResponseData.UserId,
