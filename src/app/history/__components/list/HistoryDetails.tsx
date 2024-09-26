@@ -115,8 +115,6 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
     const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
     const isFilesPermission = getModulePermissions(processPermissionsMatrix, "Files") ?? {}
     const isFilesCreate = isFilesPermission?.Create ?? false;
-    const isCreate = hasCreatePermission(processPermissionsMatrix, "Files")
-    const isImport = hasImportPermission(processPermissionsMatrix, "Files")
 
     const { data: session } = useSession()
     const CompanyId = session?.user?.CompanyId

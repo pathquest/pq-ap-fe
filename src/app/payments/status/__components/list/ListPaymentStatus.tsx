@@ -43,7 +43,6 @@ const ListPaymentStatus: React.FC = () => {
   const dispatch = useAppDispatch()
   const router = useRouter()
 
-  const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
   const { showPDFViewerModal, PDFUrl, setPDFUrl, fileBlob, isPdfLoading } = usePdfViewer()
 
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)

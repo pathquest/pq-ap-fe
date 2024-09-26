@@ -44,7 +44,6 @@ const ListAPTerm: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isImport, setIsImport] = useState<boolean>(false)
   const [refreshTable, setRefreshTable] = useState<boolean>(false)
-  const [searchValue, setSearchValue] = useState('')
 
   //For Lazy Loading
   const [shouldLoadMore, setShouldLoadMore] = useState(true)

@@ -127,8 +127,6 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
   const isFilesPermission = getModulePermissions(processPermissionsMatrix, "Files") ?? {}
   const isFilesView = isFilesPermission?.View ?? false;
   const isFilesImport = isFilesPermission?.Import ?? false;
-  const isCreate = hasCreatePermission(processPermissionsMatrix, "Files")
-  const isImport = hasImportPermission(processPermissionsMatrix, "Files")
 
   const { data: session } = useSession()
   const CompanyId = session?.user?.CompanyId
