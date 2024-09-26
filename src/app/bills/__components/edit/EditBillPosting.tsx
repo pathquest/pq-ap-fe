@@ -155,7 +155,7 @@ const EditBillPosting = ({ processtype }: any) => {
 
   const lazyRows = 10
 
-  const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any, mainFieldListOptions: any, generateLinetItemFieldsErrorObj: any, vendorOptions: any) => {
+  const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any, mainFieldListOptions: any, generateLinetItemFieldsErrorObj: any, vendorOptions: any, lineItemsFieldsDataObj: any) => {
     setIsBillDataLoading(true)
     try {
       const response = await agent.APIs.getDocumentDetails({
@@ -183,7 +183,14 @@ const EditBillPosting = ({ processtype }: any) => {
             {
               ...lineItemsFieldsDataObj,
               Index: 1,
+              amount: responseData?.Amount ?? 0
             },
+          ])
+          await setHasLineItemFieldLibraryErrors([
+            {
+              ...generateLinetItemFieldsErrorObj,
+              amount: responseData?.Amount ? true : false
+            }
           ])
         } else {
           await setLineItemsFieldsData(newLineItems)
@@ -268,14 +275,14 @@ const EditBillPosting = ({ processtype }: any) => {
       await setLineItemFieldColumns(lineItemFieldColumns)
       await setLineItemsFieldsDataObj(lineItemsFieldsDataObj)
 
-      if (lineItemsFieldsData.length === 0 || lineItemsFieldsData === null) {
-        await setLineItemsFieldsData([
-          {
-            ...lineItemsFieldsDataObj,
-            Index: 1,
-          },
-        ])
-      }
+      // if (lineItemsFieldsData.length === 0 || lineItemsFieldsData === null) {
+      //   await setLineItemsFieldsData([
+      //     {
+      //       ...lineItemsFieldsDataObj,
+      //       Index: 1,
+      //     },
+      //   ])
+      // }
 
       const mainFieldConfiguration = [
         ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.DefaultList,
@@ -295,7 +302,7 @@ const EditBillPosting = ({ processtype }: any) => {
       await setLineItemFieldListOptions(lineItemConfiguration)
 
       if (activeBill) {
-        await getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldConfiguration, generateLinetItemFieldsErrorObj, vendorOptions)
+        await getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldConfiguration, generateLinetItemFieldsErrorObj, vendorOptions, lineItemsFieldsDataObj)
       }
 
       setIsLoading(false)
@@ -311,7 +318,7 @@ const EditBillPosting = ({ processtype }: any) => {
         mainFieldListOptions,
         lineItemFieldListOptions
       )
-      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldListOptions, generateLinetItemFieldsErrorObj, vendorGLTermOptions)
+      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldListOptions, generateLinetItemFieldsErrorObj, vendorGLTermOptions, lineItemsFieldsDataObj)
     }
   }, [activeBill])
 
