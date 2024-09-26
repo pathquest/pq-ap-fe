@@ -149,7 +149,6 @@ const ListBillPosting = ({ statusOptions }: any) => {
 
   const [sortOrder, setSortOrder] = useState<number | null>(1)
   const [filterName, setFilterName] = useState<string | null>(null)
-  const [filterOverviewName, setFilterOverviewName] = useState<string | null>(null)
 
   const [billsOverviewParams, setBillsOverviewParams] = useState<any>([])
 
@@ -231,13 +230,6 @@ const ListBillPosting = ({ statusOptions }: any) => {
     BillDate: null,
     DueDate: null,
     Status: null,
-    Amount: null,
-  })
-
-  const [sortBillsOverviewOrders, setSortBillOverviewOrders] = useState<{ [key: string]: null | 'asc' | 'desc' }>({
-    BillNumber: null,
-    BillDate: null,
-    CreatedOn: null,
     Amount: null,
   })
 
@@ -335,7 +327,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
       VendorIds: filterFormFields.ft_vendor && filterFormFields.ft_vendor.length > 0 ? filterFormFields.ft_vendor.length === vendorOptions.length ? vendorOptions.map((option: any) => option.value) : filterFormFields.ft_vendor : vendorOptions.map((option: any) => option.value),
       StartDate: convertStringsDateToUTC(dateRangeVal[0].trim()) ?? null,
       EndDate: convertStringsDateToUTC(dateRangeVal[1].trim()) ?? null,
-      SortColumn: filterOverviewName ?? 'CreatedOn',
+      SortColumn: filterName ?? 'CreatedOn',
       SortOrder: sortOrder,
       PageNumber: 1 || nextPageIndexOverview,
       PageSize: lazyRowsOverview,
@@ -518,7 +510,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
 
   useEffect(() => {
     if (duplicateBillCount) {
-      Toast.success('Duplicate Record Found')
+      Toast.success('Duplicate record found!')
     }
   }, [duplicateBillCount]);
 
@@ -750,7 +742,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
         VendorIds: filterFormFields.ft_vendor && filterFormFields.ft_vendor.length > 0 ? filterFormFields.ft_vendor.length === vendorOptions.length ? vendorOptions.map((option: any) => option.value) : filterFormFields.ft_vendor : vendorOptions.map((option: any) => option.value),
         StartDate: convertStringsDateToUTC(dateRangeVal[0].trim()) ?? null,
         EndDate: convertStringsDateToUTC(dateRangeVal[1].trim()) ?? null,
-        SortColumn: filterOverviewName ?? 'CreatedOn',
+        SortColumn: filterName ?? 'CreatedOn',
         SortOrder: sortOrder,
         PageNumber: pageIndex || nextPageIndexOverview,
         PageSize: lazyRowsOverview,
@@ -1588,7 +1580,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
       if (meta?.requestStatus === 'fulfilled') {
         if (payload?.ResponseStatus === 'Success') {
           fetchBillsData(1)
-          Toast.success('Successfully item moved!!')
+          Toast.success('Bill(s) Moved!')
         } else {
           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
         }
@@ -1644,7 +1636,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
               isChecked: false,
             })
           }
-          Toast.success(`Assignee has been changed successfully`)
+          Toast.success(`Assignee Changed!`)
         } else {
           setSelectedStates([])
           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
@@ -1760,7 +1752,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                 setDeleteModal(false)
                 setDeleteOverviewId(0)
                 fetchBillsOverviewData(1)
-                Toast.success('Successfully item deleted!!')
+                Toast.success('Bill(s) Deleted!')
               } else {
                 setDeleteModal(false)
                 Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
@@ -1821,7 +1813,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                 setDeleteIds([])
                 fetchBillsData(1)
                 processSelection === '4' && fetchBillsOverviewData(1)
-                Toast.success('Successfully item deleted!!')
+                Toast.success('Bill(s) Deleted!')
               } else {
                 setDeleteModal(false)
                 Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
@@ -1865,7 +1857,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                     isChecked: false,
                   })
                 }
-                Toast.success('Successfully items deleted!!')
+                Toast.success('Bill(s) Deleted!')
               } else {
                 setDeleteModal(false)
                 Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
@@ -1908,7 +1900,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
       if (meta?.requestStatus === 'fulfilled') {
         if (payload?.ResponseStatus === 'Success') {
           fetchBillsData(1)
-          Toast.success(`Assignee has been changed successfully`)
+          Toast.success(`Assignee Changed!`)
         } else {
           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
         }
@@ -1979,7 +1971,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
               isChecked: false,
             })
           }
-          Toast.success('Successfully items moved!!')
+          Toast.success('Bill(s) Moved!')
         } else {
           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
         }
@@ -2020,7 +2012,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
           setIsRestoreModalOpen(false)
           setIsRestoreFields({})
           fetchBillsData(1)
-          Toast.success('Successfully item restored!!')
+          Toast.success('Bill Restored!')
         } else {
           setDeleteModal(false)
           Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
@@ -2148,7 +2140,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                 <ul className='flex items-center gap-5'>
                   {processSelection !== '3' && (<>
                     <li className={`mt-1.5 flex items-center gap-3 ${((processSelection == "1" && isAccountPayableSync) || (processSelection == "2" && isAccountAdjustmentSync) || (processSelection == "4" && isBillsOverviewSync)) ? "flex" : "hidden"}`} tabIndex={0}>
-                      <label className={`text-sm font-proxima tracking-[0.02em] text-darkCharcoal ${inProcessCount == 0 ? "hidden" : "block"}`}>{inProcessCount} Files in automation.</label>
+                      <label className={`text-sm font-proxima tracking-[0.02em] text-darkCharcoal ${inProcessCount == 0 ? "hidden" : "block"}`}>{inProcessCount} File{inProcessCount > 1 ? '(s)' : ''} in automation.</label>
                       <BasicTooltip position='bottom' content='Sync' className='!z-10 !font-proxima !text-sm !px-0'>
                         <div className={`${inProcessCount > 0 && 'animate-spin'}`}>
                           <SyncIcon />
@@ -2459,9 +2451,12 @@ const ListBillPosting = ({ statusOptions }: any) => {
           isTextVisible={isVisibleTextValue}
           setVisibleTextValue={(value: boolean) => setVisibleTextValue(value)}
           onOpen={isDeleteModal}
+          deleteIds={deleteIds}
           onClose={() => {
             setVisibleTextValue(false)
             setDeleteModal(false)
+            setDeleteIds([])
+            setDeleteId(-1)
           }}
           handleSubmit={() => {
             if (processSelection === '4') {

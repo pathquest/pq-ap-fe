@@ -397,7 +397,7 @@ const ListVendorsDuplication: React.FC = () => {
     performApiAction(dispatch, vendorUpdateStatus, params, () => {
       // SuccessData
       getVendorList(1)
-      Toast.success('Vendor Status Updated')
+      Toast.success('Status Updated!')
       setInactiveId(0)
       setVendorName('')
       setRecordNumber('')

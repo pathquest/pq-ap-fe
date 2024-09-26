@@ -410,7 +410,7 @@ const SplitDrawer: React.FC<SplitDrawerProps> = ({
 
         if (responseOcr?.ResponseStatus === 'Success') {
           setIsLoader(false)
-          Toast.success('Success', 'Document Split Successfully!')
+          Toast.success('Document Splitted!')
           router.push('/bills')
         }
       }

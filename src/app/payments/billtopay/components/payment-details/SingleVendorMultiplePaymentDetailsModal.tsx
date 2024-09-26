@@ -456,7 +456,7 @@ const SingleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
       const dataMessage = payload?.Message
       if (meta?.requestStatus === 'fulfilled') {
         if (payload?.ResponseStatus === 'Success') {
-          Toast.success(`Bills has been sent for approval!`)
+          Toast.success(`Bills sent for approval!`)
           onDataFetch()
           handleCloseModal()
           setIsPaymentLoading(false)

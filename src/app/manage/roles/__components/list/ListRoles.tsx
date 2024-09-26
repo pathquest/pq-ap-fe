@@ -309,7 +309,7 @@ const ListRoles: React.FC = () => {
       RoleId: roleId,
     }
     performApiAction(dispatch, roleRemove, params, (responseData: any) => {
-      Toast.success('Role Remove successfully')
+      Toast.success('Role Removed!')
       setRefreshTable(!refreshTable)
       setRoleId(0)
     })

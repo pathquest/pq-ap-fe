@@ -267,7 +267,7 @@ const ListCompanies = () => {
       performApiAction(dispatch, conncetQb, params, (responseData: any) => {
         setQboCompanyData(responseData)
         if (responseData?.Name === null) {
-          Toast.success('Company connected successfully')
+          Toast.success('Company Connected!')
           setOpenDrawer(false)
           getCompanyList()
           localStorage.removeItem('qbcode')
@@ -320,7 +320,7 @@ const ListCompanies = () => {
         (responseData: any) => {
           setXeroCompanyData(responseData)
           if (responseData?.Name === null) {
-            Toast.success('Company connected successfully')
+            Toast.success('Company Connected!')
             setOpenDrawer(false)
             getCompanyList()
             localStorage.getItem('xerocode')
@@ -403,7 +403,7 @@ const ListCompanies = () => {
             Toast.error(`Invalid Credentials!`)
             setOpenIntacctModal(true)
           } else {
-            Toast.success(`Successfully Connected`)
+            Toast.success(`Successfully Connected!`)
             OpenComapnyModalIntacct()
             setIntacctComDropList(
               Data.map((item: Item) => ({
@@ -499,7 +499,7 @@ const ListCompanies = () => {
             setOpenCompaniesModal(false)
             setIntacctCompantModal(false)
           } else {
-            Toast.success('Company Connected successfully')
+            Toast.success('Company Connected!')
             setOpenDrawer(false)
             setIntacctCompantModal(false)
             getCompanyList(1)
@@ -876,17 +876,17 @@ const ListCompanies = () => {
       setSelectedRowId(0)
       switch (action) {
         case 1:
-          Toast.success('Company deactivated successfully')
+          Toast.success('Company Deactivated!')
           break
         case 2:
-          Toast.success('Company disconnected successfully')
+          Toast.success('Company Disconnected!')
           break
         case 3:
-          Toast.success('Company removed successfully')
+          Toast.success('Company Removed!')
           dispatch(setIsRefresh(!isRefresh))
           break
         case 4:
-          Toast.success('Company activated successfully')
+          Toast.success('Company Activated!')
           break
         default:
           break

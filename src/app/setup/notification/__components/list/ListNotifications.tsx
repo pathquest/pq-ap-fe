@@ -151,7 +151,7 @@ const ListNotification: React.FC = () => {
     performApiAction(dispatch, saveNotificationMatrix, params, () => {
       // SuccessData
       setIsEdit(false)
-      Toast.success('Triggers have been saved successfully')
+      Toast.success('Triggers Saved!')
     })
   }
 

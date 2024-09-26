@@ -115,7 +115,7 @@ const ColumnFilterOverview: React.FC<ColumnFilterDropdownProps & { maxHeight?: s
 
       if (meta?.requestStatus === 'fulfilled') {
         if (payload?.ResponseStatus === 'Success') {
-          Toast.success('Columns Updated !!')
+          Toast.success('Columns Updated!')
           getMappingListData()
           setIsOpen(false)
           setIsLoading(false)

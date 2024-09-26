@@ -202,7 +202,7 @@ const ListUsers: React.FC = () => {
       Status: !is_Active,
     }
     performApiAction(dispatch, userUpdateStatus, params, (responseData: any) => {
-      Toast.success('Status updated successfully.')
+      Toast.success('Status Updated!')
       setRefreshTable(!refreshTable)
       setIsSwitchClicked(false)
     }, () => {
@@ -238,7 +238,7 @@ const ListUsers: React.FC = () => {
       UserId: rowId,
     }
     performApiAction(dispatch, deleteUser, params, () => {
-      Toast.success('User removed successfully.')
+      Toast.success('User Removed!')
       setRefreshTable(!refreshTable)
     })
   }

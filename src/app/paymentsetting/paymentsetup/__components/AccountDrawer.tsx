@@ -393,7 +393,7 @@ const AccountDrawer: React.FC<DrawerProps> = ({ isOpen, onClose, ModeId, Mode })
           const { payload, meta } = await dispatch(saveBuyerBank(params))
           if (meta?.requestStatus === 'fulfilled') {
             if (payload?.ResponseStatus === 'Success') {
-              Toast.success(`Account ${ModeId ? 'updated' : 'added'} successfully.`)
+              Toast.success(`${ModeId ? 'Details Updated!' : 'Account Added!'}`)
               clearAllData("Save")
               setIsLoading(false)
             } else {

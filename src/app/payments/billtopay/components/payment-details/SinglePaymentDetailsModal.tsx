@@ -306,7 +306,7 @@ const SinglePaymentDetailsModal: React.FC<ActionsProps> = ({
       const dataMessage = payload?.Message
       if (meta?.requestStatus === 'fulfilled') {
         if (payload?.ResponseStatus === 'Success') {
-          Toast.success(`Bill has been sent for approval!`)
+          Toast.success(`Bill sent for approval!`)
           onDataFetch()
           handleCloseModal()
           setIsPaymentLoading(false)

@@ -271,7 +271,7 @@ const PaidAfterVsPaidBeforeDueDate: React.FC<any> = ({ LocationOption }) => {
       <div className='main_chart w-full'>
         {isLoading
           ? <div className='h-[400px] w-full flex justify-center'>
-            <Loader size='md' helperText/>
+            <Loader size='md'/>
           </div>
           : <HighchartsReact highcharts={Highcharts} options={getChartOptions()} />}
       </div>

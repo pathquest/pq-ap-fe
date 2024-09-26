@@ -103,7 +103,7 @@ const GLAccountDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId }) => 
       performApiAction(dispatch, saveGLAccount, params, (responseData: any) => {
         const dataMessage = responseData.Message
         if (responseData.ResponseStatus === 'Success') {
-          Toast.success(`Account ${EditId ? 'updated' : 'added'} successfully.`)
+          Toast.success(`${EditId ? 'Account Updated!' : 'Account Added!'}`)
           onClose("Save")
           initialData()
         }

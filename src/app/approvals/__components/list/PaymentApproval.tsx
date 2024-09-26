@@ -771,11 +771,11 @@ const PaymentApproval: React.FC = () => {
         modalClose()
         setSelectedRows([])
         setIsAllChecked(false)
-        const action = status == 1 ? 'approved' : 'rejected'
+        const action = status == 1 ? 'approved!' : 'rejected!'
         const message =
           selectedRows.length > 1
             ? `Payment requests for ${selectedRows.length} vendors have been ${action} successfully!`
-            : `Payment request of $${formatCurrency(paymentAmount)} for ${paymentVendorName} has been ${action} successfully!`
+            : `Payment request of $${formatCurrency(paymentAmount)} for ${paymentVendorName} has been ${action}`
         Toast.success(message)
       }, () => {
         setIsLoading(false)
@@ -802,7 +802,7 @@ const PaymentApproval: React.FC = () => {
       }
 
       performApiAction(dispatch, paymentReAssign, params, () => {
-        Toast.success(`Payment request of $${formatCurrency(paymentAmount)} for ${paymentVendorName} has been re-assigned successfully!`)
+        Toast.success(`Payment request of $${formatCurrency(paymentAmount)} for ${paymentVendorName} has been re-assigned!`)
         setRefreshTable(!refreshTable)
         modalClose()
         setSelectedRows([])

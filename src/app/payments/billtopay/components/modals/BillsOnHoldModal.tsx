@@ -30,7 +30,7 @@ const BillsOnHoldModal: React.FC<ActionsProps> = ({ onOpen, onClose, selectedRow
     }
     performApiAction(dispatch, moveBillToPay, params, () => {
       setIsLoading(false)
-      Toast.success('Bills has been successfully moved to on hold.')
+      Toast.success('Bills moved on hold!')
       onDataFetch()
       onClose()
     }, () => {
