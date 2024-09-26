@@ -262,6 +262,8 @@ const MultipleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
 
   const validateVendorPaymentMethods = (): boolean => {
     const vendorsWithNullPayment = paymentMethodOption.filter(vendor => vendor.PreferdPayment == null);
+    const vendorsWithRecordTransferPayment = paymentMethodOption.filter(vendor => vendor.PreferdPayment == 2);
+    const vendorsWithCashPayment = paymentMethodOption.filter(vendor => vendor.PreferdPayment == 3);
 
     if (vendorsWithNullPayment.length > 0) {
       const vendorLinks = vendorsWithNullPayment.map(vendor => {
@@ -294,6 +296,10 @@ const MultipleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
 
       ClickToast.error(errorMessage);
       return false;
+    }
+    else if (vendorsWithCashPayment.length > 0 || vendorsWithRecordTransferPayment.length > 0) {
+      Toast.error("Please go to Partial Payment and select Bank account to proceed with payments");
+      return false
     }
     return true;
   };
@@ -551,12 +557,10 @@ const MultipleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
           handleCloseModal()
           setIsPaymentLoading(false)
         } else {
-          const error = payload?.ErrorData?.ErrorDetail;
-          if (error != null) {
-            const errorBillNumber = error?.BillNumbers ?? [];
+          const errorBillNumber = payload?.ErrorData?.ErrorDetail.BillNumbers ?? [];
+          if (errorBillNumber.length > 0) {
             const formattedBillNumbers = errorBillNumber.join(', ');
-
-            Toast.error(`Payment already initiated from accounting tool for bill number(s) ${formattedBillNumbers}. Kindly check before proceeding.`,"", 60000)
+            Toast.error(`Payment already initiated from accounting tool for bill number(s) ${formattedBillNumbers}. Kindly check before proceeding.`, "", 60000)
           } else {
             Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
           }
