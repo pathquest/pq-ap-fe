@@ -828,7 +828,7 @@ const ListCompanies = () => {
         ),
       AssignUsers: (
         <div
-          className={`${!list?.IsActive ? 'pointer-events-none opacity-50' : ''} userList_managecompany w-[150px]`}
+        className={`${isManageCompanyEdit ? "" : "pointer-events-none opacity-80"} ${!list?.IsActive ? 'pointer-events-none opacity-50' : ''} userList_managecompany w-[150px]`}
           onClick={() => setRowId(list?.Id)}
         >
           <SaveCompanyDropdown
