@@ -155,7 +155,8 @@ const BellIconComponent = () => {
     const { Id, Route, RefrenceId, SubModuleType, ModuleName } = notification
     let newURL = ''
     const buildURL = (base: string | undefined, path: string, id: string | null = null) =>
-      id ? `/${base}/${path}/${id}` : `/${base}/${path}`
+      id ? `${path}/${id}` : `${path}`
+    // id ? `/${base}/${path}/${id}` : `/${base}/${path}`
 
     const manageRoutes: any = {
       'manage/companies': () => `${HOST_URL}/${Route}`,
@@ -189,7 +190,6 @@ const BellIconComponent = () => {
     } else {
       newURL = manageRoutes[Route]?.() || `${HOST_URL}/404`
     }
-
     window.location.href = newURL
     ReadAllNotifications(Id)
   }

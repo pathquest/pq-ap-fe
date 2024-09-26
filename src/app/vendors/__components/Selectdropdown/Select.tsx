@@ -189,7 +189,7 @@ const Select: React.FC<SelectProps> = ({
     setSearchValue(inputValue); // Update search input value
     setAccumulatedSearch(inputValue);
 
-    if (validate && inputValue === "") {
+    if (validate && selectedOption == null) {
       setError(true);
       setErrMsg("Please select a valid option.");
     } else {
@@ -199,6 +199,7 @@ const Select: React.FC<SelectProps> = ({
   };
 
   const handleSelect = (value: any) => {
+    setError(false)
     if (value === null) {
       setSelectedOption(null);
       setInputValue("");
@@ -225,7 +226,7 @@ const Select: React.FC<SelectProps> = ({
 
   const handleBlur = () => {
     if (validate) {
-      if (inputValue === "") {
+      if (selectedOption == null) {
         setError(true);
         setErrMsg("Please select a valid option.");
         getError(false);
@@ -285,7 +286,7 @@ const Select: React.FC<SelectProps> = ({
         // e.preventDefault();
         setIsOpen(false)
         setInputFocusedIndex(0)
-        setFocusedIndex(-1);
+        setFocusedIndex(0);
       } else {
         setIsOpen(false)
         setFocusedIndex(-1);
@@ -357,7 +358,7 @@ const Select: React.FC<SelectProps> = ({
       setAccumulatedSearch(newSearchValue);
       setSearchValue(newSearchValue);
     }
-    else if (e.key === "Escape") {
+    else if (e.key === "Escape" || e.key === "Tab") {
       setFocusedIndex(0);
       setIsOpen(false);
       // setEditing(false);
@@ -384,7 +385,6 @@ const Select: React.FC<SelectProps> = ({
           }
           ${className}`}
         ref={selectRef}
-        onBlur={handleBlur}
       >
         {label && (
           <label
@@ -425,7 +425,7 @@ const Select: React.FC<SelectProps> = ({
             readOnly={!search || !isOpen}
             disabled={disabled}
             placeholder={placeholder || "Please select"}
-            tabIndex={search ? 0 : -1}
+            tabIndex={-1}
             value={
               search && isOpen
                 ? searchValue // If in search mode and input is open, use searchValue

@@ -968,6 +968,7 @@ const EditBillPosting = ({ processtype }: any) => {
       })
       await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
+        [key]: value ? true : false,
         ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
         ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
         ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})

@@ -13,6 +13,7 @@ export type ExtendedUser = DefaultSession["user"] & {
     is_admin: boolean;
     is_organization_admin: boolean;
     role_id: number;
+    email: string;
 }
 
 declare module "next-auth" {
