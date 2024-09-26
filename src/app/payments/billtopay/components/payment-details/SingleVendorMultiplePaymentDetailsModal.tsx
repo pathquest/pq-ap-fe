@@ -68,6 +68,9 @@ const SingleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
   const [isPaymentButtonDisabled, setIsPaymentButtonDisabled] = useState<boolean>(false)
   const [isPaymentLoading, setIsPaymentLoading] = useState<boolean>(false)
 
+  const [isMergeBillsSelected, setMergeBillsSelected] = useState<boolean>(true)
+  const [isSingleBillSelected, setSingleBillSelected] = useState<boolean>(false)
+
   const handleResetAll = () => {
     setIsCreditAvailed(true)
     setIsFullPaymentSelected(true)
@@ -444,7 +447,7 @@ const SingleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
 
     const params: any = {
       PaymentMasterList: isFullPaymentSelected ? calculateAutomaticDetail() : mainBillDetail,
-      PaymentGenrationType: 1,
+      PaymentGenrationType: isSingleBillSelected ? 1 : 2,
       PaymentDate: format(parse(selectedBillDate.trim(), 'MM/dd/yyyy', new Date()), "yyyy-MM-dd'T'HH:mm:ss"),
     }
 
@@ -453,14 +456,13 @@ const SingleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
       const dataMessage = payload?.Message
       if (meta?.requestStatus === 'fulfilled') {
         if (payload?.ResponseStatus === 'Success') {
-          Toast.success(`Bills has been sent for approval!`)
+          Toast.success(`Bills sent for approval!`)
           onDataFetch()
           handleCloseModal()
           setIsPaymentLoading(false)
         } else {
-          const error = payload?.ErrorData?.ErrorDetail;
-          if (error != null) {
-            const errorBillNumber = error?.BillNumbers ?? [];
+          const errorBillNumber = payload?.ErrorData?.ErrorDetail.BillNumbers ?? [];
+          if (errorBillNumber.length > 0) {
             const formattedBillNumbers = errorBillNumber.join(', ');
 
             Toast.error(`Payment already initiated from accounting tool for bill number(s) ${formattedBillNumbers}. Kindly check before proceeding.`, "", 60000)
@@ -481,6 +483,16 @@ const SingleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
   const isBankDropdownDisabled = (method: number) => {
     return method === 1 || method === 4 || method === 5;
   };
+
+  const handleMergeBillsSelected = () => {
+    setMergeBillsSelected(true)
+    setSingleBillSelected(false)
+  }
+
+  const handleSingleBillSelected = () => {
+    setMergeBillsSelected(false)
+    setSingleBillSelected(true)
+  }
 
   return (
     <div className='relative h-full w-full'>
@@ -601,22 +613,7 @@ const SingleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
                   </span>
                 </div>
               </div>
-              <div className={`${isCreditAvailed ? 'mt-5' : 'mt-0'} !pointer-events-none relative !opacity-80 select-none`}>
-                <Text
-                  label='Bill Amount'
-                  id='amount-to-pay'
-                  placeholder='Enter Amount'
-                  className='pl-3 '
-                  value={totalAmountToPay}
-                  getValue={() => { }}
-                  getError={() => { }}
-                  readOnly
-                  validate
-                  disabled
-                />
-                <span className={`absolute text-sm left-0 ${isCreditAvailed ? 'top-[33px]' : 'top-[34px]'} text-slatyGrey`}>$</span>
-              </div>
-              <div className='mt-5 mb-[30px]'>
+              <div className={`${isCreditAvailed ? 'mt-5' : 'mt-0'}`}>
                 <label className='text-sm font-bold text-darkCharcoal tracking-[0.02em] font-proxima'>AMOUNT TO PAY</label>
                 <div className={`flex mt-5`}>
                   <Radio
@@ -637,6 +634,42 @@ const SingleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
                       />
                     </BasicTooltip>
                   </div>
+                </div>
+              </div>
+              <div className='!pointer-events-none relative !opacity-80 select-none mt-5'>
+                <Text
+                  label='Bill Amount'
+                  id='amount-to-pay'
+                  placeholder='Enter Amount'
+                  className='pl-3 '
+                  value={totalAmountToPay}
+                  getValue={() => { }}
+                  getError={() => { }}
+                  readOnly
+                  validate
+                  disabled
+                />
+                <span className={`absolute text-sm left-0 ${isCreditAvailed ? 'top-[33px]' : 'top-[34px]'} text-slatyGrey`}>$</span>
+              </div>
+              <div className='mt-5 mb-[30px]'>
+                <label htmlFor='amount-to-pay' className='font-proxima tracking-[0.02em] text-sm font-bold uppercase text-darkCharcoal'>
+                  Payment Request Type
+                </label>
+                <div className='flex py-5'>
+                  <Radio
+                    className='text-sm text-darkCharcoal font-proxima'
+                    checked={isMergeBillsSelected}
+                    onChange={handleMergeBillsSelected}
+                    id='merge-bills'
+                    label='Merge Bills by Vendor'
+                  />
+                  <Radio
+                    className='text-sm text-darkCharcoal font-proxima'
+                    checked={isSingleBillSelected}
+                    onChange={handleSingleBillSelected}
+                    id='single-bill'
+                    label='Single Bills'
+                  />
                 </div>
               </div>
 

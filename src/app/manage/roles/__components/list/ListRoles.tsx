@@ -13,14 +13,15 @@ import { Button, CheckBox, DataTable, SearchBar, Toast, Typography } from 'pq-ap
 import React, { useEffect, useState } from 'react'
 import Drawer from '../Drawer'
 import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
+import { useRouter } from 'next/navigation'
 
 const ListRoles: React.FC = () => {
-  // For Dynamic Company Id & AccountingTool
   const dispatch = useAppDispatch()
+  const router = useRouter();
   const { orgPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isManageRolesView = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Roles", "View");
   const isManageRoleCreate = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Roles", "Create");
   const isManageRoleEdit = hasSpecificPermission(orgPermissionsMatrix, "Settings", "Global Setting", "Manage Roles", "Edit");
-
 
   const [editId, setEditId] = useState<number | null>()
   const [duplicateId, setDuplicateId] = useState<number | null>()
@@ -34,6 +35,12 @@ const ListRoles: React.FC = () => {
 
   const [permissionList, setPermissionList] = useState<any[]>([])
   const [searchValue, setSearchValue] = useState<string>('')
+
+  useEffect(() => {
+    if (!isManageRolesView) {
+      router.push('/manage/companies');
+    }
+  }, [isManageRolesView]);
 
   //Column Name
   const columns: any = [
@@ -116,8 +123,17 @@ const ListRoles: React.FC = () => {
       GlobalSearch: searchValue,
     }
     performApiAction(dispatch, roleGetList, params, (responseData: any) => {
-      const { List } = responseData
-      setSubDataList(List)
+      const sortedRoles = responseData.List.sort((a: any, b: any) => {
+        // Sort "IsPublic": true roles first
+        if (a.IsPublic && !b.IsPublic) {
+          return -1; // a comes before b
+        } else if (!a.IsPublic && b.IsPublic) {
+          return 1; // b comes before a
+        } else {
+          return 0; // no change in order
+        }
+      });
+      setSubDataList(sortedRoles)
       setIsLoading(false)
     })
   }
@@ -293,12 +309,9 @@ const ListRoles: React.FC = () => {
       RoleId: roleId,
     }
     performApiAction(dispatch, roleRemove, params, (responseData: any) => {
-      Toast.success('Role Remove successfully')
-      getRoleByCompanyData()
+      Toast.success('Role Removed!')
+      setRefreshTable(!refreshTable)
       setRoleId(0)
-      if (responseData === false) {
-        Toast.error('Error', 'Sorry, you could not delete this role as it is assigned to user.')
-      }
     })
   }
 

@@ -189,7 +189,7 @@ const Select: React.FC<SelectProps> = ({
     setSearchValue(inputValue); // Update search input value
     setAccumulatedSearch(inputValue);
 
-    if (validate && inputValue === "") {
+    if (validate && selectedOption == null) {
       setError(true);
       setErrMsg("Please select a valid option.");
     } else {
@@ -199,6 +199,7 @@ const Select: React.FC<SelectProps> = ({
   };
 
   const handleSelect = (value: any) => {
+    setError(false)
     if (value === null) {
       setSelectedOption(null);
       setInputValue("");
@@ -225,7 +226,7 @@ const Select: React.FC<SelectProps> = ({
 
   const handleBlur = () => {
     if (validate) {
-      if (inputValue === "") {
+      if (selectedOption == null) {
         setError(true);
         setErrMsg("Please select a valid option.");
         getError(false);
@@ -285,7 +286,7 @@ const Select: React.FC<SelectProps> = ({
         // e.preventDefault();
         setIsOpen(false)
         setInputFocusedIndex(0)
-        setFocusedIndex(-1);
+        setFocusedIndex(0);
       } else {
         setIsOpen(false)
         setFocusedIndex(-1);
@@ -345,7 +346,7 @@ const Select: React.FC<SelectProps> = ({
       setIsOpen(true);
       setFocusedIndex(0);
     }
-    else if (/^[a-zA-Z0-9\s]$/.test(e.key) || e.key === " ") {
+    else if (/^[a-zA-Z0-9\s\-@&#._]$/.test(e.key) || e.key === " ") {
       e.preventDefault();
       // If the key is an alphanumeric character
       setIsOpen(true);
@@ -357,7 +358,7 @@ const Select: React.FC<SelectProps> = ({
       setAccumulatedSearch(newSearchValue);
       setSearchValue(newSearchValue);
     }
-    else if (e.key === "Escape") {
+    else if (e.key === "Escape" || e.key === "Tab") {
       setFocusedIndex(0);
       setIsOpen(false);
       // setEditing(false);
@@ -384,7 +385,6 @@ const Select: React.FC<SelectProps> = ({
           }
           ${className}`}
         ref={selectRef}
-        onBlur={handleBlur}
       >
         {label && (
           <label
@@ -425,7 +425,7 @@ const Select: React.FC<SelectProps> = ({
             readOnly={!search || !isOpen}
             disabled={disabled}
             placeholder={placeholder || "Please select"}
-            tabIndex={search ? 0 : -1}
+            tabIndex={-1}
             value={
               search && isOpen
                 ? searchValue // If in search mode and input is open, use searchValue
@@ -473,7 +473,7 @@ const Select: React.FC<SelectProps> = ({
           )}
         </div>
         <ul
-          className={`bottomAnimation absolute !z-10 w-full bg-pureWhite mt-[${noborder ? 13 : 1
+          className={`absolute !z-10 w-full bg-pureWhite mt-[${noborder ? 13 : 1
             }px] overflow-y-auto shadow-md transition-transform ${isOpen
               ? `${heightClass ? heightClass : "max-h-60"} translate-y-0 transition-opacity opacity-100 duration-500`
               : "max-h-0 translate-y-10 transition-opacity opacity-0 duration-500"

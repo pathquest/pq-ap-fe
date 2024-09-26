@@ -17,6 +17,7 @@ import { Badge, Button, DataTable, Loader, SearchBar, Switch, Toast, Tooltip, Ty
 import React, { useEffect, useRef, useState } from 'react';
 import GLAccount from "../drawer/GLAccountDrawer";
 import { hasSpecificPermission } from "@/components/Common/Functions/ProcessPermission";
+import { useRouter } from "next/navigation";
 
 interface AccountListProps {
   name: string
@@ -30,8 +31,10 @@ const ListGLAccount: React.FC = () => {
   const CompanyId = Number(session?.user?.CompanyId)
   const accountingTool = Number(session?.user?.AccountingTool)
   const dispatch = useAppDispatch()
+  const router = useRouter();
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
   const isGLAccountSync = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "GL Account", "Sync");
+  const isGLAccountView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "GL Account", "View");
 
   const [accountList, setAccountList] = useState<AccountListProps[]>([])
   const [isSyncModalOpen, setIsSyncModalOpen] = useState<boolean>(false)
@@ -107,6 +110,12 @@ const ListGLAccount: React.FC = () => {
       colalign: "right",
     },
   ].filter(Boolean)
+
+  useEffect(() => {
+    if (!isGLAccountView) {
+      router.push('/manage/companies');
+    }
+  }, [isGLAccountView]);
 
   useEffect(() => {
     setSearchValue('')
@@ -236,7 +245,7 @@ const ListGLAccount: React.FC = () => {
       if (responseData.ResponseStatus === 'Success') {
         setIsSyncing(false)
         setRefreshTable(!refreshTable)
-        Toast.success('GL Account sync successfully')
+        Toast.success('GL Account Synced!')
       }
       else {
         setIsSyncing(false)
@@ -261,7 +270,7 @@ const ListGLAccount: React.FC = () => {
 
       performApiAction(dispatch, importGLAccountData, params, (responseData: any) => {
         if (responseData.SuccessCount > 0) {
-          Toast.success(`${responseData.SuccessCount} record imported successfully`)
+          Toast.success(`${responseData.SuccessCount} Record Imported!`)
         }
         setRefreshTable(!refreshTable)
         setIsImport(false);
@@ -272,7 +281,7 @@ const ListGLAccount: React.FC = () => {
         setSelectedFile(null);
       }, (WarningData: any) => {
         if (WarningData.SuccessCount > 0) {
-          Toast.success(`${WarningData.SuccessCount} record imported successfully`)
+          Toast.success(`${WarningData.SuccessCount} Record Imported!`)
         }
         WarningData.InSufficientData.map((data: any) => {
           Toast.warning(`${data.ErrorMessage}`)
@@ -306,7 +315,7 @@ const ListGLAccount: React.FC = () => {
       if (responseData.ResponseStatus === 'Success') {
         setIsLoading(false)
         setRefreshTable(!refreshTable)
-        Toast.success(`Status updated successfully.`)
+        Toast.success(`Status Updated!`)
       } else {
         setIsLoading(false)
         setRefreshTable(!refreshTable)

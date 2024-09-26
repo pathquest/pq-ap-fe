@@ -204,7 +204,7 @@ const Class: React.FC<ClassProps> = ({ onDrawerOpen, onDrawerClose, isSync, sear
       if (responseData.ResponseStatus === 'Success') {
         setIsLoading(false)
         setRefreshTable(!refreshTable)
-        Toast.success(`Status updated successfully.`)
+        Toast.success(`Status Updated!`)
       } else {
         setIsLoading(false)
         setRefreshTable(!refreshTable)

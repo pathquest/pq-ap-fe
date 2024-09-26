@@ -52,7 +52,7 @@ const MoveBillsToPayModals: React.FC<ActionsProps> = ({ onOpen, onClose, selecte
       }
       performApiAction(dispatch, moveBillToPay, params, () => {
         setIsLoading(false)
-        Toast.success('Bills has been successfully moved to Bill to Pay.')
+        Toast.success('Bills moved for payment!')
         onDataFetch()
         onClose()
       }, () => {

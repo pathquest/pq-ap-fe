@@ -93,7 +93,7 @@ const APTermDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId }) => {
       performApiAction(dispatch, saveTerm, params, (responseData: any) => {
         const dataMessage = responseData.Message
         if (responseData.ResponseStatus === 'Success') {
-          Toast.success(`AP Term ${EditId ? 'updated' : 'added'} successfully.`)
+          Toast.success(`${EditId ? 'Details Updated!' : 'Term Created!'}`)
           onClose("Save")
           initialData()
         }

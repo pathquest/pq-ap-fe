@@ -1,3 +1,4 @@
+import { Select } from '@/app/vendors/__components/Selectdropdown/Select'
 import EditIcon from '@/assets/Icons/EditIcon'
 import InfoIcon from '@/assets/Icons/infoIcon'
 import SpinnerIcon from '@/assets/Icons/spinnerIcon'
@@ -6,7 +7,7 @@ import { useAppDispatch } from '@/store/configureStore'
 import { companyGetById, getCompanyImage, saveCompany, uploadCompanyImage } from '@/store/features/company/companySlice'
 import { cityListDropdown, countryListDropdown, setIsRefresh, stateListDropdown } from '@/store/features/user/userSlice'
 import { useSession } from 'next-auth/react'
-import { Avatar, Button, Close, CountrySelect, Email, Select, Text, Toast, Typography } from 'pq-ap-lib'
+import { Avatar, Button, Close, CountrySelect, Email, Text, Toast } from 'pq-ap-lib'
 import React, { useCallback, useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -55,7 +56,6 @@ const Drawer: React.FC<DrawerProps> = ({
   getCompanyList
 }: any) => {
   const { data: session } = useSession()
-
   const dispatch = useAppDispatch()
   const [Id, setId] = useState(0)
   const [companyName, setCompanyName] = useState('')
@@ -318,7 +318,11 @@ const Drawer: React.FC<DrawerProps> = ({
       saveCompany,
       params,
       () => {
-        Toast.success(`${Id ? 'Company updated successfully' : `Master syncing for the ${companyName} is completed. please complete Manage Configuration and Field Mapping from action button before going ahead.`}`)
+        if (Id) {
+          Toast.success('Details Updated!')
+        } else if (accountingTool !== 4) {
+          Toast.success(`Syncing data of masters has been synced for the ${companyName}. Start by managing configurations and field mapping.`)
+        }
         setAccountToolCompanyId('')
         clearData()
         getCompanyList()

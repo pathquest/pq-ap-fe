@@ -68,6 +68,8 @@ const CreateBillPosting = ({
   const [hasFormFieldErrors, setHasFormFieldErrors] = useState<{ [x: string]: boolean }>({})
   const [hasFormFieldLibraryErrors, setHasFormFieldLibraryErrors] = useState<{ [x: string]: boolean }>({})
 
+  const [checkFormFieldErrors, setCheckFormFieldErrors] = useState<{ [x: string]: boolean }>({})
+
   const [lineItemsFieldsData, setLineItemsFieldsData] = useState<EditBillPostingDataProps[] | any>([])
 
   const [generateLinetItemFieldsErrorObj, setGenerateLinetItemFieldsErrorObj] = useState<any>([])
@@ -136,6 +138,8 @@ const CreateBillPosting = ({
       })))
 
       await setFormFields(generateFormFields)
+      await setCheckFormFieldErrors(generateFormFieldsErrorObj)
+
       await setHasFormFieldErrors(generateFormFieldsErrorObj)
       await setHasFormFieldLibraryErrors(generateFormFieldsErrorObj)
 
@@ -308,7 +312,7 @@ const CreateBillPosting = ({
           await setLineItemsFieldsData(dataAfterRemoveItem)
           await setHasLineItemFieldErrors(dataAfterRemoveFormFieldErrors)
           await setHasLineItemFieldLibraryErrors(dataAfterRemoveFormFieldLibraryErrors)
-          Toast.success(`Line Item Deleted!`)
+          Toast.success(`Line-item Deleted!`)
         }
       } catch (error) {
         Toast.error(`Something Went Wrong!`)
@@ -352,9 +356,9 @@ const CreateBillPosting = ({
               const newLineItemsFieldArray = hasLineItemFieldLibraryErrors.map((item) => {
                 return {
                   ...item,
-                  amount: isNaN(parseFloat(`${calculatedAmount}`))
-                    ? false
-                    : true,
+                  // amount: isNaN(parseFloat(`${calculatedAmount}`))
+                  //   ? false
+                  //   : true,
                 }
               })
               setHasLineItemFieldLibraryErrors(newLineItemsFieldArray)
@@ -565,7 +569,7 @@ const CreateBillPosting = ({
 
   const setFormValues = async (key: string, value: string | number) => {
     if (key === 'date') {
-      if (formFields.hasOwnProperty('term') && formFields.term) {
+      if (checkFormFieldErrors.hasOwnProperty('term') && formFields.term) {
         const filterTerm = defaultTermOptions?.find((t: any) => t.Id === formFields.term)
         let formattedDueDateCalculated = ''
 
@@ -582,25 +586,28 @@ const CreateBillPosting = ({
         await setFormFields({
           ...formFields,
           [key]: value,
-          ...(formFields.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
           duedate: formattedDueDateCalculated,
         })
+
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
-          ...(formFields.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value ? true : false } : {}),
           duedate: formattedDueDateCalculated ? true : false,
         })
       } else {
+
         await setFormFields({
           ...formFields,
           [key]: value,
-          ...(formFields.hasOwnProperty('glpostingdate') ? { glpostingdate: value } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
         })
+
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
-          ...(formFields.hasOwnProperty('glpostingdate') ? { glpostingdate: value ? true : false } : {}),
+          ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value ? true : false } : {}),
         })
       }
       return
@@ -625,6 +632,7 @@ const CreateBillPosting = ({
         [key]: value,
         duedate: formattedDueDateCalculated,
       })
+
       await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
         [key]: value ? true : false,
@@ -654,15 +662,17 @@ const CreateBillPosting = ({
       await setFormFields({
         ...formFields,
         [key]: value,
-        ...(formFields.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
-        ...(formFields.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
-        ...(formFields.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
+        ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
       })
+
       await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
-        ...(formFields.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
-        ...(formFields.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
-        ...(formFields.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
+        [key]: value ? true : false,
+        ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
       })
       await setLineItemsFieldsData(newLineItemsObj)
       await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
@@ -673,10 +683,12 @@ const CreateBillPosting = ({
       ...formFields,
       [key]: value,
     })
+
     await setHasFormFieldLibraryErrors({
       ...hasFormFieldLibraryErrors,
       [key]: value ? true : false,
     })
+
   }
 
   const onErrorLoader = (postSaveAs: number) => {
@@ -737,6 +749,7 @@ const CreateBillPosting = ({
       if (item?.Value) {
         optionsObj = JSON.parse(item?.Value)
       }
+
 
       return {
         ...item,
@@ -861,12 +874,12 @@ const CreateBillPosting = ({
         if (!formFields?.attachment) {
           setLoaderState(postSaveAs, loader, setLoader)
           if (postSaveAs === 2) {
-            Toast.success('Successfully bill drafted!!')
+            Toast.success('Bill Drafted!')
           } else if (postSaveAs === 12) {
             setPostaspaidModal(false)
-            Toast.success('Successfully bill posted!!')
+            Toast.success('Bill Posted!')
           } else {
-            Toast.success('Successfully bill posted!!')
+            Toast.success('Bill Posted!')
           }
           router.push('/bills')
           return
@@ -1061,7 +1074,7 @@ const CreateBillPosting = ({
             <BackIcon />
           </span>
           <span className='pl-5 !text-[14px] font-bold font-proxima tracking-[0.02em] text-darkCharcoal'>
-            {processtype === '1' ? 'Account Payable' : 'Account Adjustment'}
+            {processtype === '1' ? 'Accounts Payable' : 'Accounts Adjustment'}
           </span>
         </div>
       </div>
@@ -1098,7 +1111,7 @@ const CreateBillPosting = ({
                 <div className='justify-end px-5 pb-[77px] pt-[34px]'>
                   <div className='mb-2 flex flex-row justify-end'>
                     <span className='w-[10%] text-sm font-proxima tracking-[0.02em]'>Sub Total</span>
-                    <span className='w-[15%] text-end text-sm font-bold font-proxima tracking-[0.02em]'>${Number(formattedTotalAmountValue).toFixed(2)}</span>
+                    <span className='w-[15%] text-end text-sm font-bold font-proxima tracking-[0.02em]'>${(Number(formattedTotalAmountValue).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
                   </div>
                   {AccountingTool === 3 && (
                     <div className='mb-2 flex flex-row justify-end'>
@@ -1111,8 +1124,8 @@ const CreateBillPosting = ({
                     <span className='w-[15%] text-end text-sm font-bold font-proxima tracking-[0.02em]'>
                       $
                       {formFields?.amountsare === '1'
-                        ? Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue) + parseFloat(formattedTotalTaxAmountValue))).toFixed(2)
-                        : Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue))).toFixed(2)}
+                        ? (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue) + parseFloat(formattedTotalTaxAmountValue))).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                        : (Number(convertFractionToRoundValue(parseFloat(formattedTotalAmountValue))).toFixed(2)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                     </span>
                   </div>
                 </div>

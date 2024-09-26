@@ -209,10 +209,11 @@ const BillsControlFields = ({ formFields }: billsFormFieldsProps) => {
                               {Array.isArray(item?.Value) &&
                                 item.Value.length > 0 &&
                                 item.Value?.map((file: FileObj) => {
+                                  const fileExtension = file.FilePath?.split('.').pop()?.toLowerCase()
                                   return (
                                     <div
                                       key={file.Id}
-                                      className='mb-2 mr-2 flex items-center gap-2 rounded-[2px] bg-whiteSmoke px-[12px] py-[2.5px] text-[14px] text-darkCharcoal'
+                                      className={`${!['jpeg', 'png', 'jpg'].includes(fileExtension) && 'hover:cursor-pointer'} mb-2 mr-2 flex items-center gap-2 rounded-[2px] bg-whiteSmoke px-[12px] py-[2.5px] text-[14px] text-darkCharcoal`}
                                       onClick={async () => {
                                         await getPDFUrl(
                                           file.FilePath,
@@ -222,7 +223,7 @@ const BillsControlFields = ({ formFields }: billsFormFieldsProps) => {
                                           (fileBlob: Blob) => {
                                             openInNewWindow(fileBlob, file.FilePath);
                                           },
-                                          () => {},
+                                          () => { },
                                           isNewWindowUpdate,
                                           currentWindow,
                                           openInNewWindow,

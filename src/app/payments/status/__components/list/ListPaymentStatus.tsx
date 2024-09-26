@@ -31,6 +31,8 @@ import Filter from '../modal/Filter'
 import PaymentInfoIcon from '@/assets/Icons/PaymentInfoIcon'
 import Download from '../dropdown/Download'
 import RowDownload from '@/components/Common/Custom/Download'
+import { useRouter } from 'next/navigation'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
 
 const ListPaymentStatus: React.FC = () => {
   // For Dynamic Company Id & AccountingTool
@@ -39,7 +41,14 @@ const ListPaymentStatus: React.FC = () => {
   const CompanyId = selectedCompany?.value
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
   const dispatch = useAppDispatch()
+  const router = useRouter()
+
+  const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
   const { showPDFViewerModal, PDFUrl, setPDFUrl, fileBlob, isPdfLoading } = usePdfViewer()
+
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isPaymentPermission = getModulePermissions(processPermissionsMatrix, "Payments") ?? {}
+  const isPaymentStatusView = isPaymentPermission["Payment Status"]?.View ?? false;
 
   const userId = localStorage.getItem('UserId')
   const selectRef = useRef<HTMLDivElement>(null)
@@ -179,6 +188,12 @@ const ListPaymentStatus: React.FC = () => {
     OrderColumn: '',
     OrderBy: 0,
   }
+
+  useEffect(() => {
+    if (!isPaymentStatusView) {
+      router.push('/manage/companies');
+    }
+  }, [isPaymentStatusView]);
 
   useEffect(() => {
     setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-full laptop:w-[calc(100vw-85px)]' : 'w-full laptop:w-[calc(100vw-200px)]')
@@ -506,7 +521,7 @@ const ListPaymentStatus: React.FC = () => {
       PaymentId: cancelPaymentId
     }
     performApiAction(dispatch, setCancelPayment, params, () => {
-      Toast.success('Payment Transaction has been cancelled successfully!')
+      Toast.success('Payment Transaction Cancelled!')
       setCancelPaymentId(0)
       setRefreshTable(!refreshTable)
     }, () => {

@@ -2,11 +2,11 @@
 export const createOptions = [
   {
     id: '1',
-    label: 'Account Payable',
+    label: 'Accounts Payable',
   },
   {
     id: '2',
-    label: 'Account Adjustment',
+    label: 'Accounts Adjustment',
   },
   {
     id: '3',
@@ -82,15 +82,15 @@ export const sourceOptions = [
 
 export const processOptions = [
   {
-    label: 'Account Payable',
+    label: 'Accounts Payable',
     value: '1',
   },
   {
-    label: 'Account Adjustment',
+    label: 'Accounts Adjustment',
     value: '2',
   },
   {
-    label: 'Other',
+    label: 'Others',
     value: '3',
   },
 ]

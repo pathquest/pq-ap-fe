@@ -20,6 +20,7 @@ import ImportModal from '@/components/Common/Modals/ImportModal'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { hasSpecificPermission } from '@/components/Common/Functions/ProcessPermission'
+import { useRouter } from 'next/navigation'
 
 const ListAPTerm: React.FC = () => {
   // For Dynamic Company Id & AccountingTool
@@ -27,7 +28,10 @@ const ListAPTerm: React.FC = () => {
   const CompanyId = Number(session?.user?.CompanyId)
   const accountingTool = session?.user?.AccountingTool
   const dispatch = useAppDispatch()
+  const router = useRouter();
+
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isAPTermView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "AP Term", "View");
   const isAPTermSync = hasSpecificPermission(processPermissionsMatrix, "Settings", "Masters", "AP Term", "Sync");
 
   const [apTermList, setApTermList] = useState<any[]>([])
@@ -40,6 +44,7 @@ const ListAPTerm: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isImport, setIsImport] = useState<boolean>(false)
   const [refreshTable, setRefreshTable] = useState<boolean>(false)
+  const [searchValue, setSearchValue] = useState('')
 
   //For Lazy Loading
   const [shouldLoadMore, setShouldLoadMore] = useState(true)
@@ -89,6 +94,12 @@ const ListAPTerm: React.FC = () => {
       colalign: "right",
     },
   ].filter(Boolean)
+
+  useEffect(() => {
+    if (!isAPTermView) {
+      router.push('/manage/companies');
+    }
+  }, [isAPTermView]);
 
   useEffect(() => {
     setSearchValue('')
@@ -209,7 +220,7 @@ const ListAPTerm: React.FC = () => {
       if (responseData.ResponseStatus === 'Success') {
         setIsSyncing(false)
         getApTermList(1)
-        Toast.success('APTerm sync successfully')
+        Toast.success('Term Synced!')
       }
       else {
         setIsSyncing(false)
@@ -255,7 +266,7 @@ const ListAPTerm: React.FC = () => {
 
   const handleSuccessfulImport = (payload: any) => {
     if (payload?.ResponseData.SuccessCount > 0) {
-      Toast.success(`${payload?.ResponseData.SuccessCount} record imported successfully`)
+      Toast.success(`${payload?.ResponseData.SuccessCount} Record Imported!`)
     }
     getApTermList(1)
     setIsImport(false);
@@ -264,7 +275,7 @@ const ListAPTerm: React.FC = () => {
 
   const handleWarningImport = (payload: any) => {
     if (payload?.ResponseData.SuccessCount > 0) {
-      Toast.success(`${payload?.ResponseData.SuccessCount} record imported successfully`)
+      Toast.success(`${payload?.ResponseData.SuccessCount} Record Imported!`)
     }
     payload?.ResponseData.InSufficientData.map((data: any) => {
       Toast.warning(`${data.ErrorMessage}`)
@@ -296,7 +307,7 @@ const ListAPTerm: React.FC = () => {
       if (responseData.ResponseStatus === 'Success') {
         setIsLoading(false)
         getApTermList(1)
-        Toast.success(`Status updated successfully.`)
+        Toast.success(`Status Updated!`)
       } else {
         setIsLoading(false)
         getApTermList(1)

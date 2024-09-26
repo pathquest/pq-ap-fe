@@ -288,7 +288,7 @@ const ViewApprovals = ({ processtype }: any) => {
         setIsApprovalModal(false)
         clearAll()
         Toast.success(
-          `Bill No.${documentDetailByIdData?.BillNumber} has been ${status == 1 ? 'approved' : 'rejected'} sucessfully`
+          `Bill No.${documentDetailByIdData?.BillNumber} ${status == 1 ? 'Approved!' : 'Rejected!'}`
         )
         router.push('/approvals')
       })
@@ -309,7 +309,7 @@ const ViewApprovals = ({ processtype }: any) => {
       performApiAction(dispatch, billReAssign, params, () => {
         setIsApprovalModal(false)
         clearAll()
-        Toast.success(`Bill No.${documentDetailByIdData?.BillNumber} has been Re-assign`)
+        Toast.success(`Bill No.${documentDetailByIdData?.BillNumber} Re-assigned!`)
         router.push('/approvals')
       })
     }

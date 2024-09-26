@@ -49,28 +49,28 @@ const VendorWiseMonthlyPayment: React.FC<any> = ({ LocationOption }) => {
             colStyle: '!w-[140px] !tracking-[0.02em]'
         },
         {
-            header: "0-30",
+            header: "0-30 days",
             accessor: "0To30",
             sortable: false,
             colalign: "right",
             colStyle: '!w-[140px] !tracking-[0.02em]'
         },
         {
-            header: "31-60",
+            header: "31-60 days",
             accessor: "31To60",
             sortable: false,
             colalign: "right",
             colStyle: '!w-[140px] !tracking-[0.02em]'
         },
         {
-            header: "61-90",
+            header: "61-90 days",
             accessor: "61To90",
             sortable: false,
             colalign: "right",
             colStyle: '!w-[140px] !tracking-[0.02em]'
         },
         {
-            header: "91 +",
+            header: "91 + days",
             accessor: "91To",
             sortable: false,
             colalign: "right",
@@ -182,7 +182,7 @@ const VendorWiseMonthlyPayment: React.FC<any> = ({ LocationOption }) => {
                 <div className='laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 flex justify-between  w-full  chart_header'>
                     <div className="header items-center flex">
                         <Typography type='h5' className='title !text-base hd:!text-lg 2xl:!text-lg 3xl:!text-lg font-proxima font-semibold tracking-[0.02em] text-darkCharcoal'>
-                            Vendor Wise Monthly Payment
+                            Vendor-wise monthly payment
                         </Typography>
                     </div>
                     <div className='flex justify-center items-center'>
@@ -209,7 +209,7 @@ const VendorWiseMonthlyPayment: React.FC<any> = ({ LocationOption }) => {
                 </div>
                 {vendorList.length === 0 ? isLoading ?
                     <div className='flex h-[calc(52vh-5px)] w-full items-center justify-center'>
-                        <Loader size='md' helperText />
+                        <Loader size='md' />
                     </div>
                     : <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
                         No records available at the moment.

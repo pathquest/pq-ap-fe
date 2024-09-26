@@ -260,7 +260,7 @@ const OnTimeVsMissedProcessing: React.FC<any> = ({ LocationOption }) => {
                 <div className='laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 flex justify-between border-lightSilver w-full border-b-2 chart_header'>
                     <div className="header items-center flex">
                         <Typography type='h5' className='title !text-base hd:!text-lg 2xl:!text-lg 3xl:!text-lg font-proxima font-semibold tracking-[0.02em] text-darkCharcoal'>
-                            On-time Processing vs. Missed Processing Bills
+                            On-time processing vs. missed processing of bills
                         </Typography>
                     </div>
                     <div className='flex justify-center items-center'>
@@ -280,7 +280,7 @@ const OnTimeVsMissedProcessing: React.FC<any> = ({ LocationOption }) => {
             <div className='main_chart w-full'>
                 {isLoading
                     ? <div className='h-[400px] w-full flex justify-center'>
-                        <Loader size='md' helperText/>
+                        <Loader size='md'/>
                     </div>
                     : <HighchartsReact highcharts={Highcharts} options={getChartOptions()} />}
             </div>

@@ -155,7 +155,8 @@ const BellIconComponent = () => {
     const { Id, Route, RefrenceId, SubModuleType, ModuleName } = notification
     let newURL = ''
     const buildURL = (base: string | undefined, path: string, id: string | null = null) =>
-      id ? `/${base}/${path}/${id}` : `/${base}/${path}`
+      id ? `${path}/${id}` : `${path}`
+    // id ? `/${base}/${path}/${id}` : `/${base}/${path}`
 
     const manageRoutes: any = {
       'manage/companies': () => `${HOST_URL}/${Route}`,
@@ -189,7 +190,6 @@ const BellIconComponent = () => {
     } else {
       newURL = manageRoutes[Route]?.() || `${HOST_URL}/404`
     }
-
     window.location.href = newURL
     ReadAllNotifications(Id)
   }
@@ -229,7 +229,7 @@ const BellIconComponent = () => {
       </div>
       {isNotificationOpen && (
         <div
-          className='absolute right-[253px] top-[63px] z-10 flex w-[500px] flex-col items-center rounded-md bg-white'
+          className='absolute right-[113px] top-[63px] z-10 flex w-[500px] flex-col items-center rounded-md bg-white'
           style={{ boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.2)' }}
         >
           <div className='flex w-full justify-between border-b border-lightSilver p-4'>

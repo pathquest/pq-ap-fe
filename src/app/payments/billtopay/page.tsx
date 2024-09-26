@@ -19,21 +19,22 @@ import MoveBillsToPayModals from './components/modals/MoveBillsToPayModal'
 // Icons
 import GetFileIcon from '@/app/bills/__components/GetFileIcon'
 import PaymentAgingIcon from '@/assets/Icons/PaymentAgingIcon'
-import SortIcon from '@/assets/Icons/SortIcon'
 import AttachIcon from '@/assets/Icons/billposting/AttachIcon'
 import FilterIcon from '@/assets/Icons/billposting/FilterIcon'
 import ExclamationIcon from '@/assets/Icons/payments/ExclamationIcon'
+import SortIcon from './components/Icons/SortIcon'
 
 // Store
 import ColumnFilter from '@/components/Common/Custom/ColumnFilter'
 import Download from '@/components/Common/Custom/Download'
 import DrawerOverlay from '@/components/Common/DrawerOverlay'
-import DataLoadingStatus from '@/components/Common/Functions/DataLoadingStatus'
 import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
 import { formatDate } from '@/components/Common/Functions/FormatDate'
 import { formatFileSize } from '@/components/Common/Functions/FormatFileSize'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
 import ActivityDrawer from '@/components/Common/Modals/Activitydrawer'
+import { storageConfig } from '@/components/Common/pdfviewer/config'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { setIsVisibleSidebar, setSelectedStatus, vendorDropdown } from '@/store/features/bills/billSlice'
 import { getPaymentColumnMapping, paymentGetList, savePaymentColumnMapping, setCurrentPath, setVendorIdList } from '@/store/features/billsToPay/billsToPaySlice'
@@ -43,32 +44,20 @@ import { Actions } from './components/DataTableActions/DataTableActions'
 import MultipleVendorMultiplePaymentDetailsModal from './components/payment-details/MultipleVendorMultiplePaymentDetailsModal'
 import SinglePaymentDetailsModal from './components/payment-details/SinglePaymentDetailsModal'
 import SingleVendorMultiplePaymentDetailsModal from './components/payment-details/SingleVendorMultiplePaymentDetailsModal'
-import { storageConfig } from '@/components/Common/pdfviewer/config'
-import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
-
-type SortableFieldsType = {
-  BillNumber: boolean
-  BillDate: boolean
-  DueDate: boolean
-  Vendor: boolean
-  Remaining: boolean
-  PaymentStatus: boolean
-  TotalAmount: boolean
-}
 
 const PaymentsContent: React.FC = () => {
   const router = useRouter()
   const pathname = usePathname()
 
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
-  const isPaymentView = getModulePermissions(processPermissionsMatrix, "Payments") ?? {}
-  const isBillsToPayEdit = isPaymentView["Bills to pay"]?.Edit ?? false;
+  const isPaymentPermission = getModulePermissions(processPermissionsMatrix, "Payments") ?? {}
+  const isBillsToPayEdit = isPaymentPermission["Bills to pay"]?.Edit ?? false;
+  const isBillsToPayView = isPaymentPermission["Bills to pay"]?.View ?? false;
 
   // For Dynamic Company Id & AccountingTool
   const { data: session } = useSession()
   const CompanyId = Number(session?.user?.CompanyId)
-  const billsToPayReducer = useAppSelector((state) => state.billsToPayReducer)
-  const vendorIdList = billsToPayReducer.vendorIdList
+  const { filterFormFields, vendorIdList } = useAppSelector((state) => state.billsToPayReducer)
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
   const dispatch = useAppDispatch()
 
@@ -102,11 +91,13 @@ const PaymentsContent: React.FC = () => {
   const [columnListVisible, setColumnListVisible] = useState<any>([])
   const [billsToPayHeaders, setBillsToPayHeaders] = useState<any>([])
   const [mapColId, setMapColId] = useState<number>(-1)
-  const [orderColumnName, setOrderColumnName] = useState<keyof SortableFieldsType>('DueDate')
   const [vendorOptions, setVendorOptions] = useState<any>([])
 
   const [isVisibleActivities, setIsVisibleActivities] = useState<boolean>(false)
   const [selectedPayableId, setSelectedPayableId] = useState<number | null>(null)
+
+  const [orderBy, setOrderBy] = useState<number | null>(0)
+  const [orderColumnName, setOrderColumnName] = useState<string | null>('DueDate')
 
   const [isGuid, setGuid] = useState<string>('')
   const isRowSelected = (id: any) => selectedRows.indexOf(id) !== -1
@@ -121,16 +112,6 @@ const PaymentsContent: React.FC = () => {
   let nextPageIndex: number = 1
   const lazyRows: number = 70
   const tableBottomRef = useRef<HTMLDivElement>(null)
-
-  const [sortableFields, setsSortableFields] = useState<SortableFieldsType>({
-    BillNumber: false,
-    BillDate: false,
-    DueDate: false,
-    Vendor: false,
-    Remaining: false,
-    PaymentStatus: false,
-    TotalAmount: false
-  })
 
   const [currentPayValue, setCurrentPayValue] = useState({
     billNumber: '',
@@ -154,6 +135,12 @@ const PaymentsContent: React.FC = () => {
     PageCount: '',
     BillNumber: '',
   })
+
+  useEffect(() => {
+    if (!isBillsToPayView) {
+      router.push('/manage/companies');
+    }
+  }, [isBillsToPayView]);
 
   useEffect(() => {
     dispatch(setSearchSelectedModule('4'))
@@ -210,17 +197,17 @@ const PaymentsContent: React.FC = () => {
   let startDate
   let endDate
 
-  if (billsToPayReducer.filterFormFields?.dueDateFrom !== null) {
-    startDate = billsToPayReducer.filterFormFields?.dueDateFrom
-  } else if (billsToPayReducer.filterFormFields?.isDueDateClicked === 1) {
+  if (filterFormFields?.dueDateFrom !== null) {
+    startDate = filterFormFields?.dueDateFrom
+  } else if (filterFormFields?.isDueDateClicked === 1) {
     startDate = dateParams.startDateFormatted
   } else {
     startDate = null
   }
 
-  if (billsToPayReducer.filterFormFields?.dueDateTo !== null) {
-    endDate = billsToPayReducer.filterFormFields?.dueDateTo
-  } else if (billsToPayReducer.filterFormFields?.isDueDateClicked === 1) {
+  if (filterFormFields?.dueDateTo !== null) {
+    endDate = filterFormFields?.dueDateTo
+  } else if (filterFormFields?.isDueDateClicked === 1) {
     endDate = dateParams.endDateFormatted
   } else {
     endDate = null
@@ -228,10 +215,10 @@ const PaymentsContent: React.FC = () => {
 
   const getPaymentListParams = {
     VendorIds: vendorIdList,
-    LocationIds: billsToPayReducer.filterFormFields?.location.map(item => parseInt(item)) ?? null,
-    Status: billsToPayReducer.filterFormFields?.paymentStatus ?? null,
-    StartDay: billsToPayReducer.filterFormFields?.startDay !== null ? billsToPayReducer.filterFormFields?.startDay : null,
-    EndDay: billsToPayReducer.filterFormFields?.endDay !== null ? billsToPayReducer.filterFormFields?.endDay : null,
+    LocationIds: filterFormFields?.location.map(item => parseInt(item)) ?? null,
+    Status: filterFormFields?.paymentStatus ?? null,
+    StartDay: filterFormFields?.startDay !== null ? filterFormFields?.startDay : null,
+    EndDay: filterFormFields?.endDay !== null ? filterFormFields?.endDay : null,
     StartDate:
       typeof startDate === 'string' && startDate.length === 0
         ? null
@@ -245,8 +232,10 @@ const PaymentsContent: React.FC = () => {
           ? format(parse(endDate.trim(), 'MM/dd/yyyy', new Date()), "yyyy-MM-dd'T'HH:mm:ss")
           : null,
     AgingFilter: 0,
-    OrderColumn: orderColumnName ?? null,
-    OrderBy: sortableFields[orderColumnName] ? 1 : 0,
+    // OrderColumn: orderColumnName ?? null,
+    // OrderBy: sortableFields[orderColumnName] ? 1 : 0,
+    OrderColumn: 'DueDate',
+    OrderBy: 0,
     IsDownload: false,
     // PageNumber: pageIndex || nextPageIndex,
     PageSize: lazyRows,
@@ -259,18 +248,6 @@ const PaymentsContent: React.FC = () => {
   const handleModalClose = () => {
     setBillOnHoldClicked(false)
     setRowId([])
-  }
-
-  const handleColumnClick = (columnName: any) => {
-    const adjustedColumnName = columnName === "Remaining" ? "RemanningDue"
-      : columnName === "BillAmount" ? "TotalAmount"
-        : columnName
-
-    setOrderColumnName(adjustedColumnName)
-    setsSortableFields((prevSortable: any) => ({
-      ...prevSortable,
-      [adjustedColumnName]: !prevSortable[adjustedColumnName],
-    }))
   }
 
   const handleClosePayBillModal = () => {
@@ -524,10 +501,10 @@ const PaymentsContent: React.FC = () => {
   // }
 
   useEffect(() => {
-    fetchPaymentListData(1)
+    getBillsPaymentListData(1)
     setSelectedRows([])
     setSelectRowsStatus([])
-  }, [orderColumnName, vendorIdList, billsToPayReducer.filterFormFields, CompanyId])
+  }, [orderBy, vendorIdList, filterFormFields, CompanyId])
 
   const getNewList = (responseData: any) => {
     return responseData?.List || []
@@ -562,7 +539,7 @@ const PaymentsContent: React.FC = () => {
     setApiDataCount(0)
   }
 
-  const fetchPaymentListData = async (pageIndex?: number) => {
+  const getBillsPaymentListData = async (pageIndex?: number) => {
     setIsLoading(true)
     if (pageIndex === 1) {
       setCurrSelectedBillDetails([])
@@ -574,6 +551,8 @@ const PaymentsContent: React.FC = () => {
     try {
       const params = {
         ...getPaymentListParams,
+        OrderColumn: orderColumnName ?? '',
+        OrderBy: orderBy ?? 0,
         PageNumber: pageIndex || nextPageIndex,
       }
       const { payload, meta } = await dispatch(paymentGetList(params))
@@ -621,24 +600,20 @@ const PaymentsContent: React.FC = () => {
     }
   }
 
+  // For Sorting Data
+  const handleSortColumn = (name: string) => {
+    setOrderColumnName(name)
+    setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
+  }
+
   // Column Mapping API
   const getMappingListData = () => {
     const params = {
-      UserId: parseInt(userId!),
+      UserId: Number(userId),
     }
     performApiAction(dispatch, getPaymentColumnMapping, params, (responseData: any) => {
       setMapColId(responseData?.Id)
       const obj = JSON.parse(responseData?.ColumnList)
-      const sortableColumns = [
-        'Due Date',
-        'Bill Number',
-        'Vendor',
-        'Bill Date',
-        'Remaining',
-        'Available Credit',
-        'Bill Amount',
-        'Payment Status',
-      ]
       const data = Object.entries(obj).map(([label, value]) => {
         let columnStyle = ''
         let colalign = ''
@@ -655,7 +630,7 @@ const PaymentsContent: React.FC = () => {
             break
           case 'Remaining':
             columnStyle = '!w-[150px] !pr-[20px]'
-            colalign = 'right'
+            colalign = 'center'
             break
           case 'Available Credit':
             columnStyle = '!w-[170px] !pr-[10px]'
@@ -683,16 +658,40 @@ const PaymentsContent: React.FC = () => {
             break
         }
         return {
-          header: sortableColumns.includes(label) ? (
-            <span
-              className='flex cursor-pointer items-center gap-1.5'
-              onClick={() => handleColumnClick(label.split(' ').join(''))}
-            >
-              {label} <SortIcon order={null}></SortIcon>
-            </span>
-          ) : (
-            label
-          ),
+          header:
+            label === 'Due Date' ? (
+              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('DueDate')}>
+                Due Date <SortIcon orderColumn="DueDate" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
+              </div>
+            ) : label === 'Bill Number' ? (
+              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('BillNumber')}>
+                Bill Number <SortIcon orderColumn="BillNumber" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
+              </div>
+            ) : label === 'Vendor' ? (
+              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('VendorName')}>
+                Vendor <SortIcon orderColumn="VendorName" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
+              </div>
+            ) : label === 'Bill Date' ? (
+              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('BillDate')}>
+                Bill Date <SortIcon orderColumn="BillDate" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
+              </div>
+            ) : label === 'Remaining' ? (
+              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('RemanningDue')}>
+                Remaining <SortIcon orderColumn="RemanningDue" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
+              </div>
+            ) : label == 'Available Credit' ? (
+              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('AvailableCredit')}>
+                Available Credit  <SortIcon orderColumn="AvailableCredit" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
+              </div>
+            ) : label === 'Bill Amount' ? (
+              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('TotalAmount')}>
+                Bill Amount <SortIcon orderColumn="TotalAmount" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
+              </div>
+            ) : label == 'Payment Status' ? (
+              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('PaymentStatusName')}>
+                Payment Status <SortIcon orderColumn="PaymentStatusName" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
+              </div>
+            ) : label,
           accessor: label.split(' ').join(''),
           visible: value,
           sortable: false,
@@ -709,8 +708,13 @@ const PaymentsContent: React.FC = () => {
 
   useEffect(() => {
     dispatch(setCurrentPath(pathname))
-    getMappingListData()
   }, [])
+
+  useEffect(() => {
+    if (CompanyId) {
+      getMappingListData()
+    }
+  }, [CompanyId, orderBy])
 
   // Adding checkboxes before Headers
   useEffect(() => {
@@ -997,7 +1001,7 @@ const PaymentsContent: React.FC = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !isLoading && shouldLoadMore && itemsLoaded % lazyRows === 0 && apiDataCount > 0) {
-          fetchPaymentListData()
+          getBillsPaymentListData()
           setSelectedRows([])
           setRowId([])
           setSelectRowsStatus([])
@@ -1228,7 +1232,7 @@ const PaymentsContent: React.FC = () => {
         onOpen={isSingleBillPaymentModalOpen}
         onClose={handleClosePayBillModal}
         currentValues={currentPayValue || 0}
-        onDataFetch={() => fetchPaymentListData(1)}
+        onDataFetch={() => getBillsPaymentListData(1)}
       />}
 
       {/* Modal for paying single vendor multiple bill */}
@@ -1239,7 +1243,7 @@ const PaymentsContent: React.FC = () => {
         totalAmountToPay={totalAmountToPay}
         selectedAccountPayableIds={selectedRows}
         selectedBillDetails={currSelectedBillDetails}
-        onDataFetch={() => fetchPaymentListData(1)}
+        onDataFetch={() => getBillsPaymentListData(1)}
       />}
 
       {/* Modal for paying multiple vendor multiple bill */}
@@ -1251,7 +1255,7 @@ const PaymentsContent: React.FC = () => {
         totalAmountToPay={totalAmountToPay}
         selectedAccountPayableIds={selectedRows}
         selectedBillDetails={currSelectedBillDetails}
-        onDataFetch={() => fetchPaymentListData(1)}
+        onDataFetch={() => getBillsPaymentListData(1)}
       />}
 
       {/* Modal for moving a bill on hold. */}
@@ -1259,7 +1263,7 @@ const PaymentsContent: React.FC = () => {
         onOpen={isBillOnHoldClicked}
         onClose={handleModalClose}
         selectedRowIds={rowId.length > 0 ? rowId : selectedRows}
-        onDataFetch={() => fetchPaymentListData(1)}
+        onDataFetch={() => getBillsPaymentListData(1)}
       />
 
       {/* Payment Details Modal when clicking on Mark as Paid */}
@@ -1267,7 +1271,7 @@ const PaymentsContent: React.FC = () => {
         onOpen={isMarkAsPaidClicked}
         onClose={handleCloseMarkAsPaidModal}
         selectedRowIds={rowId.length > 0 ? rowId : selectedRows}
-        onDataFetch={() => fetchPaymentListData(1)}
+        onDataFetch={() => getBillsPaymentListData(1)}
         selectedBillDetails={currSelectedBillDetails}
       />
 
@@ -1276,7 +1280,7 @@ const PaymentsContent: React.FC = () => {
         onOpen={isBillsToPayClicked}
         onClose={handleMoveBillsToPayModalClose}
         selectedRowIds={rowId.length > 0 ? rowId : selectedRows}
-        onDataFetch={() => fetchPaymentListData(1)}
+        onDataFetch={() => getBillsPaymentListData(1)}
       />
 
       {/* Filter Modal */}

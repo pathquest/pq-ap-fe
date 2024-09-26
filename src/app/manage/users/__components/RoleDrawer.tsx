@@ -176,7 +176,18 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
       CompanyId: Number(companyId),
     }
     performApiAction(dispatch, userGetManageRights, params, (responseData: any) => {
-      setTableData(responseData.List)
+      // setTableData(responseData.List)
+      const filteredList = responseData.List.map((item: any) => {
+        if (item.Key === "Settings") {
+          return {
+            ...item,
+            Children: item.Children.filter((child: any) => child.Key !== "Global Setting")
+          };
+        }
+        return item;
+      });
+
+      setTableData(filteredList);
       setPermissionList(responseData.PermissionIds)
       const processedData = processPermissions(responseData);
       dispatch(setProcessPermissionsMatrix(processedData));
@@ -229,7 +240,7 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
       ProcessList: permissionList,
     }
     performApiAction(dispatch, SaveAssignRoles, params, () => {
-      Toast.success(`Role ${usersId ? 'updated' : 'added'} successfully.`)
+      Toast.success(`${usersId ? 'Details Updated!' : 'Role Added!'} successfully.`)
       onClose()
     })
   }

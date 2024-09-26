@@ -306,14 +306,13 @@ const SinglePaymentDetailsModal: React.FC<ActionsProps> = ({
       const dataMessage = payload?.Message
       if (meta?.requestStatus === 'fulfilled') {
         if (payload?.ResponseStatus === 'Success') {
-          Toast.success(`Bill has been sent for approval!`)
+          Toast.success(`Bill sent for approval!`)
           onDataFetch()
           handleCloseModal()
           setIsPaymentLoading(false)
         } else {
-          const error = payload?.ErrorData?.ErrorDetail;
-          if (error != null) {
-            const errorBillNumber = error?.BillNumbers;
+          const errorBillNumber = payload?.ErrorData?.ErrorDetail.BillNumbers;
+          if (errorBillNumber.length > 0) {
             Toast.error(`Payment already initiated from accounting tool for bill number(s) ${errorBillNumber}. Kindly check before proceeding.`,"", 60000)
           } else {
             Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)

@@ -34,6 +34,7 @@ const ListPaymentSetup: React.FC = () => {
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
   const isPaymentSetupCreate = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Payment Setup", "Create");
   const isPaymentSetupSync = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Payment Setup", "Sync");
+  const isPaymentSetupView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Payment Setup", "View");
 
   const dispatch = useAppDispatch()
   const { customerKycStatus } = useAppSelector((state) => state.paymentSetupSlice)
@@ -80,6 +81,12 @@ const ListPaymentSetup: React.FC = () => {
   const [isCheckApproveScreenOpen, setIsCheckApproveScreenOpen] = useState<boolean>(false)
   const [accountId, setAccountId] = useState<string>('')
   const [isSyncModalOpen, setIsSyncModalOpen] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (!isPaymentSetupView) {
+      router.push('/manage/companies');
+    }
+  }, [isPaymentSetupView]);
 
   const handleToggleChange = () => {
     if (customerKycStatus) {
@@ -311,7 +318,7 @@ const ListPaymentSetup: React.FC = () => {
       PaymentSetupId: activateId,
     }
     performApiAction(dispatch, deactivateBankAccount, params, () => {
-      Toast.success('Bank account deactivated successfully.')
+      Toast.success('Bank account deactivated!')
       setRefreshTable(!refreshTable)
       setAactivateId(0)
     }, () => {
@@ -325,7 +332,7 @@ const ListPaymentSetup: React.FC = () => {
       PaymentSetupId: id,
     }
     performApiAction(dispatch, activateBankAccount, params, () => {
-      Toast.success('Bank account activated successfully.')
+      Toast.success('Bank account activated!')
       setRefreshTable(!refreshTable)
     }, () => {
       setIsStatusLoading(false)
@@ -394,7 +401,7 @@ const ListPaymentSetup: React.FC = () => {
 
     performApiAction(dispatch, savePaymentMethod, params, () => {
       setRefreshTable(!refreshTable)
-      Toast.success(`Payment method status updated successfully.`)
+      Toast.success(`Status of payment method updated!.`)
     }, () => {
       setIsStatusLoading(false)
     })
@@ -424,7 +431,7 @@ const ListPaymentSetup: React.FC = () => {
       if (responseData == true) {
         setIsSyncing(false)
         setRefreshTable(!refreshTable)
-        Toast.success('Bank Account sync successfully')
+        Toast.success('Bank Account Synced!')
       }
     }, () => {
       // ErrorData
@@ -472,7 +479,7 @@ const ListPaymentSetup: React.FC = () => {
               </div>
 
               {selectedTab == "bank"
-                ? <Button className={`${(accountingTool === 1 && !isPaymentSetupCreate) ? "hidden" : "block"} cursor-pointer rounded-full !h-9 laptop:px-6 laptopMd:px-6 lg:px-6 xl:px-6 hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px]`} variant="btn-primary" onClick={handleToggleChange}>
+                ? <Button className={`${isPaymentSetupCreate ? "block" : "hidden"} ${(accountingTool === 1) ? "hidden" : "block"} cursor-pointer rounded-full !h-9 laptop:px-6 laptopMd:px-6 lg:px-6 xl:px-6 hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px]`} variant="btn-primary" onClick={handleToggleChange}>
                   <div className='flex justify-center items-center font-bold'>
                     <span className='mr-[8px]'>
                       <PlusIcon color="#FFF" />
@@ -545,7 +552,7 @@ const ListPaymentSetup: React.FC = () => {
       {/* KYC Modal */}
       <ConfirmationModal
         title='Company KYC Form'
-        content='Click on yes to redirect on KYC form filling page.'
+        content='By clicking OK, you will be redirected to KYC Form'
         isModalOpen={isKYCModalOpen}
         modalClose={modalClose}
         handleSubmit={handleKYCFormSubmit}
