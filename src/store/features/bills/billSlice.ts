@@ -181,13 +181,13 @@ export const splitDocuments = createAsyncThunk('bill/splitDocuments', async (dat
   }
 })
 
-export const getocrDocument = createAsyncThunk('bill/getocrDocument', async (_, thunkAPI) => {
-  try {
-    return await agent.Bill.getocrDocument()
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue({ error: error.data })
-  }
-})
+// export const getocrDocument = createAsyncThunk('bill/getocrDocument', async (_, thunkAPI) => {
+//   try {
+//     return await agent.Bill.getocrDocument()
+//   } catch (error: any) {
+//     return thunkAPI.rejectWithValue({ error: error.data })
+//   }
+// })
 
 export const accountPayableSave = createAsyncThunk('bill/accountPayableSave', async (data: any, thunkAPI) => {
   try {

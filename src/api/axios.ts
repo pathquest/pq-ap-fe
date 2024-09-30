@@ -483,7 +483,7 @@ const Bill = {
   documentDetailById: (data: GetDocumentByIdOptionsProps) => requests.post(`${API_FILEUPLOAD}/document/getdetails`, data),
   mergeDocuments: (data: MergeDocumentOptionsProps) => requests.post(`${API_FILEUPLOAD}/document/mergepdf`, data),
   splitDocuments: (data: SplitDocumentOptions) => requests.post(`${API_FILEUPLOAD}/document/splitpdf`, data),
-  getocrDocument: () => requests.get(`${API_FILEUPLOAD}/indexing/getocrDocument`),
+  // getocrDocument: () => requests.get(`${API_FILEUPLOAD}/indexing/getocrDocument`),
   accountPayableSave: (data: any) => requests.post(`${API_FILEUPLOAD}/accountpayable/save`, data),
   getColumnMappingList: (data: GetColumnMappingListOptionsProps) =>
     requests.post(`${API_FILEUPLOAD}/document/getcolumnmappinglist`, data),
@@ -705,7 +705,7 @@ const APIs = {
 
   mergeDocuments: (data: MergeDocumentOptionsProps) => requests.post(`${API_FILEUPLOAD}/document/mergepdf`, data),
   splitDocuments: (data: SplitDocumentOptions) => requests.post(`${API_FILEUPLOAD}/document/splitpdf`, data),
-  getocrDocument: () => requests.get(`${API_FILEUPLOAD}/indexing/getocrDocument`),
+  // getocrDocument: () => requests.get(`${API_FILEUPLOAD}/indexing/getocrDocument`),
 
   getDuplicateList: (data: any) => requests.post(`${API_FILEUPLOAD}/document/getduplicatelist`, data),
 
