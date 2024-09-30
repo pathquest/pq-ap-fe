@@ -9,11 +9,11 @@ import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { Typography } from 'pq-ap-lib';
 import React, { useEffect, useState } from 'react';
 import ChartTypeDropdown from '../modal/ChartType';
 import DashboardFilter from '../modal/DashboardFilter';
 import ExpandModal from '../modal/ExpandModal';
-import { Loader, Typography } from 'pq-ap-lib';
 
 const BillApprovalStatus: React.FC<any> = ({ LocationOption }) => {
     const { data: session } = useSession()
@@ -462,6 +462,44 @@ const BillApprovalStatus: React.FC<any> = ({ LocationOption }) => {
         getBillApprovalDashboard(newFilterFields)
     }
 
+    const SkeletonCard = () => (
+        chartType == 'pie'
+            ? <div className="h-full w-full bg-white p-4 animate-pulse">
+                <div className="h-[200px] w-[200px] mx-auto relative">
+                    <div className="absolute inset-0 rounded-full border-[30px] border-gray-200"></div>
+                    <div className="absolute inset-[60px] bg-white rounded-full flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="h-6 w-20 bg-gray-200 rounded mb-2 mx-auto"></div>
+                            <div className="h-4 w-12 bg-gray-200 rounded mx-auto"></div>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex justify-center items-center pt-10 space-x-4">
+                    <div className="h-4 w-32 bg-gray-200 rounded"></div>
+                    <div className="h-4 w-32 bg-gray-200 rounded"></div>
+                    <div className="h-4 w-32 bg-gray-200 rounded"></div>
+                </div>
+            </div>
+            : <div className="h-[400px] w-full bg-white p-4 animate-pulse">
+                <div className="h-[300px] rounded-lg relative">
+                    <div className="absolute bottom-0 left-0 right-0 flex justify-between items-end h-full">
+                        {[...Array(15)].map((_, index) => (
+                            <div
+                                key={index}
+                                className="w-[22px] bg-gray-200 rounded-t"
+                                style={{ height: `${Math.random() * 80 + 20}%` }}
+                            ></div>
+                        ))}
+                    </div>
+                </div>
+                <div className="flex justify-center items-center mt-4 space-x-4">
+                    <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                    <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                    <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                </div>
+            </div>
+    );
+
     return (
         <div className='h-full w-full overflow-visible'>
             <div className='bg-white h-[70px] border-b border-lightSilver flex justify-between items-center'>
@@ -487,8 +525,8 @@ const BillApprovalStatus: React.FC<any> = ({ LocationOption }) => {
             </div>
             <div key={chartType} className='place-content-center md:h-[75vh] laptop:h-[75vh] laptopMd:h-[75vh] lg:h-[75vh] xl:h-[75vh] hd:h-[80vh] 2xl:h-[66vh] overflow-x-auto overflow-y-hidden custom-scroll chartScrollbar'>
                 {isLoading
-                    ? <div className='h-full w-full flex justify-center'>
-                        <Loader size='md' helperText/>
+                    ? <div className='h-[400px] w-full flex justify-center items-center pt-10'>
+                        <SkeletonCard />
                     </div>
                     : <HighchartsReact highcharts={Highcharts} options={chartType == 'pie' ? getPieChartOptions(false) : getColumnChartOptions()} />}
             </div>

@@ -8,11 +8,11 @@ import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { Typography } from 'pq-ap-lib';
 import React, { useEffect, useState } from 'react';
 import ChartTypeDropdown from '../modal/ChartType';
 import DashboardFilter from '../modal/DashboardFilter';
 import ExpandModal from '../modal/ExpandModal';
-import { Loader, Typography } from 'pq-ap-lib';
 
 const TotalPostedBillsByMonth: React.FC<any> = ({ LocationOption }) => {
     const { data: session } = useSession()
@@ -250,6 +250,26 @@ const TotalPostedBillsByMonth: React.FC<any> = ({ LocationOption }) => {
         getPostedBillsDashboard(newFilterFields)
     }
 
+    const SkeletonCard = () => (
+        <div className="h-[400px] w-full bg-white p-4 animate-pulse">
+            <div className="h-[300px] rounded-lg relative">
+                <div className="absolute bottom-0 left-0 right-0 flex justify-between items-end h-full">
+                    {[...Array(20)].map((_, index) => (
+                        <div
+                            key={index}
+                            className="w-[22px] bg-gray-200 rounded-t"
+                            style={{ height: `${Math.random() * 80 + 20}%` }}
+                        ></div>
+                    ))}
+                </div>
+            </div>
+            <div className="flex justify-center items-center mt-4 space-x-4">
+                <div className="h-4 w-20 bg-gray-200 rounded"></div>
+                <div className="h-4 w-20 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+    );
+
     return (
         <div className='shadow-md border border-lightSilver rounded'>
             <div className='h-[91px]'>
@@ -275,7 +295,7 @@ const TotalPostedBillsByMonth: React.FC<any> = ({ LocationOption }) => {
             </div>
             {isLoading
                 ? <div className='h-[400px] w-full flex justify-center'>
-                    <Loader size='md'/>
+                    <SkeletonCard />
                 </div>
                 : <div className='main_chart w-full'>
                     <HighchartsReact highcharts={Highcharts} options={getChartOptions()} />

@@ -1,17 +1,17 @@
 import ChartFilterIcon from '@/assets/Icons/chart/ChartFilterIcon'
+import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import { setBillApprovalFilterFields, setPaymentApprovalFilterFields } from '@/store/features/billApproval/approvalSlice'
+import { setBillApprovalFilterFields } from '@/store/features/billApproval/approvalSlice'
+import { setFilterFormFields, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 import { getSummary } from '@/store/features/dashboard/dashboardSlice'
 import { convertStringsDateToUTC } from '@/utils'
+import { endOfMonth, format } from 'date-fns'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Loader, Typography } from 'pq-ap-lib'
+import { Typography } from 'pq-ap-lib'
 import React, { useEffect, useState } from 'react'
 import ProcessTypeDashboardFilter, { processOptions } from '../modal/ProcessTypeDashboardFilter'
-import { setFilterFormFields, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
-import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
-import { addMonths, endOfMonth, format, parse } from 'date-fns'
 
 const Summary: React.FC<any> = ({ LocationOption }) => {
   const { data: session } = useSession()
@@ -73,7 +73,7 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
 
   const updatedCardData = [
     {
-      // amount: `$${summaryData.TotalAmount ?? 0}`,  
+      // amount: `$${summaryData.TotalAmount ?? 0}`,
       amount: `$${formatCurrency(summaryData.TotalAmount)}`,
       description: 'Total Posted Amount'
     },
@@ -107,7 +107,7 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
           ft_select_users: [],
           ft_vendor: null,
           ft_location: null,
-          ft_overview_status: ['2','3','4','5'],
+          ft_overview_status: ['2', '3', '4', '5'],
           ft_process: filterFields?.ProcessType,
           ft_datepicker: `${startDate} to ${formattedLastDayOfNextMonth}`
         }));
@@ -164,6 +164,13 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
     getSummaryDashboard(newFilterFields)
   }
 
+  const SkeletonCard = () => (
+    <div className="laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 shadow-md border border-lightSilver rounded  bg-white">
+      <div className="laptopMd:h-6 lg:h-6 xl:h-6 hd:h-7 2xl:h-7 3xl:h-7 bg-gray-200 rounded animate-pulse mb-2 w-3/4"></div>
+      <div className="laptopMd:h-5 lg:h-5 xl:h-5 hd:h-6 2xl:h-6 3xl:h-6 bg-gray-200 rounded animate-pulse"></div>
+    </div>
+  );
+
   return (
     <>
       <div className='flex justify-end mx-4 hd:mx-5 2xl:mx-5 3xl:mx-5'>
@@ -178,23 +185,19 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
         </div>
       </div>
       <div className={`px-4 mb-5 grid grid-cols-4 sm:grid-cols-2 laptop:grid-cols-3 laptopMd:grid-cols-4 lg:grid-cols-4 gap-5`}>
-        {updatedCardData.map((data, index) => (
+        {isLoading ? Array(4).fill(0).map((_, index) => <SkeletonCard key={index} />)
+          : updatedCardData.map((data, index) => (
             <div
               key={data.amount + index}
               onClick={() => handleSummaryClick(data.description)}
               className={`${data.amount == "0" || data.amount == "$0" ? "cursor-default pointer-events-none" : "cursor-pointer"} w-full cards_content laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 shadow-md border border-lightSilver rounded  bg-white"`}
             >
-              {isLoading ? <div>
-                <Loader size='sm' />
-              </div> : <>
-                <div className="lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-proxima font-semibold tracking-[0.02em]">
-                  {data.amount}
-                </div>
-                <div className='text-base font-proxima laptopMd:mt-1.5 lg:mt-1.5 xl:mt-1.5 hd:mt-2.5 2xl:mt-2.5 3xl:mt-2.5 text-darkCharcoal tracking-[0.02em]'>
-                  {data.description}
-                </div>
-              </>}
-
+              <div className="lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-proxima font-semibold tracking-[0.02em]">
+                {data.amount}
+              </div>
+              <div className='text-base font-proxima laptopMd:mt-1.5 lg:mt-1.5 xl:mt-1.5 hd:mt-2.5 2xl:mt-2.5 3xl:mt-2.5 text-darkCharcoal tracking-[0.02em]'>
+                {data.description}
+              </div>
             </div>
           ))}
       </div>

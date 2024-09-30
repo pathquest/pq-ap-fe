@@ -7,7 +7,7 @@ import { convertStringsDateToUTC } from '@/utils'
 import { format, subMonths } from 'date-fns'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Loader, Typography } from 'pq-ap-lib'
+import { Typography } from 'pq-ap-lib'
 import React, { useEffect, useMemo, useState } from 'react'
 
 const Insights: React.FC = () => {
@@ -126,6 +126,13 @@ const Insights: React.FC = () => {
         }
     }
 
+    const SkeletonCard = () => (
+        <div className="mx-4 laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 shadow-md border border-lightSilver rounded  bg-white">
+          <div className="laptopMd:h-6 lg:h-6 xl:h-6 hd:h-7 2xl:h-7 3xl:h-7 bg-gray-200 rounded animate-pulse mb-2 w-3/4"></div>
+          <div className="laptopMd:h-6 lg:h-6 xl:h-6 hd:h-7 2xl:h-7 3xl:h-7 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+      );
+
     return (
         <div className='h-[493px] w-[240px] hd:w-[256px] 2xl:w-[256px] 3xl:w-[256px] shadow-md border border-lightSilver rounded bg-whiteSmoke overflow-y-auto flex flex-col gap-y-4 pb-4'>
             <div className='h-[62px] p-4 hd:p-5 2xl:p-5 3xl:p-5 border-b border-b-lightSilver sticky top-0 bg-white'>
@@ -133,9 +140,7 @@ const Insights: React.FC = () => {
                     Insights
                 </Typography>
             </div>
-            {isLoading ? <div className='h-full w-full flex justify-center items-center'>
-                <Loader size='sm' />
-            </div>
+            {isLoading ? Array(5).fill(0).map((_, index) => <SkeletonCard key={index} />)
                 : updatedCardData.map((data, index) => (
                     <div className='pointer-events-none w-full px-4 hd:px-5 2xl:px-5 3xl:px-5' key={data.amount + index} onClick={() => handleInsightClick(data.description)}>
                         <div
