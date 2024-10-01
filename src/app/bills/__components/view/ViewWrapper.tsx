@@ -25,23 +25,14 @@ import DeleteWithReason from '@/components/Modals/DeleteWithReason'
 import { accountPayableLineItemsObj, accountPayableObj, moveToOptions } from '@/data/billPosting'
 import { AssignUserOption } from '@/models/billPosting'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import {
-  accountPayableSave,
-  assignDocumentsToUser,
-  deleteDocument,
-  deleteOverviewDocument,
-  getAssigneeList,
-  processTypeChangeByDocumentId,
-  setFilterFormFields,
-  setIsFormDocuments,
-  setSelectedProcessTypeFromList,
-} from '@/store/features/bills/billSlice'
+import { accountPayableSave, assignDocumentsToUser, deleteDocument, deleteOverviewDocument, getAssigneeList, processTypeChangeByDocumentId, setFilterFormFields, setIsFormDocuments, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 import { billStatusEditable, getTimeDifference, initialBillPostingFilterFormFields } from '@/utils/billposting'
 import { parseISO } from 'date-fns'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button, Loader, Select, Toast, BasicTooltip, Typography } from 'pq-ap-lib'
 import { useEffect, useRef, useState } from 'react'
 import EditIcon from '@/assets/Icons/notification/EditIcon'
+import CopyIcon from '@/assets/Icons/billposting/CopyIcon'
 
 interface ViewWrapperProps {
   children?: React.ReactNode
@@ -156,6 +147,10 @@ const ViewWrapper = ({
     post: false,
   })
 
+  const [isCopyBillModalOpen, setIsCopyBillModalOpen] = useState<boolean>(false)
+  const [copyBillId, setCopyBillId] = useState<number>(0)
+  const [processType, setProcessType] = useState<string>('')
+
   const fetchAssigneData = async () => {
     const params = {
       CompanyId: parseInt(CompanyId),
@@ -186,7 +181,7 @@ const ViewWrapper = ({
         Toast.error(`${payload?.status} : ${payload?.statusText}`)
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -463,7 +458,7 @@ const ViewWrapper = ({
     } catch (error) {
       setPostaspaidModal(false)
       onErrorLoader(postSaveAs)
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -490,7 +485,7 @@ const ViewWrapper = ({
             Toast.error(`${payload?.status} : ${payload?.statusText}`)
           }
         } catch (error) {
-          console.log(error)
+          console.error(error)
         }
       } else {
         setEditedValues({
@@ -522,7 +517,7 @@ const ViewWrapper = ({
             Toast.error(`${payload?.status} : ${payload?.statusText}`)
           }
         } catch (error) {
-          console.log(error)
+          console.error(error)
         }
       } else {
         setEditedValues({
@@ -557,7 +552,7 @@ const ViewWrapper = ({
         Toast.error(`${payload?.status} : ${payload?.statusText}`)
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -617,13 +612,15 @@ const ViewWrapper = ({
         Toast.error(`${payload?.status} : ${payload?.statusText}`)
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
   const modalClose = () => {
     setSelectedStates([])
     setIsAssigneeModal(false)
+    setIsCopyBillModalOpen(false)
+    setCopyBillId(0)
   }
 
   const handleCancel = () => {
@@ -711,6 +708,11 @@ const ViewWrapper = ({
       setIsVisibleLeftSidebar(false)
     }
   }, [checkActivityStatus])
+
+
+  const handleCopyBillDetails = (id: any, processType: any) => {
+    router.push(`/bills/create/${processType}`)
+  }
 
   return (
     <Wrapper>
@@ -851,8 +853,7 @@ const ViewWrapper = ({
                     onKeyDown={(e) => (e.key === 'Enter')}
                   >
                     <BasicTooltip position='left' content='Edit bill' className='!z-10 !font-proxima !text-sm'>
-                      <span
-                        className='cursor-pointer'>
+                      <span className='cursor-pointer'>
                         <EditIcon />
                       </span>
                     </BasicTooltip>
@@ -870,6 +871,20 @@ const ViewWrapper = ({
                   </li>
                 </>
               )}
+
+              <li className='h-full flex items-center'
+                onClick={() => {
+                  setCopyBillId(249176)
+                  setProcessType("1")
+                  setIsCopyBillModalOpen(true)
+                }}
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === 'Enter') && setIsCopyBillModalOpen(true)}
+              >
+                <BasicTooltip position='bottom' content='Copy Bill' className='!font-proxima !px-0 !text-[14px]'>
+                  <CopyIcon />
+                </BasicTooltip>
+              </li>
 
               <li className='h-full flex items-center'
                 onClick={() => setIsVisibleActivities(true)}
@@ -1189,6 +1204,17 @@ const ViewWrapper = ({
 
       <DrawerOverlay isOpen={isVisibleMergeDoc} onClose={() => setIsVisibleMergeDoc(false)} />
       <DrawerOverlay isOpen={isVisibleActivities} onClose={() => setIsVisibleActivities(false)} />
+
+      {/* Bill Copy Modal */}
+      {isCopyBillModalOpen && <ConfirmationModal
+        title='Bill Copy'
+        content={`Are you sure you want to copy this bill?`}
+        isModalOpen={isCopyBillModalOpen}
+        modalClose={modalClose}
+        handleSubmit={() => handleCopyBillDetails(copyBillId, processType)}
+        colorVariantNo='btn-outline-primary'
+        colorVariantYes='btn-primary'
+      />}
     </Wrapper>
   )
 }

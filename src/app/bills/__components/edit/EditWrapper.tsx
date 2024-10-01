@@ -6,8 +6,10 @@ import MergeDocDrawer from '@/app/bills/__components/MergeDocDrawer'
 import PostaspaidModal from '@/app/bills/__components/PostaspaidModal'
 import DeleteIcon from '@/assets/Icons/DeleteIcon'
 import ActivityIcon from '@/assets/Icons/billposting/ActivityIcon'
+import VendorBillHistoryIcon from '@/assets/Icons/billposting/VendorBillHistoryIcon'
 import DownArrowIcon from '@/assets/Icons/billposting/DownArrowIcon'
 import FilterIcon from '@/assets/Icons/billposting/FilterIcon'
+import CopyIcon from '@/assets/Icons/billposting/CopyIcon'
 import MergeIcon from '@/assets/Icons/billposting/MergeIcon'
 import TabMoveIcon from '@/assets/Icons/billposting/TabMoveIcon'
 import ViewIcon from '@/assets/Icons/billposting/ViewIcon'
@@ -25,32 +27,14 @@ import DeleteWithReason from '@/components/Modals/DeleteWithReason'
 import { accountPayableLineItemsObj, accountPayableObj, moveToOptions } from '@/data/billPosting'
 import { AssignUserOption } from '@/models/billPosting'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import {
-  assignDocumentsToUser,
-  deleteDocument,
-  getAssigneeList,
-  processTypeChangeByDocumentId,
-  setFilterFormFields,
-  setIsFormDocuments,
-  setIsVisibleSidebar,
-  setSelectedProcessTypeFromList,
-} from '@/store/features/bills/billSlice'
-import {
-  billStatusEditable,
-  getTimeDifference,
-  handleFormFieldErrors,
-  initialBillPostingFilterFormFields,
-  prepareAccountPayableParams,
-  setLoaderState,
-  validate,
-  validateAttachments,
-  validateTotals,
-  verifyAllFieldsValues,
-} from '@/utils/billposting'
+import { assignDocumentsToUser, deleteDocument, getAssigneeList, processTypeChangeByDocumentId, setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
+import { billStatusEditable, getTimeDifference, handleFormFieldErrors, initialBillPostingFilterFormFields, prepareAccountPayableParams, setLoaderState, validate, validateAttachments, validateTotals, verifyAllFieldsValues } from '@/utils/billposting'
 import { parseISO } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { Button, Loader, Select, Toast, BasicTooltip, Typography } from 'pq-ap-lib'
 import { useEffect, useRef, useState } from 'react'
+import GlobalSearch from '@/components/Common/GlobalSearch/Icons/GlobalSearch'
+import VendorBillsHistory from '../VendorBillsHistory'
 
 interface EditWrapperProps {
   module: string | null,
@@ -163,6 +147,7 @@ const EditWrapper = ({
   const dropdownMoveToRef = useRef<HTMLDivElement>(null)
   const dropdownAssignUserRef = useRef<HTMLDivElement>(null)
   const [isVisibleActivities, setIsVisibleActivities] = useState<boolean>(false)
+  const [isVendorBillHistoryListOpen, setIsVendorBillHistoryListOpen] = useState<boolean>(false)
   const [isVisibleRemoveConfirm, setIsVisibleRemoveConfirm] = useState<boolean>(false)
   const [isOpenMoveToDropDown, setIsOpenMoveToDropDown] = useState<boolean>(false)
   const [isOpenAssignUserDropDown, setIsOpenAssignUserDropDown] = useState<boolean>(false)
@@ -183,6 +168,12 @@ const EditWrapper = ({
   const { selectedProcessTypeInList } = useAppSelector((state) => state.bill)
   const userId = localStorage.getItem('UserId')
   const billStatus = documentDetailByIdData?.Status
+
+  const listRef = useRef<any>(null)
+  const [searchValue, setSearchValue] = useState<string>('')
+  const [isCopyBillModalOpen, setIsCopyBillModalOpen] = useState<boolean>(false)
+  const [copyBillId, setCopyBillId] = useState<number>(0)
+  const [processType, setProcessType] = useState<string>('')
 
   const fetchAssigneData = async () => {
     const params = {
@@ -215,7 +206,7 @@ const EditWrapper = ({
         Toast.error(`${payload?.status} : ${payload?.statusText}`)
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -342,7 +333,7 @@ const EditWrapper = ({
         Toast.error(`${payload?.status} : ${payload?.statusText}`)
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -673,7 +664,7 @@ const EditWrapper = ({
         Toast.error(`${payload?.status} : ${payload?.statusText}`)
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -700,7 +691,7 @@ const EditWrapper = ({
             Toast.error(`${payload?.status} : ${payload?.statusText}`)
           }
         } catch (error) {
-          console.log(error)
+          console.error(error)
         }
       } else {
         setEditedValues({
@@ -720,6 +711,10 @@ const EditWrapper = ({
   const modalClose = () => {
     setSelectedStates([])
     setIsAssigneeModal(false)
+    setIsCopyBillModalOpen(false)
+    setCopyBillId(0)
+    setProcessType('')
+    setIsVendorBillHistoryListOpen(true)
   }
 
   const handleCancel = () => {
@@ -760,6 +755,50 @@ const EditWrapper = ({
     setIsOpenFilter(false)
     setIsOpenViewMode(false)
     setIsOpenAssignUserDropDown(false)
+  }
+
+  const invoices = [
+    { Id: 249176, BillNumber: 'Inv328-512-1111', date: '07/03/2024', amount: 234.55, ProcessType: 1 },
+    { Id: 249175, BillNumber: 'Inv470-676-4701', date: '09/20/2024', amount: 234.55, ProcessType: 2 },
+    { Id: 249173, BillNumber: 'Inv846-331-1293', date: '09/21/2024', amount: 880.45, ProcessType: 1 },
+    { Id: 249174, BillNumber: 'Inv707-368-9231', date: '07/03/2024', amount: 234.55, ProcessType: 1 },
+    { Id: 249172, BillNumber: 'Inv516-945-2695', date: '09/18/2024', amount: 880.45, ProcessType: 2 },
+    { Id: 249171, BillNumber: 'Inv607-282-9521', date: '09/18/2024', amount: 880.45, ProcessType: 1 },
+    { Id: 249170, BillNumber: 'Inv607-282-952112', date: '09/18/2024', amount: 8890.45, ProcessType: 1 },
+  ];
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (listRef.current && !listRef.current?.contains(event.target as Node)) {
+        setIsVendorBillHistoryListOpen(false)
+      }
+    }
+    window.addEventListener('mousedown', handleOutsideClick)
+    return () => {
+      window.removeEventListener('mousedown', handleOutsideClick)
+    }
+  }, [isVendorBillHistoryListOpen])
+
+  const onChangeSearchField = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value)
+  }
+
+  const handleKeyDown = (e: any) => {
+    if (e.key === 'Enter') {
+      if (searchValue && searchValue.trim() !== "") {
+        // onSubmit()
+      }
+    }
+  }
+
+  const handleCopyBillDetails = (id: any, processType: any) => {
+    router.push(`/bills/create/${processType}`)
+  }
+
+  const handleCopyBillClick = (value: any, processType: any) => {
+    setCopyBillId(value)
+    setProcessType(processType)
+    setIsCopyBillModalOpen(true)
   }
 
   return (
@@ -885,6 +924,71 @@ const EditWrapper = ({
                   </BasicTooltip>
                 </li>
               )}
+              <li className='h-full flex items-center relative'
+                onClick={() => setIsVendorBillHistoryListOpen(true)}
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === 'Enter') && setIsVendorBillHistoryListOpen(true)}
+              >
+                <BasicTooltip position='bottom' content='Vendor Bill History' className='!font-proxima !px-0 !text-[14px]'>
+                  <VendorBillHistoryIcon />
+                </BasicTooltip>
+
+                <div ref={listRef} className={`${isVendorBillHistoryListOpen ? "block" : "hidden"} w-[535px] h-[296px] border border-lightSilver rounded absolute top-12 right-0 z-[7] bg-pureWhite`}>
+                  <div className='w-full h-[56px] p-2.5 border-b border-lightSilver'>
+                    <div className='cursor-pointer w-full flex items-center h-9 rounded-full bg-whiteSmoke border border-lightSilver hover:border-primary'>
+                      <div className='mx-[15px] cursor-pointer'>
+                        <GlobalSearch />
+                      </div>
+                      <div className='cursor-pointer w-full'>
+                        <input
+                          tabIndex={0}
+                          type='text'
+                          value={searchValue}
+                          className='searchPlaceholder bg-transparent rounded-e-full w-full font-proxima text-sm text-darkCharcoal placeholder:text-slatyGrey focus:outline-none'
+                          placeholder='Search'
+                          onChange={onChangeSearchField}
+                          onKeyDown={(e) => handleKeyDown(e)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className='w-full h-[calc(296px-57px)] overflow-y-auto custom-scroll'>
+                    <table className="w-full">
+                      <tbody>
+                        {invoices.map((data: any, index: number) => (
+                          <tr key={data.BillNumber + index} className={`h-[40px] border-b border-lightSilver relative`}>
+                            <td className="px-5 text-sm font-proxima text-start">{data.BillNumber}</td><td className='absolute top-2 text-lightSilver h-5'>|</td>
+                            <td className="px-5 text-sm text-darkCharcoal font-proxima">{data.date}</td><td className='absolute top-2 text-lightSilver h-5'>|</td>
+                            <td className="px-5 text-sm font-bold font-proxima text-end">${data.amount.toFixed(2)}</td><td className='absolute top-2 text-lightSilver h-5'>|</td>
+                            <td className="px-5 text-sm text-center pt-2">
+                              <button
+                                onClick={() => {
+                                  dispatch(setIsVisibleSidebar(false))
+                                  router.push(`/bills/view/${data.Id}`)
+                                }}
+                              >
+                                <ViewModeIcon height={'19'} width={'19'} />
+                              </button>
+                            </td><td className='absolute top-2 text-lightSilver h-5'>|</td>
+                            <td className="px-5 text-sm pt-2 text-center">
+                              <button onClick={() => handleCopyBillClick(data.Id, data.ProcessType)}>
+                                <CopyIcon />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* <VendorBillsHistory
+                  billsData={invoices}
+                  isBillHistoryOpen={isVendorBillHistoryListOpen}
+                  onClose={() => handleVendorBillHistoryOpen()}
+                  onSubmit={() => handleVendorBillHistoryOpen()}
+                /> */}
+              </li>
               <li className='h-full flex items-center'
                 onClick={() => setIsVisibleActivities(true)}
                 tabIndex={0}
@@ -1155,6 +1259,17 @@ const EditWrapper = ({
 
       <DrawerOverlay isOpen={isVisibleMergeDoc} onClose={() => setIsVisibleMergeDoc(false)} />
       <DrawerOverlay isOpen={isVisibleActivities} onClose={() => setIsVisibleActivities(false)} />
+
+      {/* Bill Copy Modal */}
+      {isCopyBillModalOpen && <ConfirmationModal
+        title='Bill Copy'
+        content={`Are you sure you want to copy this bill?`}
+        isModalOpen={isCopyBillModalOpen}
+        modalClose={modalClose}
+        handleSubmit={() => handleCopyBillDetails(copyBillId, processType)}
+        colorVariantNo='btn-outline-primary'
+        colorVariantYes='btn-primary'
+      />}
     </Wrapper>
   )
 }
