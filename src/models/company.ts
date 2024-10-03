@@ -90,3 +90,7 @@ export interface PerformActions {
   CompanyId: number | null
   Action: number
 }
+
+export interface GetManageConfigurationOptions {
+  CompanyId: number | null
+}

@@ -403,18 +403,18 @@ const FileUpload = ({ processOptions }: any) => {
   }
 
   // FileUpload OCR Api
-  const handleOcrFile = async () => {
-    try {
-      await agent.APIs.getocrDocument()
-    } catch (error: any) {
-      console.error(error)
-    }
-  }
+  // const handleOcrFile = async () => {
+  //   try {
+  //     await agent.APIs.getocrDocument()
+  //   } catch (error: any) {
+  //     console.error(error)
+  //   }
+  // }
 
   useEffect(() => {
     setSuccessCount(() => fileIndexStatus.filter((file: number) => file === 3).length)
     if (fileIndexStatus.filter((file: number) => file === 3).length > 0 && isUploading === false && isToast === true) {
-      handleOcrFile()
+      // handleOcrFile()
       setTimeout(() => {
         Toast.success(`${succesCount + 1} File(s) uploaded and has been moved for the process of automation.`)
       }, 1500)

@@ -119,14 +119,14 @@ function MergeDocDrawer({ isOpen, onClose, selectedBillItems, removeItem, billLi
       try {
         const response = await agent.APIs.mergeDocuments(params)
         if (response?.ResponseStatus === 'Success') {
-          const responseOcr = await agent.APIs.getocrDocument()
+          // const responseOcr = await agent.APIs.getocrDocument()
 
-          if (responseOcr?.ResponseStatus === 'Success') {
+          // if (responseOcr?.ResponseStatus === 'Success') {
             setIsLoader(false)
             setNameOfTheMergeDocument('')
             Toast.success('Documents Merged!')
             router.push('/bills')
-          }
+          // }
         }
       } catch (error) {
         setIsLoader(false)
