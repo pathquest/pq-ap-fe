@@ -856,43 +856,58 @@ const CreateBillPosting = ({
 
   const saveAccountPayable = async (params: any, postSaveAs: any) => {
     try {
-      const response = await agent.APIs.accountPayableSave(params)
+      let formData: any = new FormData()
+      const attachmentFiles = formFields?.attachment || []
+
+      Array.from(attachmentFiles).forEach((file, index) => {
+        formData.append(`Files[${index}]`, file)
+      })
+
+      formData.append('AccountPayableDetails', JSON.stringify(params));
+      const response = await agent.APIs.accountPayableSave(formData)
 
       if (response?.ResponseStatus === 'Success') {
-        if (!formFields?.attachment) {
-          setLoaderState(postSaveAs, loader, setLoader)
-          if (postSaveAs === 2) {
-            Toast.success('Bill Drafted!')
-          } else if (postSaveAs === 12) {
-            setPostaspaidModal(false)
-            Toast.success('Bill Posted!')
-          } else {
-            Toast.success('Bill Posted!')
-          }
-          router.push('/bills')
-          return
-        }
+        // if (!formFields?.attachment) {
+        //   setLoaderState(postSaveAs, loader, setLoader)
+        //   if (postSaveAs === 2) {
+        //     Toast.success('Bill Drafted!')
+        //   } else if (postSaveAs === 12) {
+        //     setPostaspaidModal(false)
+        //     Toast.success('Bill Posted!')
+        //   } else {
+        //     Toast.success('Bill Posted!')
+        //   }
+        //   router.push('/bills')
+        //   return
+        // }
 
-        let formData: any = new FormData()
-        const attachmentFiles = formFields?.attachment || []
+        // let formData: any = new FormData()
+        // const attachmentFiles = formFields?.attachment || []
 
-        Array.from(attachmentFiles).forEach((file, index) => {
-          formData.append(`Files[${index}]`, file)
-        })
+        // Array.from(attachmentFiles).forEach((file, index) => {
+        //   formData.append(`Files[${index}]`, file)
+        // })
 
-        formData.append('DocumentId', response?.ResponseData)
+        // formData.append('DocumentId', response?.ResponseData)
 
-        const attachmentResponse = await agent.APIs.uploadAttachment(formData)
+        // const attachmentResponse = await agent.APIs.uploadAttachment(formData)
 
-        if (attachmentResponse?.ResponseStatus === 'Success') {
-          if (attachmentFiles) {
-            setLoaderState(postSaveAs, loader, setLoader)
-          }
-          router.push('/bills')
-          return
-        }
-
+        // if (attachmentResponse?.ResponseStatus === 'Success') {
+        //   if (attachmentFiles) {
+        //     setLoaderState(postSaveAs, loader, setLoader)
+        //   }
+        //   return
+        // }
         setLoaderState(postSaveAs, loader, setLoader)
+        if (postSaveAs === 2) {
+          Toast.success('Bill Drafted!')
+        } else if (postSaveAs === 12) {
+          setPostaspaidModal(false)
+          Toast.success('Bill Posted!')
+        } else {
+          Toast.success('Bill Posted!')
+        }
+        router.push('/bills')
         return
       } else {
         Toast.error('Error', response?.Message)

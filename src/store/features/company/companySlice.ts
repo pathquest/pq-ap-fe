@@ -12,6 +12,7 @@ import {
   QbConncet,
   ReconncetSageCompany,
   XeroConncet,
+  GetManageConfigurationOptions,
 } from '@/models/company'
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
@@ -184,6 +185,22 @@ export const AssignUserToCompany = createAsyncThunk('company/AssignUserToCompany
 export const filterAccounting = createAsyncThunk('company/filterAccounting', async (_, thunkAPI) => {
   try {
     return await agent.Company.filterAccounting()
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue({ error: error.data })
+  }
+})
+
+export const saveManageConfiguration = createAsyncThunk('company/saveManageConfiguration', async (data: any, thunkAPI) => {
+  try {
+    return await agent.Company.saveManageConfiguration(data)
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue({ error: error.data })
+  }
+})
+
+export const getManageConfiguration = createAsyncThunk('company/getManageConfiguration', async (data: GetManageConfigurationOptions, thunkAPI) => {
+  try {
+    return await agent.Company.getManageConfiguration(data)
   } catch (error: any) {
     return thunkAPI.rejectWithValue({ error: error.data })
   }

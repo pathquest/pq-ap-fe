@@ -453,108 +453,116 @@ const EditWrapper = ({
 
   const saveAccountPayable = async (params: any, postSaveAs: any) => {
     try {
-      const response = await agent.APIs.accountPayableSave(params)
+      let formData: any = new FormData()
+      const attachmentFiles = formFields?.attachment || []
+
+      Array.from(attachmentFiles).forEach((file, index) => {
+        formData.append(`Files[${index}]`, file)
+      })
+
+      formData.append('AccountPayableDetails', JSON.stringify(params));
+      const response = await agent.APIs.accountPayableSave(formData)
 
       if (response?.ResponseStatus === 'Success') {
-        if (!formFields?.attachment) {
-          setLoaderState(postSaveAs, loader, setLoader)
+        // if (!formFields?.attachment) {
+        //   setLoaderState(postSaveAs, loader, setLoader)
 
 
-          setIsNewWindowUpdate(true)
-          setIsRefreshList(true)
-          setLineItemsFieldsData([])
-          showSuccessMessage(postSaveAs)
+        //   setIsNewWindowUpdate(true)
+        //   setIsRefreshList(true)
+        //   setLineItemsFieldsData([])
+        //   showSuccessMessage(postSaveAs)
 
-          if (billStatus !== 10) {
-            const index = billLists.length > 0 && billLists.findIndex((object: any) => {
-              return object.Id == activeBill
-            })
+        //   if (billStatus !== 10) {
+        //     const index = billLists.length > 0 && billLists.findIndex((object: any) => {
+        //       return object.Id == activeBill
+        //     })
 
-            let nextBillId: any
+        //     let nextBillId: any
 
-            if (billLists.length === 1) {
-              router.push(`/bills`)
-            } else if (billLists.length === index + 1) {
-              nextBillId = billLists[0].Id
-            } else {
-              nextBillId = billLists[index + 1].Id
-            }
+        //     if (billLists.length === 1) {
+        //       router.push(`/bills`)
+        //     } else if (billLists.length === index + 1) {
+        //       nextBillId = billLists[0].Id
+        //     } else {
+        //       nextBillId = billLists[index + 1].Id
+        //     }
 
-            const findNextBill = billLists.length > 0 && nextBillId && billLists.find((value: any) => (value.Id === nextBillId ? value : null))
+        //     const findNextBill = billLists.length > 0 && nextBillId && billLists.find((value: any) => (value.Id === nextBillId ? value : null))
 
-            dispatch(setIsFormDocuments(findNextBill.IsFromDocuments))
-            setActiveBill(nextBillId)
-            window.history.replaceState(null, '', `/bills/edit/${nextBillId}?module=bills`)
-          }
-          if (billStatus === 10) {
-            router.push('/bills')
-          }
+        //     dispatch(setIsFormDocuments(findNextBill.IsFromDocuments))
+        //     setActiveBill(nextBillId)
+        //     window.history.replaceState(null, '', `/bills/edit/${nextBillId}?module=bills`)
+        //   }
+        //   if (billStatus === 10) {
+        //     router.push('/bills')
+        //   }
 
-          setLoader({
-            postAsPaid: false,
-            saveAsDraft: false,
-            post: false,
+        //   setLoader({
+        //     postAsPaid: false,
+        //     saveAsDraft: false,
+        //     post: false,
+        //   })
+        //   return
+        // }
+
+        // let formData: any = new FormData()
+        // const attachmentFiles = formFields?.attachment || []
+
+        // Array.from(attachmentFiles).forEach((file, index) => {
+        //   formData.append(`Files[${index}]`, file)
+        // })
+
+        // formData.append('DocumentId', response?.ResponseData)
+
+        // const attachmentResponse = await agent.APIs.uploadAttachment(formData)
+
+        // if (attachmentResponse?.ResponseStatus === 'Success') {
+        //   if (attachmentFiles) {
+        //     setLoaderState(postSaveAs, loader, setLoader)
+
+        if (postSaveAs === 12) {
+          setPostaspaidModal(false)
+        }
+
+        setIsNewWindowUpdate(true)
+        setIsRefreshList(true)
+        setLineItemsFieldsData([])
+        showSuccessMessage(postSaveAs)
+
+        if (billStatus !== 10) {
+          const index = billLists.length > 0 && billLists.findIndex((object: any) => {
+            return object.Id == activeBill
           })
-          return
-        }
 
-        let formData: any = new FormData()
-        const attachmentFiles = formFields?.attachment || []
+          let nextBillId: any
 
-        Array.from(attachmentFiles).forEach((file, index) => {
-          formData.append(`Files[${index}]`, file)
-        })
-
-        formData.append('DocumentId', response?.ResponseData)
-
-        const attachmentResponse = await agent.APIs.uploadAttachment(formData)
-
-        if (attachmentResponse?.ResponseStatus === 'Success') {
-          if (attachmentFiles) {
-            setLoaderState(postSaveAs, loader, setLoader)
-
-            if (postSaveAs === 12) {
-              setPostaspaidModal(false)
-            }
-
-            setIsNewWindowUpdate(true)
-            setIsRefreshList(true)
-            setLineItemsFieldsData([])
-            showSuccessMessage(postSaveAs)
-
-            if (billStatus !== 10) {
-              const index = billLists.length > 0 && billLists.findIndex((object: any) => {
-                return object.Id == activeBill
-              })
-
-              let nextBillId: any
-
-              if (billLists.length === 1) {
-                router.push(`/bills`)
-              } else if (billLists.length === index + 1) {
-                nextBillId = billLists[0].Id
-              } else {
-                nextBillId = billLists[index + 1].Id
-              }
-
-              const findNextBill = billLists.length > 0 && nextBillId && billLists.find((value: any) => (value.Id === nextBillId ? value : null))
-
-              dispatch(setIsFormDocuments(findNextBill.IsFromDocuments))
-              setActiveBill(nextBillId)
-              window.history.replaceState(null, '', `/bills/edit/${nextBillId}?module=bills`)
-            }
-            if (billStatus === 10) {
-              router.push('/bills')
-            }
-
-            setLoader({
-              postAsPaid: false,
-              saveAsDraft: false,
-              post: false,
-            })
+          if (billLists.length === 1) {
+            router.push(`/bills`)
+          } else if (billLists.length === index + 1) {
+            nextBillId = billLists[0].Id
+          } else {
+            nextBillId = billLists[index + 1].Id
           }
-          return
+
+          const findNextBill = billLists.length > 0 && nextBillId && billLists.find((value: any) => (value.Id === nextBillId ? value : null))
+
+          dispatch(setIsFormDocuments(findNextBill.IsFromDocuments))
+          setActiveBill(nextBillId)
+          window.history.replaceState(null, '', `/bills/edit/${nextBillId}?module=bills`)
         }
+        if (billStatus === 10) {
+          router.push('/bills')
+        }
+
+        setLoader({
+          postAsPaid: false,
+          saveAsDraft: false,
+          post: false,
+        })
+        // }
+        // return
+        // }
 
         setLoaderState(postSaveAs, loader, setLoader)
         return

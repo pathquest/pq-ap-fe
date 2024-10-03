@@ -396,7 +396,10 @@ const ViewWrapper = ({
     })
 
     try {
-      const { payload, meta } = await dispatch(accountPayableSave(params))
+      let formData: any = new FormData()
+      formData.append(`Files[0]`, [])
+      formData.append('AccountPayableDetails', JSON.stringify(params));
+      const { payload, meta } = await dispatch(accountPayableSave(formData))
       const dataMessage = payload?.Message
 
       if (meta?.requestStatus === 'fulfilled') {

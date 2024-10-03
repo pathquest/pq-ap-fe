@@ -84,6 +84,7 @@ import {
   CompanyIdDropDown,
   ConncetSageCompany,
   ConncetSageUser,
+  GetManageConfigurationOptions,
   PerformActions,
   QbConncet,
   ReconncetSageCompany,
@@ -327,6 +328,8 @@ const Company = {
   sageCompanyConnect: (data: ConncetSageCompany) => requests.post(`${API_MANAGE}/company/getentitylist`, data),
   sageCompanyReconnect: (data: ReconncetSageCompany) => requests.post(`${API_MANAGE}/company/connectintacctcompany`, data),
   performCompanyActions: (data: PerformActions) => requests.post(`${API_MANAGE}/company/action`, data),
+  saveManageConfiguration: (data: any) => requests.post(`${API_MANAGE}/company/savemanageconfig`, data),
+  getManageConfiguration: (data: GetManageConfigurationOptions) => requests.get(`${API_MANAGE}/company/getmanageconfig?companyId=${data.CompanyId}`),
   // country,state and city api we take it from user
 
   // below api use in manage user

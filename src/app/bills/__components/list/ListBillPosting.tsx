@@ -2244,7 +2244,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                       {isOpenMoveToDropDown.isShow && isOpenMoveToDropDown.index === null && (
                         <div
                           ref={dropdownMoveToRef}
-                          className='absolute right-20 top-12 !z-10 flex h-auto w-[180px]  flex-col rounded-md bg-white shadow-lg'
+                          className='absolute right-20 top-[52px] !z-10 flex h-auto w-[180px]  flex-col rounded-md bg-white shadow-lg'
                         >
                           <div className='flex flex-col items-start justify-start'>
                             {moveToOptions &&
@@ -2313,7 +2313,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                         {isOpenCreate && (
                           <div
                             ref={dropdownCreateRef}
-                            className={`absolute ${(selectedProcessTypeInList !== '3' && billLists.length > 0) ? "right-14" : "right-3"} top-13 !z-[999] flex h-auto flex-col rounded-md bg-white shadow-lg`}
+                            className={`absolute ${(selectedProcessTypeInList !== '3' && billLists.length > 0) ? "right-14" : "right-3"} top-[52px] !z-[999] flex h-auto flex-col rounded-md bg-white shadow-lg`}
                           >
                             <Create />
                           </div>
@@ -2332,7 +2332,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                           {isOpenView && (
                             <div
                               ref={dropdownViewRef}
-                              className='absolute right-6 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                              className='absolute right-5 top-[52px] !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
                             >
                               <View
                                 Id={billLists[0]?.Id}
