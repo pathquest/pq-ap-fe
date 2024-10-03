@@ -399,7 +399,7 @@ const ListUsers: React.FC = () => {
         name: e?.first_name + ' ' + e?.last_name,
         email: e?.email,
         companies: (
-          <div className='CompanyList_manageuser w-full' onClick={() => setRowId(e.id)}>
+          <div className={`${isManageUserEdit ? "" : "pointer-events-none opacity-80"} CompanyList_manageuser w-full`} onClick={() => setRowId(e.id)}>
             <SaveCompanyDropdown
               id={e?.id}
               showAvatar={5}
@@ -417,7 +417,7 @@ const ListUsers: React.FC = () => {
         role: e?.roleName,
         status: (
           <div
-            className={`${isSwitchClicked ? "pointer-events-none cursor-default" : " cursor-pointer"} ${e?.id == UserId || e?.IsOrgAdmin === true ? 'pointer-events-none' : ''}`}
+            className={`${isManageUserEdit ? "" : "pointer-events-none opacity-80"} ${isSwitchClicked ? "pointer-events-none cursor-default" : " cursor-pointer"} ${e?.id == UserId || e?.IsOrgAdmin === true ? 'pointer-events-none' : ''}`}
             onClick={() => {
               setRowId(e?.id)
               updateStatus(e?.id, e?.is_Active)

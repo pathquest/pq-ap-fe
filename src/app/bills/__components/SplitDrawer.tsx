@@ -294,7 +294,7 @@ const SplitDrawer: React.FC<SplitDrawerProps> = ({
             defaultValue={d?.RangeFrom}
             value={d?.RangeFrom}
             getValue={(value) => onChangeTableFieldValue(index, value, 'RangeFrom')}
-            getError={(err) => {}}
+            getError={(err) => { }}
             className='!w-[40px] !pt-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
           />
         ),
@@ -305,7 +305,7 @@ const SplitDrawer: React.FC<SplitDrawerProps> = ({
             defaultValue={d?.RangeTo}
             value={d?.RangeTo}
             getValue={(value) => onChangeTableFieldValue(index, value, 'RangeTo')}
-            getError={(err) => {}}
+            getError={(err) => { }}
             className='!w-[40px] !pt-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
           />
         ),
@@ -406,13 +406,13 @@ const SplitDrawer: React.FC<SplitDrawerProps> = ({
     try {
       const response = await agent.APIs.splitDocuments(params)
       if (response?.ResponseStatus === 'Success') {
-        const responseOcr = await agent.APIs.getocrDocument()
+        // const responseOcr = await agent.APIs.getocrDocument()
 
-        if (responseOcr?.ResponseStatus === 'Success') {
-          setIsLoader(false)
-          Toast.success('Document Splitted!')
-          router.push('/bills')
-        }
+        // if (responseOcr?.ResponseStatus === 'Success') {
+        setIsLoader(false)
+        Toast.success('Document Splitted!')
+        router.push('/bills')
+        // }
       }
     } catch (error) {
       setIsLoader(false)
@@ -488,16 +488,15 @@ const SplitDrawer: React.FC<SplitDrawerProps> = ({
 
   const pageCountOfPageExtract =
     parsedNumberOfPages - parsedPagesToExtractLength < parsedNumberOfPages &&
-    parsedNumberOfPages - parsedPagesToExtractLength !== 0
+      parsedNumberOfPages - parsedPagesToExtractLength !== 0
       ? parsedPagesToExtractLength + 1
       : parsedPagesToExtractLength
 
   return (
     <>
       <div
-        className={`fixed right-0 top-0 z-10 flex h-full w-5/6 flex-col overflow-scroll bg-white shadow-2xl ${
-          onOpen ? 'translate-x-0' : 'translate-x-full'
-        } transition-transform duration-300 ease-in-out`}
+        className={`fixed right-0 top-0 z-10 flex h-full w-5/6 flex-col overflow-scroll bg-white shadow-2xl ${onOpen ? 'translate-x-0' : 'translate-x-full'
+          } transition-transform duration-300 ease-in-out`}
       >
         <div className='flex items-center justify-between border-b-[1px] border-[#D8D8D8] p-2.5'>
           <div className='flex flex-col'>
@@ -520,9 +519,9 @@ const SplitDrawer: React.FC<SplitDrawerProps> = ({
               <PDFViewer
                 billNumber={billNumber}
                 fileName={fileName}
-                getNumberOfPages={() => {}}
+                getNumberOfPages={() => { }}
                 pdfFile={pdfFile}
-                onOpen={() => {}}
+                onOpen={() => { }}
                 isSplitDrawer={true}
                 fileBlob={fileBlob}
                 openInNewWindow={openInNewWindow}
@@ -562,7 +561,7 @@ const SplitDrawer: React.FC<SplitDrawerProps> = ({
                   id='Prefix'
                   name='Prefix'
                   getValue={(value) => setPrefix(value)}
-                  getError={(value) => {}}
+                  getError={(value) => { }}
                 />
               </div>
               {tabId === '2' ? (
@@ -573,7 +572,7 @@ const SplitDrawer: React.FC<SplitDrawerProps> = ({
                       data={tableData}
                       getExpandableData={() => ''}
                       sticky
-                      getRowId={() => {}}
+                      getRowId={() => { }}
                     />
                     <div className='mt-5 flex justify-end'>
                       <Button

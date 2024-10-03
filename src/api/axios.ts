@@ -83,6 +83,7 @@ import {
   CompanyIdDropDown,
   ConncetSageCompany,
   ConncetSageUser,
+  GetManageConfigurationOptions,
   PerformActions,
   QbConncet,
   ReconncetSageCompany,
@@ -326,6 +327,8 @@ const Company = {
   sageCompanyConnect: (data: ConncetSageCompany) => requests.post(`${API_MANAGE}/company/getentitylist`, data),
   sageCompanyReconnect: (data: ReconncetSageCompany) => requests.post(`${API_MANAGE}/company/connectintacctcompany`, data),
   performCompanyActions: (data: PerformActions) => requests.post(`${API_MANAGE}/company/action`, data),
+  saveManageConfiguration: (data: any) => requests.post(`${API_MANAGE}/company/savemanageconfig`, data),
+  getManageConfiguration: (data: GetManageConfigurationOptions) => requests.get(`${API_MANAGE}/company/getmanageconfig?companyId=${data.CompanyId}`),
   // country,state and city api we take it from user
 
   // below api use in manage user
@@ -483,7 +486,7 @@ const Bill = {
   documentDetailById: (data: GetDocumentByIdOptionsProps) => requests.post(`${API_FILEUPLOAD}/document/getdetails`, data),
   mergeDocuments: (data: MergeDocumentOptionsProps) => requests.post(`${API_FILEUPLOAD}/document/mergepdf`, data),
   splitDocuments: (data: SplitDocumentOptions) => requests.post(`${API_FILEUPLOAD}/document/splitpdf`, data),
-  getocrDocument: () => requests.get(`${API_FILEUPLOAD}/indexing/getocrDocument`),
+  // getocrDocument: () => requests.get(`${API_FILEUPLOAD}/indexing/getocrDocument`),
   accountPayableSave: (data: any) => requests.post(`${API_FILEUPLOAD}/accountpayable/save`, data),
   getColumnMappingList: (data: GetColumnMappingListOptionsProps) =>
     requests.post(`${API_FILEUPLOAD}/document/getcolumnmappinglist`, data),
@@ -705,7 +708,7 @@ const APIs = {
 
   mergeDocuments: (data: MergeDocumentOptionsProps) => requests.post(`${API_FILEUPLOAD}/document/mergepdf`, data),
   splitDocuments: (data: SplitDocumentOptions) => requests.post(`${API_FILEUPLOAD}/document/splitpdf`, data),
-  getocrDocument: () => requests.get(`${API_FILEUPLOAD}/indexing/getocrDocument`),
+  // getocrDocument: () => requests.get(`${API_FILEUPLOAD}/indexing/getocrDocument`),
 
   getDuplicateList: (data: any) => requests.post(`${API_FILEUPLOAD}/document/getduplicatelist`, data),
 

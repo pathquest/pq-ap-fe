@@ -96,7 +96,8 @@ const Dropdown: React.FC = () => {
       UserId: UserId,
     }
     performApiAction(dispatch, getAssignUsertoCompany, params, (responseData: any) => {
-      setNewCompanyList(responseData)
+      const filteredList = responseData.filter((company: any) => company.isChecked);
+      setNewCompanyList(filteredList)
     })
   }
 
