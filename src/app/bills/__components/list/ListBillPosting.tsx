@@ -50,6 +50,7 @@ import { billStatusEditable, getPDFUrl, getTimeDifference, initialBillPostingFil
 import { useSession } from 'next-auth/react'
 import ColumnFilterOverview from '../ColumnFilterOverview'
 import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
+import CopyIcon from '@/assets/Icons/billposting/CopyIcon'
 
 const ListBillPosting = ({ statusOptions }: any) => {
   const { data: session } = useSession()
@@ -232,6 +233,9 @@ const ListBillPosting = ({ statusOptions }: any) => {
     Status: null,
     Amount: null,
   })
+
+  const [isCopyBillModalOpen, setIsCopyBillModalOpen] = useState<boolean>(false)
+  const [copyBillId, setCopyBillId] = useState<number>(0)
 
   let nextPageIndex: number = 1
   let nextPageIndexOverview: number = 1
@@ -1127,7 +1131,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
       accessor: 'actions',
       sortable: false,
       colalign: 'right',
-      colStyle: '!w-[300px]',
+      colStyle: '!w-[350px]',
     },
   ]
 
@@ -1498,6 +1502,22 @@ const ListBillPosting = ({ statusOptions }: any) => {
         actions: hoveredRow?.Id === d.Id && (
           <div className={`${isOverFlowVisible ? "overflow-visible" : "overflow-hidden"} h-full w-full`}>
             <div className='slideLeft relative flex h-full justify-end'>
+              <div
+                className={`z-0 flex items-center border-l border-[#cccccc] px-4`}
+              >
+                <BasicTooltip position='left' content='Copy Bill' className='!font-proxima !px-0 !text-sm'>
+                  <div
+                    className='cursor-pointer'
+                    onClick={() => {
+                      dispatch(setIsVisibleSidebar(false))
+                      setCopyBillId(d.Id)
+                      setIsCopyBillModalOpen(true)
+                    }}
+                  >
+                    <CopyIcon />
+                  </div>
+                </BasicTooltip>
+              </div>
               {billOverviewStatus.includes(d.Status) && (
                 <div
                   className={`z-0 flex items-center border-l ${d.Status !== 3 && d.Status !== 4 && d.Status !== 7 ? 'border-r' : ''
@@ -2106,6 +2126,17 @@ const ListBillPosting = ({ statusOptions }: any) => {
     overviewNoDataContent = ''
   }
 
+
+  const modalClose = () => {
+    setIsCopyBillModalOpen(false)
+    setCopyBillId(0)
+  }
+
+  const handleCopyBillDetails = (id: any) => {
+    router.push(`/bills/create/1/${id}`)
+  }
+
+
   return (
     <>
       <Wrapper masterSettings={false}>
@@ -2477,6 +2508,18 @@ const ListBillPosting = ({ statusOptions }: any) => {
           selectedPayableId={selectedPayableId}
         />
         <DrawerOverlay isOpen={openDrawer} />
+
+
+        {/* Bill Copy Modal */}
+        {isCopyBillModalOpen && <ConfirmationModal
+          title='Bill Copy'
+          content={`Are you sure you want to copy this bill?`}
+          isModalOpen={isCopyBillModalOpen}
+          modalClose={modalClose}
+          handleSubmit={() => handleCopyBillDetails(copyBillId)}
+          colorVariantNo='btn-outline-primary'
+          colorVariantYes='btn-primary'
+        />}
       </Wrapper>
     </>
   )

@@ -22,22 +22,7 @@ import BillsControlFields from '@/components/Common/BillsControls/page'
 import { accountPayableLineItemsObj, accountPayableObj } from '@/data/billPosting'
 import { EditBillPostingDataProps } from '@/models/billPosting'
 import { useAppSelector } from '@/store/configureStore'
-import {
-  convertFractionToRoundValue,
-  getRoundValue,
-  getUpdatedDataFromDetailsResponse,
-  handleFormFieldErrors,
-  lineItemRemoveArr,
-  prepareAccountPayableParams,
-  returnKeyValueObjForFormFields,
-  setLoaderState,
-  taxTotalAmountCalculate,
-  totalAmountCalculate,
-  validate,
-  validateAttachments,
-  validateTotals,
-  verifyAllFieldsValues,
-} from '@/utils/billposting'
+import { convertFractionToRoundValue, getRoundValue, getUpdatedDataFromDetailsResponse, handleFormFieldErrors, lineItemRemoveArr, prepareAccountPayableParams, returnKeyValueObjForFormFields, setLoaderState, taxTotalAmountCalculate, totalAmountCalculate, validate, validateAttachments, validateTotals, verifyAllFieldsValues } from '@/utils/billposting'
 import { format } from 'date-fns'
 import { useSession } from 'next-auth/react'
 import { fetchAPIsData } from '@/api/server/common'
@@ -194,8 +179,13 @@ const CreateBillPosting = ({
   useEffect(() => {
     const getCurrentBillDetails = async () => {
       try {
-        const response = await agent.APIs.getDocumentHistoryDetails({
+        // const response = await agent.APIs.getDocumentHistoryDetails({
+        //   Id: Number(documentId as string),
+        // })
+        const response = await agent.APIs.getDocumentDetails({
           Id: Number(documentId as string),
+          UserId: Number(userId as string),
+          ApprovalType: 0,
         })
         if (response?.ResponseStatus === 'Success') {
           const responseData = response?.ResponseData
@@ -748,7 +738,6 @@ const CreateBillPosting = ({
       if (item?.Value) {
         optionsObj = JSON.parse(item?.Value)
       }
-
 
       return {
         ...item,

@@ -19,20 +19,7 @@ import { BillPostingFilterFormFieldsProps, EditBillPostingDataProps } from '@/mo
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar } from '@/store/features/bills/billSlice'
 import { convertStringsDateToUTC } from '@/utils'
-import {
-  billStatusEditable,
-  convertFractionToRoundValue,
-  getPDFUrl,
-  getRoundValue,
-  getUpdatedDataFromDetailsResponse,
-  initialBillPostingFilterFormFields,
-  lineItemRemoveArr,
-  returnKeyValueObjForFormFields,
-  taxTotalAmountCalculate,
-  totalAmountCalculate,
-  validate,
-  verifyAllFieldsValues,
-} from '@/utils/billposting'
+import { billStatusEditable, convertFractionToRoundValue, getPDFUrl, getRoundValue, getUpdatedDataFromDetailsResponse, initialBillPostingFilterFormFields, lineItemRemoveArr, returnKeyValueObjForFormFields, taxTotalAmountCalculate, totalAmountCalculate, validate, verifyAllFieldsValues } from '@/utils/billposting'
 import { format } from 'date-fns'
 import { useSession } from 'next-auth/react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
@@ -176,6 +163,8 @@ const EditBillPosting = ({ processtype }: any) => {
           generateLinetItemFieldsErrorObj,
           vendorOptions
         )
+        console.log("🚀 ~ getCurrentBillDetails ~ newLineItems:", newLineItems)
+        console.log("🚀 ~ getCurrentBillDetails ~ updatedDataObj:", updatedDataObj)
 
         if (newLineItems.length === 0) {
           setMainFieldAmount(responseData?.Amount)
@@ -1081,6 +1070,37 @@ const EditBillPosting = ({ processtype }: any) => {
     }
   }
 
+  const copyBillsDetails = (billData: any) => {
+    setMainFieldAmount(billData?.Amount)
+
+    const { keyValueMainFieldObj, keyValueLineItemFieldObj } = returnKeyValueObjForFormFields(
+      mainFieldListOptions,
+      lineItemFieldListOptions
+    )
+
+    const { newLineItems, newLineItemsErrorObj, updatedDataObj, updatedDataErrorObj } = getUpdatedDataFromDetailsResponse(
+      billData,
+      keyValueMainFieldObj,
+      keyValueLineItemFieldObj,
+      mainFieldListOptions,
+      generateLinetItemFieldsErrorObj,
+      vendorOptions
+    )
+
+    setLineItemsFieldsData(newLineItems)
+    setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
+
+    setFormFields(updatedDataObj)
+    setHasFormFieldLibraryErrors(updatedDataErrorObj)
+
+    const newData = {
+      ...documentDetailByIdData,
+      BillNumber: ""
+    }
+
+    setDocumentDetailByIdData(newData)
+  }
+
   return (
     <EditWrapper
       billLists={billLists}
@@ -1129,6 +1149,7 @@ const EditBillPosting = ({ processtype }: any) => {
       setIsRefreshList={setIsRefreshList}
       setLineItemsFieldsData={setLineItemsFieldsData}
       module={module}
+      copyBillData={(value: any) => copyBillsDetails(value)}
     >
       <div className='mb-5 border-b border-solid border-lightSilver md:flex'>
         {!isOpenInNewWindow && (

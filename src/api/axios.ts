@@ -61,6 +61,7 @@ import {
   RemoveDocumentOptionsProps,
   SplitDocumentOptions,
   UserListOptionsProps,
+  VendorHistoryListOptions,
   VendorListOptions,
 } from '@/models/billPosting'
 import {
@@ -484,7 +485,8 @@ const Bill = {
   mergeDocuments: (data: MergeDocumentOptionsProps) => requests.post(`${API_FILEUPLOAD}/document/mergepdf`, data),
   splitDocuments: (data: SplitDocumentOptions) => requests.post(`${API_FILEUPLOAD}/document/splitpdf`, data),
   // getocrDocument: () => requests.get(`${API_FILEUPLOAD}/indexing/getocrDocument`),
-  accountPayableSave: (data: any) => requests.post(`${API_FILEUPLOAD}/accountpayable/save`, data),
+  accountPayableSave: (data: any) => requests.postForm(`${API_FILEUPLOAD}/accountpayable/save`, data),
+  getVendorHistoryList: (data: VendorHistoryListOptions) => requests.post(`${API_FILEUPLOAD}/accountpayable/vendorhistorylist`, data),
   getColumnMappingList: (data: GetColumnMappingListOptionsProps) =>
     requests.post(`${API_FILEUPLOAD}/document/getcolumnmappinglist`, data),
   getColumnMappingOverviewList: (data: GetColumnMappingListOptionsProps) =>
@@ -717,7 +719,7 @@ const APIs = {
     requests.post(`${API_FILEUPLOAD}/documenthistory/addattachments`, data),
   handleFileHistoryRetry: (data: HandleHistoryDocumentRetryProps) =>
     requests.post(`${API_FILEUPLOAD}/documenthistory/sendforocr`, data),
-  accountPayableSave: (data: any) => requests.post(`${API_FILEUPLOAD}/accountpayable/save`, data),
+  accountPayableSave: (data: any) => requests.postForm(`${API_FILEUPLOAD}/accountpayable/save`, data),
   uploadAttachment: (data: any) => requests.postForm(`${API_FILEUPLOAD}/document/uploadattachments`, data),
   getDocumentHistoryDetails: (data: GetDocumentByIdOptionsProps) =>
     requests.post(`${API_FILEUPLOAD}/documenthistory/getdetails`, data),
