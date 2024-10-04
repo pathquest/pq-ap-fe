@@ -27,6 +27,7 @@ import agent, { invalidateSessionCache } from '@/api/axios'
 import { getModulePermissions, hasSpecificPermission, hasViewPermission, processPermissions } from '@/components/Common/Functions/ProcessPermission'
 import { setOrganizationName, setOrgPermissionsMatrix, setProcessPermissionsMatrix, setRoleId } from '@/store/features/profile/profileSlice'
 import { permissionGetList } from '@/store/features/role/roleSlice'
+import ManageConfigurationDrawer from '../ManageConfigurationDrawer'
 
 interface Item {
   clientname: string
@@ -109,11 +110,11 @@ const ListCompanies = () => {
     assignUser: [],
   })
   const [selectedRowId, setSelectedRowId] = useState(0)
-  const [editId, setEditId] = useState<number | undefined | null>()
+  const [editId, setEditId] = useState<number>(0)
   const [qboCompanyData, setQboCompanyData] = useState<any[] | null>(null)
   const [xeroCompanyData, setXeroCompanyData] = useState<any[] | null>(null)
   const [companyList, setCompanyList] = useState<Company[]>([])
-  const [accountingTool, setAccountingTool] = useState<number | null>()
+  const [accountingTool, setAccountingTool] = useState<number>(0)
   const [orgId, setOrgId] = useState<number | null>(null)
 
   const { setAccountingToolType } = useCompanyContext()
@@ -424,7 +425,7 @@ const ListCompanies = () => {
 
   // This function is call for drawer
   const clearID = () => {
-    setEditId(undefined)
+    setEditId(0)
   }
 
   //Company Connect for Intacct
@@ -648,9 +649,10 @@ const ListCompanies = () => {
       case 'remove':
         setOpenRemoveModal(true)
         break
-      // case 'manage configuration':
-      //   setIsManageConfigurationDrawerOpen(true)
-      //   break
+      case 'manage configuration':
+        setEditId(actionId)
+        setIsManageConfigurationDrawerOpen(true)
+        break
       default:
         break
     }
@@ -803,8 +805,9 @@ const ListCompanies = () => {
   const companyData = companyList && companyList.map((list: any, index) => {
     const actions =
       list?.AccountingTool === 4
-        ? ['Edit', 'Remove']
-        : !list?.IsFieldMappingSet ? ['Field Mapping', 'Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove'] : ['Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove'].filter(Boolean)
+        ? ['Edit', 'Remove', 'Manage Configuration']
+        : !list?.IsFieldMappingSet ? ['Field Mapping', 'Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove', 'Manage Configuration'] : ['Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove', 'Manage Configuration'].filter(Boolean)
+
     return {
       Id: <div className={`${list.IsActive ? '' : 'opacity-[50%]'}`}>{index + 1}</div>,
       Name: (
@@ -828,7 +831,7 @@ const ListCompanies = () => {
         ),
       AssignUsers: (
         <div
-        className={`${isManageCompanyEdit ? "" : "pointer-events-none opacity-80"} ${!list?.IsActive ? 'pointer-events-none opacity-50' : ''} userList_managecompany w-[150px]`}
+          className={`${isManageCompanyEdit ? "" : "pointer-events-none opacity-80"} ${!list?.IsActive ? 'pointer-events-none opacity-50' : ''} userList_managecompany w-[150px]`}
           onClick={() => setRowId(list?.Id)}
         >
           <SaveCompanyDropdown
@@ -852,6 +855,7 @@ const ListCompanies = () => {
           id={list?.Id}
           accountingTool={list?.AccountingTool}
           actions={actions}
+          menuClassName={'168px'}
           optionalData={list?.Name}
           actionRowId={() => {
             handleIdGet(list?.Id, list?.AccountingTool)
@@ -1015,6 +1019,7 @@ const ListCompanies = () => {
     setIsRefresh(!isRefresh)
     setShouldLoadMore(true)
     setIsNoAccountingToolCompany(false)
+    setIsManageConfigurationDrawerOpen(false)
   }
 
   const onReset = () => {
@@ -1200,6 +1205,7 @@ const ListCompanies = () => {
           isConfirmCancel={isConfirmCancel}
         />
 
+        <ManageConfigurationDrawer onOpen={isManageConfigurationDrawerOpen} onClose={handleDrawerClose} EditCompanyId={editId ?? 0} AccountingTool={accountingTool ?? 0} />
 
         {/* Drawer Overlay */}
         <DrawerOverlay isOpen={openDrawer || isManageConfigurationDrawerOpen} onClose={() => { }} />

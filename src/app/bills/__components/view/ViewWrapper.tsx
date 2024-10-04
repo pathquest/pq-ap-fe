@@ -186,7 +186,7 @@ const ViewWrapper = ({
         Toast.error(`${payload?.status} : ${payload?.statusText}`)
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -401,7 +401,10 @@ const ViewWrapper = ({
     })
 
     try {
-      const { payload, meta } = await dispatch(accountPayableSave(params))
+      let formData: any = new FormData()
+      formData.append(`Files[0]`, [])
+      formData.append('AccountPayableDetails', JSON.stringify(params));
+      const { payload, meta } = await dispatch(accountPayableSave(formData))
       const dataMessage = payload?.Message
 
       if (meta?.requestStatus === 'fulfilled') {
@@ -463,7 +466,7 @@ const ViewWrapper = ({
     } catch (error) {
       setPostaspaidModal(false)
       onErrorLoader(postSaveAs)
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -490,7 +493,7 @@ const ViewWrapper = ({
             Toast.error(`${payload?.status} : ${payload?.statusText}`)
           }
         } catch (error) {
-          console.log(error)
+          console.error(error)
         }
       } else {
         setEditedValues({
@@ -522,7 +525,7 @@ const ViewWrapper = ({
             Toast.error(`${payload?.status} : ${payload?.statusText}`)
           }
         } catch (error) {
-          console.log(error)
+          console.error(error)
         }
       } else {
         setEditedValues({
@@ -557,7 +560,7 @@ const ViewWrapper = ({
         Toast.error(`${payload?.status} : ${payload?.statusText}`)
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -617,7 +620,7 @@ const ViewWrapper = ({
         Toast.error(`${payload?.status} : ${payload?.statusText}`)
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 

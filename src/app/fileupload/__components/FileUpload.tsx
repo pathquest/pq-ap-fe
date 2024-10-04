@@ -34,7 +34,7 @@ const completed = 3
 const failed = 4
 const exists = 5
 
-const MAX_FILES = 20
+const MAX_FILES = 100
 const MAX_TOTAL_SIZE_MB = 50
 
 const columns: any = [
