@@ -1,9 +1,9 @@
 import ChartFilterIcon from '@/assets/Icons/chart/ChartFilterIcon'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import { setBillApprovalFilterFields, setPaymentApprovalFilterFields } from '@/store/features/billApproval/approvalSlice'
+import { setBillApprovalFilterFields } from '@/store/features/billApproval/approvalSlice'
 import { getSummary } from '@/store/features/dashboard/dashboardSlice'
-import { convertStringsDateToUTC } from '@/utils'
+import { convertStringsDateToUTC, formatDateByMonthYear } from '@/utils'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Loader, Typography } from 'pq-ap-lib'
@@ -11,7 +11,8 @@ import React, { useEffect, useState } from 'react'
 import ProcessTypeDashboardFilter, { processOptions } from '../modal/ProcessTypeDashboardFilter'
 import { setFilterFormFields, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
-import { addMonths, endOfMonth, format, parse } from 'date-fns'
+import { endOfMonth, format } from 'date-fns'
+import { cardDataItems } from '@/data/dashboard'
 
 const Summary: React.FC<any> = ({ LocationOption }) => {
   const { data: session } = useSession()
@@ -24,21 +25,13 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
   const dispatch = useAppDispatch()
   const router = useRouter()
 
-  function formatDateByMonthYear(monthYear: any) {
-    const [month, year] = monthYear.split('/')
-    const formattedDate = `${month}/01/${year}`
-    return formattedDate
-  }
-
   function getMonthNameFromDate(dateString: any) {
     const monthNames = [
       "January", "February", "March", "April", "May",
       "June", "July", "August", "September", "October",
       "November", "December"
     ];
-    const monthIndex = parseInt(dateString.split('/')[0], 10) - 1; // Extract month and convert to zero-based index
-
-    // const monthIndex = parseInt(month, 10) - 1;
+    const monthIndex = parseInt(dateString.split('/')[0], 10) - 1;
     const currentMonth = new Date().getMonth();
 
     if (monthIndex === currentMonth) {
@@ -47,7 +40,6 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
 
     return monthNames[monthIndex];
   }
-
 
   const getSummaryDashboard = (newFilterFields: any) => {
     setIsLoading(true)
@@ -70,26 +62,13 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
       getSummaryDashboard(filterFields)
     }
   }, [CompanyId, LocationOption])
-
-  const updatedCardData = [
-    {
-      // amount: `$${summaryData.TotalAmount ?? 0}`,  
-      amount: `$${formatCurrency(summaryData.TotalAmount)}`,
-      description: 'Total Posted Amount'
-    },
-    {
-      amount: `${summaryData.TotalPostedBills ?? 0}`,
-      description: 'Posted Bills & Adj'
-    },
-    {
-      amount: `${summaryData.TotalBillApprovalPending ?? 0}`,
-      description: 'Pending Bill Approval'
-    },
-    {
-      amount: `${summaryData.TotalPaymentApprovalPending ?? 0}`,
-      description: 'Pending Payment Approval'
-    }
-  ];
+  
+  const updatedCardData = cardDataItems.map(({ amountKey, description, isCurrency }) => ({
+    amount: isCurrency 
+      ? `$${formatCurrency(summaryData[amountKey] ?? 0)}` 
+      : `${summaryData[amountKey] ?? 0}`,
+    description
+  }));
 
   const handleSummaryClick = (description: string) => {
     switch (description) {
@@ -107,7 +86,7 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
           ft_select_users: [],
           ft_vendor: null,
           ft_location: null,
-          ft_overview_status: ['2','3','4','5'],
+          ft_overview_status: ['2', '3', '4', '5'],
           ft_process: filterFields?.ProcessType,
           ft_datepicker: `${startDate} to ${formattedLastDayOfNextMonth}`
         }));
@@ -177,27 +156,26 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
           <ProcessTypeDashboardFilter isFilterOpen={isFilterOpen} locationOption={LocationOption} onClose={handleFilterClose} ChartType="Summary" onSuccessApply={onSuccessApply} />
         </div>
       </div>
-      <div className={`px-4 mb-5 grid grid-cols-4 sm:grid-cols-2 laptop:grid-cols-3 laptopMd:grid-cols-4 lg:grid-cols-4 gap-5`}>
-        {updatedCardData.map((data, index) => (
+      <div className={`px-4 mb-5 grid ${isLoading ? "grid-cols-1" : "grid-cols-4 sm:grid-cols-2 laptop:grid-cols-3 laptopMd:grid-cols-4 lg:grid-cols-4 gap-5"}`}>
+        {isLoading ? <div className='h-[90px] w-full flex justify-center'>
+          <Loader size='sm' helperText />
+        </div>
+          : updatedCardData.map((data, index) => (
             <div
               key={data.amount + index}
               onClick={() => handleSummaryClick(data.description)}
               className={`${data.amount == "0" || data.amount == "$0" ? "cursor-default pointer-events-none" : "cursor-pointer"} w-full cards_content laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 shadow-md border border-lightSilver rounded  bg-white"`}
             >
-              {isLoading ? <div>
-                <Loader size='sm' />
-              </div> : <>
-                <div className="lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-proxima font-semibold tracking-[0.02em]">
-                  {data.amount}
-                </div>
-                <div className='text-base font-proxima laptopMd:mt-1.5 lg:mt-1.5 xl:mt-1.5 hd:mt-2.5 2xl:mt-2.5 3xl:mt-2.5 text-darkCharcoal tracking-[0.02em]'>
-                  {data.description}
-                </div>
-              </>}
-
+              <div className="lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-proxima font-semibold tracking-[0.02em]">
+                {data.amount}
+              </div>
+              <div className='text-base font-proxima laptopMd:mt-1.5 lg:mt-1.5 xl:mt-1.5 hd:mt-2.5 2xl:mt-2.5 3xl:mt-2.5 text-darkCharcoal tracking-[0.02em]'>
+                {data.description}
+              </div>
             </div>
           ))}
       </div>
+
     </>
   )
 }
