@@ -1,9 +1,10 @@
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { insightsCardDataItems } from '@/data/dashboard'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { setBillApprovalFilterFields } from '@/store/features/billApproval/approvalSlice'
 import { setFilterFormFields } from '@/store/features/bills/billSlice'
 import { getInsights } from '@/store/features/dashboard/dashboardSlice'
-import { convertStringsDateToUTC } from '@/utils'
+import { convertStringsDateToUTC, formatDateByMonthYear } from '@/utils'
 import { format, subMonths } from 'date-fns'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -24,12 +25,6 @@ const Insights: React.FC = () => {
     const firstDayOfPreviousMonth = subMonths(new Date(), 1)
     const formattedDate = format(firstDayOfPreviousMonth, 'MM/dd/yyyy')
     const formattedCurrentDate = format(new Date(), 'MM/dd/yyyy')
-
-    function formatDateByMonthYear(monthYear: any) {
-        const [month, year] = monthYear.split('/')
-        const formattedDate = `${month}/01/${year}`
-        return formattedDate
-    }
 
     const getInsightDashboard = (newFilterFields: any) => {
         setIsLoading(true)
@@ -54,28 +49,10 @@ const Insights: React.FC = () => {
         }
     }, [CompanyId])
 
-    const updatedCardData = [
-        {
-            amount: `${insightData.BillPending ?? 0}`,
-            description: 'Pending Bills'
-        },
-        {
-            amount: `${insightData.DuplicateBills ?? 0}`,
-            description: 'Duplicate Bills'
-        },
-        {
-            amount: `${insightData.AssignedBills ?? 0}`,
-            description: 'Assigned Bills'
-        },
-        {
-            amount: `${insightData.PendingApproval ?? 0}`,
-            description: 'Pending Approvals'
-        },
-        {
-            amount: `${insightData.BillPayment ?? 0}`,
-            description: 'Bill Payments'
-        }
-    ];
+    const updatedCardData = insightsCardDataItems.map(({ amountKey, description }) => ({
+        amount: `${insightData[amountKey] ?? 0}`,
+        description
+    }));
 
     const handleInsightClick = (description: string) => {
         switch (description) {

@@ -1,17 +1,20 @@
-import ChartFilterIcon from '@/assets/Icons/chart/ChartFilterIcon'
-import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
-import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import { setBillApprovalFilterFields } from '@/store/features/billApproval/approvalSlice'
-import { getSummary } from '@/store/features/dashboard/dashboardSlice'
-import { convertStringsDateToUTC, formatDateByMonthYear } from '@/utils'
+import React, { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Loader, Typography } from 'pq-ap-lib'
-import React, { useEffect, useState } from 'react'
-import ProcessTypeDashboardFilter, { processOptions } from '../modal/ProcessTypeDashboardFilter'
-import { setFilterFormFields, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
-import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
 import { endOfMonth, format } from 'date-fns'
+
+import ChartFilterIcon from '@/assets/Icons/chart/ChartFilterIcon'
+import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
+
+import { useAppDispatch, useAppSelector } from '@/store/configureStore'
+import { setBillApprovalFilterFields } from '@/store/features/billApproval/approvalSlice'
+import { getSummary } from '@/store/features/dashboard/dashboardSlice'
+import { setFilterFormFields, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
+
+import ProcessTypeDashboardFilter, { processOptions } from '@/app/dashboard/__components/modal/ProcessTypeDashboardFilter'
+import { convertStringsDateToUTC, formatDateByMonthYear } from '@/utils'
 import { cardDataItems } from '@/data/dashboard'
 
 const Summary: React.FC<any> = ({ LocationOption }) => {
@@ -58,7 +61,7 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
   }
 
   useEffect(() => {
-    if (CompanyId) {
+    if (CompanyId && LocationOption.length > 0) {
       getSummaryDashboard(filterFields)
     }
   }, [CompanyId, LocationOption])
@@ -114,17 +117,6 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
               : filterFields?.LocationIds.map(Number),
         }))
         break
-      // case 'Pending Payment Approval':
-      //   dispatch(setPaymentApprovalFilterFields({
-      //     VendorIds: [],
-      //     BankAccountIds: [],
-      //     ApprovalStatusIds: ['0'],
-      //     PaymentMethodIds: [],
-      //     MinAmount: '',
-      //     MaxAmount: ''
-      //   }))
-      //   router.push(`approvals?approvalId=2`)
-      //   break
       default:
         break
     }
