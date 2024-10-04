@@ -10,8 +10,11 @@ import { format } from 'date-fns'
 import DoubleArrowDown from '@/assets/Icons/notification/DoubleArrowDown'
 import DownArrowIcon from '@/assets/Icons/billposting/DownArrowIcon'
 import ChevronDown from '@/components/Common/Dropdown/Icons/ChevronDown'
+import { setIsVisibleSidebar } from '@/store/features/bills/billSlice'
+import { useRouter } from 'next/navigation'
 
 function BillPayment({ vendorOptions, locationOptions, setBillPaymentParams }: any) {
+  const router = useRouter()
   const dispatch = useAppDispatch()
   const [runReport, setRunReport] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -160,7 +163,16 @@ function BillPayment({ vendorOptions, locationOptions, setBillPaymentParams }: a
                             : e.Vendor ?? null}{' '}
                         </label>
                       ),
-                      BillNumber: <Typography>{e.BillNumber ?? null}</Typography>,
+                      BillNumber: <div
+                        className='w-4/5 cursor-pointer'
+                        onClick={() => {
+                          // dispatch(setIsFormDocuments(d.IsFromDocuments))
+                          dispatch(setIsVisibleSidebar(false))
+                          e.Id && router.push(`/bills/view/${e.Id}`)
+                        }}
+                      >
+                        <Typography className='!text-sm text-darkCharcoal !tracking-[0.02em]'>{e.BillNumber ? e.BillNumber : ''}</Typography>
+                      </div>,
                       BillDate: <Typography>{e.BillDate !== null ? format(e.BillDate, 'MM/dd/yyyy') : null}</Typography>,
                       Location: <Typography>{e.Location ?? null}</Typography>,
                       PaymentStatus: <Typography className='!text-sm'>{e.PaymentStatus ?? null}</Typography>,

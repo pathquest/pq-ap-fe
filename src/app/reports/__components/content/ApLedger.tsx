@@ -3,13 +3,16 @@ import ChevronDown from '@/components/Common/Dropdown/Icons/ChevronDown'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import { ApLedgercolumns, SelectRangeReportPeriodByList } from '@/data/reports'
 import { useAppDispatch } from '@/store/configureStore'
+import { setIsVisibleSidebar } from '@/store/features/bills/billSlice'
 import { vendorBalanceDetail } from '@/store/features/reports/reportsSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { format } from 'date-fns'
+import { useRouter } from 'next/navigation'
 import { Button, DataTable, Datepicker, DatepickerRange,BasicTooltip, Loader, MultiSelectChip, Select, Toast, Typography } from 'pq-ap-lib'
 import { useEffect, useState } from 'react'
 
 function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
+  const router = useRouter()
   const dispatch = useAppDispatch()
   const [reportPeriod, setReportPeriod] = useState<string>('')
   const [vendorBillDate, setVendorBillDate] = useState<string>('')
@@ -140,6 +143,16 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
                   (nestedData: any) =>
                     new Object({
                       ...nestedData,
+                      BillNumber: <div
+                      className='w-4/5 cursor-pointer'
+                      onClick={() => {
+                        // dispatch(setIsFormDocuments(d.IsFromDocuments))
+                        dispatch(setIsVisibleSidebar(false))
+                        nestedData.Id && router.push(`/bills/view/${nestedData.Id}`)
+                      }}
+                    >
+                      <Typography className='!text-sm text-darkCharcoal'>{nestedData.BillNumber ? nestedData.BillNumber : ''}</Typography>
+                    </div>,
                       BillDate: (
                         <div className='flex items-center gap-4 font-medium'>
                           <span className='font-proxima !text-sm !tracking-[0.02em]'>
@@ -401,7 +414,7 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
             : null,
       EndDate:
         reportPeriodValue === 8
-          ? dateRangeVal[1]?.trim() === '' 
+          ? dateRangeVal[1]?.trim() === ''
             ? null : convertStringsDateToUTC(dateRangeVal[1]?.trim()) ?? null
           : reportPeriod !== ''
             ? convertStringsDateToUTC(reportPeriod)

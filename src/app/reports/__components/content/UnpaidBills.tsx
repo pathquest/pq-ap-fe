@@ -9,8 +9,11 @@ import { format } from 'date-fns'
 import { Button, DataTable, Datepicker, Loader, MultiSelectChip, Select, Toast, Typography } from 'pq-ap-lib'
 import { useEffect, useState } from 'react'
 import ColumnFilter from '../columnFilter/ColumnFilter'
+import { useRouter } from 'next/navigation'
+import { setIsVisibleSidebar } from '@/store/features/bills/billSlice'
 
 function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: any) {
+  const router = useRouter()
   const dispatch = useAppDispatch()
   const userId = localStorage.getItem('UserId')
 
@@ -205,7 +208,16 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
           ),
         BILLDATE: <Typography>{e.BillDate !== null ? format(e.BillDate, 'MM/dd/yyyy') : null}</Typography>,
         TRANSACTIONTYPE: <Typography>{getProcessLabel(e.TransactionType)}</Typography>,
-        BILLNUMBER: <Typography>{e.BillNumber ?? null}</Typography>,
+        BILLNUMBER: <div
+        className='w-4/5 cursor-pointer'
+        onClick={() => {
+          // dispatch(setIsFormDocuments(d.IsFromDocuments))
+          dispatch(setIsVisibleSidebar(false))
+          e.Id && router.push(`/bills/view/${e.Id}`)
+        }}
+      >
+        <Typography className='!text-sm text-darkCharcoal !tracking-[0.02em]'>{e.BillNumber ? e.BillNumber : ''}</Typography>
+      </div>,
         LOCATION: <Typography>{e.Location ?? null}</Typography>,
         DUEDATE: <Typography>{e.DueDate !== null ? format(e.DueDate, 'MM/dd/yyyy') : null}</Typography>,
         AGINGDAYS: <Typography>{e.AgingDays ?? null}</Typography>,
