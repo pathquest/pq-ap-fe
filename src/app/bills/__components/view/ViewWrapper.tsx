@@ -1,5 +1,6 @@
 import DeleteIcon from '@/assets/Icons/DeleteIcon'
 import ActivityIcon from '@/assets/Icons/billposting/ActivityIcon'
+import CopyIcon from '@/assets/Icons/billposting/CopyIcon'
 import DownArrowIcon from '@/assets/Icons/billposting/DownArrowIcon'
 import EditModeIcon from '@/assets/Icons/billposting/EditModeIcon'
 import FilterIcon from '@/assets/Icons/billposting/FilterIcon'
@@ -10,8 +11,10 @@ import BackIcon from '@/assets/Icons/billposting/accountpayable/BackIcon'
 import LeftArrowIcon from '@/assets/Icons/billposting/accountpayable/LeftArrowIcon'
 import RightArrowIcon from '@/assets/Icons/billposting/accountpayable/RightArrowIcon'
 import ListIcon from '@/assets/Icons/billposting/mode/ListIcon'
+import EditIcon from '@/assets/Icons/notification/EditIcon'
 import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 
+import agent from '@/api/axios'
 import AssignUser from '@/app/bills/__components/AssignUser'
 import BillPostingEditListComponent from '@/app/bills/__components/BillPostingEditListComponent'
 import FilterPopover from '@/app/bills/__components/FilterPopover'
@@ -25,14 +28,19 @@ import DeleteWithReason from '@/components/Modals/DeleteWithReason'
 import { accountPayableLineItemsObj, accountPayableObj, moveToOptions } from '@/data/billPosting'
 import { AssignUserOption } from '@/models/billPosting'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import { accountPayableSave, assignDocumentsToUser, deleteDocument, deleteOverviewDocument, getAssigneeList, processTypeChangeByDocumentId, setFilterFormFields, setIsFormDocuments, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
+import { accountPayableSave, assignDocumentsToUser, deleteDocument, deleteOverviewDocument, getAssigneeList, getVendorHistoryList, processTypeChangeByDocumentId, setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 import { billStatusEditable, getTimeDifference, initialBillPostingFilterFormFields } from '@/utils/billposting'
 import { parseISO } from 'date-fns'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Button, Loader, Select, Toast, BasicTooltip, Typography } from 'pq-ap-lib'
+import { BasicTooltip, Button, Loader, Select, Toast, Typography } from 'pq-ap-lib'
 import { useEffect, useRef, useState } from 'react'
-import EditIcon from '@/assets/Icons/notification/EditIcon'
-import CopyIcon from '@/assets/Icons/billposting/CopyIcon'
+import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import VendorBillHistoryIcon from '@/assets/Icons/billposting/VendorBillHistoryIcon'
+import GlobalSearch from '@/components/Common/GlobalSearch/Icons/GlobalSearch'
+import CrossIcon from '@/assets/Icons/CrossIcon'
+import ViewModeIcon from '@/assets/Icons/billposting/ViewModeIcon'
+import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
+import { formatDate } from '@/components/Common/Functions/FormatDate'
 
 interface ViewWrapperProps {
   children?: React.ReactNode
@@ -140,6 +148,8 @@ const ViewWrapper = ({
   const { selectedProcessTypeInList } = useAppSelector((state) => state.bill)
   const userId = localStorage.getItem('UserId')
   const billStatus = documentDetailByIdData?.Status
+  const billStatusName = documentDetailByIdData?.StatusName
+  const vendorId = documentDetailByIdData.VendorId ?? 0
 
   const [loader, setLoader] = useState<any>({
     postAsPaid: false,
@@ -147,9 +157,14 @@ const ViewWrapper = ({
     post: false,
   })
 
+  const listRef = useRef<any>(null)
+  const [searchValue, setSearchValue] = useState<string>('')
   const [isCopyBillModalOpen, setIsCopyBillModalOpen] = useState<boolean>(false)
   const [copyBillId, setCopyBillId] = useState<number>(0)
   const [processType, setProcessType] = useState<string>('')
+  const [vendorHistoryList, setVendorHistoryList] = useState<any>([])
+  const [isVendorHistoryLoading, setIsVendorHistoryLoading] = useState<boolean>(false)
+  const [isVendorBillHistoryListOpen, setIsVendorBillHistoryListOpen] = useState<boolean>(false)
 
   const fetchAssigneData = async () => {
     const params = {
@@ -624,6 +639,8 @@ const ViewWrapper = ({
     setIsAssigneeModal(false)
     setIsCopyBillModalOpen(false)
     setCopyBillId(0)
+    setProcessType('')
+    setIsVendorBillHistoryListOpen(true)
   }
 
   const handleCancel = () => {
@@ -713,9 +730,69 @@ const ViewWrapper = ({
   }, [checkActivityStatus])
 
 
-  const handleCopyBillDetails = (id: any, processType: any) => {
-    router.push(`/bills/create/${processType}`)
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (listRef.current && !listRef.current?.contains(event.target as Node)) {
+        setIsVendorBillHistoryListOpen(false)
+      }
+    }
+    window.addEventListener('mousedown', handleOutsideClick)
+    return () => {
+      window.removeEventListener('mousedown', handleOutsideClick)
+    }
+  }, [isVendorBillHistoryListOpen])
+
+  const onChangeSearchField = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value)
   }
+
+  const handleCopyBillDetails = async (id: any) => {
+    setIsCopyBillModalOpen(false)
+    router.push(`/bills/edit/${activeBill}?module=bills`)
+    localStorage.setItem('CopyBillViewId', id)
+  }
+
+  const handleCopyBillClick = (value: any) => {
+    setCopyBillId(value)
+    setIsCopyBillModalOpen(true)
+  }
+
+  const getVendorHistoryBillList = (searchValues: any) => {
+    setIsVendorHistoryLoading(true)
+    setVendorHistoryList([])
+    const params = {
+      VendorId: vendorId ?? 0,
+      // VendorId: 20530,
+      SearchKeyword: searchValues,
+      ProcessType: 1,
+      PageNumber: 1,
+      PageSize: 10
+    }
+    performApiAction(dispatch, getVendorHistoryList, params, (responseData: any) => {
+      setVendorHistoryList(responseData.List)
+      setIsVendorHistoryLoading(false)
+    }, () => {
+      setIsVendorHistoryLoading(false)
+    })
+  }
+
+  useEffect(() => {
+    getVendorHistoryBillList(null)
+  }, [documentDetailByIdData])
+
+  const handleKeyDown = (e: any) => {
+    if (e.key === 'Enter') {
+      if (searchValue && searchValue.trim() !== "") {
+        getVendorHistoryBillList(searchValue)
+      }
+    }
+  }
+
+  const handleRemoveClick = () => {
+    setSearchValue('')
+    getVendorHistoryBillList(null)
+  }
+
 
   return (
     <Wrapper>
@@ -799,7 +876,7 @@ const ViewWrapper = ({
           className={`${isVisibleLeftSidebar ? 'col-span-8 laptop:col-span-9' : 'col-span-12'
             } h-[calc(100vh_-_65px)] overflow-y-auto`}
         >
-          <div className={`!h-[66px] sticky top-0 z-[5] flex w-full flex-row justify-between bg-[#F4F4F4] px-5`}>
+          <div className={`!h-[66px] sticky top-0 ${isVendorBillHistoryListOpen ? "z-[7]" : "z-[5]"} flex w-full flex-row justify-between bg-[#F4F4F4] px-5`}>
             <div className='flex items-center justify-center'>
               {!isVisibleLeftSidebar && (
                 <span
@@ -875,18 +952,75 @@ const ViewWrapper = ({
                 </>
               )}
 
-              <li className='h-full flex items-center'
-                onClick={() => {
-                  setCopyBillId(249176)
-                  setProcessType("1")
-                  setIsCopyBillModalOpen(true)
-                }}
+              <li className={`${(billStatusName == "New" || billStatusName == "Drafted" || billStatusName == "Failed") ? "block" : "hidden"} h-full flex items-center relative`}
+                onClick={() => setIsVendorBillHistoryListOpen(true)}
                 tabIndex={0}
-                onKeyDown={(e) => (e.key === 'Enter') && setIsCopyBillModalOpen(true)}
+                onKeyDown={(e) => (e.key === 'Enter') && setIsVendorBillHistoryListOpen(true)}
               >
-                <BasicTooltip position='bottom' content='Copy Bill' className='!font-proxima !px-0 !text-[14px]'>
-                  <CopyIcon />
+                <BasicTooltip position='bottom' content='Vendor Bill History' className='!font-proxima !px-0 !text-[14px]'>
+                  <VendorBillHistoryIcon />
                 </BasicTooltip>
+
+                <div ref={listRef} className={`${isVendorBillHistoryListOpen ? "block" : "hidden"} w-[535px] max-h-[296px] border border-lightSilver rounded absolute top-12 right-0 !z-[7] bg-pureWhite`}>
+                  <div className='w-full h-[56px] p-2.5 border-b border-lightSilver'>
+                    <div className='cursor-pointer w-full flex items-center h-9 rounded-full bg-whiteSmoke border border-lightSilver hover:border-primary'>
+                      <div className='mx-[15px] cursor-pointer'>
+                        <GlobalSearch />
+                      </div>
+                      <div className='cursor-pointer w-full'>
+                        <input
+                          tabIndex={0}
+                          type='text'
+                          value={searchValue}
+                          className='searchPlaceholder bg-transparent w-full font-proxima text-sm text-darkCharcoal placeholder:text-slatyGrey focus:outline-none'
+                          placeholder='Search'
+                          onChange={onChangeSearchField}
+                          onKeyDown={(e) => handleKeyDown(e)}
+                        />
+                      </div>
+                      <div className='mx-[15px] cursor-pointer'
+                        onClick={() => handleRemoveClick()}>
+                        <CrossIcon />
+                      </div>
+                    </div>
+                  </div>
+                  <div className='w-full h-[calc(296px-57px)] overflow-y-auto custom-scroll'>
+                    {vendorHistoryList.length == 0
+                      ? isVendorHistoryLoading
+                        ? <div className='flex h-full w-full items-center justify-center'>
+                          <Loader size='sm' />
+                        </div>
+                        : <div className='flex h-[40px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b'>
+                          No records available at the moment.
+                        </div>
+                      : <table className="w-full">
+                        <tbody>
+                          {vendorHistoryList.map((data: any, index: number) => (
+                            <tr key={data.BillNumber + index} className={`h-[40px] border-b border-lightSilver relative`}>
+                              <td className="px-5 text-sm text-darkCharcoal tracking-[0.02em] font-proxima text-start">{data.BillNumber}</td><td className='absolute top-2 text-lightSilver h-5'>|</td>
+                              <td className="px-5 text-sm text-darkCharcoal tracking-[0.02em] font-proxima text-center">{formatDate(data.BillDate)}</td><td className='absolute top-2 text-lightSilver h-5'>|</td>
+                              <td className="px-5 text-sm font-bold font-proxima text-end tracking-[0.02em]">${formatCurrency(data.BillAmount)}</td><td className='absolute top-2 text-lightSilver h-5'>|</td>
+                              <td className="px-5 text-sm text-center pt-2">
+                                <button
+                                  onClick={() => {
+                                    dispatch(setIsVisibleSidebar(false))
+                                    router.push(`/bills/view/${data.Id}`)
+                                  }}
+                                >
+                                  <ViewModeIcon height={'19'} width={'19'} />
+                                </button>
+                              </td><td className='absolute top-2 text-lightSilver h-5'>|</td>
+                              <td className="px-5 text-sm pt-2 text-center">
+                                <button onClick={() => handleCopyBillClick(data.Id)}>
+                                  <CopyIcon />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>}
+                  </div>
+                </div>
               </li>
 
               <li className='h-full flex items-center'
@@ -1214,7 +1348,7 @@ const ViewWrapper = ({
         content={`Are you sure you want to copy this bill?`}
         isModalOpen={isCopyBillModalOpen}
         modalClose={modalClose}
-        handleSubmit={() => handleCopyBillDetails(copyBillId, processType)}
+        handleSubmit={() => handleCopyBillDetails(copyBillId)}
         colorVariantNo='btn-outline-primary'
         colorVariantYes='btn-primary'
       />}

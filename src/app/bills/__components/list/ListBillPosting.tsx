@@ -519,6 +519,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
   }, [duplicateBillCount]);
 
   const fetchBillsData = async (pageIndex?: number) => {
+    localStorage.removeItem('CopyBillViewId')
     if (pageIndex === 1) {
       setBillLists([])
       setItemsLoaded(0)
@@ -1438,7 +1439,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                 {d.Attachments?.length > 0 && (
                   <div className=''>
                     <div className='flex cursor-pointer justify-end' onClick={() => handleOpenAttachFile(d.Id)}>
-                      <div className='absolute -right-2 -top-3'>
+                      <div className='absolute -right-[11px] -top-[11px]'>
                         <Badge badgetype='error' variant='dot' text={d.Attachments.length.toString()} />
                       </div>
                       <AttachIcon />
@@ -2133,9 +2134,8 @@ const ListBillPosting = ({ statusOptions }: any) => {
   }
 
   const handleCopyBillDetails = (id: any) => {
-    router.push(`/bills/create/1/${id}`)
+    router.push(`/bills/create/1/${id}?module=billsOverview`)
   }
-
 
   return (
     <>

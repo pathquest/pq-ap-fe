@@ -152,7 +152,6 @@ const EditWrapper = ({
   const dropdownMoveToRef = useRef<HTMLDivElement>(null)
   const dropdownAssignUserRef = useRef<HTMLDivElement>(null)
   const [isVisibleActivities, setIsVisibleActivities] = useState<boolean>(false)
-  const [isVendorBillHistoryListOpen, setIsVendorBillHistoryListOpen] = useState<boolean>(false)
   const [isVisibleRemoveConfirm, setIsVisibleRemoveConfirm] = useState<boolean>(false)
   const [isOpenMoveToDropDown, setIsOpenMoveToDropDown] = useState<boolean>(false)
   const [isOpenAssignUserDropDown, setIsOpenAssignUserDropDown] = useState<boolean>(false)
@@ -172,7 +171,10 @@ const EditWrapper = ({
   const CompanyId = Number(selectedCompany?.value)
   const { selectedProcessTypeInList } = useAppSelector((state) => state.bill)
   const userId = localStorage.getItem('UserId')
+  const CopyBillViewId = localStorage.getItem('CopyBillViewId')
   const billStatus = documentDetailByIdData?.Status
+  const billStatusName = documentDetailByIdData?.StatusName
+  const vendorId = documentDetailByIdData.VendorId ?? 0
 
   const listRef = useRef<any>(null)
   const [searchValue, setSearchValue] = useState<string>('')
@@ -181,6 +183,7 @@ const EditWrapper = ({
   const [processType, setProcessType] = useState<string>('')
   const [vendorHistoryList, setVendorHistoryList] = useState<any>([])
   const [isVendorHistoryLoading, setIsVendorHistoryLoading] = useState<boolean>(false)
+  const [isVendorBillHistoryListOpen, setIsVendorBillHistoryListOpen] = useState<boolean>(false)
 
   const fetchAssigneData = async () => {
     const params = {
@@ -635,7 +638,7 @@ const EditWrapper = ({
       try {
         const response = await saveAccountPayable(accountPayableParams, postSaveAs)
         module == "billsToPay" ? router.push('/payments/billtopay') : "";
-        setUpdatedDocumentDetails(null)
+        localStorage.removeItem('CopyBillViewId')
         return response
       } catch (error) {
         onErrorLoader(postSaveAs)
@@ -646,7 +649,7 @@ const EditWrapper = ({
       try {
         const response = await saveAccountPayable(accountPayableParams, postSaveAs)
         module == "billsToPay" ? router.push('/payments/billtopay') : "";
-        setUpdatedDocumentDetails(null)
+        localStorage.removeItem('CopyBillViewId')
         return response
       } catch (error) {
         onErrorLoader(postSaveAs)
@@ -731,7 +734,6 @@ const EditWrapper = ({
     setIsCopyBillModalOpen(false)
     setCopyBillId(0)
     setProcessType('')
-    setUpdatedDocumentDetails(null)
     setIsVendorBillHistoryListOpen(true)
   }
 
@@ -791,10 +793,7 @@ const EditWrapper = ({
     setSearchValue(e.target.value)
   }
 
-  const [updatedDocumentDetails, setUpdatedDocumentDetails] = useState<any>(null);
-
   const handleCopyBillDetails = async (id: any) => {
-    // router.push(`/bills/edit/${id}?module=bills/isVendorHistory=true`)
     setIsCopyBillModalOpen(false)
 
     try {
@@ -806,7 +805,6 @@ const EditWrapper = ({
 
       if (response?.ResponseStatus === 'Success') {
         const responseData = response?.ResponseData
-
         const currentDate = new Date().toISOString().split('T')[0] + 'T00:00:00';
         // const currentDate = formatDate(new Date() + "");
 
@@ -819,7 +817,6 @@ const EditWrapper = ({
           Attachments: []
         };
         copyBillData(updatedData)
-        setUpdatedDocumentDetails(updatedData);
       }
     } catch (error) {
       Toast.error('Something Went Wrong!')
@@ -835,7 +832,8 @@ const EditWrapper = ({
     setIsVendorHistoryLoading(true)
     setVendorHistoryList([])
     const params = {
-      VendorId: 20530,
+      VendorId: vendorId ?? 0,
+      // VendorId: 20530,
       SearchKeyword: searchValues,
       ProcessType: 1,
       PageNumber: 1,
@@ -850,10 +848,8 @@ const EditWrapper = ({
   }
 
   useEffect(() => {
-    if (CompanyId) {
-      getVendorHistoryBillList(null)
-    }
-  }, [CompanyId])
+    getVendorHistoryBillList(null)
+  }, [documentDetailByIdData])
 
   const handleKeyDown = (e: any) => {
     if (e.key === 'Enter') {
@@ -950,7 +946,7 @@ const EditWrapper = ({
           ref={rightBoxRef}
           className={`${isVisibleLeftSidebar ? 'col-span-9' : 'col-span-12'} h-[calc(100vh_-_65px)] overflow-y-auto`}
         >
-          <div className={`!h-[66px] sticky top-0 z-[5] flex w-full flex-row justify-between bg-lightGray px-5`}>
+          <div className={`!h-[66px] sticky top-0 ${isVendorBillHistoryListOpen ? "z-[7]" : "z-[5]"} flex w-full flex-row justify-between bg-lightGray px-5`}>
             <div className='flex items-center justify-center '>
               {!isVisibleLeftSidebar && (
                 <span className='cursor-pointer rounded-full bg-white p-1.5' onClick={() => {
@@ -991,7 +987,7 @@ const EditWrapper = ({
                   </BasicTooltip>
                 </li>
               )}
-              <li className='h-full flex items-center relative'
+              <li className={`${(billStatusName == "New" || billStatusName == "Drafted" || billStatusName == "Failed") ? "block" : "hidden"} h-full flex items-center relative`}
                 onClick={() => setIsVendorBillHistoryListOpen(true)}
                 tabIndex={0}
                 onKeyDown={(e) => (e.key === 'Enter') && setIsVendorBillHistoryListOpen(true)}
@@ -1000,7 +996,7 @@ const EditWrapper = ({
                   <VendorBillHistoryIcon />
                 </BasicTooltip>
 
-                <div ref={listRef} className={`${isVendorBillHistoryListOpen ? "block" : "hidden"} w-[535px] max-h-[296px] border border-lightSilver rounded absolute top-12 right-0 z-[7] bg-pureWhite`}>
+                <div ref={listRef} className={`${isVendorBillHistoryListOpen ? "block" : "hidden"} w-[535px] max-h-[296px] border border-lightSilver rounded absolute top-12 right-0 !z-[7] bg-pureWhite`}>
                   <div className='w-full h-[56px] p-2.5 border-b border-lightSilver'>
                     <div className='cursor-pointer w-full flex items-center h-9 rounded-full bg-whiteSmoke border border-lightSilver hover:border-primary'>
                       <div className='mx-[15px] cursor-pointer'>

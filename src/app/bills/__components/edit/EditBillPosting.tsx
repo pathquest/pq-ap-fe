@@ -163,8 +163,6 @@ const EditBillPosting = ({ processtype }: any) => {
           generateLinetItemFieldsErrorObj,
           vendorOptions
         )
-        console.log("🚀 ~ getCurrentBillDetails ~ newLineItems:", newLineItems)
-        console.log("🚀 ~ getCurrentBillDetails ~ updatedDataObj:", updatedDataObj)
 
         if (newLineItems.length === 0) {
           setMainFieldAmount(responseData?.Amount)
@@ -1070,7 +1068,7 @@ const EditBillPosting = ({ processtype }: any) => {
     }
   }
 
-  const copyBillsDetails = (billData: any) => {
+  const copyBillsDetails = async (billData: any) => {
     setMainFieldAmount(billData?.Amount)
 
     const { keyValueMainFieldObj, keyValueLineItemFieldObj } = returnKeyValueObjForFormFields(
