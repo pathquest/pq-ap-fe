@@ -121,7 +121,7 @@ import {
 } from '@/models/glAccountMaster'
 import { GetSearchHistoryOptions, SaveSearchHistoryOptions, SearchResultOptions } from '@/models/global'
 import { GetEmailTemplate, ReadDeleteAllNotificationProps, SaveNotificationMatrix, SaveSummaryData, UpdateSummaryStatus } from '@/models/notification'
-import { ApproveRejectCheckOptions, DeactivateBankAccountOptions, GetAllBankAccountOptions, SaveBuyerBankOption, SaveCheckMicroDepositOptions, SavePaymentMethodOptions, UpdateBuyerBankOptions, UpdatePaymentMethodOptions } from '@/models/paymentSetup'
+import { ApproveRejectCheckOptions, DeactivateBankAccountOptions, GetAllBankAccountOptions, PreviewCheckImageOptions, SaveBuyerBankOption, SaveCheckMicroDepositOptions, SavePaymentMethodOptions, UpdateBuyerBankOptions, UpdatePaymentMethodOptions } from '@/models/paymentSetup'
 import { GetPaymentStatusColumnMappingOptions, PaymentStatusListOptions, SavePaymentStatusColumnMappingOptions, SetCancelPaymentOptions } from '@/models/paymentStatus'
 import { GLAccountOptions, ProductServiceGetListOptions } from '@/models/product&ServiceMaster'
 import {
@@ -579,6 +579,7 @@ const PaymentSetup = {
   saveCheckMicroDeposit: (data: SaveCheckMicroDepositOptions) =>
     requests.post(`${API_BILLSTOPAY}/cpx/addcheckmicrodeposit`, data),
   approveRejectCheck: (data: ApproveRejectCheckOptions) => requests.post(`${API_BILLSTOPAY}/cpx/approverejectcheck`, data),
+  getPreviewCheckImage: (data: PreviewCheckImageOptions) => requests.post(`${API_BILLSTOPAY}/cpx/getcheckimage`, data),
 }
 
 //Workflow Automation

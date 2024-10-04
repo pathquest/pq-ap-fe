@@ -334,12 +334,16 @@ const MultipleVendorMultiplePaymentDetailsModal: React.FC<ActionsProps> = ({
     setManualAvailedCreditAmount(totalCreditAmount)
     setManualAmountToPay(parseFloat(Number(totalManualAmount).toFixed(2)))
 
-    if (totalManualAmount == totalAmountToPay) {
-      setIsPartialPaymentSelected(false)
-      setIsFullPaymentSelected(true)
+    const noBankAccountProvided = Object.values(paymentMethodDetails).every(
+      (detail: any) => !detail.BankAccount
+    );
+
+    if (totalManualAmount === totalAmountToPay && noBankAccountProvided) {
+      setIsPartialPaymentSelected(false);
+      setIsFullPaymentSelected(true);
     } else {
-      setIsFullPaymentSelected(false)
-      setIsPartialPaymentSelected(true)
+      setIsFullPaymentSelected(false);
+      setIsPartialPaymentSelected(true);
     }
   }
 
