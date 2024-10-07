@@ -326,7 +326,6 @@ const ListAPFieldMapping: React.FC = () => {
           FieldList: linedropFields
         },
       }
-      console.log("params", params);
       
       saveSecondaryFieldMapping()
       await performApiAction(
@@ -579,7 +578,7 @@ const ListAPFieldMapping: React.FC = () => {
               )
             )
           }
-          setIsEditOpen(droppingField.IsSystemDefined && droppingField.Type == 1 ? true : false)
+          setIsEditOpen(!droppingField.IsSystemDefined && droppingField.Type == 1 ? true : false)
         }
       }
       setFieldType(droppingField.IsSystemDefined)
@@ -588,14 +587,14 @@ const ListAPFieldMapping: React.FC = () => {
     }
 
     const LineItemFieldDrop = (id: number) => {
-      const dropdownItem = dropdownData.map((dropdown: any) => dropdown.items.filter((item: any) => item.Id === id))
+      const dropdownItem = dropdownData.map((dropdown: any) => dropdown.items.filter((item: any) => item?.Id === id))
       const droppingFields = dropdownItem.filter((item: any) => item.length > 0)[
         dropdownItem.filter((item: any) => item.length > 0).length - 1
       ]
       const droppingField = droppingFields.length > 0 ? droppingFields[0] : {}
 
       if (droppingField) {
-        if (!linedropFields.some((field: any) => field.Id === droppingField.Id && field.IsCustom === droppingField.IsCustom)) {
+        if (!linedropFields.some((field: any) => field?.Id === droppingField?.Id && field?.IsCustom === droppingField?.IsCustom)) {
           setLineDropFields([
             ...linedropFields,
             {
@@ -637,7 +636,7 @@ const ListAPFieldMapping: React.FC = () => {
             )
           }
 
-          setIsEditOpen(droppingField.IsSystemDefined && droppingField.Type == 2 ? true : false)
+          setIsEditOpen(!droppingField.IsSystemDefined && droppingField.Type == 2 ? true : false)
         }
       }
       setFieldType(droppingField.IsSystemDefined)
@@ -649,12 +648,12 @@ const ListAPFieldMapping: React.FC = () => {
       <li
         ref={(node) => ref(drop(node))}
         style={{ backgroundColor: isOver ? 'lightblue' : 'transparent' }}
-        className={`flex justify-between p-2.5 ${item.Type === 1 && (item.FieldType === 'file' || item.FieldType === 'checkbox' || item.FieldType === 'radio') ? 'w-full' : (item.Type === 2 && item.FieldType === 'checkbox') || item.Type === 1 ? 'w-1/2' : 'w-1/4'}`}
+        className={`flex justify-between p-2.5 ${item?.Type === 1 && (item?.FieldType === 'file' || item?.FieldType === 'checkbox' || item?.FieldType === 'radio') ? 'w-full' : (item?.Type === 2 && item?.FieldType === 'checkbox') || item?.Type === 1 ? 'w-1/2' : 'w-1/4'}`}
       >
-        <div className='w-full' onMouseEnter={() => setHoveredItemId(`${item.Id}`)} onMouseLeave={() => setHoveredItemId(null)}>
+        <div className='w-full' onMouseEnter={() => setHoveredItemId(`${item?.Id}`)} onMouseLeave={() => setHoveredItemId(null)}>
           <div className='relative'>
             <>
-              {item.FieldType === text && (
+              {item?.FieldType === text && (
                 <div className='pointer-events-none w-full'>
                   <Text
                     id={item.Id}
@@ -670,7 +669,7 @@ const ListAPFieldMapping: React.FC = () => {
                   />
                 </div>
               )}
-              {item.FieldType === dropdown && (
+              {item?.FieldType === dropdown && (
                 <div className={`${item.IsSystemDefined && 'pointer-events-none'} w-full`}>
                   <Select
                     id={item.Id}
@@ -687,12 +686,12 @@ const ListAPFieldMapping: React.FC = () => {
                   />
                 </div>
               )}
-              {item.FieldType === checkbox && (
+              {item?.FieldType === checkbox && (
                 <div className='pointer-events-none w-full'>
                   <CheckBox id={item.Id} name={item.Name} label={item.Label} className='pointer-events-none !mr-10 !text-sm !tracking-[0.02em] !text-darkCharcoal' />
                 </div>
               )}
-              {item.FieldType === radio && (
+              {item?.FieldType === radio && (
                 <div className='pointer-events-none'>
                   <div className='mb-2'>
                     <Typography className='!text-slatyGrey'>{item.Label}</Typography>
@@ -713,7 +712,7 @@ const ListAPFieldMapping: React.FC = () => {
                   </div>
                 </div>
               )}
-              {item.FieldType === date && (
+              {item?.FieldType === date && (
                 <div className='pointer-events-none w-full'>
                   <Datepicker
                     id={item.Id}
@@ -729,7 +728,7 @@ const ListAPFieldMapping: React.FC = () => {
                   />
                 </div>
               )}
-              {item.FieldType === file && (
+              {item?.FieldType === file && (
                 <div className='w-full'>
                   <div className='mb-2'>
                     <Typography className='!text-slatyGrey'>{item.Label}</Typography>
@@ -896,7 +895,7 @@ const ListAPFieldMapping: React.FC = () => {
                                 >
                                   <div className='pt-[13px] !text-sm !text-darkCharcoal !tracking-[0.02em]'>
                                     {data.items.map((item: any) => (
-                                      <DraggableField key={item.Id} item={item} />
+                                      <DraggableField key={item?.Id} item={item} />
                                     ))}
                                   </div>
                                 </ul>
@@ -922,7 +921,7 @@ const ListAPFieldMapping: React.FC = () => {
                       {/* Main Drop fields*/}
                       <ul className={`flex h-[97%] flex-wrap items-end overflow-y-scroll`}>
                         {maindropFields.map((item: any, index: number) => (
-                          <DropableField key={item.Id} item={item} index={index} moveField={moveMainField} />
+                          <DropableField key={item?.Id} item={item} index={index} moveField={moveMainField} />
                         ))}
                       </ul>
                     </div>
@@ -938,7 +937,7 @@ const ListAPFieldMapping: React.FC = () => {
                       {/* Line Drop fields*/}
                       <ul className='flex flex-wrap items-end'>
                         {linedropFields.map((item: any, index: number) => (
-                          <DropableField key={item.Id} item={item} index={index} moveField={moveLineItemField} />
+                          <DropableField key={item?.Id} item={item} index={index} moveField={moveLineItemField} />
                         ))}
                       </ul>
                     </div>
