@@ -186,14 +186,14 @@ const EditBillPosting = ({ processtype }: any) => {
               ...lineItemsFieldsDataObj,
               Index: 1,
               amount: responseData?.Amount ?? 0,
-              ...(Object.keys(IsFindLocation).length > 0 ? { [IsFindLocation.key]: responseData?.LocationId.toString() ?? 0 } : {}),
+              ...((IsFindLocation && Object.keys(IsFindLocation)?.length > 0) ? { [IsFindLocation?.key]: responseData?.LocationId?.toString() ?? 0 } : {}),
             },
           ])
           await setHasLineItemFieldLibraryErrors([
             {
               ...generateLinetItemFieldsErrorObj,
               amount: responseData?.Amount ? true : false,
-              ...(Object.keys(IsFindLocation).length > 0 ? { [IsFindLocation.key]: responseData?.LocationId ? true : false } : {}),
+              ...((IsFindLocation && Object.keys(IsFindLocation)?.length > 0) ? { [IsFindLocation?.key]: responseData?.LocationId ? true : false } : {}),
             }
           ])
         } else {
