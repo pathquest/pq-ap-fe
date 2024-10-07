@@ -83,6 +83,7 @@ import {
   CompanyIdDropDown,
   ConncetSageCompany,
   ConncetSageUser,
+  GetManageConfigurationOptions,
   PerformActions,
   QbConncet,
   ReconncetSageCompany,
@@ -184,10 +185,10 @@ const API_DASHBOARD = process.env.API_DASHBOARD
 const API_CLOUD = process.env.API_CLOUD
 const API_REALTIMENOTIFICATION = process.env.REALTIME_NOTIFICATION
 
-const responseBody = (response: AxiosResponse) => response.data
-let cachedSession = null;
+const responseBody = (response: AxiosResponse) => response.data;
+let cachedSession:any = null;
 let sessionPromise: any = null;
-
+ 
 const fetchSession = async () => {
   if (!sessionPromise) {
     sessionPromise = (async () => {
@@ -199,62 +200,57 @@ const fetchSession = async () => {
         }
         return cachedSession;
       } finally {
-        sessionPromise = null;
+        sessionPromise = null; // Reset sessionPromise only after the session has been fetched
       }
     })();
   }
   return sessionPromise;
 };
-
+ 
 export const invalidateSessionCache = () => {
   cachedSession = null;
 };
-
+ 
 axios.interceptors.request.use(
   async (config) => {
-    const session = await fetchSession();
-
-    if (session && 'user' in session) {
-      config.headers.Authorization = `bearer ${session.user.access_token}`;
-      config.headers.CompanyId = session.user.CompanyId;
+    if (!cachedSession) {
+      const session = await fetchSession();
+      cachedSession = session;
+    }
+ 
+    if (cachedSession && 'user' in cachedSession) {
+      config.headers.Authorization = `bearer ${cachedSession.user.access_token}`;
+      config.headers.CompanyId = cachedSession.user.CompanyId;
     }
     return config;
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      // window.location.href = '/signin';
       return Promise.reject('Unauthorized');
     }
     return Promise.reject(error);
   }
 );
-
+ 
 axios.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   async (error) => {
     if (error.response.status === 401) {
-      cachedSession = null; // Clear cached session on 401 error
-
-      let session: any;
-
-      if (typeof getSession === 'function') {
-        session = await getSession();
-      } else {
-        session = await auth();
+      cachedSession = null; // Invalidate session on 401 error
+ 
+      try {
+        const session = await fetchSession();
+        cachedSession = session;
+ 
+        // Retry the original request with the new session
+        error.config.headers.Authorization = `bearer ${session.user.access_token}`;
+        error.config.headers.CompanyId = session.user.CompanyId;
+        return axios(error.config);
+      } catch (sessionError) {
+        return Promise.reject(sessionError);
       }
-
-      // if (!session) {
-      //   return redirect(`${ssoUrl}/signin`);
-      // }
-
-      cachedSession = session; // Cache the new session
-
-      // Retry the request with the new session
-      return axios(error.config);
     }
-
+ 
     return Promise.reject(error);
   }
 );
@@ -326,6 +322,8 @@ const Company = {
   sageCompanyConnect: (data: ConncetSageCompany) => requests.post(`${API_MANAGE}/company/getentitylist`, data),
   sageCompanyReconnect: (data: ReconncetSageCompany) => requests.post(`${API_MANAGE}/company/connectintacctcompany`, data),
   performCompanyActions: (data: PerformActions) => requests.post(`${API_MANAGE}/company/action`, data),
+  saveManageConfiguration: (data: any) => requests.post(`${API_MANAGE}/company/savemanageconfig`, data),
+  getManageConfiguration: (data: GetManageConfigurationOptions) => requests.get(`${API_MANAGE}/company/getmanageconfig?companyId=${data.CompanyId}`),
   // country,state and city api we take it from user
 
   // below api use in manage user
@@ -484,7 +482,7 @@ const Bill = {
   mergeDocuments: (data: MergeDocumentOptionsProps) => requests.post(`${API_FILEUPLOAD}/document/mergepdf`, data),
   splitDocuments: (data: SplitDocumentOptions) => requests.post(`${API_FILEUPLOAD}/document/splitpdf`, data),
   // getocrDocument: () => requests.get(`${API_FILEUPLOAD}/indexing/getocrDocument`),
-  accountPayableSave: (data: any) => requests.post(`${API_FILEUPLOAD}/accountpayable/save`, data),
+  accountPayableSave: (data: any) => requests.postForm(`${API_FILEUPLOAD}/accountpayable/save`, data),
   getColumnMappingList: (data: GetColumnMappingListOptionsProps) =>
     requests.post(`${API_FILEUPLOAD}/document/getcolumnmappinglist`, data),
   getColumnMappingOverviewList: (data: GetColumnMappingListOptionsProps) =>
@@ -717,7 +715,7 @@ const APIs = {
     requests.post(`${API_FILEUPLOAD}/documenthistory/addattachments`, data),
   handleFileHistoryRetry: (data: HandleHistoryDocumentRetryProps) =>
     requests.post(`${API_FILEUPLOAD}/documenthistory/sendforocr`, data),
-  accountPayableSave: (data: any) => requests.post(`${API_FILEUPLOAD}/accountpayable/save`, data),
+  accountPayableSave: (data: any) => requests.postForm(`${API_FILEUPLOAD}/accountpayable/save`, data),
   uploadAttachment: (data: any) => requests.postForm(`${API_FILEUPLOAD}/document/uploadattachments`, data),
   getDocumentHistoryDetails: (data: GetDocumentByIdOptionsProps) =>
     requests.post(`${API_FILEUPLOAD}/documenthistory/getdetails`, data),
