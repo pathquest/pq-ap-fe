@@ -1,5 +1,5 @@
 import agent from '@/api/axios'
-import { ApproveRejectCheckOptions, DeactivateBankAccountOptions, GetAllBankAccountOptions, SaveBuyerBankOption, SaveCheckMicroDepositOptions, SaveCheckPaymentMethodOptions, SavePaymentMethodOptions, UpdateBuyerBankOptions, UpdatePaymentMethodOptions } from '@/models/paymentSetup'
+import { ApproveRejectCheckOptions, DeactivateBankAccountOptions, GetAllBankAccountOptions, PreviewCheckImageOptions, SaveBuyerBankOption, SaveCheckMicroDepositOptions, SaveCheckPaymentMethodOptions, SavePaymentMethodOptions, UpdateBuyerBankOptions, UpdatePaymentMethodOptions } from '@/models/paymentSetup'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 interface ProfileState {
@@ -103,6 +103,14 @@ export const saveCheckMicroDeposit = createAsyncThunk('PaymentSetup/saveCheckMic
 export const approveRejectCheck = createAsyncThunk('PaymentSetup/approveRejectCheck', async (data: ApproveRejectCheckOptions, thunkAPI) => {
   try {
     return await agent.PaymentSetup.approveRejectCheck(data)
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue({ error: error.data })
+  }
+})
+
+export const getPreviewCheckImage = createAsyncThunk('PaymentSetup/getPreviewCheckImage', async (data: PreviewCheckImageOptions, thunkAPI) => {
+  try {
+    return await agent.PaymentSetup.getPreviewCheckImage(data)
   } catch (error: any) {
     return thunkAPI.rejectWithValue({ error: error.data })
   }
