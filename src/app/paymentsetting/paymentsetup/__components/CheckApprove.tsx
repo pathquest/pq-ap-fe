@@ -5,8 +5,6 @@ import { useAppDispatch } from '@/store/configureStore'
 import { approveRejectCheck, getPreviewCheckImage } from '@/store/features/paymentsetting/paymentSetupSlice'
 import { Button, Close, Loader, Modal, ModalAction, ModalContent, ModalTitle, Textarea, Toast } from 'pq-ap-lib'
 import React, { useEffect, useState } from 'react'
-import Check from './Check'
-import Image from 'next/image'
 
 interface DrawerProps {
     onClose: (value: string) => void
@@ -93,23 +91,36 @@ const CheckApprove: React.FC<DrawerProps> = ({ onClose, Mode, accountId, payment
         }
     }
 
-    const handleCheckImagePreview = () => {
+    const handleCheckImagePreview = async () => {
         setIsLoading(true)
         const params = {
             AccountId: accountId,
         }
-        performApiAction(dispatch, getPreviewCheckImage, params, (responseData: any) => {
-            const base64Image = `data:${responseData.ResponseData.ContentType};base64,${responseData.ResponseData.FileContents}`
-            setCheckImage(base64Image)
-            setIsButtonDisable(false)
-            setIsCheckImageVisible(true)
-            setIsLoading(false)
-        }, (errorData: any) => {
-            setCheckImageErrorMessage(errorData ?? "")
-            setIsCheckImageVisible(false)
-            setIsLoading(false)
-            setIsButtonDisable(true)
-        }, () => { }, true)
+        try {
+            const { payload, meta } = await dispatch(getPreviewCheckImage(params))
+            const dataMessage = payload?.Message
+            if (meta?.requestStatus === 'fulfilled') {
+                if (payload?.ResponseStatus === 'Success') {
+                    const responseData = payload?.ResponseData;
+                    const base64Image = `data:${responseData.ContentType};base64,${responseData.FileContents}`
+                    setCheckImage(base64Image)
+                    setIsButtonDisable(false)
+                    setIsCheckImageVisible(true)
+                } else {
+                    setCheckImageErrorMessage(dataMessage ?? "")
+                    setIsCheckImageVisible(false)
+                    setIsLoading(false)
+                    setIsButtonDisable(true)
+                }
+            } else {
+                Toast.error(`${payload?.status} : ${payload?.statusText}`)
+                setIsCheckImageVisible(false)
+                setIsLoading(false)
+                setIsButtonDisable(true)
+            }
+        } catch (error) {
+            console.error(error)
+        }
     }
 
     useEffect(() => {
@@ -132,7 +143,7 @@ const CheckApprove: React.FC<DrawerProps> = ({ onClose, Mode, accountId, payment
                         <label className='flex items-center pt-0 pr-0.5 font-proxima text-base font-bold tracking-wide cursor-pointer'>Check Layout</label>
                     </div>
 
-                    <div className={`flex items-center gap-5 ${Mode === "Approve" ? "" : "hidden"}`}>
+                    <div className={`relative overflow-auto custom-scroll flex items-center gap-5 ${Mode === "Approve" ? "" : "hidden"}`}>
                         <Button
                             type='submit'
                             onClick={() => setIsRejectModalOpen(true)}
@@ -154,24 +165,23 @@ const CheckApprove: React.FC<DrawerProps> = ({ onClose, Mode, accountId, payment
                         </Button>
                     </div>
                 </div>
-                <div className='w-[calc(100vw-200px)] h-full flex justify-center p-5'>
+                <div className='w-full h-[calc(100vh-130px)] overflow-auto custom-scroll p-5'>
                     {isLoading
                         ? <div className='flex h-[calc(96vh-150px)] w-full items-center justify-center'>
                             <Loader size='md' helperText />
                         </div>
                         : isCheckImageVisible
-                            ? <div className='w-full h-full relative'>
-                                <Image
-                                    src={checkImage}
-                                    alt="Check Preview"
-                                    fill={true}
-                                    priority
-                                />
-                            </div>
+                            ? <img
+                                src={checkImage}
+                                alt="Check Preview"
+                                width="100%"
+                                height="100%"
+                            />
                             : <span className='w-full font-proxima text-base text-darkCharcoal tracking-[0.02em]'>
                                 {checkImageErrorMessage}
                             </span>
-                    }</div>
+                    }
+                </div>
             </div>
 
             {/* Reject Modal */}

@@ -525,7 +525,7 @@ const ListPaymentSetup: React.FC = () => {
 
           {/* Cards */}
           {isStatusLoading || isLoading
-            ? <div className='flex h-full w-full items-center justify-center'>
+            ? <div className='flex h-[calc(100vh-130px)] w-full items-center justify-center'>
               <Loader size='md' helperText />
             </div>
             : bankAccountList.length === 0 && !isLoading && selectedTab == "bank"
