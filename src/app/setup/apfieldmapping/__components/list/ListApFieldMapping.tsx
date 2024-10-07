@@ -133,7 +133,7 @@ const ListAPFieldMapping: React.FC = () => {
   }
 
   const handleEditField = (item: any) => {
-    setFieldType(!item.IsCustom)
+    setFieldType(item.IsSystemDefined)
     setIsEditOpen(true)
     setSelectedItem(item)
   }
@@ -178,7 +178,7 @@ const ListAPFieldMapping: React.FC = () => {
     const configIds = configList.map((item: any) => item.Id)
     return fieldList
       .filter((list: any) => !configIds.includes(list.Id))
-      .filter((item: any) => item.IsSystemDefined === isSystemDefined)
+      // .filter((item: any) => item.IsSystemDefined === isSystemDefined)
   }
 
   // Get FieldMapping item Api
@@ -522,7 +522,7 @@ const ListAPFieldMapping: React.FC = () => {
     });
 
     const [, ref] = useDrag({
-      type: 'field' || 'string',
+      type: 'field',
       item: { index },
       collect: (monitor) => ({
         isDragging: !!monitor.isDragging(),
@@ -582,7 +582,7 @@ const ListAPFieldMapping: React.FC = () => {
           setIsEditOpen(droppingField.IsSystemDefined && droppingField.Type == 1 ? true : false)
         }
       }
-      setFieldType(!droppingField.IsCustom)
+      setFieldType(droppingField.IsSystemDefined)
       setSelectedItem(droppingField)
       setUnsavedChanges(true)
     }
@@ -640,7 +640,7 @@ const ListAPFieldMapping: React.FC = () => {
           setIsEditOpen(droppingField.IsSystemDefined && droppingField.Type == 2 ? true : false)
         }
       }
-      setFieldType(!droppingField.IsCustom)
+      setFieldType(droppingField.IsSystemDefined)
       setSelectedItem(droppingField)
       setUnsavedChanges(true)
     }
