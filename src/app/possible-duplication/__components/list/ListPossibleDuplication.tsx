@@ -1,57 +1,33 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
-
-import { AvatarSelect, Badge, CheckBox, DataTable, Loader, Toast, Tooltip, Typography } from 'pq-ap-lib'
-
-import AttachIcon from '@/assets/Icons/billposting/AttachIcon'
-import DeleteIcon from '@/assets/Icons/billposting/DeleteIcon'
-import DropdownIcon from '@/assets/Icons/billposting/DropdownIcon'
-import FilterIcon from '@/assets/Icons/billposting/FilterIcon'
-import RestoreIcon from '@/assets/Icons/billposting/RestoreIcon'
-import TabMoveIcon from '@/assets/Icons/billposting/TabMoveIcon'
-import ViewModeIcon from '@/assets/Icons/billposting/ViewModeIcon'
-
+import agent from '@/api/axios'
 import ColumnFilterDropdown from '@/app/bills/__components/ColumnFilterDropdown'
-import FilterPopover from '@/app/bills/__components/FilterPopover'
-import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
-import Wrapper from '@/components/Common/Wrapper'
-import { attachfileheaders, moveToOptions } from '@/data/billPosting'
-import {
-    AssignUserOption,
-    BillPostingFilterFormFieldsProps,
-    FileRecordType,
-    IntermediateType,
-    VisibilityMoveToDropDown,
-} from '@/models/billPosting'
-import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import {
-    assignDocumentsToUser,
-    deleteDocument,
-    documentGetList,
-    getAssigneeList,
-    getColumnMappingList,
-    processTypeChangeByDocumentId,
-    setFilterFormFields,
-    setIsFormDocuments,
-    setIsVisibleSidebar
-} from '@/store/features/bills/billSlice'
-import { parseISO } from 'date-fns'
-
 import FileModal from '@/app/bills/__components/FileModal'
+import FilterPopover from '@/app/bills/__components/FilterPopover'
 import GetFileIcon from '@/app/bills/__components/GetFileIcon'
 import BackIcon from '@/assets/Icons/billposting/accountpayable/BackIcon'
+import AttachIcon from '@/assets/Icons/billposting/AttachIcon'
+import DeleteIcon from '@/assets/Icons/billposting/DeleteIcon'
+import FilterIcon from '@/assets/Icons/billposting/FilterIcon'
+import DuplicationEditIcon from '@/assets/Icons/DuplicateEditIcon'
 import SortIcon from '@/assets/Icons/SortIcon'
 import { formatDate } from '@/components/Common/Functions/FormatDate'
+import { formatFileSize } from '@/components/Common/Functions/FormatFileSize'
+import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
+import Wrapper from '@/components/Common/Wrapper'
 import DeleteWithReason from '@/components/Modals/DeleteWithReason'
+import { attachfileheaders } from '@/data/billPosting'
+import { AssignUserOption, BillPostingFilterFormFieldsProps, FileRecordType, IntermediateType, VisibilityMoveToDropDown } from '@/models/billPosting'
+import { useAppDispatch, useAppSelector } from '@/store/configureStore'
+import { assignDocumentsToUser, deleteDocument, getAssigneeList, getColumnMappingList, processTypeChangeByDocumentId, setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar } from '@/store/features/bills/billSlice'
 import { setSearchSelectedModule } from '@/store/features/globalSearch/globalSearchSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { billStatusEditable, getPDFUrl, getTimeDifference, initialBillPostingFilterFormFields } from '@/utils/billposting'
+import { parseISO } from 'date-fns'
 import { useSession } from 'next-auth/react'
-import DuplicationEditIcon from '@/assets/Icons/DuplicateEditIcon'
-import agent from '@/api/axios'
-import { formatFileSize } from '@/components/Common/Functions/FormatFileSize'
+import { useRouter } from 'next/navigation'
+import { AvatarSelect, Badge, CheckBox, DataTable, Loader, Toast, Tooltip, Typography } from 'pq-ap-lib'
+import { useEffect, useRef, useState } from 'react'
 
 const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions, processOptions }: any) => {
     const { data: session } = useSession()
@@ -81,7 +57,6 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
     const [getMapColId, setMapColId] = useState(-1)
 
     const [sortOrder, setSortOrder] = useState<number | null>(1)
-    const [filterName, setFilterName] = useState<string | null>(null)
 
     const [isRestoreFields, setIsRestoreFields] = useState<any>({
         id: 0,
@@ -151,13 +126,11 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
 
     const [itemsLoaded, setItemsLoaded] = useState(0)
     const [apiDataCount, setApiDataCount] = useState(0)
-    const [sortOrders, setSortOrders] = useState<{ [key: string]: null | 'asc' | 'desc' }>({
-        BillNumber: null,
-        BillDate: null,
-        DueDate: null,
-        Status: null,
-        Amount: null,
-    })
+
+    const [orderBy, setOrderBy] = useState<number | null>(1)
+    const [orderColumnName, setOrderColumnName] = useState<string | null>('UploadedDate')
+    const [hoveredColumn, setHoveredColumn] = useState<string>("");
+    const [parsedColumnData, setParsedColumnData] = useState<any>([])
 
     let nextPageIndex: number = 1
 
@@ -168,27 +141,27 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
     const otherProcessColumn = [
         {
             header: (
-                <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handelColumn('BillNumber')}>
-                    Bill No. <SortIcon order={sortOrders['BillNumber']}></SortIcon>
+                <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('BillNumber')} onMouseEnter={() => setHoveredColumn("BillNumber")} onMouseLeave={() => setHoveredColumn("")}>
+                    Bill No. <SortIcon orderColumn="BillNumber" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "BillNumber"}></SortIcon>
                 </div>
             ),
             accessor: 'BillNumber',
             visible: true,
             sortable: false,
             colalign: 'left',
-            colStyle: 'w-[159px] !uppercase',
+            colStyle: 'w-[159px] ',
         },
         {
             header: (
-                <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handelColumn('UploadedDate')}>
-                    Uploaded Date <SortIcon order={sortOrders['UploadedDate']}></SortIcon>
+                <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('UploadedDate')} onMouseEnter={() => setHoveredColumn("UploadedDate")} onMouseLeave={() => setHoveredColumn("")}>
+                    Uploaded Date <SortIcon orderColumn="UploadedDate" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "UploadedDate"}></SortIcon>
                 </div>
             ),
             accessor: 'UploadedDate',
             visible: true,
             sortable: false,
             colalign: 'left',
-            colStyle: 'w-[140px] !uppercase',
+            colStyle: 'w-[140px] ',
         },
         {
             header: 'Vendor Name',
@@ -196,19 +169,19 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
             visible: true,
             sortable: true,
             colalign: 'left',
-            colStyle: 'w-[160px] !uppercase',
+            colStyle: 'w-[160px] ',
         },
         {
             header: (
-                <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handelColumn('Amount')}>
-                    AMOUNT <SortIcon order={sortOrders['Amount']}></SortIcon>
+                <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Amount')} onMouseEnter={() => setHoveredColumn("Amount")} onMouseLeave={() => setHoveredColumn("")}>
+                    AMOUNT <SortIcon orderColumn="Amount" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "Amount"}></SortIcon>
                 </div>
             ),
             accessor: 'Amount',
             visible: true,
             sortable: false,
             colalign: 'right',
-            colStyle: 'w-[100px] !uppercase',
+            colStyle: 'w-[100px] ',
         },
     ]
 
@@ -404,7 +377,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
                     filterFormFields.ft_vendor && filterFormFields.ft_vendor.length > 0 ? filterFormFields.ft_vendor.join(',') : null,
                 StartDate: convertStringsDateToUTC(dateRangeVal[0].trim()) ?? null,
                 EndDate: convertStringsDateToUTC(dateRangeVal[1].trim()) ?? null,
-                SortColumn: filterName ?? 'CreatedOn',
+                SortColumn: orderColumnName ?? 'CreatedOn',
                 SortOrder: sortOrder,
                 PageNumber: pageIndex || nextPageIndex,
                 PageSize: lazyRows,
@@ -448,7 +421,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
                 }
             } catch (error) {
                 // responseFailure()
-                console.log(error)
+                console.error(error)
             } finally {
                 setIsLoading(false)
                 setIsLazyLoading(false)
@@ -476,99 +449,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
                 if (payload?.ResponseStatus === 'Success') {
                     setMapColId(payload?.ResponseData?.Id)
                     const obj = JSON.parse(payload?.ResponseData?.ColumnList)
-                    const data = Object.entries(obj).map(([label, value]: any) => {
-                        let columnStyle = ''
-                        let sortable = true
-                        switch (label) {
-                            case 'Bill No.':
-                                columnStyle = 'w-[159px]'
-                                sortable = false
-                                break
-                            case 'Uploaded Date':
-                                columnStyle = 'w-[140px]'
-                                sortable = false
-                                break
-                            case 'Vendor Name':
-                                columnStyle = 'w-[160px]'
-                                break
-                            case 'Amount':
-                                columnStyle = 'w-[130px]'
-                                sortable = false
-                                break
-                            case 'Status':
-                                columnStyle = 'w-[140px]'
-                                break
-                            case 'Assignee':
-                                columnStyle = 'w-[180px]'
-                                sortable = false
-                                break
-                            case 'Source':
-                                columnStyle = 'w-[110px]'
-                                break
-                            case 'Last Updated Date':
-                                columnStyle = 'w-[160px]'
-                                break
-                            case 'Last Updated By':
-                                columnStyle = 'w-[160px]'
-                                break
-                            default:
-                                break
-                        }
-
-                        let headerContent
-
-                        if (label.props !== undefined) {
-                            headerContent = <span onClick={() => handelColumn(label.props.children)}>{label.props.children}</span>
-                        } else if (label === 'Amount') {
-                            headerContent = (
-                                <span className='flex cursor-pointer items-center gap-1.5' onClick={() => handelColumn('Amount')}>
-                                    Amount<SortIcon order={sortOrders['Amount']}></SortIcon>
-                                </span>
-                            )
-                        } else if (label === 'Uploaded Date') {
-                            headerContent = (
-                                <span className='flex cursor-pointer items-center gap-1.5' onClick={() => handelColumn('CreatedOn')}>
-                                    Uploaded Date<SortIcon order={sortOrders['CreatedOn']}></SortIcon>
-                                </span>
-                            )
-                        } else if (label === 'Bill No.' || label === 'Adjustment Number') {
-                            headerContent = (
-                                <span className='flex cursor-pointer items-center gap-1.5' onClick={() => handelColumn('BillNumber')}>
-                                    {label === 'Bill No.' ? 'Bill No.' : label === 'Adjustment Number' && 'Adjustment Number'}
-
-                                    <SortIcon order={sortOrders['BillNumber']}></SortIcon>
-                                </span>
-                            )
-                        } else {
-                            headerContent = label
-                        }
-
-                        return {
-                            header: headerContent,
-                            accessor:
-                            label === 'Adjustment Number' || label === 'Bill No.' ? 'BillNumber' : label === 'Status' ? 'StatusName' : label.split(' ').join(''),
-                            visible: value,
-                            sortable: label === 'Adjustment Number' ? false : sortable,
-                            colalign: 'left',
-                            colStyle: `${columnStyle} !uppercase`,
-                        }
-                    })
-                    const dataVisible = data.filter((h: any) => h.visible === true)
-
-                    const Arr =
-                        dataVisible &&
-                        dataVisible.map((item: any) => {
-                            if (item?.accessor === 'Amount') {
-                                return {
-                                    ...item,
-                                    colalign: 'right',
-                                }
-                            } else {
-                                return item
-                            }
-                        })
-                    setColumnListVisible(Arr)
-                    setHeadersDropdown(data)
+                    setParsedColumnData(obj)
                 } else {
                     Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
                 }
@@ -576,7 +457,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
                 Toast.error(`${payload?.status} : ${payload?.statusText}`)
             }
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     }
 
@@ -612,7 +493,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
                         Toast.error(`${payload?.status} : ${payload?.statusText}`)
                     }
                 } catch (error) {
-                    console.log(error)
+                    console.error(error)
                 }
             }
         }
@@ -623,22 +504,10 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
         }
     }, [])
 
-    const handelColumn = (name: string) => {
-
-        const currentSortOrder = sortOrders[name]
-        let newSortOrder: 'asc' | 'desc'
-
-        if (currentSortOrder === 'asc') {
-            newSortOrder = 'desc'
-        } else {
-            newSortOrder = 'asc'
-        }
-
-        setSortOrders({ ...sortOrders, [name]: newSortOrder })
-
+    const handleSortColumn = (name: string) => {
         if (name === 'BillNumber' || name === 'Amount' || name === 'CreatedOn') {
-            setFilterName(name)
-            setSortOrder((prevValue) => (prevValue === 1 ? 0 : 1))
+            setOrderColumnName(name)
+            setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
         }
     }
 
@@ -646,7 +515,101 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
         if (CompanyId) {
             getMappingListData()
         }
-    }, [processSelection, assigneeValueRow])
+    }, [processSelection, assigneeValueRow, CompanyId])
+
+
+    useEffect(() => {
+        const data = Object.entries(parsedColumnData).map(([label, value]: any) => {
+            let columnStyle = ''
+            let sortable = true
+            switch (label) {
+                case 'Bill No.':
+                    columnStyle = 'w-[159px]'
+                    sortable = false
+                    break
+                case 'Uploaded Date':
+                    columnStyle = 'w-[140px]'
+                    sortable = false
+                    break
+                case 'Vendor Name':
+                    columnStyle = 'w-[160px]'
+                    break
+                case 'Amount':
+                    columnStyle = 'w-[130px]'
+                    sortable = false
+                    break
+                case 'Status':
+                    columnStyle = 'w-[140px]'
+                    break
+                case 'Assignee':
+                    columnStyle = 'w-[180px]'
+                    sortable = false
+                    break
+                case 'Source':
+                    columnStyle = 'w-[110px]'
+                    break
+                case 'Last Updated Date':
+                    columnStyle = 'w-[160px]'
+                    break
+                case 'Last Updated By':
+                    columnStyle = 'w-[160px]'
+                    break
+                default:
+                    break
+            }
+
+            let headerContent
+
+            if (label.props !== undefined) {
+                headerContent = <span onClick={() => handleSortColumn(label.props.children)}>{label.props.children}</span>
+            } else if (label === 'Amount') {
+                headerContent = (
+                    <span className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Amount')} onMouseEnter={() => setHoveredColumn("Amount")} onMouseLeave={() => setHoveredColumn("")}>
+                        Amount  <SortIcon orderColumn="Amount" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "Amount"}></SortIcon>
+                    </span>
+                )
+            } else if (label === 'Uploaded Date') {
+                headerContent = (
+                    <span className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('CreatedOn')} onMouseEnter={() => setHoveredColumn("CreatedOn")} onMouseLeave={() => setHoveredColumn("")}>
+                        Uploaded Date <SortIcon orderColumn="CreatedOn" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "CreatedOn"}></SortIcon>
+                    </span>
+                )
+            } else if (label === 'Bill No.' || label === 'Adjustment Number') {
+                headerContent = (
+                    <span className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('BillNumber')} onMouseEnter={() => setHoveredColumn("BillNumber")} onMouseLeave={() => setHoveredColumn("")}>
+                        {label === 'Bill No.' ? 'Bill No.' : label === 'Adjustment Number' && 'Adjustment Number'}
+                        <SortIcon orderColumn="BillNumber" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "BillNumber"}></SortIcon>
+                    </span>
+                )
+            } else {
+                headerContent = label
+            }
+
+            return {
+                header: headerContent,
+                accessor:
+                    label === 'Adjustment Number' || label === 'Bill No.' ? 'BillNumber' : label === 'Status' ? 'StatusName' : label.split(' ').join(''),
+                visible: value,
+                sortable: label === 'Adjustment Number' ? false : sortable,
+                colalign: 'left',
+                colStyle: `${columnStyle} `,
+            }
+        })
+        const dataVisible = data.filter((h: any) => h.visible === true)
+
+        const Arr = dataVisible && dataVisible.map((item: any) => {
+            if (item?.accessor === 'Amount') {
+                return {
+                    ...item,
+                    colalign: 'right',
+                }
+            } else {
+                return item
+            }
+        })
+        setColumnListVisible(Arr)
+        setHeadersDropdown(data)
+    }, [orderBy, hoveredColumn, parsedColumnData])
 
     useEffect(() => {
         if (selectedRows?.length > 0 && billLists?.length === selectedRows?.length) {
@@ -1050,7 +1013,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
                 Toast.error(`${payload?.status} : ${payload?.statusText}`)
             }
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     }
 
@@ -1158,7 +1121,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
                             Toast.error(`${payload?.status} : ${payload?.statusText}`)
                         }
                     } catch (error) {
-                        console.log(error)
+                        console.error(error)
                     }
                 }
             } else {
@@ -1200,7 +1163,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
                 Toast.error(`${payload?.status} : ${payload?.statusText}`)
             }
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     }
 
@@ -1272,7 +1235,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
                 Toast.error(`${payload?.status} : ${payload?.statusText}`)
             }
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     }
 
@@ -1322,129 +1285,125 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
     }
 
     return (
-        <>
-            <Wrapper masterSettings={false}>
-                <div className='billsMain'>
-                    <div className={`sticky top-0 ${isOpenFilter ? 'z-[99]' : 'z-[6]'} w-full`}>
-                        <div className='relative flex h-16 items-center justify-between bg-[#F4F4F4] px-[20px]'>
-                            <div className='flex items-center justify-center'>
-                                <span
-                                    className='cursor-pointer rounded-full bg-white p-1.5'
-                                    onClick={handleBackPage}
-                                    tabIndex={0}
-                                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleBackPage()}
-                                >
-                                    <BackIcon />
-                                </span>
-                                <span className='pl-4 !text-sm font-semibold'>
-                                    Bills Duplication
-                                </span>
-
-                            </div>
-
-                            <ul className='flex items-center '>
-                                <li
-                                    onClick={handleFilterIconOpen}
-                                    className='p-1'
-                                    tabIndex={0}
-                                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleFilterIconOpen()}
-                                >
-                                    <Tooltip position='bottom' content='Filter' className='!z-[6] !font-proxima !text-sm'>
-                                        <FilterIcon />
-                                    </Tooltip>
-                                </li>
-                            </ul>
+        <Wrapper>
+            <div className='billsMain'>
+                <div className={`sticky top-0 ${isOpenFilter ? 'z-[99]' : 'z-[6]'} w-full`}>
+                    <div className='relative flex h-16 items-center justify-between bg-[#F4F4F4] px-[20px]'>
+                        <div className='flex items-center justify-center'>
+                            <span
+                                className='cursor-pointer rounded-full bg-white p-1.5'
+                                onClick={handleBackPage}
+                                tabIndex={0}
+                                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleBackPage()}
+                            >
+                                <BackIcon />
+                            </span>
+                            <span className='pl-4 !text-base font-proxima tracking-[0.02em] font-bold text-darkCharcoal'>
+                                Bills Duplication
+                            </span>
                         </div>
-                        <FilterPopover
-                            filterApplyChange={isFilterApplyChange}
-                            billList={billLists}
-                            isOpenFilter={isOpenFilter}
-                            onClose={() => setIsOpenFilter(false)}
-                            filterFormFields={filterFormFields}
-                            onCancel={handleCancel}
-                            onApply={handleApplyFilter}
-                            onResetFilter={(value: boolean) => setIsResetFilter(value)}
-                            onReset={() => {
-                                setIsResetFilter(true)
-                                setLocalFilterFormFields(initialBillPostingFilterFormFields)
-                            }}
-                            processSelection={processSelection}
-                            statusOptions={statusOptions}
-                            locationOptions={locationOptions}
-                            userOptions={assignListRow}
-                            vendorOptions={vendorOptions}
-                            localFilterFormFields={localFilterFormFields}
-                            setLocalFilterFormFields={setLocalFilterFormFields}
-                        />
-                    </div>
 
-                    <div className={`custom-scroll h-[calc(100vh-128px)] overflow-scroll ${tableDynamicWidth}`}>
-                        <div className={`mainTable ${billLists.length !== 0 && 'h-0'}`}>
-                            <DataTable
-                                getExpandableData={() => { }}
-                                getRowId={(value: any) => {
-                                    if (!isOpenMoveTo) {
-                                        setHoveredRow(value)
-                                    }
-                                }}
-                                columns={columns}
-                                data={billLists.length > 0 ? table_Data : []}
-                                sticky
-                                hoverEffect
-                                isTableLayoutFixed={true}
-                                userClass='innerTable sticky'
-                                lazyLoadRows={lazyRows}
-                            />
-                            {isLazyLoading && !isLoading && (
-
-                                <Loader size='sm' helperText />
-                            )}
-                            <div ref={tableBottomRef} />
-                        </div>
-                        {noDataContent}
+                        <ul className='flex items-center '>
+                            <li
+                                onClick={handleFilterIconOpen}
+                                className='p-1'
+                                tabIndex={0}
+                                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleFilterIconOpen()}
+                            >
+                                <Tooltip position='bottom' content='Filter' className='!z-[6] !font-proxima !text-sm'>
+                                    <FilterIcon />
+                                </Tooltip>
+                            </li>
+                        </ul>
                     </div>
+                    <FilterPopover
+                        filterApplyChange={isFilterApplyChange}
+                        billList={billLists}
+                        isOpenFilter={isOpenFilter}
+                        onClose={() => setIsOpenFilter(false)}
+                        filterFormFields={filterFormFields}
+                        onCancel={handleCancel}
+                        onApply={handleApplyFilter}
+                        onResetFilter={(value: boolean) => setIsResetFilter(value)}
+                        onReset={() => {
+                            setIsResetFilter(true)
+                            setLocalFilterFormFields(initialBillPostingFilterFormFields)
+                        }}
+                        processSelection={processSelection}
+                        statusOptions={statusOptions}
+                        locationOptions={locationOptions}
+                        userOptions={assignListRow}
+                        vendorOptions={vendorOptions}
+                        localFilterFormFields={localFilterFormFields}
+                        setLocalFilterFormFields={setLocalFilterFormFields}
+                    />
                 </div>
 
-                {isFileModal && ['pdf'].includes(fileExtensions ?? '') && (
-                    <FileModal
-                        isFileRecord={isFileRecord}
-                        setIsFileRecord={setIsFileRecord}
-                        PDFUrl={PDFUrl}
-                        isOpenDrawer={isOpenDrawer}
-                        setPDFUrl={(value: any) => setPDFUrl(value)}
-                        setIsOpenDrawer={(value: boolean) => setIsOpenDrawer(value)}
-                        setFileModal={(value: boolean) => setFileModal(value)}
-                        fileBlob={fileBlob}
-                        isPdfLoading={isPdfLoading}
-                        openInNewWindow={openInNewWindow}
-                    />
-                )}
+                <div className={`custom-scroll h-[calc(100vh-128px)] overflow-scroll ${tableDynamicWidth}`}>
+                    <div className={`mainTable ${billLists.length !== 0 && 'h-0'}`}>
+                        <DataTable
+                            getExpandableData={() => { }}
+                            getRowId={(value: any) => {
+                                if (!isOpenMoveTo) {
+                                    setHoveredRow(value)
+                                }
+                            }}
+                            columns={columns}
+                            data={billLists.length > 0 ? table_Data : []}
+                            sticky
+                            hoverEffect
+                            isTableLayoutFixed={true}
+                            userClass='innerTable sticky'
+                            lazyLoadRows={lazyRows}
+                        />
+                        {isLazyLoading && !isLoading && (
+                            <Loader size='sm' helperText />
+                        )}
+                        <div ref={tableBottomRef} />
+                    </div>
+                    {noDataContent}
+                </div>
+            </div>
 
-                <ConfirmationModal
-                    title='Restore'
-                    content={`Are you sure you want to restore the bill?`}
-                    isModalOpen={isRestoreModalOpen}
-                    modalClose={modalRestoreClose}
-                    handleSubmit={handleRestore}
-                    colorVariantNo='btn-outline-primary'
-                    colorVariantYes='btn-primary'
+            {isFileModal && ['pdf'].includes(fileExtensions ?? '') && (
+                <FileModal
+                    isFileRecord={isFileRecord}
+                    setIsFileRecord={setIsFileRecord}
+                    PDFUrl={PDFUrl}
+                    isOpenDrawer={isOpenDrawer}
+                    setPDFUrl={(value: any) => setPDFUrl(value)}
+                    setIsOpenDrawer={(value: boolean) => setIsOpenDrawer(value)}
+                    setFileModal={(value: boolean) => setFileModal(value)}
+                    fileBlob={fileBlob}
+                    isPdfLoading={isPdfLoading}
+                    openInNewWindow={openInNewWindow}
                 />
+            )}
 
-                <DeleteWithReason
-                    setHandleErrorMsg={(value: any) => setHandleErrorValue(value)}
-                    isTextVisible={isVisibleTextValue}
-                    setVisibleTextValue={(value: boolean) => setVisibleTextValue(value)}
-                    onOpen={isDeleteModal}
-                    onClose={() => {
-                        setVisibleTextValue(false)
-                        setDeleteModal(false)
-                    }}
-                    handleSubmit={() => handleDelete(deleteId)}
-                    editedValues={editedValues}
-                    setEditedValues={setEditedValues}
-                />
-            </Wrapper>
-        </>
+            <ConfirmationModal
+                title='Restore'
+                content={`Are you sure you want to restore the bill?`}
+                isModalOpen={isRestoreModalOpen}
+                modalClose={modalRestoreClose}
+                handleSubmit={handleRestore}
+                colorVariantNo='btn-outline-primary'
+                colorVariantYes='btn-primary'
+            />
+
+            <DeleteWithReason
+                setHandleErrorMsg={(value: any) => setHandleErrorValue(value)}
+                isTextVisible={isVisibleTextValue}
+                setVisibleTextValue={(value: boolean) => setVisibleTextValue(value)}
+                onOpen={isDeleteModal}
+                onClose={() => {
+                    setVisibleTextValue(false)
+                    setDeleteModal(false)
+                }}
+                handleSubmit={() => handleDelete(deleteId)}
+                editedValues={editedValues}
+                setEditedValues={setEditedValues}
+            />
+        </Wrapper>
     )
 }
 
