@@ -520,6 +520,8 @@ const ListBillPosting = ({ statusOptions }: any) => {
 
   const fetchBillsData = async (pageIndex?: number) => {
     localStorage.removeItem('CopyBillViewId')
+    localStorage.removeItem('CopyBillData')
+
     if (pageIndex === 1) {
       setBillLists([])
       setItemsLoaded(0)

@@ -639,6 +639,7 @@ const EditWrapper = ({
         const response = await saveAccountPayable(accountPayableParams, postSaveAs)
         module == "billsToPay" ? router.push('/payments/billtopay') : "";
         localStorage.removeItem('CopyBillViewId')
+        localStorage.removeItem('CopyBillData')
         return response
       } catch (error) {
         onErrorLoader(postSaveAs)
@@ -650,6 +651,7 @@ const EditWrapper = ({
         const response = await saveAccountPayable(accountPayableParams, postSaveAs)
         module == "billsToPay" ? router.push('/payments/billtopay') : "";
         localStorage.removeItem('CopyBillViewId')
+        localStorage.removeItem('CopyBillData')
         return response
       } catch (error) {
         onErrorLoader(postSaveAs)
@@ -805,18 +807,8 @@ const EditWrapper = ({
 
       if (response?.ResponseStatus === 'Success') {
         const responseData = response?.ResponseData
-        const currentDate = new Date().toISOString().split('T')[0] + 'T00:00:00';
-        // const currentDate = formatDate(new Date() + "");
-
-        const updatedData = {
-          ...responseData,
-          BillNumber: "",
-          BillDate: currentDate,
-          GLPostingDate: currentDate,
-          DueDate: currentDate,
-          Attachments: []
-        };
-        copyBillData(updatedData)
+        copyBillData(responseData)
+        localStorage.setItem('CopyBillData', JSON.stringify(responseData))
       }
     } catch (error) {
       Toast.error('Something Went Wrong!')
@@ -828,16 +820,22 @@ const EditWrapper = ({
     setIsCopyBillModalOpen(true)
   }
 
+  useEffect(() => {
+    if (CopyBillViewId) {
+      handleCopyBillDetails(CopyBillViewId)
+    }
+  }, [CopyBillViewId])
+
   const getVendorHistoryBillList = (searchValues: any) => {
     setIsVendorHistoryLoading(true)
     setVendorHistoryList([])
     const params = {
-      VendorId: vendorId ?? 0,
-      // VendorId: 20530,
+      // VendorId: vendorId ?? 0,
+      VendorId: 14260,
       SearchKeyword: searchValues,
       ProcessType: 1,
       PageNumber: 1,
-      PageSize: 10
+      PageSize: 100
     }
     performApiAction(dispatch, getVendorHistoryList, params, (responseData: any) => {
       setVendorHistoryList(responseData.List)
@@ -1039,7 +1037,7 @@ const EditWrapper = ({
                                 <button
                                   onClick={() => {
                                     dispatch(setIsVisibleSidebar(false))
-                                    router.push(`/bills/view/${data.Id}`)
+                                    router.push(`/bills/view/${data.Id}?module=copybill`)
                                   }}
                                 >
                                   <ViewModeIcon height={'19'} width={'19'} />
