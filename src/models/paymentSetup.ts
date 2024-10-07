@@ -92,6 +92,10 @@ export interface ApproveRejectCheckOptions {
   isReject: boolean
 }
 
+export interface PreviewCheckImageOptions {
+  AccountId: string
+}
+
 export interface SaveCheckPaymentMethodOptions {
   PaymentSetupId: string
   PaymentSetupMethodId: string
