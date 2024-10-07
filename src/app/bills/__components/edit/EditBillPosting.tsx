@@ -877,14 +877,14 @@ const EditBillPosting = ({ processtype }: any) => {
 
   const setFormValues = async (key: string, value: string | number) => {
     if (key === 'date') {
-      if (checkFormFieldErrors.hasOwnProperty('term') && formFields.term) {
+      if (formFields.hasOwnProperty('term') && formFields.term) {
         const filterTerm = defaultTermOptions?.find((t: any) => t.Id === formFields.term)
         let formattedDueDateCalculated = ''
 
         if (value) {
           const dueDateCalculatedValue = addDays(new Date(value), parseInt(filterTerm?.DueDate))
           formattedDueDateCalculated =
-            dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
+          dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
         } else {
           const dueDateCalculatedValue = addDays(new Date(), parseInt(filterTerm?.DueDate))
           formattedDueDateCalculated =
