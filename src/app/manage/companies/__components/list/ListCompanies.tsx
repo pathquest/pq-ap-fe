@@ -176,25 +176,25 @@ const ListCompanies = () => {
       colalign: 'center'
     },
     {
-      header: 'COMPANY',
+      header: 'Company',
       accessor: 'Name',
       sortable: false,
       colStyle: '!tracking-[0.02em] !font-bold !w-[130px]',
     },
     {
-      header: 'CONNECTED WITH',
+      header: 'Connected With',
       accessor: 'AccountingTool',
       sortable: false,
       colStyle: '!tracking-[0.02em] !font-bold !w-[100px]',
     },
     {
-      header: 'MODIFIED DATE',
+      header: 'Modified Date',
       accessor: 'UpdatedOn',
       sortable: false,
       colStyle: '!tracking-[0.02em] !font-bold !w-[150px]',
     },
     {
-      header: 'ASSIGN USER',
+      header: 'Assign User',
       accessor: 'AssignUsers',
       sortable: false,
       colStyle: '!tracking-[0.02em] !font-bold !w-[150px]',
@@ -1034,9 +1034,9 @@ const ListCompanies = () => {
     <>
       <WrapperManage onData={globalData}>
         {/* NavBar */}
-        <div className='sticky top-0 z-[6] flex !h-[66px] items-center justify-between bg-whiteSmoke px-5'>
+        <div className='sticky top-0 z-[6] flex !h-[50px] items-center justify-between bg-whiteSmoke px-5'>
           <div className='flex items-center'>
-            <label className='font-proxima flex cursor-pointer items-center laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base laptop:font-semibold laptopMd:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>Manage Companies</label>
+            <label className='font-proxima flex cursor-pointer items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Manage Companies</label>
           </div>
           <div className='flex items-center gap-2'>
             <div className='flex h-6 items-center justify-center'>
@@ -1143,7 +1143,7 @@ const ListCompanies = () => {
         </div>
 
         {/* Data Table */}
-        <div className='h-[calc(100vh-145px)] approvalMain overflow-auto max-[425px]:mx-1'>
+        <div className='h-[calc(100vh-125px)] approvalMain overflow-auto max-[425px]:mx-1'>
           <div className={`${companyData.length !== 0 && 'h-0'}`}>
             <DataTable
               columns={headers}
@@ -1162,10 +1162,10 @@ const ListCompanies = () => {
 
           {companyList.length === 0 ? (
             isLoading ?
-              <div className='flex h-[calc(93vh-150px)] w-full items-center justify-center'>
+              <div className='flex h-[calc(93vh-200px)] w-full items-center justify-center'>
                 <Loader size='md' helperText />
               </div>
-              : !isLoading && <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
+              : !isLoading && <div className='flex h-[44px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
                 No records available at the moment.
               </div>
           ) : ''}

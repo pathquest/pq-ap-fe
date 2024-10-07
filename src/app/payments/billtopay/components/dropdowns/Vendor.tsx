@@ -30,6 +30,7 @@ const Vendor: React.FC<VendorType> = ({ vendorOption }) => {
     const [searchValue, setSearchValue] = useState<string>('')
     const [selectedValues, setSelectedValues] = useState<string[]>([])
     const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+    const [selectedLabel, setSelectedLabel] = useState<string>('')
 
     useEffect(() => {
         if (vendorOption.length > 0) {
@@ -135,40 +136,40 @@ const Vendor: React.FC<VendorType> = ({ vendorOption }) => {
         }
     }
 
-    const truncateLabel = (label: string | undefined, maxLength: number): string => {
-        if (label && label.length > maxLength) {
-            return label.substring(0, maxLength) + '...'
+    const truncateLabel = (label: string): string => {
+        if (label && label.length > 15) {
+            return label.substring(0, 15) + '...'
         }
         return label || ''
     }
 
+    useEffect(() => {
+        if (selectedValues.length > 0) {
+            const selectedOption = vendorOption.find(option => option.value == selectedValues[0])
+            if (selectedOption) {
+                setSelectedLabel(selectedOption.label)
+            }
+        } else {
+            setSelectedLabel('')
+        }
+    }, [selectedValues])
+
     return (
-        <div className='relative w-full'
+        <div className='relative outline-none'
             ref={dropDownRef}
             tabIndex={0}
             onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => (e.key === 'Enter') && setIsOpen(!isOpen)}>
-            <div className='flex h-10 w-full' tabIndex={-1}>
-                <div className='flex h-full w-full items-center  justify-center px-1' tabIndex={-1}>
-                    <input
-                        tabIndex={-1}
-                        className={`flex h-full max-w-full cursor-pointer select-none items-start bg-transparent outline-none ${isOpen ? "text-primary placeholder:text-primary" : "text-black placeholder:text-black"} text-sm placeholder:text-sm placeholder:font-semibold font-semibold`}
-                        type='text'
-                        placeholder='Select Vendor'
-                        value={
-                            vendorOption.length === 0
-                                ? "Select Vendor"
-                                : selectedValues.length === vendorOption.length
-                                    ? "All Vendor"
-                                    : selectedValues.length > 1
-                                        ? truncateLabel(vendorOption.find(v => v.value === selectedValues[0])?.label, 11) + " +" + (selectedValues.length - 1)
-                                        : selectedValues.length === 1
-                                            ? truncateLabel(vendorOption.find(v => v.value === selectedValues[0])?.label, 15)
-                                            : "Select Vendor"
-                        }
-                        onClick={handleInput}
-                        readOnly
-                    />
-                </div>
+            <div className='flex h-full items-center px-1' tabIndex={-1}>
+                <label
+                    className={`flex cursor-pointer select-none items-start bg-transparent outline-none ${isOpen ? "text-primary placeholder:text-primary" : "text-black placeholder:text-black"} text-base placeholder:text-base placeholder:font-bold font-bold cursor-pointer`}
+                    onClick={handleInput}>
+                    {selectedValues.length == 0
+                        ? "Select Vendor"
+                        : selectedValues.length == vendorOption.length
+                            ? "All Vendor"
+                            : selectedValues.length > 1 ? truncateLabel(selectedLabel) + " +" + (selectedValues.length - 1)
+                                : truncateLabel(selectedLabel)}
+                </label>
                 <div
                     className={`ml-2 flex cursor-pointer items-center justify-center text-[1.4rem] transition-transform ${isOpen ? 'duration-400 rotate-180 text-primary' : 'text-slatyGrey duration-200'}`}
                     onClick={handleInput}>
@@ -177,7 +178,7 @@ const Vendor: React.FC<VendorType> = ({ vendorOption }) => {
             </div>
 
             <ul
-                className={`absolute top-[42px] z-20 flex w-[250px] flex-col gap-1 rounded border border-lightSilver bg-white drop-shadow-xl transition-transform overflow-y-auto ease-out ${isOpen
+                className={`absolute top-[28px] z-20 flex w-[250px] flex-col gap-1 rounded border border-lightSilver bg-white drop-shadow-xl transition-transform overflow-y-auto ease-out ${isOpen
                     ? 'max-h-[430px] translate-y-0 opacity-100 transition-opacity duration-300'
                     : 'max-h-0 translate-y-20 opacity-0 transition-opacity duration-300'
                     }`}>

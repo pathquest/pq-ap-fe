@@ -49,7 +49,7 @@ const BillApproval: React.FC = () => {
   const dispatch = useAppDispatch()
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
+  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
   const [isAllChecked, setIsAllChecked] = useState<boolean>(false)
 
   const [vendorOption, setVendorOption] = useState<any>([])
@@ -62,14 +62,7 @@ const BillApproval: React.FC = () => {
 
   const [orderBy, setOrderBy] = useState<number | null>(1)
   const [orderColumnName, setOrderColumnName] = useState<string | null>('BillDate')
-  const [sortOrders, setSortOrders] = useState<{ [key: string]: null | 'asc' | 'desc' }>({
-    BillNumber: null,
-    BillDate: null,
-    VendorName: null,
-    DueDate: null,
-    Status: null,
-    Amount: null,
-  })
+  const [hoveredColumn, setHoveredColumn] = useState<string>("");
 
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false)
   const [billApprovalList, setBillApprovalList] = useState<any>([])
@@ -154,49 +147,49 @@ const BillApproval: React.FC = () => {
       colalign: 'right',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('BillNumber')}>
-        BILL NUMBER <SortIcon order={sortOrders['BillNumber']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('BillNumber')} onMouseEnter={() => setHoveredColumn("BillNumber")} onMouseLeave={() => setHoveredColumn("")}>
+        Bill Number <SortIcon orderColumn="BillNumber" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "BillNumber"}></SortIcon>
       </div>,
       accessor: 'BillNumber',
       sortable: false,
       colStyle: '!w-[150px] !tracking-[0.02em]',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('BillDate')}>
-        BILL DATE <SortIcon order={sortOrders['BillDate']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('BillDate')} onMouseEnter={() => setHoveredColumn("BillDate")} onMouseLeave={() => setHoveredColumn("")}>
+        Bill Date <SortIcon orderColumn="BillDate" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "BillDate"}></SortIcon>
       </div>,
       accessor: 'BillDate',
       sortable: false,
       colStyle: '!w-[170px] !tracking-[0.02em]',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('VendorName')}>
-        VENDOR NAME <SortIcon order={sortOrders['VendorName']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('VendorName')} onMouseEnter={() => setHoveredColumn("VendorName")} onMouseLeave={() => setHoveredColumn("")}>
+        Vendor Name <SortIcon orderColumn="VendorName" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "VendorName"}></SortIcon>
       </div>,
       accessor: 'VendorName',
       sortable: false,
       colStyle: '!w-[170px] !tracking-[0.02em]'
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Status')}>
-        APPROVAL STATUS <SortIcon order={sortOrders['Status']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Status')} onMouseEnter={() => setHoveredColumn("Status")} onMouseLeave={() => setHoveredColumn("")}>
+        Approval Status <SortIcon orderColumn="Status" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "Status"}></SortIcon>
       </div>,
       accessor: 'Status',
       sortable: false,
-      colStyle: '!w-[80px] !tracking-[0.02em]',
+      colStyle: '!w-[180px] !tracking-[0.02em]',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('DueDate')}>
-        DUE DATE <SortIcon order={sortOrders['DueDate']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('DueDate')} onMouseEnter={() => setHoveredColumn("DueDate")} onMouseLeave={() => setHoveredColumn("")}>
+        Due Date <SortIcon orderColumn="DueDate" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "DueDate"}></SortIcon>
       </div>,
       accessor: 'DueDate',
       sortable: false,
-      colStyle: '!w-[200px] !tracking-[0.02em]',
+      colStyle: '!w-[100px] !tracking-[0.02em]',
       colalign: 'right',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Amount')}>
-        PAYMENT AMOUNT <SortIcon order={sortOrders['Amount']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Amount')} onMouseEnter={() => setHoveredColumn("Amount")} onMouseLeave={() => setHoveredColumn("")}>
+        Payment Amount <SortIcon orderColumn="Amount" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "Amount"}></SortIcon>
       </div>,
       accessor: 'Amount',
       sortable: false,
@@ -230,47 +223,16 @@ const BillApproval: React.FC = () => {
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
-      setTableDynamicWidth('w-full laptop:w-[calc(100vw-85px)]')
+      setTableDynamicWidth('w-full laptop:w-[calc(100vw-78px)]')
     } else {
-      setTableDynamicWidth('w-full laptop:w-[calc(100vw-200px)]')
+      setTableDynamicWidth('w-full laptop:w-[calc(100vw-180px)]')
     }
   }, [isLeftSidebarCollapsed])
 
   // For Sorting Data
   const handleSortColumn = (name: string) => {
-    const currentSortOrder = sortOrders[name]
-    let newSortOrder: 'asc' | 'desc'
-
-    if (currentSortOrder === 'asc') {
-      newSortOrder = 'desc'
-    } else {
-      newSortOrder = 'asc'
-    }
-
-    setSortOrders({ ...sortOrders, [name]: newSortOrder })
     setOrderColumnName(name)
-    switch (name) {
-      case 'BillNumber':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'BillDate':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'VendorName':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'Status':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'DueDate':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'Amount':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      default:
-        break
-    }
+    setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
   }
 
   // function for select All row (Checkboxes)
@@ -511,12 +473,12 @@ const BillApproval: React.FC = () => {
       ),
       BillNumber:
         <div className='flex w-full justify-between'>
-          <label className='w-full break-all font-medium cursor-pointer font-proxima !text-sm !tracking-[0.02em] text-darkCharcoal' onClick={() => handleView(d.AccountPayableId)} >{d.BillNumber}</label>
+          <label className='break-all font-medium cursor-pointer font-proxima !text-sm !tracking-[0.02em] text-darkCharcoal ' onClick={() => handleView(d.AccountPayableId)} >{d.BillNumber}</label>
           <div className='relative mr-4 w-1/5'>
             {d.Attachments?.length > 0 && (
               <div className='overflow-y-auto'>
                 <div className='flex cursor-pointer justify-end' onClick={() => handleOpenAttachFile(d.AccountPayableId)}>
-                  <div className='absolute left-3 -top-2.5'>
+                  <div className='absolute right-[-13px] -top-2.5'>
                     <Badge badgetype='error' variant='dot' text={d.Attachments.length.toString()} />
                   </div>
                   <AttachIcon />
@@ -818,7 +780,7 @@ const BillApproval: React.FC = () => {
   return (
     <Wrapper>
       {/* Navbar */}
-      <div className='sticky top-0 z-[6] flex h-[66px] w-full items-center justify-between bg-whiteSmoke px-5'>
+      <div className='sticky top-0 z-[6] flex !h-[50px] w-full items-center justify-between bg-whiteSmoke px-5'>
         <div>
           <SelectApprovalDropdown />
         </div>
@@ -863,7 +825,7 @@ const BillApproval: React.FC = () => {
       </div>
 
       {/* DataTable */}
-      <div className={`h-[calc(100vh-145px)] custom-scroll approvalMain overflow-auto ${tableDynamicWidth}`}>
+      <div className={`h-[calc(100vh-112px)] custom-scroll approvalMain overflow-auto ${tableDynamicWidth}`}>
         <div className={`${billApprovalList.length === 0 ? 'h-11' : 'h-auto'}`}>
           <DataTable
             zIndex={5}
@@ -892,7 +854,7 @@ const BillApproval: React.FC = () => {
             <div className='flex h-[calc(94vh-150px)] w-full items-center justify-center'>
               <Loader size='md' helperText />
             </div>
-            : <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
+            : <div className='flex h-[44px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
               No records available at the moment.
             </div>
         ) : ''}

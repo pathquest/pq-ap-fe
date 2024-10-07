@@ -55,7 +55,7 @@ function BillingInfo({ billingInfoData, isLoading }: any) {
       )
     } else {
       noDataContent = (
-        <div className={`fixed flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]`}>
+        <div className={`fixed flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]`}>
           No records available at the moment.
         </div>
       )

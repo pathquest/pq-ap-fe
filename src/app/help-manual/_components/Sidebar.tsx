@@ -8,7 +8,7 @@ function Sidebar() {
   const router = useRouter()
   const pathName = usePathname()
   const [loading, subCategories, activeCategoryName] = useSubCategoryList();
-  
+
   const handleSubCategoryClick = (subCategory: SubCateoryList) => {
     const category = pathName.split('/')
     router.push(`/${category[1]}/${category[2]}/${subCategory.attributes?.Slug}`)
@@ -18,7 +18,7 @@ function Sidebar() {
     <>
       <div className='sticky top-4'>
         {activeCategoryName && (
-          <div className='border-l-[2px] border-[#02b89d] bg-[#f6f6f6] p-2 px-4'>
+          <div className='border-l-[2px] border-[#02b89d] bg-whiteSmoke p-2 px-4'>
             <Typography type='h2' className='!text-base font-normal  text-[#333333]'>
               {activeCategoryName}
             </Typography>

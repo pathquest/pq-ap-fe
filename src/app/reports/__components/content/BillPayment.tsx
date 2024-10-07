@@ -65,42 +65,42 @@ function BillPayment({ vendorOptions, locationOptions, setBillPaymentParams }: a
   const getNestedColumns = (groupByValue: any) => {
     return [
       {
-        header: groupByValue === 1 ? 'DUE DATE' : 'VENDOR',
+        header: groupByValue === 1 ? 'Due Date' : 'Vendor',
         accessor: 'Vendor',
         sortable: false,
         colalign: 'left',
         colStyle: '!w-[120px]',
       },
       {
-        header: 'BILL NUMBER',
+        header: 'Bill Number',
         accessor: 'BillNumber',
         sortable: false,
         colalign: 'left',
         colStyle: '!w-[120px]',
       },
       {
-        header: 'BILL DATE',
+        header: 'Bill Date',
         accessor: 'BillDate',
         sortable: false,
         colalign: 'left',
         colStyle: '!w-[120px]',
       },
       {
-        header: 'LOCATION',
+        header: 'Location',
         accessor: 'Location',
         sortable: false,
         colalign: 'left',
         colStyle: '!w-[120px]',
       },
       {
-        header: 'PAYMENT STATUS',
+        header: 'Payment Status',
         accessor: 'PaymentStatus',
         sortable: false,
         colalign: 'left',
         colStyle: '!w-[120px]',
       },
       {
-        header: 'AMOUNT',
+        header: 'Amount',
         accessor: 'Amount',
         sortable: false,
         colalign: 'right',
@@ -282,7 +282,7 @@ function BillPayment({ vendorOptions, locationOptions, setBillPaymentParams }: a
       )
     } else {
       noDataContent = (
-        <div className={`flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]`}>
+        <div className={`flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]`}>
           No records available at the moment.
         </div>
       )
@@ -297,10 +297,10 @@ function BillPayment({ vendorOptions, locationOptions, setBillPaymentParams }: a
 
   return (
     <>
-      <div className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[241px]' : 'h-[66px]'} items-start border-t border-lightSilver`}>
-        <div className='flex w-full items-center justify-between bg-whiteSmoke h-[66px] px-5 py-4'>
+      <div className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[225px]' : 'h-[51px]'} items-start border-t border-lightSilver`}>
+        <div className='flex w-full items-center justify-between bg-whiteSmoke h-[50px] px-5 py-4'>
           <div className='flex'>
-            <Typography className='flex text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
+            <Typography className='flex !text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
               Filter Criteria
             </Typography>
           </div>
@@ -422,7 +422,7 @@ function BillPayment({ vendorOptions, locationOptions, setBillPaymentParams }: a
 
       {runReport && (
         <div
-          className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-380px)]' : 'h-[calc(100vh-210px)]'
+          className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-335px)]' : 'h-[calc(100vh-162px)]'
             } overflow-auto`}
         >
           <div className={`mainTable ${billPaymentsData.length !== 0 && 'h-0'}`}>

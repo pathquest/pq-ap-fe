@@ -31,45 +31,45 @@ export const nestedColumns: Column[] = [
     colStyle: '!w-[55px] !tracking-[0.02em]',
   },
   {
-    header: 'FILE NAME',
+    header: 'File Name',
     accessor: 'FileName',
     sortable: false,
     colStyle: '!w-[130px] !tracking-[0.02em]',
   },
   {
-    header: 'BILL NO.',
+    header: 'Bill No.',
     accessor: 'BillNo',
     sortable: false,
     colStyle: '!w-[160px] !tracking-[0.02em]',
   },
   {
-    header: 'PROCESS',
+    header: 'Process',
     accessor: 'APProviderType',
     sortable: false,
     colStyle: '!w-[150px] !tracking-[0.02em]',
   },
   {
-    header: 'AMOUNT',
+    header: 'Amount',
     accessor: 'Amount',
     sortable: false,
     colStyle: '!w-[125px] !pr-[30px] !tracking-[0.02em]',
     colalign: 'right',
   },
   {
-    header: 'UPLOADED DATE & TIME',
+    header: 'Uploaded Date & Time',
     accessor: 'UploadedDate',
     sortable: false,
     colStyle: '!w-[200px] !tracking-[0.02em]',
   },
   {
-    header: 'PAGES',
+    header: 'Pages',
     accessor: 'Pages',
     sortable: false,
     colStyle: '!w-[100px] !tracking-[0.02em]',
     colalign: 'right'
   },
   {
-    header: 'LOCATION',
+    header: 'Location',
     accessor: 'LocationName',
     sortable: false,
     colStyle: '!w-[150px] !tracking-[0.02em]',
@@ -148,7 +148,7 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
   const [isVendorDetails, setIsVendorDetails] = useState<boolean>(false)
 
   const [localFilterFormFields, setLocalFilterFormFields] = useState<HistoryFilterFormFieldsProps>(filterFormFields)
-  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
+  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
 
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
   const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false)
@@ -286,9 +286,9 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
-      setTableDynamicWidth('w-full laptop:w-[calc(100vw-85px)]')
+      setTableDynamicWidth('w-full laptop:w-[calc(100vw-78px)]')
     } else {
-      setTableDynamicWidth('w-full laptop:w-[calc(100vw-200px)]')
+      setTableDynamicWidth('w-full laptop:w-[calc(100vw-180px)]')
     }
   }, [isLeftSidebarCollapsed])
 
@@ -458,7 +458,7 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
       )
     } else {
       noDataContent = (
-        <div className='fixed flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]'>
+        <div className='fixed flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
           No records available at the moment.
         </div>
       )
@@ -482,9 +482,9 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
             }} />
         ) : (
           <>
-            <div className='sticky top-0 z-[6] flex !h-[66px] items-center justify-between bg-whiteSmoke laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
+            <div className='sticky top-0 z-[6] flex !h-[50px] items-center justify-between bg-whiteSmoke laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
               <div className='flex items-center'>
-                <label className='font-proxima flex cursor-pointer items-center laptop:text-base laptopMd:text-base lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg laptop:font-semibold laptopMd:font-semibold lg:font-semibold xl:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>File History</label>
+                <label className='font-proxima flex items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>File History</label>
               </div>
               <div className='flex items-center laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5'>
                 <div className='flex justify-center items-center h-6 laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5 border-r border-lightSilver laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em] text-darkCharcoal'>
@@ -507,7 +507,7 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
               </div>
 
             </div >
-            <div className={`custom-scroll h-[calc(100vh-145px)] approvalMain overflow-auto ${tableDynamicWidth}`}>
+            <div className={`custom-scroll h-[calc(100vh-112px)] approvalMain overflow-auto ${tableDynamicWidth}`}>
               <div className={`historyTable !outline-none ${table_Data.length === 0 ? 'h-11' : 'h-auto'}`}>
                 <DataTable
                   columns={columns}

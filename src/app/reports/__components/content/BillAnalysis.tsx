@@ -21,6 +21,7 @@ import {
 } from 'pq-ap-lib'
 import { useEffect, useState } from 'react'
 import ColumnFilter from '../columnFilter/ColumnFilter'
+import { toInitCap } from '@/components/Common/Functions/FormatText'
 // import ColumnFilter from '@/components/Common/Custom/ColumnFilter'
 
 function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, setDetailsView, termOptions }: any) {
@@ -54,13 +55,13 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
   const [isExpanded, setIsExpanded] = useState<boolean>(true)
 
   const [isCheckedValue, setIsCheckedValue] = useState<boolean>(false)
-  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptopMd:w-[calc(100vw-200px)]')
+  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptopMd:w-[calc(100vw-180px)]')
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
-      setTableDynamicWidth('w-full laptopMd:w-[calc(100vw-85px)]')
+      setTableDynamicWidth('w-full laptopMd:w-[calc(100vw-78px)]')
     } else {
-      setTableDynamicWidth('w-full laptopMd:w-[calc(100vw-200px)]')
+      setTableDynamicWidth('w-full laptopMd:w-[calc(100vw-180px)]')
     }
   }, [isLeftSidebarCollapsed])
 
@@ -133,12 +134,12 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
         }
 
         return {
-          header: label,
+          header: toInitCap(label),
           accessor: label.split(' ').join(''),
           visible: value,
           sortable: false,
           colalign: colalign,
-          colStyle: `${columnStyle} !tracking-[0.02em] !uppercase`,
+          colStyle: `${columnStyle} !tracking-[0.02em]`,
         }
       })
       const dataVisible = data.filter((h) => h.visible === true)
@@ -527,7 +528,7 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
       )
     } else {
       noDataContent = (
-        <div className={`fixed flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]`}>
+        <div className={`fixed flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]`}>
           No records available at the moment.
         </div>
       )
@@ -543,12 +544,12 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
   return (
     <>
       <div
-        className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[320px]' : 'h-[66px]'
+        className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[225px]' : 'h-[51px]'
           } items-start border-t border-lightSilver`}
       >
-        <div className='flex w-full items-center justify-between bg-whiteSmoke h-[66px] px-5 py-4'>
+        <div className='flex w-full items-center justify-between bg-whiteSmoke !h-[50px] px-5 py-4'>
           <div className='flex'>
-            <Typography className='flex text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
+            <Typography className='flex !text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
               Filter Criteria
             </Typography>
           </div>
@@ -722,7 +723,7 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
 
       {runReport && (
         <div
-          className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-400px)]' : 'h-[calc(100vh-210px)]'
+          className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-335px)]' : 'h-[calc(100vh-162px)]'
             } overflow-auto ${tableDynamicWidth}`}
         >
           <div

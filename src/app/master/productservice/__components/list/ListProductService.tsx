@@ -243,7 +243,7 @@ const ListProductService: React.FC = () => {
       </div>
 
       {/* DataTable */}
-      <div className='h-[calc(100vh-145px)] overflow-auto custom-scroll max-[425px]:mx-1'>
+      <div className='h-[calc(100vh-128px)] overflow-auto custom-scroll max-[425px]:mx-1'>
         <div className={`${productList.length !== 0 && 'h-0'}`}>
           <DataTable
             columns={columns}

@@ -61,8 +61,12 @@ const ListPaymentStatus: React.FC = () => {
   const [refreshTable, setRefreshTable] = useState<boolean>(false)
 
   const [mapColId, setMapColId] = useState<number>(-1)
+
   const [orderBy, setOrderBy] = useState<number | null>(1)
-  const [orderColumnName, setOrderColumnName] = useState<string | null>(null)
+  const [orderColumnName, setOrderColumnName] = useState<string | null>('PaymentDate')
+  const [hoveredColumn, setHoveredColumn] = useState<string>("");
+  const [parsedColumnData, setParsedColumnData] = useState<any>([])
+
   const [headersDropdown, setHeadersDropdown] = useState<Object[]>([])
   const [paymentStatusHeaders, setPaymentStatusHeaders] = useState<Object[]>([])
   const [paymentStatusList, setPaymentStatusList] = useState<BillListItem[]>([])
@@ -74,7 +78,7 @@ const ListPaymentStatus: React.FC = () => {
   const [columnListVisible, setColumnListVisible] = useState<Object[]>([])
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState<boolean>(false)
-  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
+  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
   const [cancelPaymentId, setCancelPaymentId] = useState<number>(0)
 
   const [statusList, setStatusList] = useState<StatusListData[]>([])
@@ -85,16 +89,6 @@ const ListPaymentStatus: React.FC = () => {
   const [selectedPayableId, setSelectedPayableId] = useState<number | null>(null)
   const [isInfoTextVisible, setIsInfoTextVisible] = useState<boolean>(false)
   const [isDownloadClicked, setIsDownloadClicked] = useState<boolean>(false)
-
-  const [sortOrders, setSortOrders] = useState<{ [key: string]: null | 'asc' | 'desc' }>({
-    Bills: null,
-    Amount: null,
-    PaymentDate: null,
-    PaymentMethod: null,
-    Vendor: null,
-    AvailCredit: null,
-    Status: null,
-  })
 
   //For Lazy Loading
   const [shouldLoadMore, setShouldLoadMore] = useState<boolean>(true)
@@ -107,53 +101,53 @@ const ListPaymentStatus: React.FC = () => {
   // Nested Data Columns
   const nestedColumns: any = [
     {
-      header: 'BILL NUMBER',
+      header: 'Bill Number',
       accessor: 'BillNumber',
       colalign: 'left',
       colStyle: '!tracking-[0.02em] !w-[190px]',
     },
     {
-      header: 'DUE DATE',
+      header: 'Due Date',
       accessor: 'DueDate',
       colStyle: '!tracking-[0.02em] !w-[100px]',
     },
     {
-      header: 'REMAINING AMOUNT',
+      header: 'Remaining Amount',
       accessor: 'RemainingAmount',
       colalign: 'right',
       colStyle: '!tracking-[0.02em] !w-[150px]',
     },
     {
-      header: 'BILL STATUS',
+      header: 'Bill Status',
       accessor: 'BillStatus',
       colStyle: '!tracking-[0.02em] !w-[100px]',
     },
     {
-      header: 'BILL AMOUNT',
+      header: 'Bill Amount',
       accessor: 'BillAmount',
       colalign: 'right',
       colStyle: '!tracking-[0.02em] !w-[140px]',
     },
     {
-      header: 'SELECTED FOR PAYMENT',
+      header: 'Selected For Payment',
       accessor: 'SelectedForPayment',
       colalign: 'right',
       colStyle: '!tracking-[0.02em] !w-[180px]',
     },
     {
-      header: 'AVAILED CREDIT',
+      header: 'Availed Credit',
       accessor: 'AvailCredit',
       colalign: 'right',
       colStyle: '!tracking-[0.02em] !w-[150px]',
     },
     {
-      header: 'DISCOUNT',
+      header: 'Discount',
       accessor: 'Discount',
       colalign: 'right',
       colStyle: '!tracking-[0.02em] !w-[150px]',
     },
     {
-      header: 'PAYABLE AMOUNT',
+      header: 'Payable Amount',
       accessor: 'PayableAmount',
       colalign: 'right',
       colStyle: '!tracking-[0.02em] !w-[150px]',
@@ -195,7 +189,7 @@ const ListPaymentStatus: React.FC = () => {
   }, [isPaymentStatusView]);
 
   useEffect(() => {
-    setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-full laptop:w-[calc(100vw-85px)]' : 'w-full laptop:w-[calc(100vw-200px)]')
+    setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-full laptop:w-[calc(100vw-78px)]' : 'w-full laptop:w-[calc(100vw-180px)]')
   }, [isLeftSidebarCollapsed])
 
   const handleColumnFilter = () => {
@@ -336,96 +330,7 @@ const ListPaymentStatus: React.FC = () => {
     performApiAction(dispatch, getPaymentStatusColumnMapping, params, (responseData: any) => {
       setMapColId(responseData?.Id)
       const obj = JSON.parse(responseData?.ColumnList)
-      const data = Object.entries(obj).map(([label, value]) => {
-        let columnStyle = ''
-        let colalign = ''
-        switch (label) {
-          case 'Bills':
-            columnStyle = '!w-[120px]'
-            break
-          case 'Payment Date':
-            columnStyle = '!w-[150px]'
-            break
-          case 'Vendor':
-            columnStyle = '!w-[170px]'
-            break
-          case 'Transaction Status':
-            columnStyle = '!w-[200px]'
-            break
-          case 'Payment Method':
-            columnStyle = '!w-[160px]'
-            colalign = 'left'
-            break
-          case 'Total Bill Amount':
-            columnStyle = '!w-[180px]'
-            colalign = 'right'
-            break
-          case 'Selected for Payment':
-            columnStyle = '!w-[230px]'
-            colalign = 'right'
-            break
-          case 'Avail Credit':
-            columnStyle = '!w-[180px]'
-            colalign = 'right'
-            break
-          case 'Total Payable':
-            columnStyle = '!w-[180px]'
-            colalign = 'right'
-            break
-          default:
-            break
-        }
-
-        return {
-          header:
-            label === 'Bills' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Bills')}>
-                Bills <SortIcon order={sortOrders['Bills']}></SortIcon>
-              </div>
-            ) : label === 'Avail Credit' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('AvailCredit')}>
-                Availed Credit <SortIcon order={sortOrders['AvailCredit']}></SortIcon>
-              </div>
-            ) : label === 'Payment Date' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('PaymentDate')}>
-                Payment Date <SortIcon order={sortOrders['PaymentDate']}></SortIcon>
-              </div>
-            ) : label === 'Vendor' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Vendor')}>
-                Vendor <SortIcon order={sortOrders['Vendor']}></SortIcon>
-              </div>
-            ) : label === 'Transaction Status' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('TransactionStatus')}>
-                Transaction Status <SortIcon order={sortOrders['TransactionStatus']}></SortIcon>
-              </div>
-            ) : label == 'Total Bill Amount' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('TotalBillAmount')}>
-                Total Bill Amount  <SortIcon order={sortOrders['TotalBillAmount']}></SortIcon>
-              </div>
-            ) : label === 'Payment Method' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('PaymentMethod')}>
-                Payment Method <SortIcon order={sortOrders['PaymentMethod']}></SortIcon>
-              </div>
-            ) : label == 'Selected for Payment' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('SelectedForPayment')}>
-                Selected for Payment <SortIcon order={sortOrders['SelectedForPayment']}></SortIcon>
-              </div>
-            ) : label == 'Total Payable' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('TotalPayable')}>
-                Total Payable <SortIcon order={sortOrders['TotalPayable']}></SortIcon>
-              </div>
-            ) : label,
-          accessor: label.split(' ').join(''),
-          visible: value,
-          sortable: false,
-          colalign: colalign,
-          colStyle: `${columnStyle} !tracking-[0.02em] !uppercase`,
-        }
-      })
-      const dataVisible = data.filter((h) => h.visible === true)
-      const Arr = dataVisible ? dataVisible.map((item) => item) : []
-      setColumnListVisible(Arr)
-      setHeadersDropdown(data)
+      setParsedColumnData(obj)
     })
   }
 
@@ -435,57 +340,116 @@ const ListPaymentStatus: React.FC = () => {
 
   useEffect(() => {
     if (CompanyId) {
-      getMappingListData()
       getLocationDropdownList()
       getVendorDropdownList()
       getPaymentMethodDropdownList()
     }
   }, [CompanyId])
 
+  useEffect(() => {
+    if (CompanyId) {
+      getMappingListData()
+    }
+  }, [CompanyId])
+
+  useEffect(() => {
+
+    const data = Object.entries(parsedColumnData).map(([label, value]) => {
+      let columnStyle = ''
+      let colalign = ''
+      switch (label) {
+        case 'Bills':
+          columnStyle = '!w-[120px]'
+          break
+        case 'Payment Date':
+          columnStyle = '!w-[150px]'
+          break
+        case 'Vendor':
+          columnStyle = '!w-[170px]'
+          break
+        case 'Transaction Status':
+          columnStyle = '!w-[200px]'
+          break
+        case 'Payment Method':
+          columnStyle = '!w-[160px]'
+          colalign = 'left'
+          break
+        case 'Total Bill Amount':
+          columnStyle = '!w-[180px]'
+          colalign = 'right'
+          break
+        case 'Selected for Payment':
+          columnStyle = '!w-[230px]'
+          colalign = 'right'
+          break
+        case 'Avail Credit':
+          columnStyle = '!w-[180px]'
+          colalign = 'right'
+          break
+        case 'Total Payable':
+          columnStyle = '!w-[180px]'
+          colalign = 'right'
+          break
+        default:
+          break
+      }
+
+      return {
+        header:
+          label === 'Bills' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Bills')} onMouseEnter={() => setHoveredColumn("Bills")} onMouseLeave={() => setHoveredColumn("")}>
+              Bills <SortIcon orderColumn="Bills" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "Bills"}></SortIcon>
+            </div>
+          ) : label === 'Avail Credit' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('AvailCredit')} onMouseEnter={() => setHoveredColumn("AvailCredit")} onMouseLeave={() => setHoveredColumn("")}>
+              Availed Credit <SortIcon orderColumn="AvailCredit" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "AvailCredit"}></SortIcon>
+            </div>
+          ) : label === 'Payment Date' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('PaymentDate')} onMouseEnter={() => setHoveredColumn("PaymentDate")} onMouseLeave={() => setHoveredColumn("")}>
+              Payment Date <SortIcon orderColumn="PaymentDate" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "PaymentDate"}></SortIcon>
+            </div>
+          ) : label === 'Vendor' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Vendor')} onMouseEnter={() => setHoveredColumn("Vendor")} onMouseLeave={() => setHoveredColumn("")}>
+              Vendor <SortIcon orderColumn="Vendor" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "Vendor"}></SortIcon>
+            </div>
+          ) : label === 'Transaction Status' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('TransactionStatus')} onMouseEnter={() => setHoveredColumn("TransactionStatus")} onMouseLeave={() => setHoveredColumn("")}>
+              Transaction Status <SortIcon orderColumn="TransactionStatus" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "TransactionStatus"}></SortIcon>
+            </div>
+          ) : label == 'Total Bill Amount' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('TotalBillAmount')} onMouseEnter={() => setHoveredColumn("TotalBillAmount")} onMouseLeave={() => setHoveredColumn("")}>
+              Total Bill Amount <SortIcon orderColumn="TotalBillAmount" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "TotalBillAmount"}></SortIcon>
+            </div>
+          ) : label === 'Payment Method' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('PaymentMethod')} onMouseEnter={() => setHoveredColumn("PaymentMethod")} onMouseLeave={() => setHoveredColumn("")}>
+              Payment Method <SortIcon orderColumn="PaymentMethod" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "PaymentMethod"}></SortIcon>
+            </div>
+          ) : label == 'Selected for Payment' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('SelectedForPayment')} onMouseEnter={() => setHoveredColumn("SelectedForPayment")} onMouseLeave={() => setHoveredColumn("")}>
+              Selected for Payment <SortIcon orderColumn="SelectedForPayment" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "SelectedForPayment"}></SortIcon>
+            </div>
+          ) : label == 'Total Payable' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('TotalPayable')} onMouseEnter={() => setHoveredColumn("TotalPayable")} onMouseLeave={() => setHoveredColumn("")}>
+              Total Payable <SortIcon orderColumn="TotalPayable" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "TotalPayable"}></SortIcon>
+            </div>
+          ) : label,
+        accessor: label.split(' ').join(''),
+        visible: value,
+        sortable: false,
+        colalign: colalign,
+        colStyle: `${columnStyle} !tracking-[0.02em]`,
+      }
+    })
+    const dataVisible = data.filter((h) => h.visible === true)
+    const Arr = dataVisible ? dataVisible.map((item) => item) : []
+    setColumnListVisible(Arr)
+    setHeadersDropdown(data)
+  }, [orderBy, hoveredColumn, parsedColumnData])
+
   // For Sorting Data
   const handleSortColumn = (name: string) => {
-    const currentSortOrder = sortOrders[name]
-    let newSortOrder: 'asc' | 'desc'
-
-    if (currentSortOrder === 'asc') {
-      newSortOrder = 'desc'
-    } else {
-      newSortOrder = 'asc'
-    }
-
-    setSortOrders({ ...sortOrders, [name]: newSortOrder })
     setOrderColumnName(name)
-    switch (name) {
-      case 'Bills':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'PaymentDate':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'Vendor':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'TransactionStatus':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'AvailCredit':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'TotalBillAmount':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'SelectedForPayment':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'PaymentMethod':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'TotalPayable':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      default:
-        break
-    }
+    setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
   }
 
   const columns: any = [
@@ -581,7 +545,7 @@ const ListPaymentStatus: React.FC = () => {
         d?.Vendor && d?.Vendor.length > (paymentStatusHeaders.length < 7 ? 30 : 19) ?
           <Tooltip position='right' content={d.Vendor} className='!m-0 !p-0 !z-[4]'>
             <label
-              className='cursor-pointer text-sm w-[170px]'
+              className='cursor-pointer text-sm w-[170px] '
               style={{
                 display: '-webkit-box',
                 WebkitBoxOrient: 'vertical',
@@ -597,7 +561,7 @@ const ListPaymentStatus: React.FC = () => {
               {d.Vendor}
             </label>
           </Tooltip>
-          : <label className='font-proxima text-sm cursor-pointer' onClick={() => {
+          : <label className='font-proxima text-sm cursor-pointer ' onClick={() => {
             setPaymentDetailsList(d?.BillsList)
             setVendor(d?.Vendor)
             setOpenDetailsView(true)
@@ -743,7 +707,7 @@ const ListPaymentStatus: React.FC = () => {
 
   return (
     <Wrapper>
-      <div className={`sticky top-0 ${isDownloadClicked ? "z-[7]" : "z-[6]"} flex h-[66px] w-full items-center justify-between bg-whiteSmoke px-5`}>
+      <div className={`sticky top-0 ${isDownloadClicked ? "z-[7]" : "z-[6]"} flex h-[50px] w-full items-center justify-between bg-whiteSmoke px-5`}>
         {isOpenDetailsView ? (
           <Breadcrumb variant='/' items={[
             { label: 'Payment Status', goBack: () => setOpenDetailsView(false) },
@@ -779,7 +743,7 @@ const ListPaymentStatus: React.FC = () => {
 
       {isOpenDetailsView ? (
         <>
-          <div className={`custom-scroll h-[calc(100vh-145px)] approvalMain overflow-auto ${tableDynamicWidth}`}>
+          <div className={`custom-scroll h-[calc(100vh-112px)] approvalMain overflow-auto ${tableDynamicWidth}`}>
             <div className={`${paymentDetailsList.length === 0 ? 'h-11' : 'h-auto'}`}>
               <DataTable
                 columns={nestedColumns}
@@ -804,14 +768,14 @@ const ListPaymentStatus: React.FC = () => {
                 <div className='flex h-[calc(94vh-150px)] w-full items-center justify-center'>
                   <Loader size='md' helperText />
                 </div>
-                : <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
+                : <div className='flex h-[44px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
                   No records available at the moment.
                 </div>
             ) : ''}
           </div>
         </>
       ) : (
-        <div className={`custom-scroll h-[calc(100vh-145px)] approvalMain overflow-auto ${tableDynamicWidth}`}>
+        <div className={`custom-scroll h-[calc(100vh-112px)] approvalMain overflow-auto ${tableDynamicWidth}`}>
           <div className={`expandableTable ${paymentStatusData.length === 0 ? 'h-11' : 'h-auto'}`}>
             <DataTable
               columns={columns}
@@ -834,7 +798,7 @@ const ListPaymentStatus: React.FC = () => {
               <div className='flex h-[calc(94vh-150px)] w-full items-center justify-center'>
                 <Loader size='md' helperText />
               </div>
-              : <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
+              : <div className='flex h-[44px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
                 No records available at the moment.
               </div>
           ) : ''}

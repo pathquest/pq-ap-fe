@@ -20,9 +20,9 @@ const Wrapper = ({ children, masterSettings }: WrapperProps): JSX.Element => {
   const [profileData, setProfileData] = useState<ProfileData | null>(null)
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
 
-  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
+  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
   useEffect(() => {
-    setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-full laptop:w-[calc(100vw-85px)]' : 'w-full laptop:w-[calc(100vw-200px)]')
+    setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-full laptop:w-[calc(100vw-78px)]' : 'w-full laptop:w-[calc(100vw-180px)]')
   }, [isLeftSidebarCollapsed])
 
   useEffect(() => {

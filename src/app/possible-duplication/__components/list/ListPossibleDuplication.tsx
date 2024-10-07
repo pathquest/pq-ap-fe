@@ -1312,7 +1312,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
             )
         } else {
             noDataContent = (
-                <div className='fixed flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]'>
+                <div className='fixed flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
                     No records available at the moment.
                 </div>
             )
@@ -1378,7 +1378,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
                         />
                     </div>
 
-                    <div className={`custom-scroll h-[calc(100vh-145px)] overflow-scroll ${tableDynamicWidth}`}>
+                    <div className={`custom-scroll h-[calc(100vh-128px)] overflow-scroll ${tableDynamicWidth}`}>
                         <div className={`mainTable ${billLists.length !== 0 && 'h-0'}`}>
                             <DataTable
                                 getExpandableData={() => { }}

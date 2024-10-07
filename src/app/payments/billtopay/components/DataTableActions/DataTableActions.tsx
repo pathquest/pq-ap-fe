@@ -15,6 +15,7 @@ export const Actions: React.FC<ActionsProps> = ({ actions, id, Guid, vendorId, a
     const handleRowClick = (id: any) => {
         actionRowId(id)
     }
+
     return (
         <Dropdown>
             <MenuButton className={'!border-none !bg-transparent'} onClick={() => handleRowClick(id)}>
@@ -32,4 +33,3 @@ export const Actions: React.FC<ActionsProps> = ({ actions, id, Guid, vendorId, a
         </Dropdown>
     )
 }
-

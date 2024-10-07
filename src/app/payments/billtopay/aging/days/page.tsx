@@ -16,7 +16,6 @@ import MarkAsPaidModal from '../../components/modals/MarkAsPaidModal'
 import MoveBillsToPayModals from '../../components/modals/MoveBillsToPayModal'
 
 // Icons
-import SortIcon from '../../components/Icons/SortIcon'
 import GetFileIcon from '@/app/bills/__components/GetFileIcon'
 import AttachIcon from '@/assets/Icons/billposting/AttachIcon'
 import BackArrow from '@/assets/Icons/payments/BackArrow'
@@ -46,6 +45,7 @@ import MultipleVendorMultiplePaymentDetailsModal from '../../components/payment-
 import SinglePaymentDetailsModal from '../../components/payment-details/SinglePaymentDetailsModal'
 import SingleVendorMultiplePaymentDetailsModal from '../../components/payment-details/SingleVendorMultiplePaymentDetailsModal'
 import { storageConfig } from '@/components/Common/pdfviewer/config'
+import SortIcon from '@/assets/Icons/SortIcon'
 
 const PaymentAgingDays: React.FC = () => {
   const UserId = localStorage.getItem('UserId')
@@ -78,8 +78,10 @@ const PaymentAgingDays: React.FC = () => {
   const [isPdfLoading, setIsPdfLoading] = useState<boolean>(false)
   const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false)
 
-  const [orderBy, setOrderBy] = useState<number | null>(0)
+  const [orderBy, setOrderBy] = useState<number | null>()
   const [orderColumnName, setOrderColumnName] = useState<string | null>('DueDate')
+  const [hoveredColumn, setHoveredColumn] = useState<string>("");
+  const [parsedColumnData, setParsedColumnData] = useState<any>([])
 
   const [currentPayValue, setCurrentPayValue] = useState({
     billNumber: '',
@@ -520,95 +522,7 @@ const PaymentAgingDays: React.FC = () => {
     performApiAction(dispatch, getPaymentColumnMapping, params, (responseData: any) => {
       setMapColId(responseData?.Id)
       const obj = JSON.parse(responseData?.ColumnList)
-      const data = Object.entries(obj).map(([label, value]) => {
-        let columnStyle = ''
-        let colalign = ''
-        switch (label) {
-          case 'Due Date':
-            columnStyle = '!w-[140px]'
-            break
-          case 'Bill Number':
-            columnStyle = '!w-[150px]'
-            break
-          case 'Vendor':
-            columnStyle = '!w-[180px]'
-            colalign = 'left'
-            break
-          case 'Remaining':
-            columnStyle = '!w-[160px]'
-            colalign = 'right'
-            break
-          case 'Available Credit':
-            columnStyle = '!w-[180px]'
-            colalign = 'right'
-            break
-          case 'Bill Amount':
-            columnStyle = '!w-[140px] !pr-[10px]'
-            colalign = 'right'
-            break
-          case 'Payment Status':
-            columnStyle = '!w-[140px]'
-            break
-          case 'Discount':
-            columnStyle = '!w-[140px]'
-            colalign = 'right'
-            break
-          case 'Location':
-            columnStyle = '!w-[140px]'
-            colalign = 'right'
-            break
-          case 'Bill Date':
-            columnStyle = '!w-[100px]'
-            break
-          default:
-            break
-        }
-        return {
-          header:
-            label === 'Due Date' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('DueDate')}>
-                Due Date <SortIcon orderColumn="DueDate" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
-              </div>
-            ) : label === 'Bill Number' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('BillNumber')}>
-                Bill Number <SortIcon orderColumn="BillNumber" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
-              </div>
-            ) : label === 'Vendor' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('VendorName')}>
-                Vendor <SortIcon orderColumn="VendorName" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
-              </div>
-            ) : label === 'Bill Date' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('BillDate')}>
-                Bill Date <SortIcon orderColumn="BillDate" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
-              </div>
-            ) : label === 'Remaining' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('RemanningDue')}>
-                Remaining <SortIcon orderColumn="RemanningDue" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
-              </div>
-            ) : label == 'Available Credit' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('AvailableCredit')}>
-                Available Credit  <SortIcon orderColumn="AvailableCredit" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
-              </div>
-            ) : label === 'Bill Amount' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('TotalAmount')}>
-                Bill Amount <SortIcon orderColumn="TotalAmount" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
-              </div>
-            ) : label == 'Payment Status' ? (
-              <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('PaymentStatusName')}>
-                Payment Status <SortIcon orderColumn="PaymentStatusName" sortedColumn={orderColumnName} order={orderBy}></SortIcon>
-              </div>
-            ) : label,
-          accessor: label.split(' ').join(''),
-          visible: value,
-          sortable: false,
-          colalign: colalign,
-          colStyle: `${columnStyle} !tracking-[0.02em] !uppercase`,
-        }
-      })
-      const dataVisible = data.filter((h) => h.visible === true)
-      const Arr = dataVisible ? dataVisible.map((item) => item) : []
-      setColumnListVisible(Arr)
-      setHeadersDropdown(data)
+      setParsedColumnData(obj)
     })
   }
 
@@ -620,7 +534,99 @@ const PaymentAgingDays: React.FC = () => {
     if (CompanyId) {
       getMappingListData()
     }
-  }, [CompanyId, orderBy])
+  }, [CompanyId])
+
+  useEffect(() => {
+    const data = Object.entries(parsedColumnData).map(([label, value]) => {
+      let columnStyle = ''
+      let colalign = ''
+      switch (label) {
+        case 'Due Date':
+          columnStyle = '!w-[140px]'
+          break
+        case 'Bill Number':
+          columnStyle = '!w-[150px]'
+          break
+        case 'Vendor':
+          columnStyle = '!w-[180px]'
+          colalign = 'left'
+          break
+        case 'Remaining':
+          columnStyle = '!w-[160px]'
+          colalign = 'right'
+          break
+        case 'Available Credit':
+          columnStyle = '!w-[180px]'
+          colalign = 'right'
+          break
+        case 'Bill Amount':
+          columnStyle = '!w-[140px] !pr-[10px]'
+          colalign = 'right'
+          break
+        case 'Payment Status':
+          columnStyle = '!w-[140px]'
+          break
+        case 'Discount':
+          columnStyle = '!w-[140px]'
+          colalign = 'right'
+          break
+        case 'Location':
+          columnStyle = '!w-[140px]'
+          colalign = 'right'
+          break
+        case 'Bill Date':
+          columnStyle = '!w-[100px]'
+          break
+        default:
+          break
+      }
+      return {
+        header:
+          label === 'Due Date' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('DueDate')} onMouseEnter={() => setHoveredColumn("DueDate")} onMouseLeave={() => setHoveredColumn("")}>
+              Due Date <SortIcon orderColumn="DueDate" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "DueDate"}></SortIcon>
+            </div>
+          ) : label === 'Bill Number' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('BillNumber')} onMouseEnter={() => setHoveredColumn("BillNumber")} onMouseLeave={() => setHoveredColumn("")}>
+              Bill Number <SortIcon orderColumn="BillNumber" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "BillNumber"}></SortIcon>
+            </div>
+          ) : label === 'Vendor' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('VendorName')} onMouseEnter={() => setHoveredColumn("VendorName")} onMouseLeave={() => setHoveredColumn("")}>
+              Vendor <SortIcon orderColumn="VendorName" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "VendorName"}></SortIcon>
+            </div>
+          ) : label === 'Bill Date' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('BillDate')} onMouseEnter={() => setHoveredColumn("BillDate")} onMouseLeave={() => setHoveredColumn("")}>
+              Bill Date <SortIcon orderColumn="BillDate" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "BillDate"}></SortIcon>
+            </div>
+          ) : label === 'Remaining' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('RemanningDue')} onMouseEnter={() => setHoveredColumn("RemanningDue")} onMouseLeave={() => setHoveredColumn("")}>
+              Remaining <SortIcon orderColumn="RemanningDue" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "RemanningDue"}></SortIcon>
+            </div>
+          ) : label == 'Available Credit' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('AvailableCredit')} onMouseEnter={() => setHoveredColumn("AvailableCredit")} onMouseLeave={() => setHoveredColumn("")}>
+              Available Credit  <SortIcon orderColumn="AvailableCredit" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "AvailableCredit"}></SortIcon>
+            </div>
+          ) : label === 'Bill Amount' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('TotalAmount')} onMouseEnter={() => setHoveredColumn("TotalAmount")} onMouseLeave={() => setHoveredColumn("")}>
+              Bill Amount <SortIcon orderColumn="TotalAmount" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "TotalAmount"}></SortIcon>
+            </div>
+          ) : label == 'Payment Status' ? (
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('PaymentStatusName')} onMouseEnter={() => setHoveredColumn("PaymentStatusName")} onMouseLeave={() => setHoveredColumn("")}>
+              Payment Status <SortIcon orderColumn="PaymentStatusName" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "PaymentStatusName"}></SortIcon>
+            </div>
+          ) : label,
+        accessor: label.split(' ').join(''),
+        visible: value,
+        sortable: false,
+        colalign: colalign,
+        colStyle: `${columnStyle} !tracking-[0.02em]`,
+      }
+    })
+    const dataVisible = data.filter((h) => h.visible === true)
+    const Arr = dataVisible ? dataVisible.map((item) => item) : []
+    setColumnListVisible(Arr)
+    setHeadersDropdown(data)
+  }, [orderBy, hoveredColumn, parsedColumnData])
 
   // Adding checkboxes before Headers
   useEffect(() => {
@@ -655,13 +661,13 @@ const PaymentAgingDays: React.FC = () => {
     ...billsToPayHeaders,
     {
       header: (
-        <ColumnFilter
+        headersDropdown.length > 0 ? <ColumnFilter
           headers={headersDropdown.map((h: any) => (h?.header.props ? h?.header?.props?.children : h?.header))}
           visibleHeaders={billsToPayHeaders.slice(1).map((h: any) => (h?.header.props ? h?.header?.props?.children : h?.header))}
           columnId={mapColId}
           getMappingListData={getMappingListData}
           url={savePaymentColumnMapping}
-        />
+        /> : ""
       ),
       accessor: 'action',
       sortable: false,
@@ -821,8 +827,7 @@ const PaymentAgingDays: React.FC = () => {
             <Button
               variant='btn-primary'
               disabled={selectedRows.length > 1}
-              className={`flex !h-7 !px-[18px] !pt-[7px] !pb-[5px] items-center rounded-full cursor-pointer font-proxima font-semibold text-sm tracking-[0.02em] ${selectedRows.length > 1 ? 'opacity-30' : ''
-                }`}
+              className={`flex !h-6 pb-1 items-center rounded-full cursor-pointer font-proxima font-semibold text-sm tracking-[0.02em] ${selectedRows.length > 1 ? 'opacity-30' : ''}`}
               onClick={() => {
                 setIsSingleBillPaymentModalOpen(true)
 
@@ -958,7 +963,7 @@ const PaymentAgingDays: React.FC = () => {
     <Wrapper>
       {/* Navbar */}
       <div className='sticky top-0 z-[6]'>
-        <div className='flex h-16 items-center justify-between bg-lightGray sm:px-4 md:px-4 laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
+        <div className='flex !h-[50px] items-center justify-between bg-lightGray sm:px-4 md:px-4 laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
           <div className='flex items-center gap-1'>
             <span
               className='cursor-pointer'
