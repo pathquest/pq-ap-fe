@@ -3,7 +3,7 @@ import ChevronDown from '@/components/Common/Dropdown/Icons/ChevronDown'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import { AsOfReportPeriodByList, GroupByListVendorAging, VendorBalanceDetailcolumns, ViewByList } from '@/data/reports'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import { setIsVisibleSidebar } from '@/store/features/bills/billSlice'
+import { setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 import { vendorAgingGroupBy } from '@/store/features/reports/reportsSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { format } from 'date-fns'
@@ -198,9 +198,8 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
                                         BillNumber: <div
                                           className='w-4/5 cursor-pointer'
                                           onClick={() => {
-                                            // dispatch(setIsFormDocuments(d.IsFromDocuments))
                                             dispatch(setIsVisibleSidebar(false))
-                                            nestedData.Id && router.push(`/bills/view/${nestedData.Id}`)
+                                            nestedData.Id && router.push(`/reports/view/${nestedData.Id}`)
                                           }}
                                         >
                                           <Typography className='!text-sm text-darkCharcoal !tracking-[0.02em]'>{nestedData.BillNumber ? nestedData.BillNumber : ''}</Typography>

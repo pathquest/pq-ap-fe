@@ -72,14 +72,15 @@ interface IntacctEntityProps {
 }
 
 const ListCompanies = () => {
-  // const user = session ? session?.user : {}
-  const { data: session } = useSession()
-  const UserId = session?.user?.user_id
   const router = useRouter()
   const searchParams = useSearchParams()
+  // const user = session ? session?.user : {}
+
+  const { data: session } = useSession()
+  const UserId = session?.user?.user_id
   const urlToken = session?.user?.access_token
   const user = session ? session?.user : {}
-
+  const IsOrgAdmin = session?.user?.is_organization_admin ?? false
   const { update } = useSession()
 
   const { selectedCompany } = useAppSelector((state) => state.company)
@@ -115,6 +116,7 @@ const ListCompanies = () => {
   const [xeroCompanyData, setXeroCompanyData] = useState<any[] | null>(null)
   const [companyList, setCompanyList] = useState<Company[]>([])
   const [accountingTool, setAccountingTool] = useState<number>(0)
+  const [manageConfigAccountingTool, setManageConfigAccountingTool] = useState<number>(0)
   const [orgId, setOrgId] = useState<number | null>(null)
 
   const { setAccountingToolType } = useCompanyContext()
@@ -799,14 +801,15 @@ const ListCompanies = () => {
   const handleIdGet = (id: number, accountingTool: number) => {
     setSelectedRowId(id)
     setAccountingTool(accountingTool)
+    setManageConfigAccountingTool(accountingTool)
   }
 
   // Show Table of Contents 'Manage Configuration'
   const companyData = companyList && companyList.map((list: any, index) => {
     const actions =
       list?.AccountingTool === 4
-        ? ['Edit', 'Remove', 'Manage Configuration']
-        : !list?.IsFieldMappingSet ? ['Field Mapping', 'Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove', 'Manage Configuration'] : ['Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove', 'Manage Configuration'].filter(Boolean)
+        ? ['Edit', 'Remove', IsOrgAdmin && 'Manage Configuration'].filter(Boolean)
+        : !list?.IsFieldMappingSet ? ['Field Mapping', 'Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove', IsOrgAdmin && 'Manage Configuration'].filter(Boolean) : ['Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove', IsOrgAdmin && 'Manage Configuration'].filter(Boolean)
 
     return {
       Id: <div className={`${list.IsActive ? '' : 'opacity-[50%]'}`}>{index + 1}</div>,
@@ -997,10 +1000,6 @@ const ListCompanies = () => {
     setOpenRemoveModal(false)
   }
 
-  // const handleManageConfigurationDrawerClose = () => {
-  //   setIsManageConfigurationDrawerOpen(false)
-  // }
-
   // set a dynamic orgId
   const globalData = (data: OrgData) => {
     setOrgId(data?.orgId)
@@ -1020,6 +1019,7 @@ const ListCompanies = () => {
     setShouldLoadMore(true)
     setIsNoAccountingToolCompany(false)
     setIsManageConfigurationDrawerOpen(false)
+    setManageConfigAccountingTool(0)
   }
 
   const onReset = () => {
@@ -1028,7 +1028,6 @@ const ListCompanies = () => {
     setSelectedAssignUser([])
     checkIfFiltersChanged({ company: [], accountingTools: [], assignUser: [] })
   }
-
 
   return (
     <>
@@ -1205,7 +1204,7 @@ const ListCompanies = () => {
           isConfirmCancel={isConfirmCancel}
         />
 
-        <ManageConfigurationDrawer onOpen={isManageConfigurationDrawerOpen} onClose={handleDrawerClose} EditCompanyId={editId ?? 0} AccountingTool={accountingTool ?? 0} />
+        <ManageConfigurationDrawer onOpen={isManageConfigurationDrawerOpen} onClose={handleDrawerClose} EditCompanyId={editId ?? 0} AccountingTool={manageConfigAccountingTool ?? 0} />
 
         {/* Drawer Overlay */}
         <DrawerOverlay isOpen={openDrawer || isManageConfigurationDrawerOpen} onClose={() => { }} />
