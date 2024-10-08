@@ -110,7 +110,7 @@ const ListCloudConfiguration: React.FC = () => {
       }
     }
     if (code && selectedConnecterId) {
-      selectedConnecterId === 1 && connectToGoogleDrive() 
+      selectedConnecterId === 1 && connectToGoogleDrive()
       selectedConnecterId === 2 && connectToDropBox()
     }
   }, [code, selectedConnecterId])
@@ -137,7 +137,7 @@ const ListCloudConfiguration: React.FC = () => {
       const scope =
         'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
 
-      const url = `${process.env.GOOGLE_ACCOUNT_OAUTH_URL}?client_id=${process.env.CLOUD_CONFIGURATION_CLIENTID}&redirect_uri=${process.env.CLOUD_CONFIGURATION_REDIRECTURI}&prompt=consent&access_type=offline&response_type=${responseType}&scope=${scope}`
+      const url = `${process.env.GOOGLE_ACCOUNT_OAUTH_URL}?client_id=${process.env.CLOUD_CONFIGURATION_GOOGLEDRIVE_CLIENTID}&redirect_uri=${process.env.CLOUD_CONFIGURATION_GOOGLEDRIVE_REDIRECTURI}&prompt=consent&access_type=offline&response_type=${responseType}&scope=${scope}`
       window.location.href = url
     }
 
@@ -246,30 +246,19 @@ const ListCloudConfiguration: React.FC = () => {
                         )}
                       </div>
                       <div className='text-center font-proxima !text-sm text-[#333]'>
-                        {/* <div className='py-1 font-bold'>
-                          {!!imapConnectedEmail && config.ConnectorId === 4
-                            ? `${config.Name}`
-                            : !!goggleUserInfo.name
-                              ? `${goggleUserInfo.name} - ${config.Name}`
-                              : `Daniel Inc - ${config.Name}`}
-                        </div> */}
-                        <div>
                           {!!imapConnectedEmail && config.ConnectorId === 4 ? imapConnectedEmail : config.AuthUserEmail}
-                        </div>
                       </div>
 
-                      <div className='flex items-center justify-center py-1'>
+                      <div className={`${config.ConnectorId !== 4 ? 'py-1' : 'py-4'} flex items-center justify-center`}>
                         {config.FolderPath ? (
-                          <BasicTooltip position='top' content={config.FolderPath} className='!z-[4]'>
-                            <span>
-                              <FolderIcon />
-                            </span>
+                          <BasicTooltip position='top' content={config.FolderPath} className='!m-0 !z-[4]'>
+                            <FolderIcon />
                           </BasicTooltip>
-                        ) : (
-                          <>
+                        ) : config.ConnectorId !== 4 && (
+                          <div className='flex py-1 justify-center items-center'>
                             <InfoIcon bgColor={'#FB2424'} />
                             <div className='ml-1 font-proxima text-sm text-[#FB2424]'>Source folder is not selected.</div>
-                          </>
+                          </div>
                         )}
                       </div>
 
@@ -279,16 +268,11 @@ const ListCloudConfiguration: React.FC = () => {
                           className='btn-md w-[100px] rounded-full'
                           disabled={false}
                           onClick={() => {
-                            // if (config.IsConnected) {
                             onDisableCloudConnection(config.ConnectorId)
-                            // } else {
-                            // onEnableCloudConnection(config.ConnectorId)
-                            // }
                           }}
                           tabIndex={0}
                         >
                           <Typography className='!text-[14px] font-semibold uppercase'>
-                            {/* {config.IsConnected ? 'DISABLE' : 'ENABLE'} */}
                             DISABLE
                           </Typography>
                         </Button>
