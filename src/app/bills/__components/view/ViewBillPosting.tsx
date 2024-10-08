@@ -12,15 +12,7 @@ import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { documentGetList, setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar } from '@/store/features/bills/billSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { BlobServiceClient } from '@azure/storage-blob'
-import {
-  getPDFUrl,
-  getRoundValue,
-  getViewUpdatedDataFromDetailsResponse,
-  initialBillPostingFilterFormFields,
-  returnKeyValueObjForFormFields,
-  taxTotalAmountCalculate,
-  totalAmountCalculate,
-} from '@/utils/billposting'
+import { getPDFUrl, getRoundValue, getViewUpdatedDataFromDetailsResponse, initialBillPostingFilterFormFields, returnKeyValueObjForFormFields, taxTotalAmountCalculate, totalAmountCalculate } from '@/utils/billposting'
 import dynamic from 'next/dynamic'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Badge, DataTable, Toast, BasicTooltip, Typography, Loader } from 'pq-ap-lib'
@@ -749,7 +741,7 @@ const ViewBillPosting = () => {
                               <div className='relative flex items-center'>
                                 {value !== null && (
                                   <>
-                                    <span className='absolute -top-3 left-2'>
+                                    <span className='absolute -top-[11px] left-1'>
                                       <Badge badgetype='error' variant='dot' text={value.length.toString()} />
                                     </span>
                                     <span className='cursor-pointer' onClick={() => handleOpenAttachFile(value?.Id)}>

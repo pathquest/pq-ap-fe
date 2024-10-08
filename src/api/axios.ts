@@ -61,6 +61,7 @@ import {
   RemoveDocumentOptionsProps,
   SplitDocumentOptions,
   UserListOptionsProps,
+  VendorHistoryListOptions,
   VendorListOptions,
 } from '@/models/billPosting'
 import {
@@ -482,6 +483,7 @@ const Bill = {
   splitDocuments: (data: SplitDocumentOptions) => requests.post(`${API_FILEUPLOAD}/document/splitpdf`, data),
   // getocrDocument: () => requests.get(`${API_FILEUPLOAD}/indexing/getocrDocument`),
   accountPayableSave: (data: any) => requests.postForm(`${API_FILEUPLOAD}/accountpayable/save`, data),
+  getVendorHistoryList: (data: VendorHistoryListOptions) => requests.post(`${API_FILEUPLOAD}/accountpayable/vendorhistorylist`, data),
   getColumnMappingList: (data: GetColumnMappingListOptionsProps) =>
     requests.post(`${API_FILEUPLOAD}/document/getcolumnmappinglist`, data),
   getColumnMappingOverviewList: (data: GetColumnMappingListOptionsProps) =>
