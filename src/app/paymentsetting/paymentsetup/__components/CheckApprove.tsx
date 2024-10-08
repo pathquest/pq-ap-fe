@@ -91,6 +91,11 @@ const CheckApprove: React.FC<DrawerProps> = ({ onClose, Mode, accountId, payment
         }
     }
 
+    const handleSetCheckImage = async (response: any) => {
+        const base64Image = `data:${response.ContentType};base64,${response.FileContents}`
+        return base64Image
+    }
+
     const handleCheckImagePreview = async () => {
         setIsLoading(true)
         const params = {
@@ -102,10 +107,11 @@ const CheckApprove: React.FC<DrawerProps> = ({ onClose, Mode, accountId, payment
             if (meta?.requestStatus === 'fulfilled') {
                 if (payload?.ResponseStatus === 'Success') {
                     const responseData = payload?.ResponseData;
-                    const base64Image = `data:${responseData.ContentType};base64,${responseData.FileContents}`
-                    setCheckImage(base64Image)
+                    const checkImage = await handleSetCheckImage(responseData)
+                    setCheckImage(checkImage)
                     setIsButtonDisable(false)
                     setIsCheckImageVisible(true)
+                    setIsLoading(false)
                 } else {
                     setCheckImageErrorMessage(dataMessage ?? "")
                     setIsCheckImageVisible(false)
