@@ -227,3 +227,11 @@ export interface FileRecordType {
   PageCount: string | undefined
   BillNumber: string | undefined
 }
+
+export interface VendorHistoryListOptions {
+  VendorId: number
+  SearchKeyword: string | number
+  ProcessType: number | null
+  PageNumber: number
+  PageSize: number
+}

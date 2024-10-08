@@ -2,34 +2,35 @@
 'use client'
 
 import agent from '@/api/axios'
+import { fetchAPIsData } from '@/api/server/common'
+import FileModal from '@/app/bills/__components/FileModal'
+import GetFileIcon from '@/app/bills/__components/GetFileIcon'
 import SplitDrawer from '@/app/bills/__components/SplitDrawer'
-import ViewWrapper from '@/app/bills/__components/view/ViewWrapper'
 import ImageIcon from '@/assets/Icons/ImageIcon'
+import AttachIcon from '@/assets/Icons/billposting/AttachIcon'
 import LeftDoubleArrowIcon from '@/assets/Icons/billposting/LeftDoubleArrowIcon'
 import RightDoubleArrowIcon from '@/assets/Icons/billposting/RightDoubleArrowIcon'
+import { storageConfig } from '@/components/Common/pdfviewer/config'
 import { BillPostingFilterFormFieldsProps, EditBillPostingDataProps } from '@/models/billPosting'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { documentGetList, setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar } from '@/store/features/bills/billSlice'
 import { convertStringsDateToUTC } from '@/utils'
-import { BlobServiceClient } from '@azure/storage-blob'
 import { getPDFUrl, getRoundValue, getViewUpdatedDataFromDetailsResponse, initialBillPostingFilterFormFields, returnKeyValueObjForFormFields, taxTotalAmountCalculate, totalAmountCalculate } from '@/utils/billposting'
+import { BlobServiceClient } from '@azure/storage-blob'
+import { useSession } from 'next-auth/react'
 import dynamic from 'next/dynamic'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { Badge, DataTable, Toast, BasicTooltip, Typography, Loader } from 'pq-ap-lib'
+import { Badge, DataTable, Loader, Toast, Typography } from 'pq-ap-lib'
 import { Resizable } from 're-resizable'
 import { useEffect, useRef, useState } from 'react'
-import GetFileIcon from '../GetFileIcon'
-import AttachIcon from '@/assets/Icons/billposting/AttachIcon'
-import FileModal from '../FileModal'
-import { useSession } from 'next-auth/react'
-import { fetchAPIsData } from '@/api/server/common'
-import { storageConfig } from '@/components/Common/pdfviewer/config'
+import ViewReportWrapper from './ViewReportWrapper'
+import { formatFileSize } from '@/components/Common/Functions/FormatFileSize'
 
 const PDFViewer = dynamic(() => import('@/app/bills/__components/PDFViewer'), {
   ssr: false,
 })
 
-const ViewBillPosting = () => {
+const ViewReportBill = () => {
   const { isVisibleSidebar, selectedProcessTypeInList, filterFormFields } = useAppSelector((state) => state.bill)
   const processtype = selectedProcessTypeInList
 
@@ -588,18 +589,10 @@ const ViewBillPosting = () => {
     }
   }
 
-  function formatFileSize(bytes: any) {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
-
   if (Object.keys(formFields).length === 0) return null
 
   return (
-    <ViewWrapper
+    <ViewReportWrapper
       billLists={billLists}
       processSelectionOptions={processOptions}
       processSelection={processSelection}
@@ -741,7 +734,7 @@ const ViewBillPosting = () => {
                               <div className='relative flex items-center'>
                                 {value !== null && (
                                   <>
-                                    <span className='absolute -top-[11px] left-1'>
+                                    <span className='absolute -top-3 left-2'>
                                       <Badge badgetype='error' variant='dot' text={value.length.toString()} />
                                     </span>
                                     <span className='cursor-pointer' onClick={() => handleOpenAttachFile(value?.Id)}>
@@ -878,8 +871,8 @@ const ViewBillPosting = () => {
           openInNewWindow={openInNewWindow}
         />
       )}
-    </ViewWrapper>
+    </ViewReportWrapper>
   )
 }
 
-export default ViewBillPosting
+export default ViewReportBill

@@ -3,14 +3,17 @@ import ChevronDown from '@/components/Common/Dropdown/Icons/ChevronDown'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import { AsOfReportPeriodByList, GroupByListVendorAging, VendorBalanceDetailcolumns, ViewByList } from '@/data/reports'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
+import { setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 import { vendorAgingGroupBy } from '@/store/features/reports/reportsSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { format } from 'date-fns'
+import { useRouter } from 'next/navigation'
 import { Button, DataTable, Datepicker, Loader, MultiSelectChip, Select, Toast, Typography } from 'pq-ap-lib'
 import { useEffect, useState } from 'react'
 
 function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceDetailsParams }: any) {
   const dispatch = useAppDispatch()
+  const router = useRouter()
 
   const [vendorValue, setVendorValue] = useState<string[]>([])
   const [viewByValue, setViewByValue] = useState<number>(2)
@@ -192,11 +195,15 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
                                               : nestedData.VendorName ?? null}
                                           </label>
                                         ),
-                                        BillNumber: (
-                                          <label className='font-medium !tracking-[0.02em]'>
-                                            {nestedData.BillNumber ?? null}
-                                          </label>
-                                        ),
+                                        BillNumber: <div
+                                          className='w-4/5 cursor-pointer'
+                                          onClick={() => {
+                                            dispatch(setIsVisibleSidebar(false))
+                                            nestedData.Id && router.push(`/reports/view/${nestedData.Id}`)
+                                          }}
+                                        >
+                                          <Typography className='!text-sm text-darkCharcoal !tracking-[0.02em]'>{nestedData.BillNumber ? nestedData.BillNumber : ''}</Typography>
+                                        </div>,
                                         BillDate: (
                                           <div className='flex items-center gap-4 font-medium'>
                                             <span className='font-proxima !text-sm !tracking-[0.02em]'>
