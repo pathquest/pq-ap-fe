@@ -8,7 +8,9 @@ const authConfig: NextAuthConfig = {
       async authorize(credentials) {
         
         const user: any = {
-          access_token: credentials.token
+          access_token: credentials.token,
+          expires_at: credentials.expires_at,
+          refresh_token: credentials.refresh_token
         }
         return user
       },
