@@ -172,7 +172,6 @@ const EditBillPosting = ({ processtype }: any) => {
           const parsedData = JSON.parse(copyBillData);
           const newObj = {
             ...updatedDataObj,
-            attachment: null,
             billnumber: "",
             date: currentDate,
             duedate: currentDate,
@@ -1166,7 +1165,6 @@ const EditBillPosting = ({ processtype }: any) => {
 
     const newObj = {
       ...updatedDataObj,
-      attachment: null,
       billnumber: "",
       date: currentDate,
       duedate: currentDate,

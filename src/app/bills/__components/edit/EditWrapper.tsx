@@ -185,6 +185,15 @@ const EditWrapper = ({
   const [isVendorHistoryLoading, setIsVendorHistoryLoading] = useState<boolean>(false)
   const [isVendorBillHistoryListOpen, setIsVendorBillHistoryListOpen] = useState<boolean>(false)
 
+  //For Lazy Loading
+  const [shouldLoadMore, setShouldLoadMore] = useState<boolean>(true)
+  const [itemsLoaded, setItemsLoaded] = useState<number>(0)
+  const [apiDataCount, setApiDataCount] = useState<number>(0)
+  let nextPageIndex: number = 1
+  const lazyRows: number = 10
+  const listBottomRef = useRef<HTMLDivElement>(null)
+  const [isLazyLoading, setIsLazyLoading] = useState<boolean>(false)
+
   const fetchAssigneData = async () => {
     const params = {
       CompanyId: CompanyId,
@@ -830,8 +839,8 @@ const EditWrapper = ({
     setIsVendorHistoryLoading(true)
     setVendorHistoryList([])
     const params = {
-      // VendorId: vendorId ?? 0,
-      VendorId: 14260,
+      VendorId: vendorId ?? 0,
+      // VendorId: 14260,
       SearchKeyword: searchValues,
       ProcessType: 1,
       PageNumber: 1,
@@ -859,8 +868,29 @@ const EditWrapper = ({
 
   const handleRemoveClick = () => {
     setSearchValue('')
-    getVendorHistoryBillList(null)
+    searchValue != "" && getVendorHistoryBillList(null)
   }
+
+  //For Lazy Loading
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLazyLoading && shouldLoadMore && (itemsLoaded % lazyRows === 0) && apiDataCount > 0) {
+          getVendorHistoryBillList(null)
+        }
+      },
+      { threshold: 0 }
+    )
+
+    if (listBottomRef.current) {
+      observer.observe(listBottomRef.current)
+      nextPageIndex = Math.ceil(itemsLoaded / lazyRows) + 1
+    }
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [shouldLoadMore, itemsLoaded, listBottomRef])
 
   return (
     <Wrapper>
@@ -944,7 +974,7 @@ const EditWrapper = ({
           ref={rightBoxRef}
           className={`${isVisibleLeftSidebar ? 'col-span-9' : 'col-span-12'} h-[calc(100vh_-_65px)] overflow-y-auto`}
         >
-          <div className={`!h-[66px] sticky top-0 ${isVendorBillHistoryListOpen ? "z-[7]" : "z-[5]"} flex w-full flex-row justify-between bg-lightGray px-5`}>
+          <div className={`!h-[66px] sticky top-0 ${isVendorBillHistoryListOpen ? "z-[7]" : "z-[6]"} flex w-full flex-row justify-between bg-lightGray px-5`}>
             <div className='flex items-center justify-center '>
               {!isVisibleLeftSidebar && (
                 <span className='cursor-pointer rounded-full bg-white p-1.5' onClick={() => {
@@ -1052,6 +1082,10 @@ const EditWrapper = ({
                           ))}
                         </tbody>
                       </table>}
+                    {isLazyLoading && !isLoading && (
+                      <Loader size='sm' helperText />
+                    )}
+                    <div ref={listBottomRef} />
                   </div>
                 </div>
               </li>

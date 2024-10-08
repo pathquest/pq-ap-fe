@@ -166,6 +166,15 @@ const ViewWrapper = ({
 
   const module = searchParams.get('module')
 
+  //For Lazy Loading
+  const [shouldLoadMore, setShouldLoadMore] = useState<boolean>(true)
+  const [itemsLoaded, setItemsLoaded] = useState<number>(0)
+  const [apiDataCount, setApiDataCount] = useState<number>(0)
+  let nextPageIndex: number = 1
+  const lazyRows: number = 10
+  const listBottomRef = useRef<HTMLDivElement>(null)
+  const [isLazyLoading, setIsLazyLoading] = useState<boolean>(false)
+
   const fetchAssigneData = async () => {
     const params = {
       CompanyId: parseInt(CompanyId),
@@ -761,8 +770,8 @@ const ViewWrapper = ({
     setIsVendorHistoryLoading(true)
     setVendorHistoryList([])
     const params = {
-      // VendorId: vendorId ?? 0,
-      VendorId: 14260,
+      VendorId: vendorId ?? 0,
+      // VendorId: 14260,
       SearchKeyword: searchValues,
       ProcessType: 1,
       PageNumber: 1,
@@ -790,9 +799,29 @@ const ViewWrapper = ({
 
   const handleRemoveClick = () => {
     setSearchValue('')
-    getVendorHistoryBillList(null)
+    searchValue != "" && getVendorHistoryBillList(null)
   }
 
+  //For Lazy Loading
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLazyLoading && shouldLoadMore && (itemsLoaded % lazyRows === 0) && apiDataCount > 0) {
+          getVendorHistoryBillList(null)
+        }
+      },
+      { threshold: 0 }
+    )
+
+    if (listBottomRef.current) {
+      observer.observe(listBottomRef.current)
+      nextPageIndex = Math.ceil(itemsLoaded / lazyRows) + 1
+    }
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [shouldLoadMore, itemsLoaded, listBottomRef])
 
   return (
     <Wrapper>
@@ -876,7 +905,7 @@ const ViewWrapper = ({
           className={`${isVisibleLeftSidebar ? 'col-span-8 laptop:col-span-9' : 'col-span-12'
             } h-[calc(100vh_-_65px)] overflow-y-auto`}
         >
-          <div className={`!h-[66px] sticky top-0 ${isVendorBillHistoryListOpen ? "z-[7]" : "z-[5]"} flex w-full flex-row justify-between bg-[#F4F4F4] px-5`}>
+          <div className={`!h-[66px] sticky top-0 ${isVendorBillHistoryListOpen ? "z-[7]" : "z-[6]"} flex w-full flex-row justify-between bg-[#F4F4F4] px-5`}>
             <div className='flex items-center justify-center'>
               {!isVisibleLeftSidebar && (
                 <span
@@ -906,7 +935,7 @@ const ViewWrapper = ({
                 onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleActivities(true)}
               >
                 <BasicTooltip position='bottom' content='Copy Bill' className='!font-proxima !px-0 !text-[14px]'>
-                <CopyIcon />
+                  <CopyIcon />
                 </BasicTooltip>
               </li>
               <li className='h-full flex items-center'
@@ -1038,6 +1067,10 @@ const ViewWrapper = ({
                             ))}
                           </tbody>
                         </table>}
+                      {isLazyLoading && !isLoading && (
+                        <Loader size='sm' helperText />
+                      )}
+                      <div ref={listBottomRef} />
                     </div>
                   </div>
                 </li>
