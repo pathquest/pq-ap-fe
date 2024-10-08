@@ -96,7 +96,7 @@ const ColumnFilter: React.FC<ColumnFilterDropdownProps & { maxHeight?: string }>
         Toast.error(`${payload?.status} : ${payload?.statusText}`)
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 

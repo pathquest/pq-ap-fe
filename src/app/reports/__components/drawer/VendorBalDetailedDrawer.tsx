@@ -7,6 +7,8 @@ import { vendorAgingGroupBy } from '@/store/features/reports/reportsSlice'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import { VendorBalanceDetailcolumns, VendorSummaryDetail } from '@/data/reports'
 import { format } from 'date-fns'
+import { setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
+import { useRouter } from 'next/navigation'
 
 type NullableId = string[] | null | undefined
 interface ActionsProps {
@@ -36,6 +38,7 @@ const VendorBalDetailedDrawer: React.FC<ActionsProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [dataList, setDataList] = useState<any[]>([])
+  const router = useRouter()
   const dispatch = useAppDispatch()
   const handleModalClose = () => {
     onClose()
@@ -63,10 +66,10 @@ const VendorBalDetailedDrawer: React.FC<ActionsProps> = ({
           });
         }
       });
-      if(combinedChildData.length > 0 && responseData.length > 0){
+      if (combinedChildData.length > 0 && responseData.length > 0) {
         setDataList(combinedChildData)
         setIsLoading(false)
-      }else{
+      } else {
         setIsLoading(false)
       }
     })
@@ -84,7 +87,15 @@ const VendorBalDetailedDrawer: React.FC<ActionsProps> = ({
     dataList.map((nestedData: any) => {
       return {
         Vendor: <label className='font-proxima font-medium !tracking-[0.02em] !pl-3'>{nestedData.VendorName ?? null}</label>,
-        BillNumber: <label className='font-proxima font-medium !tracking-[0.02em]'>{nestedData.BillNumber ?? null}</label>,
+        BillNumber: <div
+          className='w-4/5 cursor-pointer'
+          onClick={() => {
+            dispatch(setIsVisibleSidebar(false))
+            nestedData.Id && router.push(`/reports/view/${nestedData.Id}`)
+          }}
+        >
+          <Typography className='!text-sm text-darkCharcoal !tracking-[0.02em]'>{nestedData.BillNumber ? nestedData.BillNumber : ''}</Typography>
+        </div>,
         BillDate: (
           <div className='flex items-center gap-4 font-medium'>
             <span className='font-proxima !text-sm !tracking-[0.02em]'>
@@ -154,8 +165,8 @@ const VendorBalDetailedDrawer: React.FC<ActionsProps> = ({
             data={dataList.length > 0 ? table_Data : []}
             sticky
             hoverEffect
-            getExpandableData={() => {}}
-            getRowId={() => {}}
+            getExpandableData={() => { }}
+            getRowId={() => { }}
           />
         </div>
         {noDataContent}

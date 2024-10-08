@@ -6,24 +6,15 @@ import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { billAnalysis, billAnalysisDetail, getBillAnalysisColumnMapping } from '@/store/features/reports/reportsSlice'
 import { convertStringsDateToUTC, convertStringsToIntegers } from '@/utils'
 import { format } from 'date-fns'
-import {
-  BasicTooltip,
-  Button,
-  CheckBox,
-  DataTable,
-  Datepicker,
-  DatepickerRange,
-  Loader,
-  MultiSelectChip,
-  Select,
-  Toast,
-  Typography,
-} from 'pq-ap-lib'
+import { BasicTooltip, Button, CheckBox, DataTable, Datepicker, DatepickerRange, Loader, MultiSelectChip, Select, Toast, Typography } from 'pq-ap-lib'
 import { useEffect, useState } from 'react'
 import ColumnFilter from '../columnFilter/ColumnFilter'
+import { setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
+import { useRouter } from 'next/navigation'
 // import ColumnFilter from '@/components/Common/Custom/ColumnFilter'
 
 function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, setDetailsView, termOptions }: any) {
+  const router = useRouter()
   const dispatch = useAppDispatch()
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
 
@@ -216,9 +207,23 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
         BILLDATE: <Typography>{e.BillDate !== null ? format(e.BillDate, 'MM/dd/yyyy') : null}</Typography>,
         DUEDATE: <Typography>{e.DueDate !== null ? format(e.DueDate, 'MM/dd/yyyy') : null}</Typography>,
         Term: <Typography>{e.Term ?? null}</Typography>,
-        BILLNUMBER: <Typography>{e.BillNumber ?? null}</Typography>,
+        BILLNUMBER: <div
+          className='w-4/5 cursor-pointer'
+          onClick={() => {
+            dispatch(setIsVisibleSidebar(false))
+            e.Id && router.push(`/reports/view/${e.Id}`)
+          }}
+        >
+          <Typography className='!text-sm text-darkCharcoal !tracking-[0.02em]'>{e.BillNumber ? e.BillNumber : ''}</Typography>
+        </div>,
         AMOUNT: <Typography className='font-semibold'>${e.Amount == null ? '0.00' : parseFloat(e.Amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Typography>,
-        PAYMENTSTATUS: <Typography className='px-4'>{e.PaymentStatusName.charAt(0).toUpperCase() + e.PaymentStatusName.slice(1).toLowerCase() ?? null}</Typography>,
+        PAYMENTSTATUS: (
+          <Typography className='px-4'>
+            {e.PaymentStatusName
+              ? e.PaymentStatusName.charAt(0).toUpperCase() + e.PaymentStatusName.slice(1).toLowerCase()
+              : null}
+          </Typography>
+        ),
         PAIDAMOUNT: (
           <Typography className='font-semibold'>
             ${e.PaidAmount ? parseFloat(e.PaidAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (0).toFixed(2)}
@@ -271,13 +276,27 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
                     BILLDATE: <Typography>{e.BillDate !== null ? format(e.BillDate, 'MM/dd/yyyy') : null}</Typography>,
                     DUEDATE: <Typography>{e.DueDate !== null ? format(e.DueDate, 'MM/dd/yyyy') : null}</Typography>,
                     Term: <Typography>{e.Term ?? null}</Typography>,
-                    BILLNUMBER: <Typography>{e.BillNumber ?? null}</Typography>,
+                    BILLNUMBER: <div
+                      className='w-4/5 cursor-pointer'
+                      onClick={() => {
+                        dispatch(setIsVisibleSidebar(false))
+                        e.Id && router.push(`/reports/view/${e.Id}`)
+                      }}
+                    >
+                      <Typography className='!text-sm text-darkCharcoal !tracking-[0.02em]'>{e.BillNumber ? e.BillNumber : ''}</Typography>
+                    </div>,
                     AMOUNT: (
                       <Typography className='font-semibold'>
                         ${e.Amount == null ? '0.00' : parseFloat(e.Amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </Typography>
                     ),
-                    PAYMENTSTATUS: <Typography className='px-4'>{e.PaymentStatusName.charAt(0).toUpperCase() + e.PaymentStatusName.slice(1).toLowerCase() ?? null}</Typography>,
+                    PAYMENTSTATUS: (
+                      <Typography className='px-4'>
+                        {e.PaymentStatusName
+                          ? e.PaymentStatusName.charAt(0).toUpperCase() + e.PaymentStatusName.slice(1).toLowerCase()
+                          : null}
+                      </Typography>
+                    ),
                     PAIDAMOUNT: (
                       <Typography className='font-semibold'>
                         ${e.PaidAmount == null ? '0.00' : parseFloat(e.PaidAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
