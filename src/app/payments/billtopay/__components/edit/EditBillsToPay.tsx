@@ -240,12 +240,10 @@ const EditBillsToPay = () => {
       setLineItemsFieldsDataObj(lineItemsFieldsDataObj)
 
       const mainFieldConfiguration = [
-        ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.DefaultList,
-        ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.CustomList,
+        ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration
       ]
       const lineItemConfiguration = [
-        ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.DefaultList,
-        ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.CustomList,
+        ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration
       ]
 
       const { keyValueMainFieldObj, keyValueLineItemFieldObj } = returnKeyValueObjForFormFields(

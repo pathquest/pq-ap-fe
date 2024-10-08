@@ -90,10 +90,10 @@ const FieldDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, type, field, proc
     }
 
     const areOptionsValid =
-      (newField?.FieldType === 'dropdown' || newField?.FieldType === 'radio') && !newField.IsSystemDefined
+      (newField?.FieldType === 'dropdown' || newField?.FieldType === 'radio') && !newField.IsSystemDefined && newField.MappedWith === 1
         ? newField.Value !== null
           ? (!!newField.Value ? JSON.parse(newField.Value) : []).length > 0 &&
-          ((newField?.FieldType === 'dropdown' && (!!newField.Value ? JSON.parse(newField.Value) : []).length <= 50) ||
+          ((newField?.FieldType === 'dropdown' && newField.MappedWith === 1 && (!!newField.Value ? JSON.parse(newField.Value) : []).length <= 50) ||
             (newField?.FieldType === 'radio' &&
               (!!newField.Value ? JSON.parse(newField.Value) : []).length > 2 &&
               (!!newField.Value ? JSON.parse(newField.Value) : []).length < 2))
