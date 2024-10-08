@@ -218,7 +218,13 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
         Term: <Typography>{e.Term ?? null}</Typography>,
         BILLNUMBER: <Typography>{e.BillNumber ?? null}</Typography>,
         AMOUNT: <Typography className='font-semibold'>${e.Amount == null ? '0.00' : parseFloat(e.Amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Typography>,
-        PAYMENTSTATUS: <Typography className='px-4'>{e.PaymentStatusName.charAt(0).toUpperCase() + e.PaymentStatusName.slice(1).toLowerCase() ?? null}</Typography>,
+        PAYMENTSTATUS: (
+          <Typography className='px-4'>
+            {e.PaymentStatusName
+              ? e.PaymentStatusName.charAt(0).toUpperCase() + e.PaymentStatusName.slice(1).toLowerCase()
+              : null}
+          </Typography>
+        ),
         PAIDAMOUNT: (
           <Typography className='font-semibold'>
             ${e.PaidAmount ? parseFloat(e.PaidAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (0).toFixed(2)}
@@ -277,7 +283,13 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
                         ${e.Amount == null ? '0.00' : parseFloat(e.Amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </Typography>
                     ),
-                    PAYMENTSTATUS: <Typography className='px-4'>{e.PaymentStatusName.charAt(0).toUpperCase() + e.PaymentStatusName.slice(1).toLowerCase() ?? null}</Typography>,
+                    PAYMENTSTATUS: (
+                      <Typography className='px-4'>
+                        {e.PaymentStatusName
+                          ? e.PaymentStatusName.charAt(0).toUpperCase() + e.PaymentStatusName.slice(1).toLowerCase()
+                          : null}
+                      </Typography>
+                    ),
                     PAIDAMOUNT: (
                       <Typography className='font-semibold'>
                         ${e.PaidAmount == null ? '0.00' : parseFloat(e.PaidAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
