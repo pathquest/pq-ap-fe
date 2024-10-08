@@ -186,9 +186,9 @@ const API_CLOUD = process.env.API_CLOUD
 const API_REALTIMENOTIFICATION = process.env.REALTIME_NOTIFICATION
 
 const responseBody = (response: AxiosResponse) => response.data;
-let cachedSession:any = null;
+let cachedSession: any = null;
 let sessionPromise: any = null;
- 
+
 const fetchSession = async () => {
   if (!sessionPromise) {
     sessionPromise = (async () => {
@@ -206,18 +206,18 @@ const fetchSession = async () => {
   }
   return sessionPromise;
 };
- 
+
 export const invalidateSessionCache = () => {
   cachedSession = null;
 };
- 
+
 axios.interceptors.request.use(
   async (config) => {
     if (!cachedSession) {
       const session = await fetchSession();
       cachedSession = session;
     }
- 
+
     if (cachedSession && 'user' in cachedSession) {
       config.headers.Authorization = `bearer ${cachedSession.user.access_token}`;
       config.headers.CompanyId = cachedSession.user.CompanyId;
@@ -231,26 +231,25 @@ axios.interceptors.request.use(
     return Promise.reject(error);
   }
 );
- 
+
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response.status === 401) {
-      cachedSession = null; // Invalidate session on 401 error
- 
-      try {
-        const session = await fetchSession();
-        cachedSession = session;
- 
-        // Retry the original request with the new session
-        error.config.headers.Authorization = `bearer ${session.user.access_token}`;
-        error.config.headers.CompanyId = session.user.CompanyId;
-        return axios(error.config);
-      } catch (sessionError) {
-        return Promise.reject(sessionError);
+      if (!cachedSession) {
+        try {
+          const session = await fetchSession();
+          cachedSession = session;
+
+          error.config.headers.Authorization = `bearer ${session.user.access_token}`;
+          error.config.headers.CompanyId = session.user.CompanyId;
+          return axios(error.config);
+        } catch (sessionError) {
+          return Promise.reject(sessionError);
+        }
       }
     }
- 
+
     return Promise.reject(error);
   }
 );
