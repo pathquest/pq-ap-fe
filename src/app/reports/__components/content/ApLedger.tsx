@@ -495,8 +495,8 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
                   id='ft_datepicker123'
                   label='As of'
                   value={reportPeriod}
-                  startYear={1995}
-                  endYear={2050}
+                  startYear={1900}
+                  endYear={2099}
                   getValue={(value: any) => {
                     if (value) {
                       setReportPeriodValue(reportPeriodValue)
@@ -512,8 +512,8 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
                   id='ft_datepicker'
                   label='Select Date'
                   value={reportPeriod}
-                  startYear={1995}
-                  endYear={2050}
+                  startYear={1900}
+                  endYear={2099}
                   getValue={(value) => {
                     setReportPeriod(value)
                     const dateRangeVal = reportPeriod?.split('to')

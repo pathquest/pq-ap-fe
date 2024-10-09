@@ -71,8 +71,8 @@ const PostaspaidModal = ({ onOpen, onClose, handleSubmit, loader }: any) => {
                   id={'payment_date'}
                   label='Date'
                   value={datePickerValue}
-                  startYear={1999}
-                  endYear={2028}
+                  startYear={1900}
+                  endYear={2099}
                   hasError={datePickerValueErr}
                   getValue={(value: any) => {
                     setDatePickerValue(value)

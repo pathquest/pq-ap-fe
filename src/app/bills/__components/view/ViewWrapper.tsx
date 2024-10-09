@@ -791,9 +791,9 @@ const ViewWrapper = ({
 
   const handleKeyDown = (e: any) => {
     if (e.key === 'Enter') {
-      if (searchValue && searchValue.trim() !== "") {
-        getVendorHistoryBillList(searchValue)
-      }
+      // if (searchValue && searchValue.trim() !== "") {
+      getVendorHistoryBillList(searchValue)
+      // }
     }
   }
 
@@ -932,7 +932,7 @@ const ViewWrapper = ({
               <li className='h-full flex items-center'
                 onClick={() => handleCopyBillClick(activeBill)}
                 tabIndex={0}
-                onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleActivities(true)}
+                onKeyDown={(e) => (e.key === 'Enter') && handleCopyBillClick(activeBill)}
               >
                 <BasicTooltip position='bottom' content='Copy Bill' className='!font-proxima !px-0 !text-[14px]'>
                   <CopyIcon />
@@ -1239,7 +1239,7 @@ const ViewWrapper = ({
 
           {children}
 
-          {processSelection !== '4' && (
+          {(processSelection !== '4' && module != "copybill") && (
             <div className='!h-[66px] custom-bottom-sticky bottom-0 grid place-content-center place-items-center gap-2 !border-t border-lightSilver px-5 py-[12px] sm:!flex sm:!items-center sm:!justify-end'>
               <span
                 className='mr-[20px] flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-whiteSmoke'

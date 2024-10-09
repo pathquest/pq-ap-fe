@@ -181,8 +181,8 @@ const Filter: React.FC<FilterProps> = ({
                         <DatepickerRange
                             id='date'
                             label='Payment Date'
-                            startYear={2023}
-                            endYear={2025}
+                            startYear={1900}
+                            endYear={2099}
                             value={dateRange}
                             getValue={(value) => {
                                 setIsResetClicked(false);

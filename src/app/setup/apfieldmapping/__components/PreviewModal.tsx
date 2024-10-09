@@ -148,8 +148,8 @@ const PreviewModal: React.FC<DrawerProps> = ({ onOpen, onClose, mainFields, line
                             id={item.Id}
                             label={item.Label}
                             validate={item.IsRequired}
-                            startYear={0}
-                            endYear={0}
+                            startYear={1900}
+                            endYear={2099}
                             value={item.Value}
                             getValue={() => ''}
                             getError={() => ''}

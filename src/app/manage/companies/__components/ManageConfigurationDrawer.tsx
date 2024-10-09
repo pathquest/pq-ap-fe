@@ -13,7 +13,6 @@ import { getPaymentMethods } from '@/store/features/billsToPay/billsToPaySlice'
 import { useSession } from 'next-auth/react'
 import ChevronDown from '@/components/Common/Dropdown/Icons/ChevronDown'
 import InfoIcon from '@/assets/Icons/infoIcon'
-import { formatDate, utcFormatDate } from '@/components/Common/Functions/FormatDate'
 
 interface DrawerProps {
   onOpen: boolean
@@ -62,6 +61,11 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
     { label: 'Custom', value: '4' },
   ]
 
+  const DayOfMonthOptions = Array.from({ length: 28 }, (_, index) => ({
+    label: `${index + 1 + ""}`,
+    value: `${index + 1 + ""}`,
+  }));
+
   const initialExpandSection = {
     addTat: false,
     deleteDocumentHistory: false,
@@ -82,7 +86,7 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
   const [monthlySyncValue, setMonthlySyncValue] = useState<string>('1')
 
   const [selectedDays, setSelectedDays] = useState<number[]>([0])
-  const [chartPeriodDate, setChartPeriodDate] = useState<string>('')
+  const [customDay, setCustomDay] = useState<string>('')
 
   const [isPurchaseOrderEnable, setIsPurchaseOrderEnable] = useState<boolean>(false)
   const [isIndexingEnable, setIsIndexingEnable] = useState<boolean>(false)
@@ -219,25 +223,25 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
         setInDaysSyncValue("1")
         setMonthlySyncValue("1")
         setSelectedDays([0])
-        setChartPeriodDate("")
+        setCustomDay("")
         break
       case 'inDays':
         setHourlySyncValue("1")
         setMonthlySyncValue("1")
         setSelectedDays([0])
-        setChartPeriodDate("")
+        setCustomDay("")
         break
       case 'monthly':
         setInDaysSyncValue("1")
         setHourlySyncValue("1")
         setSelectedDays([0])
-        setChartPeriodDate("")
+        setCustomDay("")
         break
       case 'weekly':
         setInDaysSyncValue("1")
         setMonthlySyncValue("1")
         setHourlySyncValue("1")
-        setChartPeriodDate("")
+        setCustomDay("")
         break
       default:
         break
@@ -275,7 +279,8 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
         "1": { isHourly: true, isMonthly: false, isWeekly: false, isInDays: false },
         "2": { isHourly: false, isMonthly: false, isWeekly: false, isInDays: true },
         "3": { isHourly: false, isMonthly: false, isWeekly: true, isInDays: false },
-        "4": { isHourly: false, isMonthly: true, isWeekly: false, isInDays: false }
+        "4": { isHourly: false, isMonthly: true, isWeekly: false, isInDays: false },
+        "5": { isHourly: false, isMonthly: true, isWeekly: false, isInDays: false }
       };
       const { isHourly, isMonthly, isWeekly, isInDays } = syncSelectionState[SyncMethod] || {};
 
@@ -283,22 +288,14 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
         setHourlySyncValue(SyncData)
       } else if (SyncMethod == "2") {
         setInDaysSyncValue(SyncData)
-      }
-      else if (SyncMethod == "3") {
+      } else if (SyncMethod == "3") {
         const arrDays = SyncData.split(",").map(Number);
         setSelectedDays(arrDays)
+      } else if (SyncMethod == "4") {
+        setMonthlySyncValue(SyncData)
       } else {
-        const hasT000000InSyncData = (syncData: string): boolean => {
-          return syncData.includes("T00:00:00");
-        }
-        const hasSpecificTimeFormat = hasT000000InSyncData(SyncData);
-
-        if (hasSpecificTimeFormat) {
-          setChartPeriodDate(formatDate(SyncData));
-          setMonthlySyncValue("4")
-        } else {
-          setMonthlySyncValue(SyncData)
-        }
+        setCustomDay(SyncData);
+        setMonthlySyncValue("4")
       }
 
       setIsHourlySelected(isHourly);
@@ -332,12 +329,12 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
         syncData = "7"; // Weekly
         syncData = selectedDays.sort().join(','); // Comma-separated string of selected days
       } else if (isMonthlySelected) {
-        syncMethod = "4"
         syncData = "30"; // Monthly
-        if (monthlySyncValue === "4" && chartPeriodDate) {
-          // If custom date is selected, use the date
-          syncData = utcFormatDate(chartPeriodDate)
+        if (monthlySyncValue === "4" && customDay) {
+          syncMethod = "5"
+          syncData = customDay
         } else {
+          syncMethod = "4"
           syncData = monthlySyncValue;
         }
       }
@@ -436,7 +433,7 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
               getValue={(value) => handleInputChange(value)}
               getError={() => { }}
             />
-            <label htmlFor="addTat" className='text-sm font-proxima text-slatyGrey tracking-[0.02em]'>Value should not be in decimal format</label>
+            <label htmlFor="addTat" className='text-sm font-proxima text-slatyGrey tracking-[0.02em] whitespace-nowrap'>Value should be from 1-99 and not in decimal format</label>
           </div>
         </div>
 
@@ -593,19 +590,16 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
                       getError={() => { }}
                     />
                   </div>
-                  <div className={`${isMonthlySelected && monthlySyncValue == "4" ? "block" : "hidden"} mt-1 w-[230px] customDatePickerYearExpandWidth`}>
-                    <Datepicker
-                      id='customDate'
-                      label='Date'
-                      value={chartPeriodDate}
-                      startYear={1995}
-                      endYear={2050}
-                      disabled={monthlySyncValue == "4" ? false : true}
-                      getValue={(value: any) => {
-                        if (monthlySyncValue == "4" && value) {
-                          setChartPeriodDate(value);
-                        }
-                      }}
+                  <div className={`${isMonthlySelected && monthlySyncValue == "4" ? "flex" : "hidden"} items-end w-[130px]`}>
+                    <Select
+                      // label='Select Day'
+                      id='customDaySelect'
+                      name='customDaySelect'
+                      defaultValue={customDay}
+                      search
+                      heightClass='max-h-[150px]'
+                      options={DayOfMonthOptions}
+                      getValue={(value) => setCustomDay(value)}
                       getError={() => { }}
                     />
                   </div>

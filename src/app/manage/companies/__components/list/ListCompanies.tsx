@@ -1,32 +1,29 @@
 'use client'
-import SpinnerIcon from '@/assets/Icons/spinnerIcon'
-import Actions from '@/components/Common/DatatableActions/DatatableActions'
-import React, { useEffect, useRef, useState } from 'react'
-
-// Library Components
+import agent, { invalidateSessionCache } from '@/api/axios'
 import AvatarWithText from '@/app/manage/companies/__components/AvatarWithText'
 import CompaniesModal from '@/app/manage/companies/__components/CompaniesModal'
 import Drawer from '@/app/manage/companies/__components/Drawer'
 import DrawerOverlay from '@/app/manage/companies/__components/DrawerOverlay'
 import FilterIcon from '@/assets/Icons/FilterIcons'
 import PlusIcon from '@/assets/Icons/PlusIcon'
-import DataLoadingStatus from '@/components/Common/Functions/DataLoadingStatus'
+import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 import { formatDate } from '@/components/Common/Functions/FormatDate'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { getModulePermissions, hasSpecificPermission, hasViewPermission, processPermissions } from '@/components/Common/Functions/ProcessPermission'
 import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 import WrapperManage from '@/components/Common/WrapperManage'
 import { useCompanyContext } from '@/context/companyContext'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { AssignUserToCompany, companyGetList, companyListDropdown, conncetQb, conncetXero, filterAccounting, manageCompanyAssignUser, performCompanyActions, redirectQb, redirectXero, sageCompanyConnect, sageCompanyReconnect, sageUserConnect } from '@/store/features/company/companySlice'
+import { setOrganizationName, setOrgPermissionsMatrix, setProcessPermissionsMatrix, setRoleId } from '@/store/features/profile/profileSlice'
+import { permissionGetList } from '@/store/features/role/roleSlice'
 import { setIsRefresh, setSelectedCompany, userGetManageRights, userListDropdown } from '@/store/features/user/userSlice'
 import { convertStringsToIntegers } from '@/utils'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Avatar, Button, Close, CompanyList, DataTable, Loader, Modal, ModalContent, ModalTitle, MultiSelectChip, Password, SaveCompanyDropdown, Select, Text, Toast, Tooltip, Typography } from 'pq-ap-lib'
-import agent, { invalidateSessionCache } from '@/api/axios'
-import { getModulePermissions, hasSpecificPermission, hasViewPermission, processPermissions } from '@/components/Common/Functions/ProcessPermission'
-import { setOrganizationName, setOrgPermissionsMatrix, setProcessPermissionsMatrix, setRoleId } from '@/store/features/profile/profileSlice'
-import { permissionGetList } from '@/store/features/role/roleSlice'
+import { Avatar, Button, Close, DataTable, Loader, Modal, ModalContent, ModalTitle, MultiSelectChip, Password, SaveCompanyDropdown, Select, Text, Toast, Tooltip, Typography } from 'pq-ap-lib'
+import React, { useEffect, useRef, useState } from 'react'
+import Actions from '../DatatableActions/DatatableActions'
 import ManageConfigurationDrawer from '../ManageConfigurationDrawer'
 
 interface Item {
@@ -425,11 +422,6 @@ const ListCompanies = () => {
     }
   }
 
-  // This function is call for drawer
-  const clearID = () => {
-    setEditId(0)
-  }
-
   //Company Connect for Intacct
   const handelCompanyIntacct = () => {
     if (intacctComDropId.length > 0) {
@@ -618,8 +610,9 @@ const ListCompanies = () => {
 
   // actions menu
   // Match a action and open a drawer
-  const handleActions = async (actionType: string, actionId: number, CompanyName: string) => {
+  const handleActions = async (actionType: string, actionId: number, CompanyName: string, accountingTool: number) => {
     setSelectedRowId(actionId)
+    setManageConfigAccountingTool(accountingTool)
     invalidateSessionCache();
     await update({ ...session?.user, CompanyId: actionId, CompanyName: CompanyName })
 
@@ -801,7 +794,6 @@ const ListCompanies = () => {
   const handleIdGet = (id: number, accountingTool: number) => {
     setSelectedRowId(id)
     setAccountingTool(accountingTool)
-    setManageConfigAccountingTool(accountingTool)
   }
 
   // Show Table of Contents 'Manage Configuration'
@@ -859,7 +851,7 @@ const ListCompanies = () => {
           accountingTool={list?.AccountingTool}
           actions={actions}
           menuClassName={'168px'}
-          optionalData={list?.Name}
+          companyName={list?.Name}
           actionRowId={() => {
             handleIdGet(list?.Id, list?.AccountingTool)
           }}
@@ -1020,6 +1012,7 @@ const ListCompanies = () => {
     setIsNoAccountingToolCompany(false)
     setIsManageConfigurationDrawerOpen(false)
     setManageConfigAccountingTool(0)
+    setEditId(0)
   }
 
   const onReset = () => {
@@ -1197,7 +1190,6 @@ const ListCompanies = () => {
           IntacctAccountinToolId={intacctComDropId}
           IntacctCompanyId={intacctCompanyId}
           IntacctLocationId={intacctEntityListId}
-          clearID={clearID}
           orgId={orgId}
           recordNo={intacctEntities?.find((item) => item?.LOCATIONID === intacctEntityListId)?.RECORDNO ?? ''}
           setShowCancelModal={setShowCancelModal}

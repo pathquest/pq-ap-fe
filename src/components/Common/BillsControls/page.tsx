@@ -114,8 +114,8 @@ const BillsControlFields = ({ formFields }: billsFormFieldsProps) => {
                     return (
                       <div className={`${item.hasError ? 'pt-2' : 'pt-[3px]'} ${item.classNames ?? ''}`}>
                         <Datepicker
-                          startYear={1995}
-                          endYear={2050}
+                          startYear={1900}
+                          endYear={2099}
                           isMaxMinRequired={item.Name === 'duedate'}
                           minDate={item.Name === 'duedate' && !!billDate ? new Date(billDate) : undefined}
                           id={item?.id ?? ''}

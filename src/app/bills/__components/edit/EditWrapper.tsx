@@ -140,6 +140,7 @@ const EditWrapper = ({
   setLineItemsFieldsData,
   copyBillData
 }: EditWrapperProps) => {
+
   const dispatch = useAppDispatch()
   const router = useRouter()
   const [isVisibleMergeDoc, setIsVisibleMergeDoc] = useState<boolean>(false)
@@ -174,7 +175,7 @@ const EditWrapper = ({
   const CopyBillViewId = localStorage.getItem('CopyBillViewId')
   const billStatus = documentDetailByIdData?.Status
   const billStatusName = documentDetailByIdData?.StatusName
-  const vendorId = documentDetailByIdData.VendorId ?? 0
+  const vendorId = documentDetailByIdData.VendorId ?? formFields.vendor
 
   const listRef = useRef<any>(null)
   const [searchValue, setSearchValue] = useState<string>('')
@@ -576,7 +577,7 @@ const EditWrapper = ({
         // return
         // }
 
-        setLoaderState(postSaveAs, loader, setLoader)
+        // setLoaderState(postSaveAs, loader, setLoader)
         return
       } else {
         Toast.error('Error', response?.Message)
@@ -839,7 +840,7 @@ const EditWrapper = ({
     setIsVendorHistoryLoading(true)
     setVendorHistoryList([])
     const params = {
-      VendorId: vendorId ?? 0,
+      VendorId: Number(vendorId) ?? 0,
       // VendorId: 14260,
       SearchKeyword: searchValues,
       ProcessType: 1,
@@ -855,14 +856,16 @@ const EditWrapper = ({
   }
 
   useEffect(() => {
-    getVendorHistoryBillList(null)
-  }, [documentDetailByIdData])
+    if (vendorId) {
+      getVendorHistoryBillList(null)
+    }
+  }, [vendorId])
 
   const handleKeyDown = (e: any) => {
     if (e.key === 'Enter') {
-      if (searchValue && searchValue.trim() !== "") {
-        getVendorHistoryBillList(searchValue)
-      }
+      // if (searchValue && searchValue.trim() !== "") {
+      getVendorHistoryBillList(searchValue)
+      // }
     }
   }
 

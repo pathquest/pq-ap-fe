@@ -289,7 +289,7 @@ const Navbar = ({ onData }: any) => {
                   <Building />
                 </div>
                 <div className='flex h-full w-full items-center justify-center px-2'>
-                  <span className={`flex h-full w-full font-proxima items-center pl-1 text-sm text-black tracking-[0.02em]`}> {organizationName}</span>
+                  <span className={`whitespace-nowrap flex h-full w-full font-proxima items-center pl-1 text-sm text-black tracking-[0.02em]`}>{organizationName}</span>
                 </div>
               </div>
             )}
