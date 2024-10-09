@@ -1294,8 +1294,10 @@ const ListBillPosting = ({ statusOptions }: any) => {
               <div
                 className={`z-0 flex items-center border-l ${d.Status !== 3 && d.Status !== 4 && d.Status !== 7 ? 'border-r' : ''
                   } border-[#cccccc] px-4`}
+                onMouseEnter={() => setIsOverFlowVisible(true)}
+                onMouseLeave={() => setIsOverFlowVisible(false)}
               >
-                <BasicTooltip position='left' content='View bill' className='!z-10 !font-proxima !text-sm'>
+                <BasicTooltip position='bottom' content='View bill' className='!z-10 !font-proxima !text-sm'>
                   <div
                     className='cursor-pointer'
                     onClick={() => {
@@ -1323,7 +1325,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                       })
                     }}
                   >
-                    <BasicTooltip position='left' content='Move To' className='!z-10 !font-proxima !text-sm'>
+                    <BasicTooltip position='bottom' content='Move To' className='!z-10 !font-proxima !text-sm'>
                       <div className='flex items-center'>
                         <TabMoveIcon />
                         <span className='!z-0 pl-1.5'>
@@ -1342,8 +1344,10 @@ const ListBillPosting = ({ statusOptions }: any) => {
                     setDeleteId(d.Id)
                     setDeleteModal(true)
                   }}
+                  onMouseEnter={() => setIsOverFlowVisible(true)}
+                  onMouseLeave={() => setIsOverFlowVisible(false)}
                 >
-                  <BasicTooltip position='left' content='Delete' className='!z-10 !font-proxima !text-sm'>
+                  <BasicTooltip position='bottom' content='Delete' className='!z-10 !font-proxima !text-sm'>
                     <div>
                       <DeleteIcon />
                     </div>
@@ -1354,6 +1358,8 @@ const ListBillPosting = ({ statusOptions }: any) => {
               {d.Status === 9 && (
                 <div
                   className='z-0 flex cursor-pointer items-center border-[#cccccc] px-4'
+                  onMouseEnter={() => setIsOverFlowVisible(true)}
+                  onMouseLeave={() => setIsOverFlowVisible(false)}
                   onClick={() => {
                     setIsRestoreModalOpen(true)
                     setIsRestoreFields({
@@ -1363,7 +1369,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                     })
                   }}
                 >
-                  <BasicTooltip position='left' content='Restore' className='!z-10 !font-proxima !text-sm'>
+                  <BasicTooltip position='bottom' content='Restore' className='!z-10 !font-proxima !text-sm'>
                     <RestoreIcon />
                   </BasicTooltip>
                 </div>

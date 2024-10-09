@@ -46,6 +46,7 @@ export async function handleTokenSave(formFields: any) {
       password: '',
       token: formFields.token,
       expires_at:formFields.expires_at,
+      refresh_token:formFields.refresh_token,
       redirect: true,
       redirectTo: `${formFields.isFirstConfig === 'false' ? '/manage/companies' : '/profile'}`
     })

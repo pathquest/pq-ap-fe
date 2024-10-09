@@ -1,7 +1,7 @@
 import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 import ChevronDown from '@/components/Common/Dropdown/Icons/ChevronDown'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
-import { ApLedgercolumns, SelectRangeReportPeriodByList } from '@/data/reports'
+import { ApLedgercolumns, apLedgerNestedColumns, SelectRangeReportPeriodByList } from '@/data/reports'
 import { useAppDispatch } from '@/store/configureStore'
 import { vendorBalanceDetail } from '@/store/features/reports/reportsSlice'
 import { convertStringsDateToUTC } from '@/utils'
@@ -24,72 +24,6 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
   const [reportPeriodValue, setReportPeriodValue] = useState<number>(1)
   const [vendorValue, setVendorValue] = useState<string[]>([])
   const [isExpanded, setIsExpanded] = useState<boolean>(true)
-
-  const nestedColumns: any = [
-    {
-      header: '',
-      accessor: '',
-      sortable: false,
-      colalign: 'left',
-      colStyle: '!w-[40px]',
-    },
-    {
-      header: 'DATE',
-      accessor: 'BillDate',
-      sortable: false,
-      colalign: 'left',
-      colStyle: '!w-[150px] !tracking-[0.02em]',
-    },
-    {
-      header: 'TRANSACTION TYPE',
-      accessor: 'TransactionType',
-      sortable: false,
-      colalign: 'left',
-      colStyle: '!w-[180px] !tracking-[0.02em]',
-    },
-    {
-      header: 'BILL NUMBER',
-      accessor: 'BillNumber',
-      sortable: false,
-      colalign: 'left',
-      colStyle: '!w-[150px] !tracking-[0.02em]',
-    },
-    {
-      header: 'LOCATION',
-      accessor: 'Location',
-      sortable: false,
-      colalign: 'left',
-      colStyle: '!w-[120px] !tracking-[0.02em]',
-    },
-    {
-      header: 'DUEDATE',
-      accessor: 'DueDate',
-      sortable: false,
-      colalign: 'right',
-      colStyle: '!w-[120px] !tracking-[0.02em]',
-    },
-    {
-      header: 'CHARGES',
-      accessor: 'Charges',
-      sortable: false,
-      colalign: 'right',
-      colStyle: '!w-[120px] !tracking-[0.02em]',
-    },
-    {
-      header: 'PAYMENTS',
-      accessor: 'Payments',
-      sortable: false,
-      colalign: 'right',
-      colStyle: '!w-[120px] !tracking-[0.02em]',
-    },
-    {
-      header: 'BALANCE',
-      accessor: 'Balance',
-      sortable: false,
-      colalign: 'right',
-      colStyle: '!w-[120px] !tracking-[0.02em]',
-    },
-  ]
 
   const getTransactionTypeLabel = (transactionType: number): string => {
     switch (transactionType) {
@@ -132,7 +66,7 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
         details: (
           <div className={`custom-scroll max-h-64 w-full overflow-y-auto`}>
             <DataTable
-              columns={nestedColumns}
+              columns={apLedgerNestedColumns}
               noHeader
               data={
                 d.Data?.length > 0 &&

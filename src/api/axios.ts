@@ -187,21 +187,18 @@ const API_REALTIMENOTIFICATION = process.env.REALTIME_NOTIFICATION
 
 const responseBody = (response: AxiosResponse) => response.data;
 let cachedSession: any = null;
-let sessionPromise: any = null;
+let sessionPromise: Promise<any> | null = null;
 
-const fetchSession = async () => {
+const fetchSession = async (): Promise<any> => {
   if (!sessionPromise) {
     sessionPromise = (async () => {
       try {
-        if (typeof getSession === 'function') {
-          cachedSession = await getSession();
-        } else {
-          cachedSession = await auth();
-        }
-        return cachedSession;
-      } finally {
-        sessionPromise = null; // Reset sessionPromise only after the session has been fetched
+        cachedSession = typeof getSession === 'function' ? await getSession() : await auth();
+      } catch (error) {
+        sessionPromise = null;
+        throw error;
       }
+      return cachedSession;
     })();
   }
   return sessionPromise;
@@ -211,45 +208,67 @@ export const invalidateSessionCache = () => {
   cachedSession = null;
 };
 
+const refreshSession = async () => {
+  const url = `${process.env.API_SSO}/auth/refreshtoken`;
+  try {
+    const response = await axios.post(url, {
+      accesstoken: cachedSession.user.access_token,
+      refreshtoken: cachedSession.user.refresh_token,
+    });
+
+    if (response.data.ResponseStatus === 'Success') {
+      cachedSession.user.access_token = response.data.ResponseData.Token;
+      cachedSession.user.refresh_token = response.data.ResponseData.RefreshToken;
+      cachedSession.user.expires_at = response.data.ResponseData.TokenExpiry;
+
+      invalidateSessionCache();
+      return await fetchSession();
+    } else {
+      throw new Error('Refresh token failed');
+    }
+  } catch (error) {
+    throw new Error('Error refreshing token');
+  }
+};
+
+const isTokenExpired = (): boolean => {
+  const expiresAt = new Date(cachedSession.user.expires_at).getTime();
+  return Date.now() > expiresAt;
+};
+
+const setAuthHeaders = (config: any) => {
+  config.headers.Authorization = `bearer ${cachedSession.user.access_token}`;
+  config.headers.CompanyId = cachedSession.user.CompanyId;
+};
+
 axios.interceptors.request.use(
   async (config) => {
     if (!cachedSession) {
-      const session = await fetchSession();
-      cachedSession = session;
+      cachedSession = await fetchSession();
     }
 
-    if (cachedSession && 'user' in cachedSession) {
-      config.headers.Authorization = `bearer ${cachedSession.user.access_token}`;
-      config.headers.CompanyId = cachedSession.user.CompanyId;
+    if (isTokenExpired()) {
+      cachedSession = await refreshSession();
     }
+
+    setAuthHeaders(config);
     return config;
   },
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      return Promise.reject('Unauthorized');
-    }
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response.status === 401) {
-      if (!cachedSession) {
-        try {
-          const session = await fetchSession();
-          cachedSession = session;
-
-          error.config.headers.Authorization = `bearer ${session.user.access_token}`;
-          error.config.headers.CompanyId = session.user.CompanyId;
-          return axios(error.config);
-        } catch (sessionError) {
-          return Promise.reject(sessionError);
-        }
+    if (error.response.status === 401 && !cachedSession) {
+      try {
+        cachedSession = await fetchSession();
+        setAuthHeaders(error.config);
+        return axios(error.config);
+      } catch (sessionError) {
+        return Promise.reject(sessionError);
       }
     }
-
     return Promise.reject(error);
   }
 );

@@ -19,7 +19,7 @@ import {
   Toast,
   Typography,
 } from 'pq-ap-lib'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ColumnFilter from '../columnFilter/ColumnFilter'
 // import ColumnFilter from '@/components/Common/Custom/ColumnFilter'
 
@@ -53,8 +53,17 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
   const [selectDateRangeStatus, setSelectDateRangeStatus] = useState<boolean>(false)
   const [isExpanded, setIsExpanded] = useState<boolean>(true)
 
+  const [itemsLoaded, setItemsLoaded] = useState(0)
+  const [apiDataCount, setApiDataCount] = useState(0)
+  const [shouldLoadMore, setShouldLoadMore] = useState(true)
+  const [isLazyLoading, setIsLazyLoading] = useState<boolean>(false)
+
   const [isCheckedValue, setIsCheckedValue] = useState<boolean>(false)
   const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptopMd:w-[calc(100vw-200px)]')
+
+  let nextPageIndex: number = 1
+  const lazyRows = 10
+  const tableBottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
@@ -316,36 +325,135 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
     }
   })
 
+  const fetchBillAnalysisSummary = async (pageIndex?: number) => {
+    if (pageIndex === 1) {
+      setBillAnalysisData([])
+      setItemsLoaded(0)
+      setIsLoading(true)
+    }
+    const dateRangeVal = reportPeriod?.split('to')
+    const params: any = {
+      Vendors: vendorValue.length > 0 ? vendorValue.length === vendorOptions.length ? null : vendorValue : null,
+      LocationIds: locationValue.length > 0 ? locationValue.length === locationOptions.length ? null : locationValue : null,
+      StartDate:
+        reportPeriodValue === 8
+          ? dateRangeVal[0]?.trim() === ''
+            ? null
+            : convertStringsDateToUTC(dateRangeVal[0]?.trim()) ?? null
+          : null,
+      EndDate:
+        reportPeriodValue === 8
+          ? dateRangeVal[1]?.trim() === ''
+            ? null : convertStringsDateToUTC(dateRangeVal[1]?.trim()) ?? null
+          : convertStringsDateToUTC(reportPeriod),
+      ViewBy: viewByValue,
+      TermIds: AccountingTool !== 3 ? termValue.length > 0 ? termValue.length === termOptions.length ? null : termValue : null : null,
+      PaymentStatus: paymentStatusValue.length > 0 ? convertStringsToIntegers(paymentStatusValue) : null,
+      PageNumber: pageIndex || nextPageIndex,
+      PageSize: lazyRows,
+      SortColumn: null,
+      SortOrder: 0,
+    }
+    try {
+      setIsLazyLoading(true)
+      const { payload, meta } = await dispatch(billAnalysis(params))
+      const dataMessage = payload?.Message
+
+      if (meta?.requestStatus === 'fulfilled') {
+        if (payload?.ResponseStatus === 'Success') {
+          const responseData = payload?.ResponseData
+          const List = responseData?.BillAnaSumm
+          const newList = responseData?.BillAnaSumm || []
+          const newTotalCount = responseData?.BillCount || 0
+          setApiDataCount(newTotalCount)
+          setRunReport(true)
+          setIsRunReportLoading(false)
+          List.length > 0 && setIsExpanded(false)
+
+          let updatedData: any = []
+          if (pageIndex === 1) {
+            updatedData = [...newList]
+            setIsLoading(false)
+            setIsLazyLoading(false)
+            setShouldLoadMore(true)
+          } else {
+            updatedData = [...billAnalysisData, ...newList]
+          }
+          setBillAnalysisData(updatedData)
+          setItemsLoaded(updatedData.length)
+          setIsLazyLoading(false)
+
+          setIsLoading(false)
+
+          if (itemsLoaded >= newTotalCount) {
+            setShouldLoadMore(false);
+          }
+        } else {
+          setIsRunReportLoading(false)
+          Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
+        }
+      } else {
+        setIsRunReportLoading(false)
+        Toast.error(`${payload?.status} : ${payload?.statusText}`)
+      }
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsRunReportLoading(false)
+      setIsLoading(false)
+      setIsLazyLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLazyLoading && shouldLoadMore && (itemsLoaded % lazyRows === 0) && apiDataCount > 0) {
+          fetchBillAnalysisSummary()
+        }
+      },
+      { threshold: 0 }
+    )
+
+    if (tableBottomRef.current) {
+      observer.observe(tableBottomRef.current)
+      nextPageIndex = Math.ceil(itemsLoaded / lazyRows) + 1
+    }
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [shouldLoadMore, itemsLoaded, tableBottomRef.current])
+
   const handleSubmit = () => {
-    setIsLoading(true)
     setIsRunReportLoading(true)
     if (
       reportPeriod.trim().length > 0
     ) {
-      const dateRangeVal = reportPeriod?.split('to')
-      const params = {
-        Vendors: vendorValue.length > 0 ? vendorValue.length === vendorOptions.length ? null : vendorValue : null,
-        LocationIds: locationValue.length > 0 ? locationValue.length === locationOptions.length ? null : locationValue : null,
-        StartDate:
-          reportPeriodValue === 8
-            ? dateRangeVal[0]?.trim() === ''
-              ? null
-              : convertStringsDateToUTC(dateRangeVal[0]?.trim()) ?? null
-            : null,
-        EndDate:
-          reportPeriodValue === 8
-            ? dateRangeVal[1]?.trim() === ''
-              ? null : convertStringsDateToUTC(dateRangeVal[1]?.trim()) ?? null
-            : convertStringsDateToUTC(reportPeriod),
-        ViewBy: viewByValue,
-        TermIds: AccountingTool !== 3 ? termValue.length > 0 ? termValue.length === termOptions.length ? null : termValue : null : null,
-        PaymentStatus: paymentStatusValue.length > 0 ? convertStringsToIntegers(paymentStatusValue) : null,
-        PageNumber: 1,
-        PageSize: 100,
-        SortColumn: null,
-        SortOrder: 0,
-      }
       if (isCheckedValue) {
+        const dateRangeVal = reportPeriod?.split('to')
+        const params = {
+          Vendors: vendorValue.length > 0 ? vendorValue.length === vendorOptions.length ? null : vendorValue : null,
+          LocationIds: locationValue.length > 0 ? locationValue.length === locationOptions.length ? null : locationValue : null,
+          StartDate:
+            reportPeriodValue === 8
+              ? dateRangeVal[0]?.trim() === ''
+                ? null
+                : convertStringsDateToUTC(dateRangeVal[0]?.trim()) ?? null
+              : null,
+          EndDate:
+            reportPeriodValue === 8
+              ? dateRangeVal[1]?.trim() === ''
+                ? null : convertStringsDateToUTC(dateRangeVal[1]?.trim()) ?? null
+              : convertStringsDateToUTC(reportPeriod),
+          ViewBy: viewByValue,
+          TermIds: AccountingTool !== 3 ? termValue.length > 0 ? termValue.length === termOptions.length ? null : termValue : null : null,
+          PaymentStatus: paymentStatusValue.length > 0 ? convertStringsToIntegers(paymentStatusValue) : null,
+          PageNumber: 1,
+          PageSize: 100,
+          SortColumn: null,
+          SortOrder: 0,
+        }
         performApiAction(
           dispatch,
           billAnalysisDetail,
@@ -364,27 +472,27 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
           }
         )
       } else {
-        performApiAction(
-          dispatch,
-          billAnalysis,
-          params,
-          (responseData: any) => {
-            const List = responseData.BillAnaSumm
-            setBillAnalysisData(List)
-            setRunReport(true)
-            setIsLoading(false)
-            setIsRunReportLoading(false)
-            List.length > 0 && setIsExpanded(false)
-          },
-          () => {
-            setIsLoading(false)
-            setIsRunReportLoading(false)
-          }
-        )
+        // performApiAction(
+        //   dispatch,
+        //   billAnalysis,
+        //   params,
+        //   (responseData: any) => {
+        //     const List = responseData.BillAnaSumm
+        //     setBillAnalysisData(List)
+        //     setRunReport(true)
+        //     setIsLoading(false)
+        //     setIsRunReportLoading(false)
+        //     List.length > 0 && setIsExpanded(false)
+        //   },
+        //   () => {
+        //     setIsLoading(false)
+        //     setIsRunReportLoading(false)
+        //   }
+        // )
+        fetchBillAnalysisSummary(1)
       }
     } else {
       setRunReport(false)
-      setIsLoading(false)
       setIsRunReportLoading(false)
       Toast.error('Please select the date range in order to run the report')
     }
@@ -721,10 +829,10 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
                     getMappingListData()
                     handleSubmit()
                   }}
-                  className={`btn-sm !h-9 rounded-full ${isLoading && 'pointer-events-none opacity-80'}`}
+                  className={`btn-sm !h-9 rounded-full ${isRunReportLoading && 'pointer-events-none opacity-80'}`}
                   variant='btn-primary'>
-                  <label className={`flex items-center justify-center laptop:px-[12px] laptopMd:px-[12px] lg:px-[12px] xl:px-[12px] hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px] ${isLoading ? "animate-spin laptop:mx-[34px] laptopMd:mx-[34px] lg:mx-[34px] xl:mx-[34px] hd:mx-[41px] 2xl:mx-[41px] 3xl:mx-[41px]" : "!py-1.5 cursor-pointer font-proxima h-full laptop:font-semibold laptopMd:font-semibold lg:font-semibold xl:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em]"}`}>
-                    {isLoading ? <SpinnerIcon bgColor='#FFF' /> : "RUN REPORT"}
+                  <label className={`flex items-center justify-center laptop:px-[12px] laptopMd:px-[12px] lg:px-[12px] xl:px-[12px] hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px] ${isRunReportLoading ? "animate-spin laptop:mx-[34px] laptopMd:mx-[34px] lg:mx-[34px] xl:mx-[34px] hd:mx-[41px] 2xl:mx-[41px] 3xl:mx-[41px]" : "!py-1.5 cursor-pointer font-proxima h-full laptop:font-semibold laptopMd:font-semibold lg:font-semibold xl:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em]"}`}>
+                    {isRunReportLoading ? <SpinnerIcon bgColor='#FFF' /> : "RUN REPORT"}
                   </label>
                 </Button>
               </div>
@@ -737,23 +845,50 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
           className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-400px)]' : 'h-[calc(100vh-210px)]'
             } overflow-auto ${tableDynamicWidth}`}
         >
-          <div
-            className={`mainTable ${isCheckedValue ? billAnalysisDetails.length !== 0 : billAnalysisData.length !== 0 && 'h-0'}`}
-          >
-            <DataTable
-              zIndex={2}
-              columns={isCheckedValue ? BillAnalysisDetailColumns : columns}
-              data={isCheckedValue ? table_Data_Details : table_Data}
-              sticky
-              hoverEffect
-              isTableLayoutFixed
-              isExpanded={isCheckedValue ? true : false}
-              expandable
-              expandOneOnly={isCheckedValue ? false : true}
-              getExpandableData={() => { }}
-              getRowId={() => { }}
-            />
-          </div>
+          {isCheckedValue ? (
+            <div
+              className={`mainTable ${billAnalysisDetails.length !== 0 && 'h-0'}`}
+            >
+              <DataTable
+                zIndex={2}
+                columns={BillAnalysisDetailColumns}
+                data={table_Data_Details}
+                sticky
+                hoverEffect
+                isTableLayoutFixed
+                isExpanded={true}
+                expandable
+                expandOneOnly={false}
+                getExpandableData={() => { }}
+                getRowId={() => { }}
+              />
+            </div>
+
+          ) : (
+            <div
+              className={`mainTable ${billAnalysisData.length !== 0 && 'h-0'}`}
+            >
+              <DataTable
+                zIndex={2}
+                columns={columns}
+                data={table_Data}
+                sticky
+                hoverEffect
+                isTableLayoutFixed
+                isExpanded={false}
+                expandable
+                expandOneOnly={true}
+                getExpandableData={() => { }}
+                getRowId={() => { }}
+                userClass='innerTable sticky'
+                lazyLoadRows={lazyRows}
+              />
+              {isLazyLoading && !isLoading && (
+                <Loader size='sm' helperText />
+              )}
+              <div ref={tableBottomRef} />
+            </div>
+          )}
           {noDataContent}
         </div>
       )}
