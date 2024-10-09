@@ -153,11 +153,11 @@ const Navbar = ({ onData }: any) => {
           href: '/setup/notification',
           isVisible: isNotificationView
         },
-        // {
-        //   name: 'Cloud Configuration',
-        //   href: '/setup/cloudconfiguration',
-        //   isVisible: isCloudConfigurationView
-        // },
+        {
+          name: 'Cloud Configuration',
+          href: '/setup/cloudconfiguration',
+          isVisible: isCloudConfigurationView
+        },
         {
           name: 'Automation',
           href: '/setup/automation',
