@@ -61,6 +61,7 @@ import {
   RemoveDocumentOptionsProps,
   SplitDocumentOptions,
   UserListOptionsProps,
+  VendorHistoryListOptions,
   VendorListOptions,
 } from '@/models/billPosting'
 import {
@@ -501,6 +502,7 @@ const Bill = {
   splitDocuments: (data: SplitDocumentOptions) => requests.post(`${API_FILEUPLOAD}/document/splitpdf`, data),
   // getocrDocument: () => requests.get(`${API_FILEUPLOAD}/indexing/getocrDocument`),
   accountPayableSave: (data: any) => requests.postForm(`${API_FILEUPLOAD}/accountpayable/save`, data),
+  getVendorHistoryList: (data: VendorHistoryListOptions) => requests.post(`${API_FILEUPLOAD}/accountpayable/vendorhistorylist`, data),
   getColumnMappingList: (data: GetColumnMappingListOptionsProps) =>
     requests.post(`${API_FILEUPLOAD}/document/getcolumnmappinglist`, data),
   getColumnMappingOverviewList: (data: GetColumnMappingListOptionsProps) =>
@@ -776,6 +778,20 @@ const accountantDashboard = {
   billingInfoList: (data: any) => requests.post(`${API_DASHBOARD}/dashboard/getbillinginfolist`, data),
   accountingDashboardList: (data: any) => requests.post(`${API_DASHBOARD}/dashboard/getaccountingdashboard`, data),
   organizationDropdown: () => requests.get(`${API_MANAGE}/organization/getorganizationdropdown`),
+  disableCloudConnection: (data: any) => requests.post(`${API_CLOUD}/cloud/disablecloudconnection`, data),
+  googleDriveConnect: (data: any) => requests.post(`${API_CLOUD}/cloud/googledrive/connect`, data),
+  dropboxConnect: (data: any) => requests.post(`${API_CLOUD}/cloud/dropbox/connect`, data),
+  getFolderList: () => requests.get(`${API_CLOUD}/cloud/googledrive/getfolderslist`),
+  getFolderDropboxList: () => requests.get(`${API_CLOUD}/cloud/dropbox/getfolderslist`),
+  saveDocumentFolderPath: (data: any) => requests.post(`${API_CLOUD}/cloud/savedocumentfolderpath`, data),
+  // DropboxDocumentFolderPathw: (data: any) => requests.post(`${API_CLOUD}/cloud/savedocumentfolderpath`, data),
+  imapConnect: (params: {
+    UserName: string
+    Password: string
+    HostName: string
+    PortNumber: number
+    SocketType: number
+  }) => requests.post(`${API_CLOUD}/cloud/imap/connect`, params)
 }
 
 const agent = {

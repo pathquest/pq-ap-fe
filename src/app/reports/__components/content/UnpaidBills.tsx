@@ -10,8 +10,11 @@ import { Button, DataTable, Datepicker, Loader, MultiSelectChip, Select, Toast, 
 import { useEffect, useRef, useState } from 'react'
 import ColumnFilter from '../columnFilter/ColumnFilter'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 
 function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: any) {
+  const router = useRouter()
   const dispatch = useAppDispatch()
   const userId = localStorage.getItem('UserId')
   const { data: session } = useSession()
@@ -300,7 +303,15 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
           ),
         BILLDATE: <Typography>{e.BillDate !== null ? format(e.BillDate, 'MM/dd/yyyy') : null}</Typography>,
         TRANSACTIONTYPE: <Typography>{getProcessLabel(e.TransactionType)}</Typography>,
-        BILLNUMBER: <Typography>{e.BillNumber ?? null}</Typography>,
+        BILLNUMBER: <div
+          className='w-4/5 cursor-pointer'
+          onClick={() => {
+            dispatch(setIsVisibleSidebar(false))
+            e.Id && router.push(`/reports/view/${e.Id}`)
+          }}
+        >
+          <Typography className='!text-sm text-darkCharcoal !tracking-[0.02em]'>{e.BillNumber ? e.BillNumber : ''}</Typography>
+        </div>,
         LOCATION: <Typography>{e.Location ?? null}</Typography>,
         DUEDATE: <Typography>{e.DueDate !== null ? format(e.DueDate, 'MM/dd/yyyy') : null}</Typography>,
         AGINGDAYS: <Typography>{e.AgingDays ?? null}</Typography>,

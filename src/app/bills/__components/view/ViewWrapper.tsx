@@ -1,23 +1,31 @@
-import DeleteIcon from '@/assets/Icons/DeleteIcon'
-import ActivityIcon from '@/assets/Icons/billposting/ActivityIcon'
-import DownArrowIcon from '@/assets/Icons/billposting/DownArrowIcon'
-import EditModeIcon from '@/assets/Icons/billposting/EditModeIcon'
-import FilterIcon from '@/assets/Icons/billposting/FilterIcon'
-import MergeIcon from '@/assets/Icons/billposting/MergeIcon'
-import TabMoveIcon from '@/assets/Icons/billposting/TabMoveIcon'
-import ViewIcon from '@/assets/Icons/billposting/ViewIcon'
-import BackIcon from '@/assets/Icons/billposting/accountpayable/BackIcon'
-import LeftArrowIcon from '@/assets/Icons/billposting/accountpayable/LeftArrowIcon'
-import RightArrowIcon from '@/assets/Icons/billposting/accountpayable/RightArrowIcon'
-import ListIcon from '@/assets/Icons/billposting/mode/ListIcon'
-import SpinnerIcon from '@/assets/Icons/spinnerIcon'
-
 import AssignUser from '@/app/bills/__components/AssignUser'
 import BillPostingEditListComponent from '@/app/bills/__components/BillPostingEditListComponent'
 import FilterPopover from '@/app/bills/__components/FilterPopover'
 import MergeDocDrawer from '@/app/bills/__components/MergeDocDrawer'
 import PostaspaidModal from '@/app/bills/__components/PostaspaidModal'
+import CrossIcon from '@/assets/Icons/CrossIcon'
+import DeleteIcon from '@/assets/Icons/DeleteIcon'
+import ActivityIcon from '@/assets/Icons/billposting/ActivityIcon'
+import CopyIcon from '@/assets/Icons/billposting/CopyIcon'
+import DownArrowIcon from '@/assets/Icons/billposting/DownArrowIcon'
+import EditModeIcon from '@/assets/Icons/billposting/EditModeIcon'
+import FilterIcon from '@/assets/Icons/billposting/FilterIcon'
+import MergeIcon from '@/assets/Icons/billposting/MergeIcon'
+import TabMoveIcon from '@/assets/Icons/billposting/TabMoveIcon'
+import VendorBillHistoryIcon from '@/assets/Icons/billposting/VendorBillHistoryIcon'
+import ViewIcon from '@/assets/Icons/billposting/ViewIcon'
+import ViewModeIcon from '@/assets/Icons/billposting/ViewModeIcon'
+import BackIcon from '@/assets/Icons/billposting/accountpayable/BackIcon'
+import LeftArrowIcon from '@/assets/Icons/billposting/accountpayable/LeftArrowIcon'
+import RightArrowIcon from '@/assets/Icons/billposting/accountpayable/RightArrowIcon'
+import ListIcon from '@/assets/Icons/billposting/mode/ListIcon'
+import EditIcon from '@/assets/Icons/notification/EditIcon'
+import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 import DrawerOverlay from '@/components/Common/DrawerOverlay'
+import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
+import { formatDate } from '@/components/Common/Functions/FormatDate'
+import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import GlobalSearch from '@/components/Common/GlobalSearch/Icons/GlobalSearch'
 import ActivityDrawer from '@/components/Common/Modals/Activitydrawer'
 import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 import Wrapper from '@/components/Common/Wrapper'
@@ -25,23 +33,12 @@ import DeleteWithReason from '@/components/Modals/DeleteWithReason'
 import { accountPayableLineItemsObj, accountPayableObj, moveToOptions } from '@/data/billPosting'
 import { AssignUserOption } from '@/models/billPosting'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import {
-  accountPayableSave,
-  assignDocumentsToUser,
-  deleteDocument,
-  deleteOverviewDocument,
-  getAssigneeList,
-  processTypeChangeByDocumentId,
-  setFilterFormFields,
-  setIsFormDocuments,
-  setSelectedProcessTypeFromList,
-} from '@/store/features/bills/billSlice'
+import { accountPayableSave, assignDocumentsToUser, deleteDocument, deleteOverviewDocument, getAssigneeList, getVendorHistoryList, processTypeChangeByDocumentId, setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 import { billStatusEditable, getTimeDifference, initialBillPostingFilterFormFields } from '@/utils/billposting'
 import { parseISO } from 'date-fns'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Button, Loader, Select, Toast, BasicTooltip, Typography } from 'pq-ap-lib'
+import { BasicTooltip, Button, Loader, Select, Toast, Typography } from 'pq-ap-lib'
 import { useEffect, useRef, useState } from 'react'
-import EditIcon from '@/assets/Icons/notification/EditIcon'
 
 interface ViewWrapperProps {
   children?: React.ReactNode
@@ -149,12 +146,34 @@ const ViewWrapper = ({
   const { selectedProcessTypeInList } = useAppSelector((state) => state.bill)
   const userId = localStorage.getItem('UserId')
   const billStatus = documentDetailByIdData?.Status
+  const billStatusName = documentDetailByIdData?.StatusName
+  const vendorId = documentDetailByIdData.VendorId ?? 0
 
   const [loader, setLoader] = useState<any>({
     postAsPaid: false,
     saveAsDraft: false,
     post: false,
   })
+
+  const listRef = useRef<any>(null)
+  const [searchValue, setSearchValue] = useState<string>('')
+  const [isCopyBillModalOpen, setIsCopyBillModalOpen] = useState<boolean>(false)
+  const [copyBillId, setCopyBillId] = useState<number>(0)
+  const [processType, setProcessType] = useState<string>('')
+  const [vendorHistoryList, setVendorHistoryList] = useState<any>([])
+  const [isVendorHistoryLoading, setIsVendorHistoryLoading] = useState<boolean>(false)
+  const [isVendorBillHistoryListOpen, setIsVendorBillHistoryListOpen] = useState<boolean>(false)
+
+  const module = searchParams.get('module')
+
+  //For Lazy Loading
+  const [shouldLoadMore, setShouldLoadMore] = useState<boolean>(true)
+  const [itemsLoaded, setItemsLoaded] = useState<number>(0)
+  const [apiDataCount, setApiDataCount] = useState<number>(0)
+  let nextPageIndex: number = 1
+  const lazyRows: number = 10
+  const listBottomRef = useRef<HTMLDivElement>(null)
+  const [isLazyLoading, setIsLazyLoading] = useState<boolean>(false)
 
   const fetchAssigneData = async () => {
     const params = {
@@ -627,6 +646,10 @@ const ViewWrapper = ({
   const modalClose = () => {
     setSelectedStates([])
     setIsAssigneeModal(false)
+    setIsCopyBillModalOpen(false)
+    setCopyBillId(0)
+    setProcessType('')
+    setIsVendorBillHistoryListOpen(true)
   }
 
   const handleCancel = () => {
@@ -715,6 +738,91 @@ const ViewWrapper = ({
     }
   }, [checkActivityStatus])
 
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (listRef.current && !listRef.current?.contains(event.target as Node)) {
+        setIsVendorBillHistoryListOpen(false)
+      }
+    }
+    window.addEventListener('mousedown', handleOutsideClick)
+    return () => {
+      window.removeEventListener('mousedown', handleOutsideClick)
+    }
+  }, [isVendorBillHistoryListOpen])
+
+  const onChangeSearchField = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value)
+  }
+
+  const handleCopyBillDetails = async (id: any) => {
+    setIsCopyBillModalOpen(false)
+    router.push(`/bills/edit/${activeBill}?module=bills`)
+    localStorage.setItem('CopyBillViewId', id)
+  }
+
+  const handleCopyBillClick = (value: any) => {
+    setCopyBillId(value)
+    setIsCopyBillModalOpen(true)
+  }
+
+  const getVendorHistoryBillList = (searchValues: any) => {
+    setIsVendorHistoryLoading(true)
+    setVendorHistoryList([])
+    const params = {
+      VendorId: vendorId ?? 0,
+      // VendorId: 14260,
+      SearchKeyword: searchValues,
+      ProcessType: 1,
+      PageNumber: 1,
+      PageSize: 100
+    }
+    performApiAction(dispatch, getVendorHistoryList, params, (responseData: any) => {
+      setVendorHistoryList(responseData.List)
+      setIsVendorHistoryLoading(false)
+    }, () => {
+      setIsVendorHistoryLoading(false)
+    })
+  }
+
+  useEffect(() => {
+    getVendorHistoryBillList(null)
+  }, [documentDetailByIdData])
+
+  const handleKeyDown = (e: any) => {
+    if (e.key === 'Enter') {
+      if (searchValue && searchValue.trim() !== "") {
+        getVendorHistoryBillList(searchValue)
+      }
+    }
+  }
+
+  const handleRemoveClick = () => {
+    setSearchValue('')
+    searchValue != "" && getVendorHistoryBillList(null)
+  }
+
+  //For Lazy Loading
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLazyLoading && shouldLoadMore && (itemsLoaded % lazyRows === 0) && apiDataCount > 0) {
+          getVendorHistoryBillList(null)
+        }
+      },
+      { threshold: 0 }
+    )
+
+    if (listBottomRef.current) {
+      observer.observe(listBottomRef.current)
+      nextPageIndex = Math.ceil(itemsLoaded / lazyRows) + 1
+    }
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [shouldLoadMore, itemsLoaded, listBottomRef])
+
   return (
     <Wrapper>
       <div className='relative mx-auto grid-cols-12 md:grid'>
@@ -797,7 +905,7 @@ const ViewWrapper = ({
           className={`${isVisibleLeftSidebar ? 'col-span-8 laptop:col-span-9' : 'col-span-12'
             } h-[calc(100vh_-_65px)] overflow-y-auto`}
         >
-          <div className={`!h-[66px] sticky top-0 z-[5] flex w-full flex-row justify-between bg-[#F4F4F4] px-5`}>
+          <div className={`!h-[66px] sticky top-0 ${isVendorBillHistoryListOpen ? "z-[7]" : "z-[6]"} flex w-full flex-row justify-between bg-[#F4F4F4] px-5`}>
             <div className='flex items-center justify-center'>
               {!isVisibleLeftSidebar && (
                 <span
@@ -820,60 +928,16 @@ const ViewWrapper = ({
                 </>
               )}
             </div>
-
-            <ul className='flex items-center justify-center gap-5'>
-              {processSelection !== '4' && (
-                <>
-                  {billStatus !== 3 &&
-                    billStatus !== 9 &&
-                    billStatus !== 4 &&
-                    billStatus !== 7 &&
-                    selectedProcessTypeInList !== '3' && (
-                      <li className='h-full flex items-center'>
-                        <BasicTooltip position='bottom' content='Assignee' className='!font-proxima !text-[14px] !px-0'>
-                          <AssignUser
-                            width={52}
-                            selectedStates={selectedStates}
-                            setSelectedStates={handleSetValue}
-                            userData={assignList}
-                            dropdownAssignUserRef={dropdownAssignUserRef}
-                            isOpenAssignUserDropDown={isOpenAssignUserDropDown}
-                            setIsOpenAssignUserDropDown={setIsOpenAssignUserDropDown}
-                            right={0}
-                          />
-                        </BasicTooltip>
-                      </li>
-                    )}
-                </>
-              )}
-              {processSelection === '4' && (
-                <>
-                  <li className='h-full flex items-center'
-                    onClick={() => router.push(`/bills/edit/${activeBill}?module=bills`)}
-                    tabIndex={0}
-                    onKeyDown={(e) => (e.key === 'Enter')}
-                  >
-                    <BasicTooltip position='left' content='Edit bill' className='!z-10 !font-proxima !text-sm'>
-                      <span
-                        className='cursor-pointer'>
-                        <EditIcon />
-                      </span>
-                    </BasicTooltip>
-                  </li>
-
-                  <li
-                    className='h-full flex items-center'
-                    onClick={() => setIsVisibleRemoveConfirm(true)}
-                    tabIndex={0}
-                    onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleRemoveConfirm(true)}
-                  >
-                    <BasicTooltip position='bottom' content='Delete' className='!font-proxima !text-[14px] !px-0'>
-                      <DeleteIcon />
-                    </BasicTooltip>
-                  </li>
-                </>
-              )}
-
+            {module == "copybill" ? <ul className='flex items-center justify-center gap-5'>
+              <li className='h-full flex items-center'
+                onClick={() => handleCopyBillClick(activeBill)}
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleActivities(true)}
+              >
+                <BasicTooltip position='bottom' content='Copy Bill' className='!font-proxima !px-0 !text-[14px]'>
+                  <CopyIcon />
+                </BasicTooltip>
+              </li>
               <li className='h-full flex items-center'
                 onClick={() => setIsVisibleActivities(true)}
                 tabIndex={0}
@@ -883,135 +947,272 @@ const ViewWrapper = ({
                   <ActivityIcon />
                 </BasicTooltip>
               </li>
-
-              {processSelection !== '4' && (
-                <>
-                  {billStatus !== 3 &&
-                    billStatus !== 9 &&
-                    billStatus !== 4 &&
-                    billStatus !== 7 &&
-                    selectedStates[0]?.id === userId && (
-                      <li
-                        className='h-full flex items-center'
-                        onClick={onClickMoveToDropdown}
-                        tabIndex={0}
-                        onKeyDown={(e) => (e.key === 'Enter') && onClickMoveToDropdown()}
-                      >
-                        <BasicTooltip position='bottom' content='Move' className='!font-proxima !text-[14px] !px-0'>
-                          <div className='flex items-center gap-2'>
-                            <TabMoveIcon />
-                            <div className={`transition-transform ${isOpenMoveToDropDown ? "duration-400 rotate-180" : "duration-200"}`}>
-                              <DownArrowIcon />
-                            </div>
-                          </div>
-                        </BasicTooltip>
-                        {isOpenMoveToDropDown && (
-                          <div
-                            ref={dropdownMoveToRef}
-                            className='absolute right-28 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
-                          >
-                            <div className='flex flex-col items-start justify-start'>
-                              {moveToOptions &&
-                                moveToOptions
-                                  .filter((m) => {
-                                    if (parseInt(processSelection) === 1) {
-                                      return m.value !== 1
-                                    } else if (parseInt(processSelection) === 2) {
-                                      return m.value !== 2
-                                    } else if (parseInt(processSelection) === 3) {
-                                      return m.value !== 3
-                                    } else {
-                                      return true
-                                    }
-                                  })
-                                  .map((item) => {
-                                    return (
-                                      <span
-                                        className='flex w-full cursor-pointer items-center justify-start px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
-                                        onClick={() => {
-                                          onSelectCategory(item.value)
-                                        }}
-                                        key={item.value}
-                                      >
-                                        <Typography>{item?.label}</Typography>
-                                      </span>
-                                    )
-                                  })}
-                            </div>
-                          </div>
-                        )}
-                      </li>
-                    )}
-                </>
-              )}
-              {processSelection !== '4' && (
-                <>
-                  {billStatus !== 3 &&
-                    billStatus !== 9 &&
-                    billStatus !== 4 &&
-                    billStatus !== 7 &&
-                    selectedStates[0]?.id === userId && (
-                      <li
-                        className='h-full flex items-center'
-                        onClick={() => setIsVisibleRemoveConfirm(true)}
-                        tabIndex={0}
-                        onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleRemoveConfirm(true)}
-                      >
-                        <BasicTooltip position='bottom' content='Delete' className='!font-proxima !text-[14px] !px-0'>
-                          <DeleteIcon />
-                        </BasicTooltip>
-                      </li>
-                    )}
-                </>
-              )}
-
-
-              {processSelection !== '4' && (
-                <li
-                  className='h-full flex items-center'
-                  onClick={handleViewMode}
-                  tabIndex={0}
-                  onKeyDown={(e) => (e.key === 'Enter') && handleViewMode()}
-                >
-                  <BasicTooltip position='bottom' content='View' className='!font-proxima !px-0 !text-[14px]'>
-                    <ViewIcon />
-                  </BasicTooltip>
-                  {isOpenViewMode && (
-                    <div
-                      ref={dropdownViewModeRef}
-                      className='absolute right-6 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+            </ul>
+              : <ul className='flex items-center justify-center gap-5'>
+                {processSelection !== '4' && (
+                  <>
+                    {billStatus !== 3 &&
+                      billStatus !== 9 &&
+                      billStatus !== 4 &&
+                      billStatus !== 7 &&
+                      selectedProcessTypeInList !== '3' && (
+                        <li className='h-full flex items-center'>
+                          <BasicTooltip position='bottom' content='Assignee' className='!font-proxima !text-[14px] !px-0'>
+                            <AssignUser
+                              width={52}
+                              selectedStates={selectedStates}
+                              setSelectedStates={handleSetValue}
+                              userData={assignList}
+                              dropdownAssignUserRef={dropdownAssignUserRef}
+                              isOpenAssignUserDropDown={isOpenAssignUserDropDown}
+                              setIsOpenAssignUserDropDown={setIsOpenAssignUserDropDown}
+                              right={0}
+                            />
+                          </BasicTooltip>
+                        </li>
+                      )}
+                  </>
+                )}
+                {processSelection === '4' && (
+                  <>
+                    <li className='h-full flex items-center'
+                      onClick={() => router.push(`/bills/edit/${activeBill}?module=bills`)}
+                      tabIndex={0}
+                      onKeyDown={(e) => (e.key === 'Enter')}
                     >
-                      <div className='flex flex-col items-start justify-start'>
-                        <span
-                          className='flex w-full cursor-pointer items-center justify-center px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
-                          onClick={() => router.push('/bills')}
-                        >
-                          <span className='pr-[10px]'>
-                            <ListIcon />
-                          </span>
-                          <Typography>List Mode</Typography>
+                      <BasicTooltip position='left' content='Edit bill' className='!z-10 !font-proxima !text-sm'>
+                        <span className='cursor-pointer'>
+                          <EditIcon />
                         </span>
+                      </BasicTooltip>
+                    </li>
 
-                        {billStatusEditable.includes(billStatus) &&
-                          processSelection !== '3' &&
-                          checkUserId &&
-                          selectedStates[0]?.id === userId && (
-                            <span
-                              className='flex w-full cursor-pointer items-center justify-center px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
-                              onClick={() => router.push(`/bills/edit/${activeBill}?module=bills`)}
-                            >
-                              <span className='pr-[10px]'>
-                                <EditModeIcon />
-                              </span>
-                              <Typography>Edit Mode</Typography>
-                            </span>
-                          )}
+                    <li
+                      className='h-full flex items-center'
+                      onClick={() => setIsVisibleRemoveConfirm(true)}
+                      tabIndex={0}
+                      onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleRemoveConfirm(true)}
+                    >
+                      <BasicTooltip position='bottom' content='Delete' className='!font-proxima !text-[14px] !px-0'>
+                        <DeleteIcon />
+                      </BasicTooltip>
+                    </li>
+                  </>
+                )}
+
+                <li className={`${(billStatusName == "New" || billStatusName == "Drafted" || billStatusName == "Failed") ? "block" : "hidden"} h-full flex items-center relative`}
+                  onClick={() => setIsVendorBillHistoryListOpen(true)}
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === 'Enter') && setIsVendorBillHistoryListOpen(true)}
+                >
+                  <BasicTooltip position='bottom' content='Vendor Bill History' className='!font-proxima !px-0 !text-[14px]'>
+                    <VendorBillHistoryIcon />
+                  </BasicTooltip>
+
+                  <div ref={listRef} className={`${isVendorBillHistoryListOpen ? "block" : "hidden"} w-[535px] max-h-[296px] border border-lightSilver rounded absolute top-12 right-0 !z-[7] bg-pureWhite`}>
+                    <div className='w-full h-[56px] p-2.5 border-b border-lightSilver'>
+                      <div className='cursor-pointer w-full flex items-center h-9 rounded-full bg-whiteSmoke border border-lightSilver hover:border-primary'>
+                        <div className='mx-[15px] cursor-pointer'>
+                          <GlobalSearch />
+                        </div>
+                        <div className='cursor-pointer w-full'>
+                          <input
+                            tabIndex={0}
+                            type='text'
+                            value={searchValue}
+                            className='searchPlaceholder bg-transparent w-full font-proxima text-sm text-darkCharcoal placeholder:text-slatyGrey focus:outline-none'
+                            placeholder='Search'
+                            onChange={onChangeSearchField}
+                            onKeyDown={(e) => handleKeyDown(e)}
+                          />
+                        </div>
+                        <div className='mx-[15px] cursor-pointer'
+                          onClick={() => handleRemoveClick()}>
+                          <CrossIcon />
+                        </div>
                       </div>
                     </div>
-                  )}
+                    <div className='w-full h-[calc(296px-57px)] overflow-y-auto custom-scroll'>
+                      {vendorHistoryList.length == 0
+                        ? isVendorHistoryLoading
+                          ? <div className='flex h-full w-full items-center justify-center'>
+                            <Loader size='sm' />
+                          </div>
+                          : <div className='flex h-[40px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b'>
+                            No records available at the moment.
+                          </div>
+                        : <table className="w-full">
+                          <tbody>
+                            {vendorHistoryList.map((data: any, index: number) => (
+                              <tr key={data.BillNumber + index} className={`h-[40px] border-b border-lightSilver relative`}>
+                                <td className="px-5 text-sm text-darkCharcoal tracking-[0.02em] font-proxima text-start">{data.BillNumber}</td><td className='absolute top-2 text-lightSilver h-5'>|</td>
+                                <td className="px-5 text-sm text-darkCharcoal tracking-[0.02em] font-proxima text-center">{formatDate(data.BillDate)}</td><td className='absolute top-2 text-lightSilver h-5'>|</td>
+                                <td className="px-5 text-sm font-bold font-proxima text-end tracking-[0.02em]">${formatCurrency(data.BillAmount)}</td><td className='absolute top-2 text-lightSilver h-5'>|</td>
+                                <td className="px-5 text-sm text-center pt-2">
+                                  <button
+                                    onClick={() => {
+                                      dispatch(setIsVisibleSidebar(false))
+                                      router.push(`/bills/view/${data.Id}?module=copybill`)
+                                    }}
+                                  >
+                                    <ViewModeIcon height={'19'} width={'19'} />
+                                  </button>
+                                </td><td className='absolute top-2 text-lightSilver h-5'>|</td>
+                                <td className="px-5 text-sm pt-2 text-center">
+                                  <button onClick={() => handleCopyBillClick(data.Id)}>
+                                    <CopyIcon />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>}
+                      {isLazyLoading && !isLoading && (
+                        <Loader size='sm' helperText />
+                      )}
+                      <div ref={listBottomRef} />
+                    </div>
+                  </div>
                 </li>
-              )}
-            </ul>
+
+                <li className='h-full flex items-center'
+                  onClick={() => setIsVisibleActivities(true)}
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleActivities(true)}
+                >
+                  <BasicTooltip position='bottom' content='Activities' className='!font-proxima !px-0 !text-[14px]'>
+                    <ActivityIcon />
+                  </BasicTooltip>
+                </li>
+
+                {processSelection !== '4' && (
+                  <>
+                    {billStatus !== 3 &&
+                      billStatus !== 9 &&
+                      billStatus !== 4 &&
+                      billStatus !== 7 &&
+                      selectedStates[0]?.id === userId && (
+                        <li
+                          className='h-full flex items-center'
+                          onClick={onClickMoveToDropdown}
+                          tabIndex={0}
+                          onKeyDown={(e) => (e.key === 'Enter') && onClickMoveToDropdown()}
+                        >
+                          <BasicTooltip position='bottom' content='Move' className='!font-proxima !text-[14px] !px-0'>
+                            <div className='flex items-center gap-2'>
+                              <TabMoveIcon />
+                              <div className={`transition-transform ${isOpenMoveToDropDown ? "duration-400 rotate-180" : "duration-200"}`}>
+                                <DownArrowIcon />
+                              </div>
+                            </div>
+                          </BasicTooltip>
+                          {isOpenMoveToDropDown && (
+                            <div
+                              ref={dropdownMoveToRef}
+                              className='absolute right-28 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                            >
+                              <div className='flex flex-col items-start justify-start'>
+                                {moveToOptions &&
+                                  moveToOptions
+                                    .filter((m) => {
+                                      if (parseInt(processSelection) === 1) {
+                                        return m.value !== 1
+                                      } else if (parseInt(processSelection) === 2) {
+                                        return m.value !== 2
+                                      } else if (parseInt(processSelection) === 3) {
+                                        return m.value !== 3
+                                      } else {
+                                        return true
+                                      }
+                                    })
+                                    .map((item) => {
+                                      return (
+                                        <span
+                                          className='flex w-full cursor-pointer items-center justify-start px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
+                                          onClick={() => {
+                                            onSelectCategory(item.value)
+                                          }}
+                                          key={item.value}
+                                        >
+                                          <Typography>{item?.label}</Typography>
+                                        </span>
+                                      )
+                                    })}
+                              </div>
+                            </div>
+                          )}
+                        </li>
+                      )}
+                  </>
+                )}
+                {processSelection !== '4' && (
+                  <>
+                    {billStatus !== 3 &&
+                      billStatus !== 9 &&
+                      billStatus !== 4 &&
+                      billStatus !== 7 &&
+                      selectedStates[0]?.id === userId && (
+                        <li
+                          className='h-full flex items-center'
+                          onClick={() => setIsVisibleRemoveConfirm(true)}
+                          tabIndex={0}
+                          onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleRemoveConfirm(true)}
+                        >
+                          <BasicTooltip position='bottom' content='Delete' className='!font-proxima !text-[14px] !px-0'>
+                            <DeleteIcon />
+                          </BasicTooltip>
+                        </li>
+                      )}
+                  </>
+                )}
+
+
+                {processSelection !== '4' && (
+                  <li
+                    className='h-full flex items-center'
+                    onClick={handleViewMode}
+                    tabIndex={0}
+                    onKeyDown={(e) => (e.key === 'Enter') && handleViewMode()}
+                  >
+                    <BasicTooltip position='bottom' content='View' className='!font-proxima !px-0 !text-[14px]'>
+                      <ViewIcon />
+                    </BasicTooltip>
+                    {isOpenViewMode && (
+                      <div
+                        ref={dropdownViewModeRef}
+                        className='absolute right-6 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                      >
+                        <div className='flex flex-col items-start justify-start'>
+                          <span
+                            className='flex w-full cursor-pointer items-center justify-center px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
+                            onClick={() => router.push('/bills')}
+                          >
+                            <span className='pr-[10px]'>
+                              <ListIcon />
+                            </span>
+                            <Typography>List Mode</Typography>
+                          </span>
+
+                          {billStatusEditable.includes(billStatus) &&
+                            processSelection !== '3' &&
+                            checkUserId &&
+                            selectedStates[0]?.id === userId && (
+                              <span
+                                className='flex w-full cursor-pointer items-center justify-center px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
+                                onClick={() => router.push(`/bills/edit/${activeBill}?module=bills`)}
+                              >
+                                <span className='pr-[10px]'>
+                                  <EditModeIcon />
+                                </span>
+                                <Typography>Edit Mode</Typography>
+                              </span>
+                            )}
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                )}
+              </ul>}
 
           </div>
 
@@ -1192,6 +1393,17 @@ const ViewWrapper = ({
 
       <DrawerOverlay isOpen={isVisibleMergeDoc} onClose={() => setIsVisibleMergeDoc(false)} />
       <DrawerOverlay isOpen={isVisibleActivities} onClose={() => setIsVisibleActivities(false)} />
+
+      {/* Bill Copy Modal */}
+      {isCopyBillModalOpen && <ConfirmationModal
+        title='Bill Copy'
+        content={`Are you sure you want to copy this bill?`}
+        isModalOpen={isCopyBillModalOpen}
+        modalClose={modalClose}
+        handleSubmit={() => handleCopyBillDetails(copyBillId)}
+        colorVariantNo='btn-outline-primary'
+        colorVariantYes='btn-primary'
+      />}
     </Wrapper>
   )
 }

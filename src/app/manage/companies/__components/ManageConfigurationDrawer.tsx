@@ -81,7 +81,7 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
   const [inDaysSyncValue, setInDaysSyncValue] = useState<string>('1')
   const [monthlySyncValue, setMonthlySyncValue] = useState<string>('1')
 
-  const [selectedDays, setSelectedDays] = useState<number[]>([])
+  const [selectedDays, setSelectedDays] = useState<number[]>([0])
   const [chartPeriodDate, setChartPeriodDate] = useState<string>('')
 
   const [isPurchaseOrderEnable, setIsPurchaseOrderEnable] = useState<boolean>(false)
@@ -179,10 +179,10 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
     setIsLoading(false)
 
     setDeleteDocumentHistory('30')
-    setSyncTypeValue('')
-    setHourlySyncValue('')
-    setInDaysSyncValue('')
-    setMonthlySyncValue('')
+    setSyncTypeValue('1')
+    setHourlySyncValue('1')
+    setInDaysSyncValue('1')
+    setMonthlySyncValue('1')
   }
 
   const clearAllData = async (type: string) => {
@@ -214,6 +214,34 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
   }
 
   const handleRadioSelection = (label: string) => {
+    switch (label) {
+      case 'hourly':
+        setInDaysSyncValue("1")
+        setMonthlySyncValue("1")
+        setSelectedDays([0])
+        setChartPeriodDate("")
+        break
+      case 'inDays':
+        setHourlySyncValue("1")
+        setMonthlySyncValue("1")
+        setSelectedDays([0])
+        setChartPeriodDate("")
+        break
+      case 'monthly':
+        setInDaysSyncValue("1")
+        setHourlySyncValue("1")
+        setSelectedDays([0])
+        setChartPeriodDate("")
+        break
+      case 'weekly':
+        setInDaysSyncValue("1")
+        setMonthlySyncValue("1")
+        setHourlySyncValue("1")
+        setChartPeriodDate("")
+        break
+      default:
+        break
+    }
     setIsHourlySelected(label === 'hourly')
     setIsInDaysSelected(label === 'inDays')
     setIsMonthlySelected(label === 'monthly')
@@ -236,8 +264,8 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
     }
     performApiAction(dispatch, getManageConfiguration, params, (responseData: any) => {
       const { IsOCR, IsIndexing, IsLineItem, DeleteFilesInDays, Tat, Sync } = responseData
-      setAddTat(Tat + "" ?? "0")
-      setDeleteDocumentHistory(DeleteFilesInDays + "" ?? "30")
+      setAddTat(Tat + "")
+      setDeleteDocumentHistory(DeleteFilesInDays + "")
 
       const syncData = JSON.parse(Sync);
       const { SyncType, SyncMethod, SyncData } = syncData;
@@ -295,10 +323,10 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
     if (syncTypeValue === "1") { // Periodic Sync
       if (isHourlySelected) {
         syncMethod = "1"
-        syncData = hourlySyncValue;
+        syncData = hourlySyncValue ?? "1";
       } else if (isInDaysSelected) {
         syncMethod = "2"
-        syncData = inDaysSyncValue;
+        syncData = inDaysSyncValue ?? "1";
       } else if (isWeeklySelected) {
         syncMethod = "3"
         syncData = "7"; // Weekly
@@ -318,7 +346,7 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
     }
 
     const syncParam = JSON.stringify({
-      SyncType: syncTypeValue,
+      SyncType: syncTypeValue ?? '1',
       SyncMethod: syncMethod,
       SyncData: syncData
     });
@@ -344,7 +372,7 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
   const mapDays = days.map((day: string, index: number) => (
     <div key={index + day}
       className={`flex text-base font-proxima laptop:h-[45px] laptopMd:h-[45px] lg:h-[45px] xl:h-[45px] hd:h-[52px] 2xl:h-[52px] 3xl:h-[52px] laptop:w-[45px] laptopMd:w-[45px] lg:w-[45px] xl:w-[45px] hd:w-[52px] 2xl:w-[52px] 3xl:w-[52px] cursor-pointer items-center justify-center rounded-md border-[1px] border-lightSilver ${selectedDays.includes(index)
-        ? 'bg-primary text-white'
+        ? 'bg-primary text-white font-bold'
         : ''
         }`}
       onClick={() => handleDayClick(index)}
@@ -366,6 +394,10 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
 
 
   const handleInputChange = (value: any) => {
+    if (value == "0") {
+      setAddTat("")
+      return
+    }
     const pattern = /^([0-9]{0,2})$/;
     if (pattern.test(value)) {
       setAddTat(value)
