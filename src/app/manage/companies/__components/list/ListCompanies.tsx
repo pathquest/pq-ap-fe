@@ -260,8 +260,8 @@ const ListCompanies = () => {
   const qbConnect = () => {
     if (localStorage.getItem('qbcode') && localStorage.getItem('realmId') && localStorage.getItem('state')) {
       const params = {
-        code: localStorage.getItem('qbcode'),
-        realmId: localStorage.getItem('realmId'),
+        Code: localStorage.getItem('qbcode'),
+        RealmId: localStorage.getItem('realmId'),
         CompanyId: localStorage.getItem('state'),
       }
       performApiAction(dispatch, conncetQb, params, (responseData: any) => {
