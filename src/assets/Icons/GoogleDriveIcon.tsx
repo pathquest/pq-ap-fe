@@ -2,7 +2,7 @@ import React from 'react'
 
 function GoogleDriveIcon() {
   return (
-    <svg width='36' height='32' viewBox='0 0 36 32' fill='none' xmlns='http://www.w3.org/2000/svg'>
+    <svg width='28' height='25' viewBox='0 0 36 32' fill='none' xmlns='http://www.w3.org/2000/svg'>
       <g clip-path='url(#clip0_11969_236819)'>
         <path
           d='M2.82095 27.4232L4.39814 30.1509C4.72587 30.7252 5.19698 31.1764 5.75002 31.5045L11.3828 21.7422H0.117188C0.117188 22.378 0.281052 23.0138 0.60878 23.588L2.82095 27.4232Z'

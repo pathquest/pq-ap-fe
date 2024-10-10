@@ -7,8 +7,9 @@ import { getUnpaidBillsColumnMapping, unpaidBills } from '@/store/features/repor
 import { convertStringsDateToUTC } from '@/utils'
 import { format } from 'date-fns'
 import { Button, DataTable, Datepicker, Loader, MultiSelectChip, Select, Toast, Typography } from 'pq-ap-lib'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ColumnFilter from '../columnFilter/ColumnFilter'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 
@@ -16,6 +17,8 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
   const router = useRouter()
   const dispatch = useAppDispatch()
   const userId = localStorage.getItem('UserId')
+  const { data: session } = useSession()
+  const CompanyId = session?.user?.CompanyId
 
   const [mapColId, setMapColId] = useState<number>(-1)
   const [reportPeriodValue, setReportPeriodValue] = useState<number>(1)
@@ -25,8 +28,9 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
 
   const [runReport, setRunReport] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [runReportLoading, setRunReportLoading] = useState<boolean>(false)
   const [isExpanded, setIsExpanded] = useState<boolean>(true)
-  const [unpaidBillsData, setUnpaidBillsData] = useState([])
+  const [unpaidBillsData, setUnpaidBillsData] = useState<any>([])
 
   const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
 
@@ -35,7 +39,16 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
   const [viewByValue, setViewByValue] = useState<number>(2)
   const [reportPeriod, setReportPeriod] = useState<string>('')
 
+  const [itemsLoaded, setItemsLoaded] = useState(0)
+  const [apiDataCount, setApiDataCount] = useState(0)
+  const [shouldLoadMore, setShouldLoadMore] = useState(true)
+  const [isLazyLoading, setIsLazyLoading] = useState<boolean>(false)
+
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
+
+  let nextPageIndex: number = 1
+  const lazyRows = 10
+  const tableBottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
@@ -139,35 +152,117 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
     handleColumnFilter()
   }, [columnListVisible, unpaidBillsData])
 
-  const handleSubmit = () => {
-    setIsLoading(true)
-    if (reportPeriod.trim().length > 0) {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLazyLoading && shouldLoadMore && (itemsLoaded % lazyRows === 0) && apiDataCount > 0) {
+          fetchUnpaidBills()
+        }
+      },
+      { threshold: 0 }
+    )
+
+    if (tableBottomRef.current) {
+      observer.observe(tableBottomRef.current)
+      nextPageIndex = Math.ceil(itemsLoaded / lazyRows) + 1
+    }
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [shouldLoadMore, itemsLoaded, tableBottomRef.current])
+
+  const fetchUnpaidBills = async (pageIndex?: number) => {
+    if (pageIndex === 1) {
+      setUnpaidBillsData([])
+      setItemsLoaded(0)
+      setIsLoading(true)
+    }
+    if (CompanyId) {
       const params = {
         Vendors: vendorValue.length > 0 ? vendorValue.length === vendorOptions.length ? null : vendorValue : null,
         LocationIds: locationValue.length > 0 ? locationValue.length === locationOptions.length ? null : locationValue : null,
         StartDate: null,
         EndDate: reportPeriod !== '' ? convertStringsDateToUTC(reportPeriod) : null,
         ViewBy: viewByValue,
+        PageNumber: pageIndex || nextPageIndex,
+        PageSize: lazyRows,
       }
 
-      performApiAction(
-        dispatch,
-        unpaidBills,
-        params,
-        (responseData: any) => {
-          const List = responseData.UnpaidBills
-          setUnpaidBillsData(List)
-          setRunReport(true)
-          setIsLoading(false)
-          List.length > 0 && setIsExpanded(false)
-        },
-        () => {
-          setIsLoading(false)
+      try {
+        setIsLazyLoading(true)
+        const { payload, meta } = await dispatch(unpaidBills(params))
+        const dataMessage = payload?.Message
+
+        if (meta?.requestStatus === 'fulfilled') {
+          if (payload?.ResponseStatus === 'Success') {
+            const responseData = payload?.ResponseData
+            const List = responseData?.UnpaidBills
+            const newList = responseData?.UnpaidBills || []
+            const newTotalCount = responseData?.BillCount || 0
+            setApiDataCount(newTotalCount)
+            setRunReport(true)
+            setRunReportLoading(false)
+            List.length > 0 && setIsExpanded(false)
+
+            let updatedData = []
+            if (pageIndex === 1) {
+              updatedData = [...newList]
+              setIsLoading(false)
+              setIsLazyLoading(false)
+              setShouldLoadMore(true)
+            } else {
+              updatedData = [...unpaidBillsData, ...newList]
+            }
+            setUnpaidBillsData(updatedData)
+            setItemsLoaded(updatedData.length)
+            setIsLazyLoading(false)
+
+            setIsLoading(false)
+
+            if (itemsLoaded >= newTotalCount) {
+              setShouldLoadMore(false);
+            }
+          } else {
+            setRunReportLoading(false)
+            Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
+          }
+        } else {
+          setRunReportLoading(false)
+          Toast.error(`${payload?.status} : ${payload?.statusText}`)
         }
-      )
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setRunReportLoading(false)
+        setIsLoading(false)
+        setIsLazyLoading(false)
+      }
+
+      // performApiAction(
+      //   dispatch,
+      //   unpaidBills,
+      //   params,
+      //   (responseData: any) => {
+      //     const List = responseData.UnpaidBills
+      //     setUnpaidBillsData(List)
+      //     setRunReport(true)
+      //     setIsLoading(false)
+      //     List.length > 0 && setIsExpanded(false)
+      //   },
+      //   () => {
+      //     setIsLoading(false)
+      //   }
+      // )
+    }
+  }
+  const handleSubmit = () => {
+    setRunReportLoading(true)
+    if (reportPeriod.trim().length > 0) {
+      fetchUnpaidBills(1)
     } else {
       setRunReport(false)
-      setIsLoading(false)
+      setRunReportLoading(false)
       Toast.error('Please select the date in order to run the report')
     }
   }
@@ -444,10 +539,10 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
                   handleSubmit()
                   getMappingListData()
                 }}
-                className={`btn-sm !h-9 rounded-full ${isLoading && 'pointer-events-none opacity-80'}`}
+                className={`btn-sm !h-9 rounded-full ${runReportLoading && 'pointer-events-none opacity-80'}`}
                 variant='btn-primary'>
-                <label className={`flex items-center justify-center laptop:px-[12px] laptopMd:px-[12px] lg:px-[12px] xl:px-[12px] hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px] ${isLoading ? "animate-spin laptop:mx-[34px] laptopMd:mx-[34px] lg:mx-[34px] xl:mx-[34px] hd:mx-[41px] 2xl:mx-[41px] 3xl:mx-[41px]" : "!py-1.5 cursor-pointer font-proxima h-full laptop:font-semibold laptopMd:font-semibold lg:font-semibold xl:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em]"}`}>
-                  {isLoading ? <SpinnerIcon bgColor='#FFF' /> : "RUN REPORT"}
+                <label className={`flex items-center justify-center laptop:px-[12px] laptopMd:px-[12px] lg:px-[12px] xl:px-[12px] hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px] ${runReportLoading ? "animate-spin laptop:mx-[34px] laptopMd:mx-[34px] lg:mx-[34px] xl:mx-[34px] hd:mx-[41px] 2xl:mx-[41px] 3xl:mx-[41px]" : "!py-1.5 cursor-pointer font-proxima h-full laptop:font-semibold laptopMd:font-semibold lg:font-semibold xl:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em]"}`}>
+                  {runReportLoading ? <SpinnerIcon bgColor='#FFF' /> : "RUN REPORT"}
                 </label>
               </Button>
             </div>
@@ -459,16 +554,24 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
           className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-350px)]' : 'h-[calc(100vh-210px)]'
             } overflow-auto ${tableDynamicWidth}`}
         >
-          <DataTable
-            zIndex={2}
-            columns={columns}
-            data={table_Data}
-            sticky
-            hoverEffect
-            isTableLayoutFixed={true}
-            getExpandableData={() => { }}
-            getRowId={() => { }}
-          />
+          <div className={`mainTable ${unpaidBillsData.length !== 0 && 'h-0'}`}>
+            <DataTable
+              zIndex={2}
+              columns={columns}
+              data={table_Data}
+              sticky
+              hoverEffect
+              isTableLayoutFixed={true}
+              userClass='innerTable sticky'
+              lazyLoadRows={lazyRows}
+              getExpandableData={() => { }}
+              getRowId={() => { }}
+            />
+            {isLazyLoading && !isLoading && (
+              <Loader size='sm' helperText />
+            )}
+            <div ref={tableBottomRef} />
+          </div>
           {unpaidBillsData.length === 0 && noDataContent}
         </div>
       )}

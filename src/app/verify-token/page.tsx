@@ -11,6 +11,7 @@ export default function VerifyTokenPage() {
     const { data: session } = useSession()
     const searchParams = useSearchParams()
     const urlToken = searchParams.get('token') ?? ''
+    const urlRefreshToken = searchParams.get('refreshToken') ?? ''
     const isFirstConfig = searchParams.get('isFirstConfig') ?? 'false'
 
     const checkUrlToken = async () => {
@@ -24,6 +25,7 @@ export default function VerifyTokenPage() {
             await handleTokenSave({
                 token: urlToken,
                 expires_at:isoFormatDate,
+                refresh_token:urlRefreshToken,
                 isFirstConfig: isFirstConfig
             })
         }
