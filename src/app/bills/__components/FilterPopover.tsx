@@ -248,8 +248,8 @@ function FilterPopover({
                 label='Date Range'
                 className='!pt-2.5'
                 value={localFilterFormFields?.ft_datepicker}
-                startYear={1995}
-                endYear={2050}
+                startYear={1900}
+                endYear={2099}
                 getValue={(value) => {
                   onResetFilter(false)
                   setLocalFilterFormFields({

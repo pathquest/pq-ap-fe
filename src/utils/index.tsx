@@ -14,6 +14,13 @@ export function convertStringsToIntegers(array: string[]) {
   return array.map((item) => parseInt(item, 10))
 }
 
+
+export function formatDateByMonthYear(monthYear: any) {
+  const [month, year] = monthYear.split('/')
+  const formattedDate = `${month}/01/${year}`
+  return formattedDate
+}
+
 export function convertStringsDateToUTC(dateString: string): string {
   let parsedDate: Date = new Date()
 

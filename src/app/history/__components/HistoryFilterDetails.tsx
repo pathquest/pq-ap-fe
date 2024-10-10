@@ -87,8 +87,8 @@ const HistoryFilterDetails = ({
               id='fh_uploaded_date'
               label='Uploaded Date'
               value={localFilterFormFields?.fh_uploaded_date}
-              startYear={1995}
-              endYear={2050}
+              startYear={1900}
+              endYear={2099}
               getValue={(value) => {
                 if (setLocalFilterFormFields) {
                   setLocalFilterFormFields((prevState: any) => ({
@@ -178,7 +178,7 @@ const HistoryFilterDetails = ({
             variant={!isFilterChanged || isLoading ? 'btn' : 'btn-primary'}
             disabled={isFilterChanged ? false : true}>
             <label className="cursor-pointer laptop:px-3 laptopMd:px-3 lg:px-3 xl:px-3 hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px] !py-1.5 font-proxima font-semibold h-full laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em]">
-            {isLoading ? <SpinnerIcon bgColor='#6E6D7A' /> : "APPLY FILTER"} 
+            {isLoading ? <SpinnerIcon bgColor='#6E6D7A' /> : "APPLY FILTER"}
             </label>
           </Button>
         </div>

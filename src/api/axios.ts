@@ -61,6 +61,7 @@ import {
   RemoveDocumentOptionsProps,
   SplitDocumentOptions,
   UserListOptionsProps,
+  VendorHistoryListOptions,
   VendorListOptions,
 } from '@/models/billPosting'
 import {
@@ -186,71 +187,89 @@ const API_CLOUD = process.env.API_CLOUD
 const API_REALTIMENOTIFICATION = process.env.REALTIME_NOTIFICATION
 
 const responseBody = (response: AxiosResponse) => response.data;
-let cachedSession:any = null;
-let sessionPromise: any = null;
- 
-const fetchSession = async () => {
+let cachedSession: any = null;
+let sessionPromise: Promise<any> | null = null;
+
+const fetchSession = async (): Promise<any> => {
   if (!sessionPromise) {
     sessionPromise = (async () => {
       try {
-        if (typeof getSession === 'function') {
-          cachedSession = await getSession();
-        } else {
-          cachedSession = await auth();
-        }
-        return cachedSession;
-      } finally {
-        sessionPromise = null; // Reset sessionPromise only after the session has been fetched
+        cachedSession = typeof getSession === 'function' ? await getSession() : await auth();
+      } catch (error) {
+        sessionPromise = null;
+        throw error;
       }
+      return cachedSession;
     })();
   }
   return sessionPromise;
 };
- 
+
 export const invalidateSessionCache = () => {
   cachedSession = null;
 };
- 
+
+const refreshSession = async () => {
+  const url = `${process.env.API_SSO}/auth/refreshtoken`;
+  try {
+    const response = await axios.post(url, {
+      accesstoken: cachedSession.user.access_token,
+      refreshtoken: cachedSession.user.refresh_token,
+    });
+
+    if (response.data.ResponseStatus === 'Success') {
+      cachedSession.user.access_token = response.data.ResponseData.Token;
+      cachedSession.user.refresh_token = response.data.ResponseData.RefreshToken;
+      cachedSession.user.expires_at = response.data.ResponseData.TokenExpiry;
+
+      invalidateSessionCache();
+      return await fetchSession();
+    } else {
+      throw new Error('Refresh token failed');
+    }
+  } catch (error) {
+    throw new Error('Error refreshing token');
+  }
+};
+
+const isTokenExpired = (): boolean => {
+  const expiresAt = new Date(cachedSession.user.expires_at).getTime();
+  return Date.now() > expiresAt;
+};
+
+const setAuthHeaders = (config: any) => {
+  config.headers.Authorization = `bearer ${cachedSession.user.access_token}`;
+  config.headers.CompanyId = cachedSession.user.CompanyId;
+};
+
 axios.interceptors.request.use(
   async (config) => {
     if (!cachedSession) {
-      const session = await fetchSession();
-      cachedSession = session;
+      cachedSession = await fetchSession();
     }
- 
-    if (cachedSession && 'user' in cachedSession) {
-      config.headers.Authorization = `bearer ${cachedSession.user.access_token}`;
-      config.headers.CompanyId = cachedSession.user.CompanyId;
+
+    if (isTokenExpired()) {
+      cachedSession = await refreshSession();
     }
+
+    setAuthHeaders(config);
     return config;
   },
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      return Promise.reject('Unauthorized');
-    }
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
- 
+
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response.status === 401) {
-      cachedSession = null; // Invalidate session on 401 error
- 
+    if (error.response.status === 401 && !cachedSession) {
       try {
-        const session = await fetchSession();
-        cachedSession = session;
- 
-        // Retry the original request with the new session
-        error.config.headers.Authorization = `bearer ${session.user.access_token}`;
-        error.config.headers.CompanyId = session.user.CompanyId;
+        cachedSession = await fetchSession();
+        setAuthHeaders(error.config);
         return axios(error.config);
       } catch (sessionError) {
         return Promise.reject(sessionError);
       }
     }
- 
     return Promise.reject(error);
   }
 );
@@ -483,6 +502,7 @@ const Bill = {
   splitDocuments: (data: SplitDocumentOptions) => requests.post(`${API_FILEUPLOAD}/document/splitpdf`, data),
   // getocrDocument: () => requests.get(`${API_FILEUPLOAD}/indexing/getocrDocument`),
   accountPayableSave: (data: any) => requests.postForm(`${API_FILEUPLOAD}/accountpayable/save`, data),
+  getVendorHistoryList: (data: VendorHistoryListOptions) => requests.post(`${API_FILEUPLOAD}/accountpayable/vendorhistorylist`, data),
   getColumnMappingList: (data: GetColumnMappingListOptionsProps) =>
     requests.post(`${API_FILEUPLOAD}/document/getcolumnmappinglist`, data),
   getColumnMappingOverviewList: (data: GetColumnMappingListOptionsProps) =>
@@ -758,6 +778,20 @@ const accountantDashboard = {
   billingInfoList: (data: any) => requests.post(`${API_DASHBOARD}/dashboard/getbillinginfolist`, data),
   accountingDashboardList: (data: any) => requests.post(`${API_DASHBOARD}/dashboard/getaccountingdashboard`, data),
   organizationDropdown: () => requests.get(`${API_MANAGE}/organization/getorganizationdropdown`),
+  disableCloudConnection: (data: any) => requests.post(`${API_CLOUD}/cloud/disablecloudconnection`, data),
+  googleDriveConnect: (data: any) => requests.post(`${API_CLOUD}/cloud/googledrive/connect`, data),
+  dropboxConnect: (data: any) => requests.post(`${API_CLOUD}/cloud/dropbox/connect`, data),
+  getFolderList: () => requests.get(`${API_CLOUD}/cloud/googledrive/getfolderslist`),
+  getFolderDropboxList: () => requests.get(`${API_CLOUD}/cloud/dropbox/getfolderslist`),
+  saveDocumentFolderPath: (data: any) => requests.post(`${API_CLOUD}/cloud/savedocumentfolderpath`, data),
+  // DropboxDocumentFolderPathw: (data: any) => requests.post(`${API_CLOUD}/cloud/savedocumentfolderpath`, data),
+  imapConnect: (params: {
+    UserName: string
+    Password: string
+    HostName: string
+    PortNumber: number
+    SocketType: number
+  }) => requests.post(`${API_CLOUD}/cloud/imap/connect`, params)
 }
 
 const agent = {

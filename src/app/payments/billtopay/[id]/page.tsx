@@ -426,12 +426,10 @@ const BillFormat: React.FC = () => {
       if (meta?.requestStatus === 'fulfilled') {
         if (payload?.ResponseStatus === 'Success') {
           const mainFieldConfiguration = [
-            ...payload?.ResponseData?.ComapnyConfigList?.MainFieldConfiguration?.DefaultList,
-            ...payload?.ResponseData?.ComapnyConfigList?.MainFieldConfiguration?.CustomList
+            ...payload?.ResponseData?.ComapnyConfigList?.MainFieldConfiguration
           ]
           const lineItemConfiguration = [
-            ...payload?.ResponseData?.ComapnyConfigList?.LineItemConfiguration?.DefaultList,
-            ...payload?.ResponseData?.ComapnyConfigList?.LineItemConfiguration?.CustomList
+            ...payload?.ResponseData?.ComapnyConfigList?.LineItemConfiguration
           ]
           setMainFieldListOptions(mainFieldConfiguration)
           mainFieldConfiguration?.map((item: any) => {
@@ -488,12 +486,10 @@ const BillFormat: React.FC = () => {
 
   const fetchDocumentById = async (billId: any, fieldConfiguration: any) => {
     const mainFieldConfiguration = [
-      ...fieldConfiguration?.MainFieldConfiguration?.DefaultList,
-      ...fieldConfiguration?.MainFieldConfiguration?.CustomList
+      ...fieldConfiguration?.MainFieldConfiguration
     ]
     const lineItemConfiguration = [
-      ...fieldConfiguration?.LineItemConfiguration?.DefaultList,
-      ...fieldConfiguration?.LineItemConfiguration?.CustomList
+      ...fieldConfiguration?.LineItemConfiguration
     ]
 
     const { keyValueMainFieldObj, keyValueLineItemFieldObj } = returnKeyValueObjForFormFields(

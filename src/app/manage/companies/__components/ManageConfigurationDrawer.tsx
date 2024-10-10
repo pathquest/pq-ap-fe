@@ -13,7 +13,6 @@ import { getPaymentMethods } from '@/store/features/billsToPay/billsToPaySlice'
 import { useSession } from 'next-auth/react'
 import ChevronDown from '@/components/Common/Dropdown/Icons/ChevronDown'
 import InfoIcon from '@/assets/Icons/infoIcon'
-import { formatDate, utcFormatDate } from '@/components/Common/Functions/FormatDate'
 
 interface DrawerProps {
   onOpen: boolean
@@ -62,6 +61,11 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
     { label: 'Custom', value: '4' },
   ]
 
+  const DayOfMonthOptions = Array.from({ length: 28 }, (_, index) => ({
+    label: `${index + 1 + ""}`,
+    value: `${index + 1 + ""}`,
+  }));
+
   const initialExpandSection = {
     addTat: false,
     deleteDocumentHistory: false,
@@ -81,8 +85,8 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
   const [inDaysSyncValue, setInDaysSyncValue] = useState<string>('1')
   const [monthlySyncValue, setMonthlySyncValue] = useState<string>('1')
 
-  const [selectedDays, setSelectedDays] = useState<number[]>([])
-  const [chartPeriodDate, setChartPeriodDate] = useState<string>('')
+  const [selectedDays, setSelectedDays] = useState<number[]>([0])
+  const [customDay, setCustomDay] = useState<string>('')
 
   const [isPurchaseOrderEnable, setIsPurchaseOrderEnable] = useState<boolean>(false)
   const [isIndexingEnable, setIsIndexingEnable] = useState<boolean>(false)
@@ -179,10 +183,10 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
     setIsLoading(false)
 
     setDeleteDocumentHistory('30')
-    setSyncTypeValue('')
-    setHourlySyncValue('')
-    setInDaysSyncValue('')
-    setMonthlySyncValue('')
+    setSyncTypeValue('1')
+    setHourlySyncValue('1')
+    setInDaysSyncValue('1')
+    setMonthlySyncValue('1')
   }
 
   const clearAllData = async (type: string) => {
@@ -214,6 +218,34 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
   }
 
   const handleRadioSelection = (label: string) => {
+    switch (label) {
+      case 'hourly':
+        setInDaysSyncValue("1")
+        setMonthlySyncValue("1")
+        setSelectedDays([0])
+        setCustomDay("")
+        break
+      case 'inDays':
+        setHourlySyncValue("1")
+        setMonthlySyncValue("1")
+        setSelectedDays([0])
+        setCustomDay("")
+        break
+      case 'monthly':
+        setInDaysSyncValue("1")
+        setHourlySyncValue("1")
+        setSelectedDays([0])
+        setCustomDay("")
+        break
+      case 'weekly':
+        setInDaysSyncValue("1")
+        setMonthlySyncValue("1")
+        setHourlySyncValue("1")
+        setCustomDay("")
+        break
+      default:
+        break
+    }
     setIsHourlySelected(label === 'hourly')
     setIsInDaysSelected(label === 'inDays')
     setIsMonthlySelected(label === 'monthly')
@@ -236,8 +268,8 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
     }
     performApiAction(dispatch, getManageConfiguration, params, (responseData: any) => {
       const { IsOCR, IsIndexing, IsLineItem, DeleteFilesInDays, Tat, Sync } = responseData
-      setAddTat(Tat + "" ?? "0")
-      setDeleteDocumentHistory(DeleteFilesInDays + "" ?? "30")
+      setAddTat(Tat + "")
+      setDeleteDocumentHistory(DeleteFilesInDays + "")
 
       const syncData = JSON.parse(Sync);
       const { SyncType, SyncMethod, SyncData } = syncData;
@@ -247,7 +279,8 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
         "1": { isHourly: true, isMonthly: false, isWeekly: false, isInDays: false },
         "2": { isHourly: false, isMonthly: false, isWeekly: false, isInDays: true },
         "3": { isHourly: false, isMonthly: false, isWeekly: true, isInDays: false },
-        "4": { isHourly: false, isMonthly: true, isWeekly: false, isInDays: false }
+        "4": { isHourly: false, isMonthly: true, isWeekly: false, isInDays: false },
+        "5": { isHourly: false, isMonthly: true, isWeekly: false, isInDays: false }
       };
       const { isHourly, isMonthly, isWeekly, isInDays } = syncSelectionState[SyncMethod] || {};
 
@@ -255,22 +288,14 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
         setHourlySyncValue(SyncData)
       } else if (SyncMethod == "2") {
         setInDaysSyncValue(SyncData)
-      }
-      else if (SyncMethod == "3") {
+      } else if (SyncMethod == "3") {
         const arrDays = SyncData.split(",").map(Number);
         setSelectedDays(arrDays)
+      } else if (SyncMethod == "4") {
+        setMonthlySyncValue(SyncData)
       } else {
-        const hasT000000InSyncData = (syncData: string): boolean => {
-          return syncData.includes("T00:00:00");
-        }
-        const hasSpecificTimeFormat = hasT000000InSyncData(SyncData);
-
-        if (hasSpecificTimeFormat) {
-          setChartPeriodDate(formatDate(SyncData));
-          setMonthlySyncValue("4")
-        } else {
-          setMonthlySyncValue(SyncData)
-        }
+        setCustomDay(SyncData);
+        setMonthlySyncValue("4")
       }
 
       setIsHourlySelected(isHourly);
@@ -295,21 +320,21 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
     if (syncTypeValue === "1") { // Periodic Sync
       if (isHourlySelected) {
         syncMethod = "1"
-        syncData = hourlySyncValue;
+        syncData = hourlySyncValue ?? "1";
       } else if (isInDaysSelected) {
         syncMethod = "2"
-        syncData = inDaysSyncValue;
+        syncData = inDaysSyncValue ?? "1";
       } else if (isWeeklySelected) {
         syncMethod = "3"
         syncData = "7"; // Weekly
         syncData = selectedDays.sort().join(','); // Comma-separated string of selected days
       } else if (isMonthlySelected) {
-        syncMethod = "4"
         syncData = "30"; // Monthly
-        if (monthlySyncValue === "4" && chartPeriodDate) {
-          // If custom date is selected, use the date
-          syncData = utcFormatDate(chartPeriodDate)
+        if (monthlySyncValue === "4" && customDay) {
+          syncMethod = "5"
+          syncData = customDay
         } else {
+          syncMethod = "4"
           syncData = monthlySyncValue;
         }
       }
@@ -318,7 +343,7 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
     }
 
     const syncParam = JSON.stringify({
-      SyncType: syncTypeValue,
+      SyncType: syncTypeValue ?? '1',
       SyncMethod: syncMethod,
       SyncData: syncData
     });
@@ -344,7 +369,7 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
   const mapDays = days.map((day: string, index: number) => (
     <div key={index + day}
       className={`flex text-base font-proxima laptop:h-[45px] laptopMd:h-[45px] lg:h-[45px] xl:h-[45px] hd:h-[52px] 2xl:h-[52px] 3xl:h-[52px] laptop:w-[45px] laptopMd:w-[45px] lg:w-[45px] xl:w-[45px] hd:w-[52px] 2xl:w-[52px] 3xl:w-[52px] cursor-pointer items-center justify-center rounded-md border-[1px] border-lightSilver ${selectedDays.includes(index)
-        ? 'bg-primary text-white'
+        ? 'bg-primary text-white font-bold'
         : ''
         }`}
       onClick={() => handleDayClick(index)}
@@ -366,6 +391,10 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
 
 
   const handleInputChange = (value: any) => {
+    if (value == "0") {
+      setAddTat("")
+      return
+    }
     const pattern = /^([0-9]{0,2})$/;
     if (pattern.test(value)) {
       setAddTat(value)
@@ -404,7 +433,7 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
               getValue={(value) => handleInputChange(value)}
               getError={() => { }}
             />
-            <label htmlFor="addTat" className='text-sm font-proxima text-slatyGrey tracking-[0.02em]'>Value should not be in decimal format</label>
+            <label htmlFor="addTat" className='text-sm font-proxima text-slatyGrey tracking-[0.02em] whitespace-nowrap'>Value should be from 1-99 and not in decimal format</label>
           </div>
         </div>
 
@@ -561,19 +590,16 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
                       getError={() => { }}
                     />
                   </div>
-                  <div className={`${isMonthlySelected && monthlySyncValue == "4" ? "block" : "hidden"} mt-1 w-[230px] customDatePickerYearExpandWidth`}>
-                    <Datepicker
-                      id='customDate'
-                      label='Date'
-                      value={chartPeriodDate}
-                      startYear={1995}
-                      endYear={2050}
-                      disabled={monthlySyncValue == "4" ? false : true}
-                      getValue={(value: any) => {
-                        if (monthlySyncValue == "4" && value) {
-                          setChartPeriodDate(value);
-                        }
-                      }}
+                  <div className={`${isMonthlySelected && monthlySyncValue == "4" ? "flex" : "hidden"} items-end w-[130px]`}>
+                    <Select
+                      // label='Select Day'
+                      id='customDaySelect'
+                      name='customDaySelect'
+                      defaultValue={customDay}
+                      search
+                      heightClass='max-h-[150px]'
+                      options={DayOfMonthOptions}
+                      getValue={(value) => setCustomDay(value)}
                       getError={() => { }}
                     />
                   </div>

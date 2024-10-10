@@ -359,11 +359,11 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
           href: '/setup/notification',
           isVisible: isNotificationView
         },
-        // {
-        //   name: 'Cloud Configuration',
-        //   href: '/setup/cloudconfiguration',
-        //   isVisible: isCloudConfigurationView
-        // },
+        {
+          name: 'Cloud Configuration',
+          href: '/setup/cloudconfiguration',
+          isVisible: isCloudConfigurationView
+        },
         {
           name: 'Automation',
           href: '/setup/automation',

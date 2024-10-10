@@ -72,6 +72,72 @@ export const BillsPaymentData = [
   },
 ]
 
+export const apLedgerNestedColumns: any = [
+  {
+    header: '',
+    accessor: '',
+    sortable: false,
+    colalign: 'left',
+    colStyle: '!w-[40px]',
+  },
+  {
+    header: 'DATE',
+    accessor: 'BillDate',
+    sortable: false,
+    colalign: 'left',
+    colStyle: '!w-[150px] !tracking-[0.02em]',
+  },
+  {
+    header: 'TRANSACTION TYPE',
+    accessor: 'TransactionType',
+    sortable: false,
+    colalign: 'left',
+    colStyle: '!w-[180px] !tracking-[0.02em]',
+  },
+  {
+    header: 'BILL NUMBER',
+    accessor: 'BillNumber',
+    sortable: false,
+    colalign: 'left',
+    colStyle: '!w-[150px] !tracking-[0.02em]',
+  },
+  {
+    header: 'LOCATION',
+    accessor: 'Location',
+    sortable: false,
+    colalign: 'left',
+    colStyle: '!w-[120px] !tracking-[0.02em]',
+  },
+  {
+    header: 'DUEDATE',
+    accessor: 'DueDate',
+    sortable: false,
+    colalign: 'right',
+    colStyle: '!w-[120px] !tracking-[0.02em]',
+  },
+  {
+    header: 'CHARGES',
+    accessor: 'Charges',
+    sortable: false,
+    colalign: 'right',
+    colStyle: '!w-[120px] !tracking-[0.02em]',
+  },
+  {
+    header: 'PAYMENTS',
+    accessor: 'Payments',
+    sortable: false,
+    colalign: 'right',
+    colStyle: '!w-[120px] !tracking-[0.02em]',
+  },
+  {
+    header: 'BALANCE',
+    accessor: 'Balance',
+    sortable: false,
+    colalign: 'right',
+    colStyle: '!w-[120px] !tracking-[0.02em]',
+  },
+]
+
 export const BillAnalysisDetailColumns: any = [
   {
     header: 'Vendor Id',

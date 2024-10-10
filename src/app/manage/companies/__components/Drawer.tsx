@@ -26,7 +26,6 @@ interface DrawerProps {
   IntacctPassword: string | null
   IntacctCompanyId: string | null
   IntacctLocationId: string | null
-  clearID: CloseHandler
   orgId: NullableNumber
   recordNo: string
   setShowCancelModal: (value: boolean) => void
@@ -49,7 +48,6 @@ const Drawer: React.FC<DrawerProps> = ({
   IntacctAccountinToolId,
   IntacctCompanyId,
   IntacctLocationId,
-  clearID,
   recordNo,
   setShowCancelModal,
   isConfirmCancel,
@@ -246,7 +244,6 @@ const Drawer: React.FC<DrawerProps> = ({
 
   // clear form after close the drawer or close button
   const clearData = () => {
-    clearID()
     setDeletedFileErrorMessage('')
     setCompanyName('')
     setCompanyNameError(false)

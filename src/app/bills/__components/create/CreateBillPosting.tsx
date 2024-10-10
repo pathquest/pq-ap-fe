@@ -1,46 +1,27 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { RefObject, useEffect, useRef, useState } from 'react'
-
-import { Button, DataTable, Loader, Toast, Tooltip, Typography } from 'pq-ap-lib'
-
-import AddIcon from '@/assets/Icons/billposting/accountpayable/AddIcon'
-import BackIcon from '@/assets/Icons/billposting/accountpayable/BackIcon'
-import RemoveIcon from '@/assets/Icons/billposting/accountpayable/RemoveIcon'
-
-import Wrapper from '@/components/Common/Wrapper'
-
 import agent from '@/api/axios'
+import { fetchAPIsData } from '@/api/server/common'
 import CustomCheckBox from '@/app/bills/__components/CustomCheckboxField'
 import CustomDatePicker from '@/app/bills/__components/CustomDatePickerField'
 import CustomSelectField from '@/app/bills/__components/CustomSelectField'
 import CustomTextField from '@/app/bills/__components/CustomTextField'
 import PostaspaidModal from '@/app/bills/__components/PostaspaidModal'
+import AddIcon from '@/assets/Icons/billposting/accountpayable/AddIcon'
+import BackIcon from '@/assets/Icons/billposting/accountpayable/BackIcon'
+import RemoveIcon from '@/assets/Icons/billposting/accountpayable/RemoveIcon'
 import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 import BillsControlFields from '@/components/Common/BillsControls/page'
+import Wrapper from '@/components/Common/Wrapper'
 import { accountPayableLineItemsObj, accountPayableObj } from '@/data/billPosting'
 import { EditBillPostingDataProps } from '@/models/billPosting'
 import { useAppSelector } from '@/store/configureStore'
-import {
-  convertFractionToRoundValue,
-  getRoundValue,
-  getUpdatedDataFromDetailsResponse,
-  handleFormFieldErrors,
-  lineItemRemoveArr,
-  prepareAccountPayableParams,
-  returnKeyValueObjForFormFields,
-  setLoaderState,
-  taxTotalAmountCalculate,
-  totalAmountCalculate,
-  validate,
-  validateAttachments,
-  validateTotals,
-  verifyAllFieldsValues,
-} from '@/utils/billposting'
+import { convertFractionToRoundValue, getRoundValue, getUpdatedDataFromDetailsResponse, handleFormFieldErrors, lineItemRemoveArr, prepareAccountPayableParams, returnKeyValueObjForFormFields, setLoaderState, taxTotalAmountCalculate, totalAmountCalculate, validate, validateAttachments, validateTotals, verifyAllFieldsValues } from '@/utils/billposting'
 import { format } from 'date-fns'
 import { useSession } from 'next-auth/react'
-import { fetchAPIsData } from '@/api/server/common'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Button, DataTable, Loader, Toast, Tooltip } from 'pq-ap-lib'
+import { RefObject, useEffect, useRef, useState } from 'react'
 
 const CreateBillPosting = ({
   processtype,
@@ -98,6 +79,9 @@ const CreateBillPosting = ({
 
   const userId = localStorage.getItem('UserId')
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
+
+  const searchParams = useSearchParams()
+  const module = searchParams.get('module')
 
   let totalAmount = totalAmountCalculate(lineItemsFieldsData)
   let taxTotalAmount = taxTotalAmountCalculate(lineItemsFieldsData)
@@ -160,16 +144,23 @@ const CreateBillPosting = ({
       }
 
       const mainFieldConfiguration = [
-        ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.DefaultList,
-        ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.CustomList,
+        ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration
       ]
       const lineItemConfiguration = [
-        ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.DefaultList,
-        ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.CustomList,
+        ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration
       ]
 
       await setMainFieldListOptions(mainFieldConfiguration)
       await setLineItemFieldListOptions(lineItemConfiguration)
+
+      const { keyValueMainFieldObj, keyValueLineItemFieldObj } = returnKeyValueObjForFormFields(
+        mainFieldConfiguration,
+        lineItemConfiguration
+      )
+
+      if (documentId) {
+        await getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldConfiguration, generateLinetItemFieldsErrorObj, vendorOptions, lineItemsFieldsDataObj)
+      }
 
       setIsLoading(false)
     }
@@ -177,11 +168,6 @@ const CreateBillPosting = ({
       fetchFieldMappingData()
     }
   }, [CompanyId])
-
-  const { keyValueMainFieldObj, keyValueLineItemFieldObj } = returnKeyValueObjForFormFields(
-    mainFieldListOptions,
-    lineItemFieldListOptions
-  )
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
@@ -191,12 +177,59 @@ const CreateBillPosting = ({
     }
   }, [isLeftSidebarCollapsed])
 
-  useEffect(() => {
-    const getCurrentBillDetails = async () => {
-      try {
+  const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any, mainFieldListOptions: any, generateLinetItemFieldsErrorObj: any, vendorOptions: any, lineItemsFieldsDataObj: any) => {
+    try {
+      if (module == 'billsOverview') {
+        const response = await agent.APIs.getDocumentDetails({
+          Id: Number(documentId as string),
+          UserId: Number(userId as string),
+          ApprovalType: 0,
+        })
+        if (response?.ResponseStatus === 'Success') {
+          const responseData = response?.ResponseData
+          const currentDate = new Date().toISOString().split('T')[0] + 'T00:00:00';
+
+          const newDataObject = {
+            ...responseData,
+            BillNumber: "",
+            BillDate: currentDate,
+            GLPostingDate: currentDate,
+            DueDate: currentDate,
+            Attachments: []
+          }
+
+          setDocumentDetailByIdData(newDataObject)
+
+          const { newLineItems, newLineItemsErrorObj, updatedDataObj, updatedDataErrorObj } = getUpdatedDataFromDetailsResponse(
+            newDataObject,
+            keyValueMainFieldObj,
+            keyValueLineItemFieldObj,
+            mainFieldListOptions,
+            generateLinetItemFieldsErrorObj,
+            vendorGLTermOptions
+          )
+
+          if (newLineItems.length === 0) {
+            await setLineItemsFieldsData([
+              {
+                ...lineItemsFieldsDataObj,
+                Index: 1,
+              },
+            ])
+          } else {
+            await setLineItemsFieldsData(newLineItems)
+            setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
+          }
+
+          setFormFields(updatedDataObj)
+          setHasFormFieldLibraryErrors(updatedDataErrorObj)
+        }
+      }
+      else {
         const response = await agent.APIs.getDocumentHistoryDetails({
           Id: Number(documentId as string),
         })
+
         if (response?.ResponseStatus === 'Success') {
           const responseData = response?.ResponseData
           setDocumentDetailByIdData(responseData)
@@ -225,12 +258,19 @@ const CreateBillPosting = ({
           setFormFields(updatedDataObj)
           setHasFormFieldLibraryErrors(updatedDataErrorObj)
         }
-      } catch (error) {
-        Toast.error('Something Went Wrong!')
       }
+    } catch (error) {
+      Toast.error('Something Went Wrong!')
     }
+  }
+
+  useEffect(() => {
     if (documentId) {
-      getCurrentBillDetails()
+      const { keyValueMainFieldObj, keyValueLineItemFieldObj } = returnKeyValueObjForFormFields(
+        mainFieldListOptions,
+        lineItemFieldListOptions
+      )
+      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldListOptions, generateLinetItemFieldsErrorObj, vendorGLTermOptions, lineItemsFieldsDataObj)
     }
   }, [documentId])
 
@@ -589,7 +629,6 @@ const CreateBillPosting = ({
           ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
           duedate: formattedDueDateCalculated,
         })
-
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
@@ -597,13 +636,11 @@ const CreateBillPosting = ({
           duedate: formattedDueDateCalculated ? true : false,
         })
       } else {
-
         await setFormFields({
           ...formFields,
           [key]: value,
           ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
         })
-
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
@@ -632,7 +669,6 @@ const CreateBillPosting = ({
         [key]: value,
         duedate: formattedDueDateCalculated,
       })
-
       await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
         [key]: value ? true : false,
@@ -666,7 +702,6 @@ const CreateBillPosting = ({
         ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
         ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
       })
-
       await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
         [key]: value ? true : false,
@@ -683,12 +718,10 @@ const CreateBillPosting = ({
       ...formFields,
       [key]: value,
     })
-
     await setHasFormFieldLibraryErrors({
       ...hasFormFieldLibraryErrors,
       [key]: value ? true : false,
     })
-
   }
 
   const onErrorLoader = (postSaveAs: number) => {
@@ -720,150 +753,147 @@ const CreateBillPosting = ({
     }
   }
 
-  const newMainFieldListOptions =
-    mainFieldListOptions &&
-    mainFieldListOptions?.map((item: any) => {
-      let maxLength
+  const newMainFieldListOptions = mainFieldListOptions && mainFieldListOptions?.map((item: any) => {
+    let maxLength
 
-      if (item.Name === 'billnumber' && item.FieldType === 'text') {
-        maxLength = 20
-      } else {
-        maxLength = undefined
-      }
+    if (item.Name === 'billnumber' && item.FieldType === 'text') {
+      maxLength = 20
+    } else {
+      maxLength = undefined
+    }
 
-      const hasError = hasFormFieldErrors[item.Name] && !formFields[item.Name]
-      let optionsObj: any = []
-      switch (item?.Name) {
-        case 'vendor':
-          optionsObj = vendorOptions
-          break
-        case 'term':
-          optionsObj = termOptions
-          break
-        case 'pono':
-          optionsObj = []
-          break
-      }
+    const hasError = hasFormFieldErrors[item.Name] && !formFields[item.Name]
+    let optionsObj: any = []
+    switch (item?.Name) {
+      case 'vendor':
+        optionsObj = vendorOptions
+        break
+      case 'term':
+        optionsObj = termOptions
+        break
+      case 'pono':
+        optionsObj = []
+        break
+    }
 
-      if (item?.Value) {
-        optionsObj = JSON.parse(item?.Value)
-      }
+    if (item?.Value) {
+      optionsObj = JSON.parse(item?.Value)
+    }
 
+    return {
+      ...item,
+      Label: processtype === '2' && item.Name === 'billnumber' ? 'Adjustment Number' : item.Label,
+      isValidate: item?.IsRequired,
+      Value: formFields[item.Name],
+      IsChecked: formFields[item.Name],
+      Options: optionsObj ? optionsObj : [],
+      getValue: (key: string, value: string) => {
+        const fieldMappingFieldType: any = mainFieldListOptions.find((option: any) => option.Name === key)?.FieldType
+        if (!value && (fieldMappingFieldType === 'date')) {
+          return
+        } else {
+          setFormValues(key, value)
 
-      return {
-        ...item,
-        Label: processtype === '2' && item.Name === 'billnumber' ? 'Adjustment Number' : item.Label,
-        isValidate: item?.IsRequired,
-        Value: formFields[item.Name],
-        IsChecked: formFields[item.Name],
-        Options: optionsObj ? optionsObj : [],
-        getValue: (key: string, value: string) => {
-          const fieldMappingFieldType: any = mainFieldListOptions.find((option: any) => option.Name === key)?.FieldType
-          if (!value && (fieldMappingFieldType === 'date')) {
+          if (key === 'date') {
+            if (hasFormFieldErrors.hasOwnProperty(key)) {
+              setHasFormFieldErrors({
+                ...hasFormFieldErrors,
+                [key]: false,
+                glpostingdate: false,
+              })
+            }
             return
-          } else {
-            setFormValues(key, value)
-
-            if (key === 'date') {
-              if (hasFormFieldErrors.hasOwnProperty(key)) {
-                setHasFormFieldErrors({
-                  ...hasFormFieldErrors,
-                  [key]: false,
-                  glpostingdate: false,
-                })
-              }
-              return
+          }
+          if (key === 'term') {
+            if (hasFormFieldErrors.hasOwnProperty(key)) {
+              setHasFormFieldErrors({
+                ...hasFormFieldErrors,
+                [key]: false,
+                duedate: false,
+              })
             }
-            if (key === 'term') {
-              if (hasFormFieldErrors.hasOwnProperty(key)) {
-                setHasFormFieldErrors({
-                  ...hasFormFieldErrors,
-                  [key]: false,
-                  duedate: false,
-                })
-              }
-              return
-            }
-            if (key === 'vendor') {
-              const payToName = mainFieldListOptions.find((option: any) => option.MappedWith === 2 || option.MappedWith === 14)?.Name
-              const returnToName = mainFieldListOptions.find((option: any) => option.MappedWith === 3 || option.MappedWith === 15)
-                ?.Name
-
-              if (hasFormFieldErrors.hasOwnProperty(key)) {
-                setHasFormFieldErrors({
-                  ...hasFormFieldErrors,
-                  [key]: false,
-                  [payToName]: false,
-                  [returnToName]: false,
-                })
-              }
-              return
-            }
+            return
+          }
+          if (key === 'vendor') {
+            const payToName = mainFieldListOptions.find((option: any) => option.MappedWith === 2 || option.MappedWith === 14)?.Name
+            const returnToName = mainFieldListOptions.find((option: any) => option.MappedWith === 3 || option.MappedWith === 15)
+              ?.Name
 
             if (hasFormFieldErrors.hasOwnProperty(key)) {
               setHasFormFieldErrors({
                 ...hasFormFieldErrors,
                 [key]: false,
+                [payToName]: false,
+                [returnToName]: false,
               })
             }
-          }
-        },
-        getError: (key: string, err: boolean) => {
-          const fieldMappingFieldType: any = mainFieldListOptions.find((option: any) => option.Name === key)?.FieldType
-          if (!err && (fieldMappingFieldType === 'date')) {
             return
-          } else {
-            if (key === 'date') {
-              if (hasFormFieldErrors.hasOwnProperty(key)) {
-                setHasFormFieldLibraryErrors({
-                  ...hasFormFieldLibraryErrors,
-                  [key]: err,
-                  glpostingdate: true,
-                })
-              }
-              return
-            }
+          }
 
-            if (key === 'term') {
-              if (hasFormFieldErrors.hasOwnProperty(key)) {
-                setHasFormFieldLibraryErrors({
-                  ...hasFormFieldLibraryErrors,
-                  [key]: err,
-                  duedate: true,
-                })
-              }
-              return
+          if (hasFormFieldErrors.hasOwnProperty(key)) {
+            setHasFormFieldErrors({
+              ...hasFormFieldErrors,
+              [key]: false,
+            })
+          }
+        }
+      },
+      getError: (key: string, err: boolean) => {
+        const fieldMappingFieldType: any = mainFieldListOptions.find((option: any) => option.Name === key)?.FieldType
+        if (!err && (fieldMappingFieldType === 'date')) {
+          return
+        } else {
+          if (key === 'date') {
+            if (hasFormFieldErrors.hasOwnProperty(key)) {
+              setHasFormFieldLibraryErrors({
+                ...hasFormFieldLibraryErrors,
+                [key]: err,
+                glpostingdate: true,
+              })
             }
+            return
+          }
 
-            if (key === 'vendor') {
-              const payToName = mainFieldListOptions.find((option: any) => option.MappedWith === 2 || option.MappedWith === 14)?.Name
-              const returnToName = mainFieldListOptions.find((option: any) => option.MappedWith === 3 || option.MappedWith === 15)
-                ?.Name
-
-              if (hasFormFieldErrors.hasOwnProperty(key)) {
-                setHasFormFieldLibraryErrors({
-                  ...hasFormFieldLibraryErrors,
-                  [key]: err,
-                  [payToName]: true,
-                  [returnToName]: true,
-                })
-              }
-              return
+          if (key === 'term') {
+            if (hasFormFieldErrors.hasOwnProperty(key)) {
+              setHasFormFieldLibraryErrors({
+                ...hasFormFieldLibraryErrors,
+                [key]: err,
+                duedate: true,
+              })
             }
+            return
+          }
+
+          if (key === 'vendor') {
+            const payToName = mainFieldListOptions.find((option: any) => option.MappedWith === 2 || option.MappedWith === 14)?.Name
+            const returnToName = mainFieldListOptions.find((option: any) => option.MappedWith === 3 || option.MappedWith === 15)
+              ?.Name
 
             if (hasFormFieldErrors.hasOwnProperty(key)) {
               setHasFormFieldLibraryErrors({
                 ...hasFormFieldLibraryErrors,
                 [key]: err,
+                [payToName]: true,
+                [returnToName]: true,
               })
             }
+            return
           }
-        },
-        hasError: hasError,
-        classNames: `${hasError ? 'mb-3' : 'mb-6'} laptop:mr-5`,
-        maxLength: maxLength,
-      }
-    })
+
+          if (hasFormFieldErrors.hasOwnProperty(key)) {
+            setHasFormFieldLibraryErrors({
+              ...hasFormFieldLibraryErrors,
+              [key]: err,
+            })
+          }
+        }
+      },
+      hasError: hasError,
+      classNames: `${hasError ? 'mb-3' : 'mb-6'} laptop:mr-5`,
+      maxLength: maxLength,
+    }
+  })
 
   const saveAccountPayable = async (params: any, postSaveAs: any) => {
     try {
@@ -949,7 +979,7 @@ const CreateBillPosting = ({
       lineItemsFieldsData,
       postSaveAs,
       documentDetailByIdData,
-      documentId
+      0
     )
 
     const isValidAttachments = validateAttachments(formFields, onErrorLoader, postSaveAs)
@@ -1099,7 +1129,7 @@ const CreateBillPosting = ({
           </div>
         ) : (
           <>
-            <div className='flex flex-col pt-5'>
+            <div className='flex flex-col pt-5' key={isLoading + ""}>
               <div className='grid grid-cols-4 items-center px-5'>
                 <BillsControlFields formFields={newMainFieldListOptions} />
               </div>

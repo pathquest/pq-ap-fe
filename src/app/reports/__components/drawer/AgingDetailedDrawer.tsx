@@ -68,7 +68,7 @@ const AgingDetailedDrawer: React.FC<ActionsProps> = ({
         Toast.error(`${payload?.status} : ${payload?.statusText}`)
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 

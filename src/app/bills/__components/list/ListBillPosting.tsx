@@ -50,6 +50,7 @@ import { billStatusEditable, getPDFUrl, getTimeDifference, initialBillPostingFil
 import { useSession } from 'next-auth/react'
 import ColumnFilterOverview from '../ColumnFilterOverview'
 import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
+import CopyIcon from '@/assets/Icons/billposting/CopyIcon'
 
 const ListBillPosting = ({ statusOptions }: any) => {
   const { data: session } = useSession()
@@ -225,6 +226,9 @@ const ListBillPosting = ({ statusOptions }: any) => {
   const [itemsLoadedOverview, setItemsLoadedOverview] = useState(0)
   const [apiDataCount, setApiDataCount] = useState(0)
   const [apiDataCountOverview, setApiDataCountOverview] = useState(0)
+
+  const [isCopyBillModalOpen, setIsCopyBillModalOpen] = useState<boolean>(false)
+  const [copyBillId, setCopyBillId] = useState<number>(0)
 
   let nextPageIndex: number = 1
   let nextPageIndexOverview: number = 1
@@ -508,6 +512,9 @@ const ListBillPosting = ({ statusOptions }: any) => {
   }, [duplicateBillCount]);
 
   const fetchBillsData = async (pageIndex?: number) => {
+    localStorage.removeItem('CopyBillViewId')
+    localStorage.removeItem('CopyBillData')
+
     if (pageIndex === 1) {
       setBillLists([])
       setItemsLoaded(0)
@@ -1107,7 +1114,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
       accessor: 'actions',
       sortable: false,
       colalign: 'right',
-      colStyle: '!w-[300px]',
+      colStyle: '!w-[350px]',
     },
   ]
 
@@ -1274,8 +1281,10 @@ const ListBillPosting = ({ statusOptions }: any) => {
               <div
                 className={`z-0 flex items-center border-l ${d.Status !== 3 && d.Status !== 4 && d.Status !== 7 ? 'border-r' : ''
                   } border-[#cccccc] px-4`}
+                onMouseEnter={() => setIsOverFlowVisible(true)}
+                onMouseLeave={() => setIsOverFlowVisible(false)}
               >
-                <BasicTooltip position='left' content='View bill' className='!z-10 !font-proxima !text-sm'>
+                <BasicTooltip position='bottom' content='View bill' className='!z-10 !font-proxima !text-sm'>
                   <div
                     className='cursor-pointer'
                     onClick={() => {
@@ -1303,7 +1312,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                       })
                     }}
                   >
-                    <BasicTooltip position='left' content='Move To' className='!z-10 !font-proxima !text-sm'>
+                    <BasicTooltip position='bottom' content='Move To' className='!z-10 !font-proxima !text-sm'>
                       <div className='flex items-center'>
                         <TabMoveIcon />
                         <span className='!z-0 pl-1.5'>
@@ -1322,8 +1331,10 @@ const ListBillPosting = ({ statusOptions }: any) => {
                     setDeleteId(d.Id)
                     setDeleteModal(true)
                   }}
+                  onMouseEnter={() => setIsOverFlowVisible(true)}
+                  onMouseLeave={() => setIsOverFlowVisible(false)}
                 >
-                  <BasicTooltip position='left' content='Delete' className='!z-10 !font-proxima !text-sm'>
+                  <BasicTooltip position='bottom' content='Delete' className='!z-10 !font-proxima !text-sm'>
                     <div>
                       <DeleteIcon />
                     </div>
@@ -1334,6 +1345,8 @@ const ListBillPosting = ({ statusOptions }: any) => {
               {d.Status === 9 && (
                 <div
                   className='z-0 flex cursor-pointer items-center border-[#cccccc] px-4'
+                  onMouseEnter={() => setIsOverFlowVisible(true)}
+                  onMouseLeave={() => setIsOverFlowVisible(false)}
                   onClick={() => {
                     setIsRestoreModalOpen(true)
                     setIsRestoreFields({
@@ -1343,7 +1356,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                     })
                   }}
                 >
-                  <BasicTooltip position='left' content='Restore' className='!z-10 !font-proxima !text-sm'>
+                  <BasicTooltip position='bottom' content='Restore' className='!z-10 !font-proxima !text-sm'>
                     <RestoreIcon />
                   </BasicTooltip>
                 </div>
@@ -1414,7 +1427,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                 {d.Attachments?.length > 0 && (
                   <div className=''>
                     <div className='flex cursor-pointer justify-end' onClick={() => handleOpenAttachFile(d.Id)}>
-                      <div className='absolute -right-2 -top-3'>
+                      <div className='absolute -right-[11px] -top-[11px]'>
                         <Badge badgetype='error' variant='dot' text={d.Attachments.length.toString()} />
                       </div>
                       <AttachIcon />
@@ -1478,6 +1491,22 @@ const ListBillPosting = ({ statusOptions }: any) => {
         actions: hoveredRow?.Id === d.Id && (
           <div className={`${isOverFlowVisible ? "overflow-visible" : "overflow-hidden"} h-full w-full`}>
             <div className='slideLeft relative flex h-full justify-end'>
+              <div
+                className={`z-0 flex items-center border-l border-[#cccccc] px-4`}
+              >
+                <BasicTooltip position='left' content='Copy Bill' className='!font-proxima !px-0 !text-sm'>
+                  <div
+                    className='cursor-pointer'
+                    onClick={() => {
+                      dispatch(setIsVisibleSidebar(false))
+                      setCopyBillId(d.Id)
+                      setIsCopyBillModalOpen(true)
+                    }}
+                  >
+                    <CopyIcon />
+                  </div>
+                </BasicTooltip>
+              </div>
               {billOverviewStatus.includes(d.Status) && (
                 <div
                   className={`z-0 flex items-center border-l ${d.Status !== 3 && d.Status !== 4 && d.Status !== 7 ? 'border-r' : ''
@@ -2086,6 +2115,16 @@ const ListBillPosting = ({ statusOptions }: any) => {
     overviewNoDataContent = ''
   }
 
+
+  const modalClose = () => {
+    setIsCopyBillModalOpen(false)
+    setCopyBillId(0)
+  }
+
+  const handleCopyBillDetails = (id: any) => {
+    router.push(`/bills/create/1/${id}?module=billsOverview`)
+  }
+
   return (
     <>
       <Wrapper masterSettings={false}>
@@ -2457,6 +2496,18 @@ const ListBillPosting = ({ statusOptions }: any) => {
           selectedPayableId={selectedPayableId}
         />
         <DrawerOverlay isOpen={openDrawer} />
+
+
+        {/* Bill Copy Modal */}
+        {isCopyBillModalOpen && <ConfirmationModal
+          title='Bill Copy'
+          content={`Are you sure you want to copy this bill?`}
+          isModalOpen={isCopyBillModalOpen}
+          modalClose={modalClose}
+          handleSubmit={() => handleCopyBillDetails(copyBillId)}
+          colorVariantNo='btn-outline-primary'
+          colorVariantYes='btn-primary'
+        />}
       </Wrapper>
     </>
   )

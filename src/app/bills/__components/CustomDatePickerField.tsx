@@ -18,8 +18,8 @@ const CustomDatePicker = ({
   return (
     <div className='lineItemDatepicker w-full'>
       <Datepicker
-        startYear={1995}
-        endYear={2050}
+        startYear={1900}
+        endYear={2099}
         id={`${d?.Index}-${field.Name}` ?? ''}
         validate={field.IsRequired}
         value={formatedValue}

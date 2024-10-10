@@ -1,15 +1,18 @@
 import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 import ChevronDown from '@/components/Common/Dropdown/Icons/ChevronDown'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
-import { ApLedgercolumns, SelectRangeReportPeriodByList } from '@/data/reports'
+import { ApLedgercolumns, apLedgerNestedColumns, SelectRangeReportPeriodByList } from '@/data/reports'
 import { useAppDispatch } from '@/store/configureStore'
+import { setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 import { vendorBalanceDetail } from '@/store/features/reports/reportsSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { format } from 'date-fns'
-import { Button, DataTable, Datepicker, DatepickerRange, BasicTooltip, Loader, MultiSelectChip, Select, Toast, Typography } from 'pq-ap-lib'
+import { useRouter } from 'next/navigation'
+import { Button, DataTable, Datepicker, DatepickerRange,BasicTooltip, Loader, MultiSelectChip, Select, Toast, Typography } from 'pq-ap-lib'
 import { useEffect, useState } from 'react'
 
 function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
+  const router = useRouter()
   const dispatch = useAppDispatch()
   const [reportPeriod, setReportPeriod] = useState<string>('')
   const [vendorBillDate, setVendorBillDate] = useState<string>('')
@@ -132,7 +135,7 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
         details: (
           <div className={`custom-scroll max-h-64 w-full overflow-y-auto`}>
             <DataTable
-              columns={nestedColumns}
+              columns={apLedgerNestedColumns}
               noHeader
               data={
                 d.Data?.length > 0 &&
@@ -140,6 +143,15 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
                   (nestedData: any) =>
                     new Object({
                       ...nestedData,
+                      BillNumber: <div
+                      className='w-4/5 cursor-pointer'
+                      onClick={() => {
+                        dispatch(setIsVisibleSidebar(false))
+                        nestedData.Id && router.push(`/reports/view/${nestedData.Id}`)
+                      }}
+                    >
+                      <Typography className='!text-sm text-darkCharcoal'>{nestedData.BillNumber ? nestedData.BillNumber : ''}</Typography>
+                    </div>,
                       BillDate: (
                         <div className='flex items-center gap-4 font-medium'>
                           <span className='font-proxima !text-sm !tracking-[0.02em]'>
@@ -483,8 +495,8 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
                   id='ft_datepicker123'
                   label='As of'
                   value={reportPeriod}
-                  startYear={1995}
-                  endYear={2050}
+                  startYear={1900}
+                  endYear={2099}
                   getValue={(value: any) => {
                     if (value) {
                       setReportPeriodValue(reportPeriodValue)
@@ -500,8 +512,8 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
                   id='ft_datepicker'
                   label='Select Date'
                   value={reportPeriod}
-                  startYear={1995}
-                  endYear={2050}
+                  startYear={1900}
+                  endYear={2099}
                   getValue={(value) => {
                     setReportPeriod(value)
                     const dateRangeVal = reportPeriod?.split('to')

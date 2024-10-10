@@ -41,7 +41,6 @@ const Dashboard: React.FC = () => {
     setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-[calc(100vw-78px)] laptop:w-[calc(100vw-78px)] laptopMd:w-[calc(100vw-78px)]' : 'laptop:w-[calc(100vw-180px)] laptopMd:w-[calc(100vw-180px)]')
   }, [isLeftSidebarCollapsed])
 
-
   useEffect(() => {
     if (!isStaffAccountantView && !isManagerView && !isPracticeView) {
       router.push('/manage/companies');

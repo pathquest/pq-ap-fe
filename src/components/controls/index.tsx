@@ -161,8 +161,8 @@ const ControlFields = ({ formFields, isGrid }: formFieldsProps) => {
                     return (
                       <div className={item.classNames ?? ''}>
                         <Datepicker
-                          startYear={1995}
-                          endYear={2050}
+                          startYear={1900}
+                          endYear={2099}
                           id={item?.id ?? ''}
                           label={item?.label}
                           validate={item?.isValidate}
