@@ -262,7 +262,7 @@ const ListCompanies = () => {
       const params = {
         Code: localStorage.getItem('qbcode'),
         RealmId: localStorage.getItem('realmId'),
-        CompanyId: localStorage.getItem('state'),
+        CompanyId: Number(localStorage.getItem('state')),
       }
       performApiAction(dispatch, conncetQb, params, (responseData: any) => {
         setQboCompanyData(responseData)
@@ -1028,7 +1028,7 @@ const ListCompanies = () => {
         {/* NavBar */}
         <div className='sticky top-0 z-[6] flex !h-[50px] items-center justify-between bg-whiteSmoke px-5'>
           <div className='flex items-center'>
-            <label className='font-proxima flex cursor-pointer items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Manage Companies</label>
+            <label className='font-proxima flex items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Manage Companies</label>
           </div>
           <div className='flex items-center gap-2'>
             <div className='flex h-6 items-center justify-center'>
@@ -1154,7 +1154,7 @@ const ListCompanies = () => {
 
           {companyList.length === 0 ? (
             isLoading ?
-              <div className='flex h-[calc(93vh-200px)] w-full items-center justify-center'>
+              <div className='flex h-[calc(100vh-165px)] w-full items-center justify-center'>
                 <Loader size='md' helperText />
               </div>
               : !isLoading && <div className='flex h-[44px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
