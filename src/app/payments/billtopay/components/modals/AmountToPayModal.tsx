@@ -889,7 +889,7 @@ const AmountToPayModal: React.FC<ActionsProps> = ({
           </div>
 
           {dataList.length === 0 && (
-            <div className='flex h-[59px] w-auto items-center justify-center border-b border-b-[#ccc]'>
+            <div className='flex h-[44px] w-auto items-center justify-center border-b border-b-[#ccc]'>
               No records available at the moment.
             </div>
           )}

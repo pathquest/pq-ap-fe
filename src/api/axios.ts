@@ -61,6 +61,7 @@ import {
   RemoveDocumentOptionsProps,
   SplitDocumentOptions,
   UserListOptionsProps,
+  VendorHistoryListOptions,
   VendorListOptions,
 } from '@/models/billPosting'
 import {
@@ -83,6 +84,7 @@ import {
   CompanyIdDropDown,
   ConncetSageCompany,
   ConncetSageUser,
+  GetManageConfigurationOptions,
   PerformActions,
   QbConncet,
   ReconncetSageCompany,
@@ -184,8 +186,8 @@ const API_DASHBOARD = process.env.API_DASHBOARD
 const API_CLOUD = process.env.API_CLOUD
 const API_REALTIMENOTIFICATION = process.env.REALTIME_NOTIFICATION
 
-const responseBody = (response: AxiosResponse) => response.data
-let cachedSession = null;
+const responseBody = (response: AxiosResponse) => response.data;
+let cachedSession: any = null;
 let sessionPromise: any = null;
 
 const fetchSession = async () => {
@@ -196,6 +198,23 @@ const fetchSession = async () => {
           cachedSession = await getSession();
         } else {
           cachedSession = await auth();
+        }
+
+        const expiresAt = new Date(cachedSession.user.expires_at).getTime();
+        if (Date.now() > expiresAt) {
+          const url = `${process.env.API_SSO}/auth/refreshtoken`;
+          const response = await axios.post(url, {
+            accesstoken: cachedSession.user.access_token,
+            refreshtoken: cachedSession.user.refresh_token,
+          });
+
+          if (response.data.ResponseStatus === 'Success') {
+            cachedSession.user.access_token = response.data.ResponseData.Token;
+            cachedSession.user.refresh_token = response.data.ResponseData.RefreshToken;
+            cachedSession.user.expires_at = response.data.ResponseData.TokenExpiry;
+          } else {
+            throw new Error('Failed to refresh session token');
+          }
         }
         return cachedSession;
       } finally {
@@ -212,52 +231,42 @@ export const invalidateSessionCache = () => {
 
 axios.interceptors.request.use(
   async (config) => {
-    const session = await fetchSession();
-
-    if (session && 'user' in session) {
-      config.headers.Authorization = `bearer ${session.user.access_token}`;
-      config.headers.CompanyId = session.user.CompanyId;
+    if (!cachedSession) {
+      cachedSession = await fetchSession();
     }
+
+    // Set headers after session fetch
+    config.headers.Authorization = `bearer ${cachedSession.user.access_token}`;
+    config.headers.CompanyId = cachedSession.user.CompanyId;
+
     return config;
   },
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      // window.location.href = '/signin';
-      return Promise.reject('Unauthorized');
-    }
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 axios.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   async (error) => {
-    if (error.response.status === 401) {
-      cachedSession = null; // Clear cached session on 401 error
+    if (error.response && error.response.status === 401 && !error.config.__isRetryRequest) {
+      try {
+        cachedSession = await fetchSession();
+        
+        // Mark the retry flag to prevent re-triggering this logic
+        error.config.__isRetryRequest = true;
 
-      let session: any;
+        error.config.headers.Authorization = `bearer ${cachedSession.user.access_token}`;
+        error.config.headers.CompanyId = cachedSession.user.CompanyId;
 
-      if (typeof getSession === 'function') {
-        session = await getSession();
-      } else {
-        session = await auth();
+        return axios(error.config);
+      } catch (sessionError) {
+        return Promise.reject(sessionError);
       }
-
-      // if (!session) {
-      //   return redirect(`${ssoUrl}/signin`);
-      // }
-
-      cachedSession = session; // Cache the new session
-
-      // Retry the request with the new session
-      return axios(error.config);
     }
 
     return Promise.reject(error);
   }
 );
+
 
 const requests = {
   get: (url: string, params?: URLSearchParams) => axios.get(url, { params }).then(responseBody),
@@ -326,6 +335,8 @@ const Company = {
   sageCompanyConnect: (data: ConncetSageCompany) => requests.post(`${API_MANAGE}/company/getentitylist`, data),
   sageCompanyReconnect: (data: ReconncetSageCompany) => requests.post(`${API_MANAGE}/company/connectintacctcompany`, data),
   performCompanyActions: (data: PerformActions) => requests.post(`${API_MANAGE}/company/action`, data),
+  saveManageConfiguration: (data: any) => requests.post(`${API_MANAGE}/company/savemanageconfig`, data),
+  getManageConfiguration: (data: GetManageConfigurationOptions) => requests.get(`${API_MANAGE}/company/getmanageconfig?companyId=${data.CompanyId}`),
   // country,state and city api we take it from user
 
   // below api use in manage user
@@ -484,7 +495,8 @@ const Bill = {
   mergeDocuments: (data: MergeDocumentOptionsProps) => requests.post(`${API_FILEUPLOAD}/document/mergepdf`, data),
   splitDocuments: (data: SplitDocumentOptions) => requests.post(`${API_FILEUPLOAD}/document/splitpdf`, data),
   // getocrDocument: () => requests.get(`${API_FILEUPLOAD}/indexing/getocrDocument`),
-  accountPayableSave: (data: any) => requests.post(`${API_FILEUPLOAD}/accountpayable/save`, data),
+  accountPayableSave: (data: any) => requests.postForm(`${API_FILEUPLOAD}/accountpayable/save`, data),
+  getVendorHistoryList: (data: VendorHistoryListOptions) => requests.post(`${API_FILEUPLOAD}/accountpayable/vendorhistorylist`, data),
   getColumnMappingList: (data: GetColumnMappingListOptionsProps) =>
     requests.post(`${API_FILEUPLOAD}/document/getcolumnmappinglist`, data),
   getColumnMappingOverviewList: (data: GetColumnMappingListOptionsProps) =>
@@ -717,7 +729,7 @@ const APIs = {
     requests.post(`${API_FILEUPLOAD}/documenthistory/addattachments`, data),
   handleFileHistoryRetry: (data: HandleHistoryDocumentRetryProps) =>
     requests.post(`${API_FILEUPLOAD}/documenthistory/sendforocr`, data),
-  accountPayableSave: (data: any) => requests.post(`${API_FILEUPLOAD}/accountpayable/save`, data),
+  accountPayableSave: (data: any) => requests.postForm(`${API_FILEUPLOAD}/accountpayable/save`, data),
   uploadAttachment: (data: any) => requests.postForm(`${API_FILEUPLOAD}/document/uploadattachments`, data),
   getDocumentHistoryDetails: (data: GetDocumentByIdOptionsProps) =>
     requests.post(`${API_FILEUPLOAD}/documenthistory/getdetails`, data),
@@ -760,6 +772,20 @@ const accountantDashboard = {
   billingInfoList: (data: any) => requests.post(`${API_DASHBOARD}/dashboard/getbillinginfolist`, data),
   accountingDashboardList: (data: any) => requests.post(`${API_DASHBOARD}/dashboard/getaccountingdashboard`, data),
   organizationDropdown: () => requests.get(`${API_MANAGE}/organization/getorganizationdropdown`),
+  disableCloudConnection: (data: any) => requests.post(`${API_CLOUD}/cloud/disablecloudconnection`, data),
+  googleDriveConnect: (data: any) => requests.post(`${API_CLOUD}/cloud/googledrive/connect`, data),
+  dropboxConnect: (data: any) => requests.post(`${API_CLOUD}/cloud/dropbox/connect`, data),
+  getFolderList: () => requests.get(`${API_CLOUD}/cloud/googledrive/getfolderslist`),
+  getFolderDropboxList: () => requests.get(`${API_CLOUD}/cloud/dropbox/getfolderslist`),
+  saveDocumentFolderPath: (data: any) => requests.post(`${API_CLOUD}/cloud/savedocumentfolderpath`, data),
+  // DropboxDocumentFolderPathw: (data: any) => requests.post(`${API_CLOUD}/cloud/savedocumentfolderpath`, data),
+  imapConnect: (params: {
+    UserName: string
+    Password: string
+    HostName: string
+    PortNumber: number
+    SocketType: number
+  }) => requests.post(`${API_CLOUD}/cloud/imap/connect`, params)
 }
 
 const agent = {

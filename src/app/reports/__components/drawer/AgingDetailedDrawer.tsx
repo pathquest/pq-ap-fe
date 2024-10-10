@@ -68,7 +68,7 @@ const AgingDetailedDrawer: React.FC<ActionsProps> = ({
         Toast.error(`${payload?.status} : ${payload?.statusText}`)
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -202,7 +202,7 @@ const AgingDetailedDrawer: React.FC<ActionsProps> = ({
       </div>
 
       {/* Datatable */}
-      <div className='custom-scroll h-[calc(100vh-145px)] w-full overflow-auto max-[425px]:mx-1'>
+      <div className='custom-scroll h-[calc(100vh-128px)] w-full overflow-auto max-[425px]:mx-1'>
         <div className={`mainTable ${dataList.length !== 0 && 'h-0'}`}>
           <DataTable
             columns={columns}

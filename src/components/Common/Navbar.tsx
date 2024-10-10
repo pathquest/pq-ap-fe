@@ -153,11 +153,11 @@ const Navbar = ({ onData }: any) => {
           href: '/setup/notification',
           isVisible: isNotificationView
         },
-        // {
-        //   name: 'Cloud Configuration',
-        //   href: '/setup/cloudconfiguration',
-        //   isVisible: isCloudConfigurationView
-        // },
+        {
+          name: 'Cloud Configuration',
+          href: '/setup/cloudconfiguration',
+          isVisible: isCloudConfigurationView
+        },
         {
           name: 'Automation',
           href: '/setup/automation',
@@ -210,37 +210,37 @@ const Navbar = ({ onData }: any) => {
     }
   }, [CompanyId])
 
-  useEffect(() => {
-    let userId = localStorage.getItem('UserId')
-    const client = new WebPubSubClient({
-      getClientAccessUrl: async () =>
-        (await fetch(`${process.env.REALTIME_NOTIFICATION}/event-stream/get-access-token?userId=${userId}`)).text(),
-    })
+  // useEffect(() => {
+  //   let userId = localStorage.getItem('UserId')
+  //   const client = new WebPubSubClient({
+  //     getClientAccessUrl: async () =>
+  //       (await fetch(`${process.env.REALTIME_NOTIFICATION}/event-stream/get-access-token?userId=${userId}`)).text(),
+  //   })
 
-    const handleConnected = (e: any) => { }
+  //   const handleConnected = (e: any) => { }
 
-    const handleServerMessage = (data: any) => {
-      Toast.success(`${data?.message?.data?.message}`)
-      if (data?.message?.data?.company_id === parseInt(`${CompanyId}`)) {
-        setCount(() => notificationCount + 1)
-      }
+  //   const handleServerMessage = (data: any) => {
+  //     Toast.success(`${data?.message?.data?.message}`)
+  //     if (data?.message?.data?.company_id === parseInt(`${CompanyId}`)) {
+  //       setCount(() => notificationCount + 1)
+  //     }
 
-    }
+  //   }
 
 
-    async function connect() {
-      await client.start()
-      client.on('connected', handleConnected)
-      client.on('server-message', handleServerMessage)
-    }
-    connect()
+  //   async function connect() {
+  //     await client.start()
+  //     client.on('connected', handleConnected)
+  //     client.on('server-message', handleServerMessage)
+  //   }
+  //   connect()
 
-    return () => {
-      client.off('connected', handleConnected)
-      client.off('server-message', handleServerMessage)
-    }
+  //   return () => {
+  //     client.off('connected', handleConnected)
+  //     client.off('server-message', handleServerMessage)
+  //   }
 
-  }, [])
+  // }, [])
 
   useEffect(() => {
     dispatch(setNotificationCount(count))
@@ -272,7 +272,7 @@ const Navbar = ({ onData }: any) => {
 
   return (
     <>
-      <div className='border-b border-lightSilver laptop:h-[64px] laptopMd:h-[64px] lg:h-[64px] xl:h-[64px] hd:h-[64px] 2xl:h-[64px] 3xl:h-[64px]'>
+      <div className='border-b border-lightSilver laptop:h-[60px] laptopMd:h-[60px] lg:h-[60px] xl:h-[60px] hd:h-[60px] 2xl:h-[60px] 3xl:h-[60px]'>
         <div className='grid md:!flex h-full w-full gap-5'>
           {settingsFocusedArr.includes(pathname) && (
             <div key={pathname} className='!w-[90px] flex items-center justify-center border-lightSilver laptop:border-r'>
@@ -289,7 +289,7 @@ const Navbar = ({ onData }: any) => {
                   <Building />
                 </div>
                 <div className='flex h-full w-full items-center justify-center px-2'>
-                  <span className={`flex h-full w-full font-proxima items-center pl-1 text-sm text-black tracking-[0.02em]`}> {organizationName}</span>
+                  <span className={`whitespace-nowrap flex h-full w-full font-proxima items-center pl-1 text-sm text-black tracking-[0.02em]`}>{organizationName}</span>
                 </div>
               </div>
             )}
@@ -316,10 +316,10 @@ const Navbar = ({ onData }: any) => {
               }
             >
               {isSettingOpen ? (
-                <SettingsIcon />
+                <SettingsIcon isActive={isSettingOpen ? true : false} />
               ) : (
                 <Tooltip content={`Settings`} position='bottom' className='z-10'>
-                  <SettingsIcon />
+                  <SettingsIcon isActive={false} />
                 </Tooltip>
               )}
               {/* Setting Popup */}
@@ -327,7 +327,7 @@ const Navbar = ({ onData }: any) => {
                 <div
                   style={{ boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.2)' }}
                   className={`flex ${settingsFocusedArr.includes(pathname) ? 'w-44' : 'h-[326px] w-auto'
-                    } absolute right-0 top-[63px] bg-white gap-6`}>
+                    } absolute right-0 top-[59px] bg-white gap-6`}>
                   {globalSetting.map((data) => (
                     <div className={`${(!isManageCompanyView && !isManageUserView && !isManageRolesView) ? "hidden" : ""} flex bg-whiteSmoke ${settingsFocusedArr.includes(pathname) ? 'w-full' : 'w-[190px] border-r border-lightSilver '
                       } flex-col gap-4 px-6 py-7`}
@@ -398,17 +398,17 @@ const Navbar = ({ onData }: any) => {
                 (e.key === 'Enter' || e.key === ' ') && setIsHelpOpen(!isHelpOpen)
               }
             >
-              {isHelpOpen ? (
-                <HelpIcon />
+             {isHelpOpen ? (
+                <HelpIcon isActive={isHelpOpen} />
               ) : (
                 <Tooltip content={`Help Center`} position='bottom' className='z-10'>
-                  <HelpIcon />
+                  <HelpIcon isActive={false} />
                 </Tooltip>
               )}
               {isHelpOpen && (
                 <div
                   tabIndex={0}
-                  className='absolute right-0 top-[63px] flex h-12 w-44 items-center bg-white px-3'
+                  className='absolute right-0 top-[59px] flex h-12 w-44 items-center bg-white px-3'
                   style={{ boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.2)' }}
                 >
                   <Typography type='h6' className='inline-block cursor-pointer hover:font-bold hover:text-primary'>
@@ -458,7 +458,7 @@ const Navbar = ({ onData }: any) => {
               )}
 
               {isProfileOpen && (
-                <ul className='absolute right-0 top-[63px] w-44 bg-white' style={{ boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.2)' }}>
+                <ul className='absolute right-0 top-[59px] w-44 bg-white' style={{ boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.2)' }}>
                   <Link
                     href='/profile'
                     onClick={() => localStorage.setItem('profilePreviousUrl', window.location.href)}

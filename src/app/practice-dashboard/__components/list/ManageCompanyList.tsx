@@ -94,8 +94,8 @@ interface ManageCompanyType {
   selectedAccountingTool: any
   selectedFilterdCompany: any
   selectedAssignUser: any
-  isOpenCompanyModal:any
-  setOpenCompaniesModal:any
+  isOpenCompanyModal: any
+  setOpenCompaniesModal: any
 }
 
 function ManageCompanyList({ orgIdValue, session, selectedAccountingTool, selectedFilterdCompany, selectedAssignUser, isOpenCompanyModal, setOpenCompaniesModal }: ManageCompanyType) {
@@ -378,77 +378,77 @@ function ManageCompanyList({ orgIdValue, session, selectedAccountingTool, select
 
   const table_Data =
     manageCompanyList &&
-    manageCompanyList.map((list: any,index:any) => {
+    manageCompanyList.map((list: any, index: any) => {
       const actions =
-      list?.AccountingTool === 4
-        ? ['Edit', 'Remove']
-        : [
-          'Edit',
-          list?.IsActive ? 'Deactivate' : 'Activate',
-          list?.IsConnected ? 'Disconnect' : 'Connect',
-          'Remove',
-        ]
+        list?.AccountingTool === 4
+          ? ['Edit', 'Remove']
+          : [
+            'Edit',
+            list?.IsActive ? 'Deactivate' : 'Activate',
+            list?.IsConnected ? 'Disconnect' : 'Connect',
+            'Remove',
+          ]
 
-    return {
-      Id: <Typography className='font-proxima text-sm'>{index + 1}</Typography>,
-      Name: (
-        <div
-          className={`flex cursor-pointer items-center gap-2 ${list?.IsActive ? '' : 'opacity-[50%]'}`}
-          onClick={() => handleRowClick(list)}
-        >
-          <Avatar variant='small' name={list?.Name} />
-          {list?.Name}
-        </div>
-      ),
-      AccountingTool: (
-        <div className={`flex items-center gap-2 ${list?.IsActive ? '' : 'opacity-[50%]'}`}>
-          <AvatarWithText toolId={list.AccountingTool} isConnected={list.IsConnected} />
-        </div>
-      ),
-      UpdatedOn:
-        list?.UpdatedOn !== null ? (
-          <div className={`${list?.IsActive ? '' : 'opacity-[50%]'}`}>
-            Last updated on {formatDate(list?.UpdatedOn)}{' '}
-          </div>
-        ) : (
-          <div className={`${list?.IsActive ? '' : 'opacity-[50%]'}`}>
-            Created on {formatDate(list?.CreatedOn)}
+      return {
+        Id: <Typography className='font-proxima text-sm'>{index + 1}</Typography>,
+        Name: (
+          <div
+            className={`flex cursor-pointer items-center gap-2 ${list?.IsActive ? '' : 'opacity-[50%]'}`}
+            onClick={() => handleRowClick(list)}
+          >
+            <Avatar variant='small' name={list?.Name} />
+            {list?.Name}
           </div>
         ),
-      AssignUsers: (
-        <div
-          className={`${!list?.IsActive ? 'pointer-events-none opacity-50' : ''} userList_managecompany w-3/4`}
-          onClick={() => setRowId(list?.Id)}
-        >
-          <CompanyList
-            id={`user-${list?.Id}`}
-            showAvatar={5}
-            noborder
-            values={list?.AssigedUsers}
-            options={assignDropDownData}
-            getError={() => { }}
-            getValue={(value: string[]) => {
-              setAssignUserSelectIds(convertStringsToIntegers(value))
+        AccountingTool: (
+          <div className={`flex items-center gap-2 ${list?.IsActive ? '' : 'opacity-[50%]'}`}>
+            <AvatarWithText toolId={list.AccountingTool} isConnected={list.IsConnected} />
+          </div>
+        ),
+        UpdatedOn:
+          list?.UpdatedOn !== null ? (
+            <div className={`${list?.IsActive ? '' : 'opacity-[50%]'}`}>
+              Last updated on {formatDate(list?.UpdatedOn)}{' '}
+            </div>
+          ) : (
+            <div className={`${list?.IsActive ? '' : 'opacity-[50%]'}`}>
+              Created on {formatDate(list?.CreatedOn)}
+            </div>
+          ),
+        AssignUsers: (
+          <div
+            className={`${!list?.IsActive ? 'pointer-events-none opacity-50' : ''} userList_managecompany w-3/4`}
+            onClick={() => setRowId(list?.Id)}
+          >
+            <CompanyList
+              id={`user-${list?.Id}`}
+              showAvatar={5}
+              noborder
+              values={list?.AssigedUsers}
+              options={assignDropDownData}
+              getError={() => { }}
+              getValue={(value: string[]) => {
+                setAssignUserSelectIds(convertStringsToIntegers(value))
+              }}
+              Savebtn
+              onSaveClick={saveAssignUser}
+              disabled={!list?.IsActive}
+            />
+          </div>
+        ),
+        action: (
+          <Actions
+            id={list?.Id}
+            accountingTool={list?.AccountingTool}
+            actions={actions}
+            optionalData={list?.Name}
+            actionRowId={() => {
+              handleIdGet(list?.Id, list?.AccountingTool)
             }}
-            Savebtn
-            onSaveClick={saveAssignUser}
-            disabled={!list?.IsActive}
+            handleClick={handleActions}
           />
-        </div>
-      ),
-      action: (
-        <Actions
-          id={list?.Id}
-          accountingTool={list?.AccountingTool}
-          actions={actions}
-          optionalData={list?.Name}
-          actionRowId={() => {
-            handleIdGet(list?.Id, list?.AccountingTool)
-          }}
-          handleClick={handleActions}
-        />
-      ),
-    }
+        ),
+      }
     })
 
   // Redirect Url to the QuickBooks page
@@ -547,11 +547,7 @@ function ManageCompanyList({ orgIdValue, session, selectedAccountingTool, select
     setIsRefresh(!isRefresh)
     // setShouldLoadMore(true)
     setIsNoAccountingToolCompany(false)
-  }
-
-  // This function is call for drawer
-  const clearID = () => {
-    setEditId(undefined)
+    setEditId(0)
   }
 
   // Get All CompanyList
@@ -720,7 +716,7 @@ function ManageCompanyList({ orgIdValue, session, selectedAccountingTool, select
       )
     } else {
       noDataContent = (
-        <div className={`fixed flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]`}>
+        <div className={`fixed flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]`}>
           No records available at the moment.
         </div>
       )
@@ -761,7 +757,6 @@ function ManageCompanyList({ orgIdValue, session, selectedAccountingTool, select
         IntacctAccountinToolId={intacctComDropId}
         IntacctCompanyId={intacctCompanyId}
         IntacctLocationId={intacctEntityListId}
-        clearID={clearID}
         orgId={orgIdValue}
         recordNo={intacctEntities?.find((item) => item?.LOCATIONID === intacctEntityListId)?.RECORDNO ?? ''}
         setShowCancelModal={setShowCancelModal}

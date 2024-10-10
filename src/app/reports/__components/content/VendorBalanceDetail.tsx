@@ -3,14 +3,17 @@ import ChevronDown from '@/components/Common/Dropdown/Icons/ChevronDown'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import { AsOfReportPeriodByList, GroupByListVendorAging, VendorBalanceDetailcolumns, ViewByList } from '@/data/reports'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
+import { setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 import { vendorAgingGroupBy } from '@/store/features/reports/reportsSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { format } from 'date-fns'
+import { useRouter } from 'next/navigation'
 import { Button, DataTable, Datepicker, Loader, MultiSelectChip, Select, Toast, Typography } from 'pq-ap-lib'
 import { useEffect, useState } from 'react'
 
 function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceDetailsParams }: any) {
   const dispatch = useAppDispatch()
+  const router = useRouter()
 
   const [vendorValue, setVendorValue] = useState<string[]>([])
   const [viewByValue, setViewByValue] = useState<number>(2)
@@ -25,48 +28,48 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
   const [isExpanded, setIsExpanded] = useState<boolean>(true)
   const [reportPeriodValue, setReportPeriodValue] = useState<number>(1)
 
-  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
+  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
 
   const getNestedColumns = (groupByValue: any) => {
     return [
       {
-        header: groupByValue === 1 ? 'DUE DATE' : 'VENDOR',
+        header: groupByValue === 1 ? 'Due Date' : 'Vendor',
         accessor: 'Vendor',
         sortable: false,
         colalign: 'left',
         colStyle: '!pl-[13px] !w-[128px] !tracking-[0.02em]',
       },
       {
-        header: 'BILL NUMBER',
+        header: 'Bill Number',
         accessor: 'BillNumber',
         sortable: false,
         colalign: 'left',
         colStyle: '!w-[145px] !tracking-[0.02em]',
       },
       {
-        header: 'BILL DATE',
+        header: 'Bill Date',
         accessor: 'BillDate',
         sortable: false,
         colalign: 'left',
         colStyle: '!w-[125px] !tracking-[0.02em]',
       },
       {
-        header: 'LOCATION',
+        header: 'Location',
         accessor: 'Location',
         sortable: false,
         colalign: 'left',
         colStyle: '!w-[120px] !tracking-[0.02em]',
       },
       {
-        header: 'TRANSACTION TYPE',
+        header: 'Transaction Type',
         accessor: 'TransactionType',
         sortable: false,
         colalign: 'left',
         colStyle: '!w-[120px] !tracking-[0.02em]',
       },
       {
-        header: 'REMAINING AMOUNT',
+        header: 'Remaining Amount',
         accessor: 'Amount',
         sortable: false,
         colalign: 'right',
@@ -79,9 +82,9 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
-      setTableDynamicWidth('w-full laptop:w-[calc(100vw-85px)]')
+      setTableDynamicWidth('w-full laptop:w-[calc(100vw-78px)]')
     } else {
-      setTableDynamicWidth('w-full laptop:w-[calc(100vw-200px)]')
+      setTableDynamicWidth('w-full laptop:w-[calc(100vw-180px)]')
     }
   }, [isLeftSidebarCollapsed])
 
@@ -192,11 +195,15 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
                                               : nestedData.VendorName ?? null}
                                           </label>
                                         ),
-                                        BillNumber: (
-                                          <label className='font-medium !tracking-[0.02em]'>
-                                            {nestedData.BillNumber ?? null}
-                                          </label>
-                                        ),
+                                        BillNumber: <div
+                                          className='w-4/5 cursor-pointer'
+                                          onClick={() => {
+                                            dispatch(setIsVisibleSidebar(false))
+                                            nestedData.Id && router.push(`/reports/view/${nestedData.Id}`)
+                                          }}
+                                        >
+                                          <Typography className='!text-sm text-darkCharcoal !tracking-[0.02em]'>{nestedData.BillNumber ? nestedData.BillNumber : ''}</Typography>
+                                        </div>,
                                         BillDate: (
                                           <div className='flex items-center gap-4 font-medium'>
                                             <span className='font-proxima !text-sm !tracking-[0.02em]'>
@@ -342,7 +349,7 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
       )
     } else {
       noDataContent = (
-        <div className='flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]'>
+        <div className='flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
           No records available at the moment.
         </div>
       )
@@ -358,11 +365,11 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
   return (
     <>
       <div
-        className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[241px]' : 'h-[66px]'
+        className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[226px]' : 'h-[51px]'
           } items-start border-t border-lightSilver`}>
-        <div className='flex w-full items-center justify-between bg-whiteSmoke !h-[66px] px-5 py-4'>
+        <div className='flex w-full items-center justify-between bg-whiteSmoke !h-[50px] px-5 py-4'>
           <div className='flex'>
-            <Typography className='flex text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
+            <Typography className='flex !text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
               Filter Criteria
             </Typography>
           </div>
@@ -397,8 +404,8 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
                 id='ft_datepicker'
                 label='As of'
                 value={reportPeriod}
-                startYear={1995}
-                endYear={2050}
+                startYear={1900}
+                endYear={2099}
                 getValue={(value: any) => {
                   if (value) {
                     const selectedDate = getSpecificDateForReportPeriod(reportPeriodValue)
@@ -483,7 +490,7 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
       </div>
 
       {runReport && (
-        <div className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-420px)]' : 'h-[calc(100vh-210px)]'} overflow-auto ${tableDynamicWidth}`}>
+        <div className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-337px)]' : 'h-[calc(100vh-162px)]'} overflow-auto ${tableDynamicWidth}`}>
           <div className={`mainTable ${vendorBalanceDetails.length !== 0 && 'h-0'}`}>
             <DataTable
               zIndex={2}

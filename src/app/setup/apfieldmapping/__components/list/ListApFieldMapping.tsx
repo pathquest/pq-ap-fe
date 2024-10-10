@@ -133,7 +133,7 @@ const ListAPFieldMapping: React.FC = () => {
   }
 
   const handleEditField = (item: any) => {
-    setFieldType(!item.IsCustom)
+    setFieldType(item.IsSystemDefined)
     setIsEditOpen(true)
     setSelectedItem(item)
   }
@@ -178,7 +178,7 @@ const ListAPFieldMapping: React.FC = () => {
     const configIds = configList.map((item: any) => item.Id)
     return fieldList
       .filter((list: any) => !configIds.includes(list.Id))
-      .filter((item: any) => item.IsSystemDefined === isSystemDefined)
+      // .filter((item: any) => item.IsSystemDefined === isSystemDefined)
   }
 
   // Get FieldMapping item Api
@@ -198,10 +198,7 @@ const ListAPFieldMapping: React.FC = () => {
 
       setMainDropFields(
         filterFields(
-          [
-            ...responseData.ComapnyConfigList.MainFieldConfiguration.DefaultList,
-            ...responseData.ComapnyConfigList.MainFieldConfiguration.CustomList,
-          ],
+          responseData.ComapnyConfigList.MainFieldConfiguration,
           processCondition,
           requiredKey,
           displayKey
@@ -210,10 +207,7 @@ const ListAPFieldMapping: React.FC = () => {
 
       setLineDropFields(
         filterFields(
-          [
-            ...responseData.ComapnyConfigList.LineItemConfiguration.DefaultList,
-            ...responseData.ComapnyConfigList.LineItemConfiguration.CustomList,
-          ],
+          responseData.ComapnyConfigList.LineItemConfiguration,
           processCondition,
           requiredKey,
           displayKey
@@ -225,32 +219,32 @@ const ListAPFieldMapping: React.FC = () => {
           {
             title: 'Main Predefined Fields',
             items: getFilteredDropdownItems(
-              responseData.MainFieldList.DefaultList,
-              responseData.ComapnyConfigList.MainFieldConfiguration.DefaultList,
+              responseData.MainFieldList.filter((item: any) => !item.IsCustom),
+              responseData.ComapnyConfigList.MainFieldConfiguration.filter((item: any) => !item.IsCustom),
               true
             ),
           },
           {
             title: 'Main Custom Fields',
             items: getFilteredDropdownItems(
-              responseData.MainFieldList.CustomList,
-              responseData.ComapnyConfigList.MainFieldConfiguration.CustomList,
+              responseData.MainFieldList.filter((item: any) => item.IsCustom),
+              responseData.ComapnyConfigList.MainFieldConfiguration.filter((item: any) => item.IsCustom),
               true
             ),
           },
           {
             title: 'Line Predefined Fields',
             items: getFilteredDropdownItems(
-              responseData.LineItemFieldList.DefaultList,
-              responseData.ComapnyConfigList.LineItemConfiguration.DefaultList,
+              responseData.LineItemFieldList.filter((item: any) => !item.IsCustom),
+              responseData.ComapnyConfigList.LineItemConfiguration.filter((item: any) => !item.IsCustom),
               true
             ),
           },
           {
             title: 'Line Custom Fields',
             items: getFilteredDropdownItems(
-              responseData.LineItemFieldList.CustomList,
-              responseData.ComapnyConfigList.LineItemConfiguration.CustomList,
+              responseData.LineItemFieldList.filter((item: any) => item.IsCustom),
+              responseData.ComapnyConfigList.LineItemConfiguration.filter((item: any) => item.IsCustom),
               true
             ),
           },
@@ -298,19 +292,13 @@ const ListAPFieldMapping: React.FC = () => {
 
       setSecondaryMaindFields(
         secondaryFilterFields(
-          [
-            ...responseData.ComapnyConfigList.MainFieldConfiguration.DefaultList,
-            ...responseData.ComapnyConfigList.MainFieldConfiguration.CustomList,
-          ],
+          responseData.ComapnyConfigList.MainFieldConfiguration,
           fieldCondition
         )
       )
       setSecondaryLineFields(
         secondaryFilterFields(
-          [
-            ...responseData.ComapnyConfigList.LineItemConfiguration.DefaultList,
-            ...responseData.ComapnyConfigList.LineItemConfiguration.CustomList,
-          ],
+          responseData.ComapnyConfigList.LineItemConfiguration,
           fieldCondition
         )
       )
@@ -332,14 +320,13 @@ const ListAPFieldMapping: React.FC = () => {
         CompanyId: CompanyId,
         ProcessType: Number(processSelection),
         MainFieldConfiguration: {
-          DefaultList: maindropFields.filter((item: any) => !item.IsCustom),
-          CustomList: maindropFields.filter((item: any) => item.IsCustom),
+          FieldList: maindropFields
         },
         LineItemConfiguration: {
-          DefaultList: linedropFields.filter((item: any) => !item.IsCustom),
-          CustomList: linedropFields.filter((item: any) => item.IsCustom),
+          FieldList: linedropFields
         },
       }
+      
       saveSecondaryFieldMapping()
       await performApiAction(
         dispatch,
@@ -365,12 +352,10 @@ const ListAPFieldMapping: React.FC = () => {
       CompanyId: CompanyId,
       ProcessType: Number(processSelection === '1' ? '2' : '1'),
       MainFieldConfiguration: {
-        DefaultList: secondaryMaindFields.filter((item: any) => !item.IsCustom),
-        CustomList: secondaryMaindFields.filter((item: any) => item.IsCustom),
+        FieldList: secondaryMaindFields
       },
       LineItemConfiguration: {
-        DefaultList: secondaryLineFields.filter((item: any) => !item.IsCustom),
-        CustomList: secondaryLineFields.filter((item: any) => item.IsCustom),
+        FieldList: secondaryLineFields
       },
     }
 
@@ -512,26 +497,40 @@ const ListAPFieldMapping: React.FC = () => {
     )
   }
 
-  const DropableField = ({ item }: any) => {
-    const [{ isOver }, dropMainField]: any = useDrop(() => ({
-      accept: 'string',
-      drop: (item: any) => (item.Type === 1 ? mainFieldDrop(item.id) : doNotDrop()),
+  const DropableField = ({ item, index, moveField }: any) => {
+    const [{ isOver }, drop] = useDrop({
+      accept: ['field', 'string'],
+      drop: (item) => {
+        if (item.Type === 1) {
+          mainFieldDrop(item.id);
+        } else if (item.Type === 2) {
+          LineItemFieldDrop(item.id);
+        } else {
+          doNotDrop();
+        }
+      },
+      hover: (draggedItem: any) => {
+        if (draggedItem.index !== index) {
+          moveField(draggedItem.index, index);
+          draggedItem.index = index;
+        }
+      },
       collect: (monitor) => ({
         isOver: !!monitor.isOver(),
       }),
-    }))
+    });
 
-    const [{ isOver2 }, dropLineItem]: any = useDrop(() => ({
-      accept: 'string',
-      drop: (item: any) => (item.Type === 2 ? LineItemFieldDrop(item.id) : doNotDrop()),
+    const [, ref] = useDrag({
+      type: 'field',
+      item: { index },
       collect: (monitor) => ({
-        isOver2: !!monitor.isOver(),
+        isDragging: !!monitor.isDragging(),
       }),
-    }))
+    });
 
     const doNotDrop = () => {
-      return
-    }
+      return;
+    };
 
     const mainFieldDrop = (id: number) => {
       const dropdownItem = dropdownData.map((dropdown: any) => dropdown.items.filter((item: any) => item.Id === id))
@@ -579,23 +578,23 @@ const ListAPFieldMapping: React.FC = () => {
               )
             )
           }
-          setIsEditOpen(droppingField.IsSystemDefined && droppingField.Type == 1 ? true : false)
+          setIsEditOpen(!droppingField.IsSystemDefined && droppingField.Type == 1 ? true : false)
         }
       }
-      setFieldType(!droppingField.IsCustom)
+      setFieldType(droppingField.IsSystemDefined)
       setSelectedItem(droppingField)
       setUnsavedChanges(true)
     }
 
     const LineItemFieldDrop = (id: number) => {
-      const dropdownItem = dropdownData.map((dropdown: any) => dropdown.items.filter((item: any) => item.Id === id))
+      const dropdownItem = dropdownData.map((dropdown: any) => dropdown.items.filter((item: any) => item?.Id === id))
       const droppingFields = dropdownItem.filter((item: any) => item.length > 0)[
         dropdownItem.filter((item: any) => item.length > 0).length - 1
       ]
       const droppingField = droppingFields.length > 0 ? droppingFields[0] : {}
 
       if (droppingField) {
-        if (!linedropFields.some((field: any) => field.Id === droppingField.Id && field.IsCustom === droppingField.IsCustom)) {
+        if (!linedropFields.some((field: any) => field?.Id === droppingField?.Id && field?.IsCustom === droppingField?.IsCustom)) {
           setLineDropFields([
             ...linedropFields,
             {
@@ -637,29 +636,24 @@ const ListAPFieldMapping: React.FC = () => {
             )
           }
 
-          setIsEditOpen(droppingField.IsSystemDefined && droppingField.Type == 2 ? true : false)
+          setIsEditOpen(!droppingField.IsSystemDefined && droppingField.Type == 2 ? true : false)
         }
       }
-      setFieldType(!droppingField.IsCustom)
+      setFieldType(droppingField.IsSystemDefined)
       setSelectedItem(droppingField)
       setUnsavedChanges(true)
     }
 
     return (
       <li
-        className={`flex justify-between p-2.5 ${item.Type === 1 && (item.FieldType === file || item.FieldType === checkbox || item.FieldType === radio)
-          ? 'w-full'
-          : (item.Type === 2 && item.FieldType === checkbox) || item.Type === 1
-            ? 'w-1/2'
-            : 'w-1/4'
-          }`}
-        ref={item.Type === 1 ? dropMainField : dropLineItem}
-        style={{ backgroundColor: isOver || isOver2 ? 'lightblue' : 'transparent' }}
+        ref={(node) => ref(drop(node))}
+        style={{ backgroundColor: isOver ? 'lightblue' : 'transparent' }}
+        className={`flex justify-between p-2.5 ${item?.Type === 1 && (item?.FieldType === 'file' || item?.FieldType === 'checkbox' || item?.FieldType === 'radio') ? 'w-full' : (item?.Type === 2 && item?.FieldType === 'checkbox') || item?.Type === 1 ? 'w-1/2' : 'w-1/4'}`}
       >
-        <div className='w-full' onMouseEnter={() => setHoveredItemId(`${item.Id}`)} onMouseLeave={() => setHoveredItemId(null)}>
+        <div className='w-full' onMouseEnter={() => setHoveredItemId(`${item?.Id}`)} onMouseLeave={() => setHoveredItemId(null)}>
           <div className='relative'>
             <>
-              {item.FieldType === text && (
+              {item?.FieldType === text && (
                 <div className='pointer-events-none w-full'>
                   <Text
                     id={item.Id}
@@ -675,7 +669,7 @@ const ListAPFieldMapping: React.FC = () => {
                   />
                 </div>
               )}
-              {item.FieldType === dropdown && (
+              {item?.FieldType === dropdown && (
                 <div className={`${item.IsSystemDefined && 'pointer-events-none'} w-full`}>
                   <Select
                     id={item.Id}
@@ -692,12 +686,12 @@ const ListAPFieldMapping: React.FC = () => {
                   />
                 </div>
               )}
-              {item.FieldType === checkbox && (
+              {item?.FieldType === checkbox && (
                 <div className='pointer-events-none w-full'>
                   <CheckBox id={item.Id} name={item.Name} label={item.Label} className='pointer-events-none !mr-10 !text-sm !tracking-[0.02em] !text-darkCharcoal' />
                 </div>
               )}
-              {item.FieldType === radio && (
+              {item?.FieldType === radio && (
                 <div className='pointer-events-none'>
                   <div className='mb-2'>
                     <Typography className='!text-slatyGrey'>{item.Label}</Typography>
@@ -718,14 +712,14 @@ const ListAPFieldMapping: React.FC = () => {
                   </div>
                 </div>
               )}
-              {item.FieldType === date && (
+              {item?.FieldType === date && (
                 <div className='pointer-events-none w-full'>
                   <Datepicker
                     id={item.Id}
                     label={item.Label}
                     validate={item.IsRequired}
-                    startYear={0}
-                    endYear={0}
+                    startYear={1900}
+                    endYear={2099}
                     value={item.Value}
                     getValue={() => ''}
                     getError={() => ''}
@@ -734,7 +728,7 @@ const ListAPFieldMapping: React.FC = () => {
                   />
                 </div>
               )}
-              {item.FieldType === file && (
+              {item?.FieldType === file && (
                 <div className='w-full'>
                   <div className='mb-2'>
                     <Typography className='!text-slatyGrey'>{item.Label}</Typography>
@@ -786,15 +780,29 @@ const ListAPFieldMapping: React.FC = () => {
     )
   }
 
+  const moveMainField = (fromIndex: any, toIndex: any) => {
+    const updatedFields = [...maindropFields];
+    const [movedField] = updatedFields.splice(fromIndex, 1);
+    updatedFields.splice(toIndex, 0, movedField);
+    setMainDropFields(updatedFields);
+  };
+
+  const moveLineItemField = (fromIndex: any, toIndex: any) => {
+    const updatedFields = [...linedropFields];
+    const [movedField] = updatedFields.splice(fromIndex, 1);
+    updatedFields.splice(toIndex, 0, movedField);
+    setLineDropFields(updatedFields);
+  };
+
   return (
     <Wrapper masterSettings={true}>
       <DndProvider backend={HTML5Backend}>
         <div>
           <div className={`sticky top-0 z-[6] block`}>
-            <div className='relative flex !h-[66px] justify-between  bg-whiteSmoke px-5'>
-              <div className='flex items-center'>
+            <div className='relative flex !h-[50px] justify-between  bg-whiteSmoke px-5'>
+              <div className='flex items-center selectMain'>
                 <Select
-                  id=''
+                  id='process_selection'
                   options={processSelectionOptions}
                   defaultValue={processSelection}
                   value={processSelection}
@@ -887,7 +895,7 @@ const ListAPFieldMapping: React.FC = () => {
                                 >
                                   <div className='pt-[13px] !text-sm !text-darkCharcoal !tracking-[0.02em]'>
                                     {data.items.map((item: any) => (
-                                      <DraggableField key={item.Id} item={item} />
+                                      <DraggableField key={item?.Id} item={item} />
                                     ))}
                                   </div>
                                 </ul>
@@ -912,8 +920,8 @@ const ListAPFieldMapping: React.FC = () => {
 
                       {/* Main Drop fields*/}
                       <ul className={`flex h-[97%] flex-wrap items-end overflow-y-scroll`}>
-                        {maindropFields.map((item: any) => (
-                          <DropableField key={item.Id} item={item} />
+                        {maindropFields.map((item: any, index: number) => (
+                          <DropableField key={item?.Id} item={item} index={index} moveField={moveMainField} />
                         ))}
                       </ul>
                     </div>
@@ -928,8 +936,8 @@ const ListAPFieldMapping: React.FC = () => {
 
                       {/* Line Drop fields*/}
                       <ul className='flex flex-wrap items-end'>
-                        {linedropFields.map((item: any) => (
-                          <DropableField key={item.Id} item={item} />
+                        {linedropFields.map((item: any, index: number) => (
+                          <DropableField key={item?.Id} item={item} index={index} moveField={moveLineItemField} />
                         ))}
                       </ul>
                     </div>

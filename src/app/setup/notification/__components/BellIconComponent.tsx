@@ -217,10 +217,10 @@ const BellIconComponent = () => {
         }
       >
         {isNotificationOpen ? (
-          <BellIcon color={focusColor} />
+          <BellIcon isActive={isNotificationOpen} />
         ) : (
           <Tooltip content={`Notifications`} position='bottom' className='z-10'>
-            <BellIcon />
+            <BellIcon isActive={false} />
           </Tooltip>
         )}
         <div className={`${notificationCount == 0 ? "hidden" : "absolute"} right-1 top-2.5 z-10`}>
@@ -229,7 +229,7 @@ const BellIconComponent = () => {
       </div>
       {isNotificationOpen && (
         <div
-          className='absolute right-[113px] top-[63px] z-10 flex w-[500px] flex-col items-center rounded-md bg-white'
+          className='absolute right-[113px] top-[59px] z-10 flex w-[500px] flex-col items-center rounded-md bg-white'
           style={{ boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.2)' }}
         >
           <div className='flex w-full justify-between border-b border-lightSilver p-4'>
@@ -286,7 +286,7 @@ const BellIconComponent = () => {
                   {groupedNotifications[notificationDate].map((notification) => (
                     <div
                       key={notification.Id}
-                      className={`relative flex w-full cursor-pointer justify-between border-b border-b-lightSilver bg-[#F6F6F6] `}
+                      className={`relative flex w-full cursor-pointer justify-between border-b border-b-lightSilver bg-whiteSmoke`}
                       onMouseEnter={() => setHoveredNotification(notification.Id)}
                       onMouseLeave={() => setHoveredNotification(null)}
                       tabIndex={0}

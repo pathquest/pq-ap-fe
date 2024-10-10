@@ -77,7 +77,7 @@ const ViewEmailPreview: React.FC<EmailPreviewProps> = ({ matrixId, isViewOpen, o
 
       <ModalContent>
         <div className='flex flex-col'>
-          <div className='flex h-20 w-full items-center justify-center bg-[#F6F6F6]'>
+          <div className='flex h-20 w-full items-center justify-center bg-whiteSmoke'>
             {imagePreview && (
               <div className='mx-4 mb-4 flex h-16 w-36 items-center justify-center overflow-hidden'>
                 <img src={imagePreview} alt='logo' width={150} height={250} />

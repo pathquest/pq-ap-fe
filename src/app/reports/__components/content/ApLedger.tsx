@@ -1,15 +1,18 @@
 import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 import ChevronDown from '@/components/Common/Dropdown/Icons/ChevronDown'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
-import { ApLedgercolumns, SelectRangeReportPeriodByList } from '@/data/reports'
+import { ApLedgercolumns, apLedgerNestedColumns, SelectRangeReportPeriodByList } from '@/data/reports'
 import { useAppDispatch } from '@/store/configureStore'
+import { setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 import { vendorBalanceDetail } from '@/store/features/reports/reportsSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { format } from 'date-fns'
+import { useRouter } from 'next/navigation'
 import { Button, DataTable, Datepicker, DatepickerRange,BasicTooltip, Loader, MultiSelectChip, Select, Toast, Typography } from 'pq-ap-lib'
 import { useEffect, useState } from 'react'
 
 function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
+  const router = useRouter()
   const dispatch = useAppDispatch()
   const [reportPeriod, setReportPeriod] = useState<string>('')
   const [vendorBillDate, setVendorBillDate] = useState<string>('')
@@ -34,56 +37,56 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
       colStyle: '!w-[40px]',
     },
     {
-      header: 'DATE',
+      header: 'Date',
       accessor: 'BillDate',
       sortable: false,
       colalign: 'left',
       colStyle: '!w-[150px] !tracking-[0.02em]',
     },
     {
-      header: 'TRANSACTION TYPE',
+      header: 'Transaction Type',
       accessor: 'TransactionType',
       sortable: false,
       colalign: 'left',
       colStyle: '!w-[180px] !tracking-[0.02em]',
     },
     {
-      header: 'BILL NUMBER',
+      header: 'Bill Number',
       accessor: 'BillNumber',
       sortable: false,
       colalign: 'left',
       colStyle: '!w-[150px] !tracking-[0.02em]',
     },
     {
-      header: 'LOCATION',
+      header: 'Location',
       accessor: 'Location',
       sortable: false,
       colalign: 'left',
       colStyle: '!w-[120px] !tracking-[0.02em]',
     },
     {
-      header: 'DUEDATE',
+      header: 'Due Date',
       accessor: 'DueDate',
       sortable: false,
       colalign: 'right',
       colStyle: '!w-[120px] !tracking-[0.02em]',
     },
     {
-      header: 'CHARGES',
+      header: 'Charges',
       accessor: 'Charges',
       sortable: false,
       colalign: 'right',
       colStyle: '!w-[120px] !tracking-[0.02em]',
     },
     {
-      header: 'PAYMENTS',
+      header: 'Payments',
       accessor: 'Payments',
       sortable: false,
       colalign: 'right',
       colStyle: '!w-[120px] !tracking-[0.02em]',
     },
     {
-      header: 'BALANCE',
+      header: 'Balance',
       accessor: 'Balance',
       sortable: false,
       colalign: 'right',
@@ -132,7 +135,7 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
         details: (
           <div className={`custom-scroll max-h-64 w-full overflow-y-auto`}>
             <DataTable
-              columns={nestedColumns}
+              columns={apLedgerNestedColumns}
               noHeader
               data={
                 d.Data?.length > 0 &&
@@ -140,6 +143,15 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
                   (nestedData: any) =>
                     new Object({
                       ...nestedData,
+                      BillNumber: <div
+                      className='w-4/5 cursor-pointer'
+                      onClick={() => {
+                        dispatch(setIsVisibleSidebar(false))
+                        nestedData.Id && router.push(`/reports/view/${nestedData.Id}`)
+                      }}
+                    >
+                      <Typography className='!text-sm text-darkCharcoal'>{nestedData.BillNumber ? nestedData.BillNumber : ''}</Typography>
+                    </div>,
                       BillDate: (
                         <div className='flex items-center gap-4 font-medium'>
                           <span className='font-proxima !text-sm !tracking-[0.02em]'>
@@ -401,7 +413,7 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
             : null,
       EndDate:
         reportPeriodValue === 8
-          ? dateRangeVal[1]?.trim() === '' 
+          ? dateRangeVal[1]?.trim() === ''
             ? null : convertStringsDateToUTC(dateRangeVal[1]?.trim()) ?? null
           : reportPeriod !== ''
             ? convertStringsDateToUTC(reportPeriod)
@@ -423,7 +435,7 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
       )
     } else {
       noDataContent = (
-        <div className='sticky flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]'>
+        <div className='sticky flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
           No records available at the moment.
         </div>
       )
@@ -438,10 +450,10 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
 
   return (
     <>
-      <div className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[241px]' : 'h-[66px]'} items-start border-t border-lightSilver`}>
-        <div className='flex w-full items-center justify-between bg-whiteSmoke h-[66px] px-5 py-4'>
+      <div className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[225px]' : 'h-[51px]'} items-start border-t border-lightSilver`}>
+        <div className='flex w-full items-center justify-between bg-whiteSmoke h-[50px] px-5 py-4'>
           <div className='flex'>
-            <Typography className='flex text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
+            <Typography className='flex !text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
               Filter Criteria
             </Typography>
           </div>
@@ -483,8 +495,8 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
                   id='ft_datepicker123'
                   label='As of'
                   value={reportPeriod}
-                  startYear={1995}
-                  endYear={2050}
+                  startYear={1900}
+                  endYear={2099}
                   getValue={(value: any) => {
                     if (value) {
                       setReportPeriodValue(reportPeriodValue)
@@ -500,8 +512,8 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
                   id='ft_datepicker'
                   label='Select Date'
                   value={reportPeriod}
-                  startYear={1995}
-                  endYear={2050}
+                  startYear={1900}
+                  endYear={2099}
                   getValue={(value) => {
                     setReportPeriod(value)
                     const dateRangeVal = reportPeriod?.split('to')
@@ -570,7 +582,7 @@ function APLedger({ vendorOptions, locationOptions, setAPLedgerParams }: any) {
       </div>
 
       {runReport && (
-        <div className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-380px)]' : 'h-[calc(100vh-210px)]'} overflow-auto`}>
+        <div className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-335px)]' : 'h-[calc(100vh-162px)]'} overflow-auto`}>
           <div className={`mainTable ${apLedgerData.length === 0 ? 'h-11' : 'h-auto'}`}>
             <DataTable
               columns={ApLedgercolumns}

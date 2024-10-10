@@ -126,7 +126,7 @@ const ColumnFilter: React.FC<ColumnFilterDropdownProps> = ({
   }
 
   return (
-    <div className='mr-[15px] cursor-pointer'>
+    <div className='mr-[20px] cursor-pointer'>
       <span onClick={handleToggle} tabIndex={0} onKeyDown={handleKeyDown} >
         <ColFilterIcon color={isOpen ? "#02B89D" : "#6E6D7A"} />
       </span>

@@ -161,8 +161,8 @@ function FilterPractDashboard({
                 id='ft_viewByMonth'
                 label='View By Month'
                 value={localFilterFormFields?.ft_viewByMonth}
-                startYear={1995}
-                endYear={2050}
+                startYear={1900}
+                endYear={2099}
                 getValue={handleDateChange}
                 getError={() => {}}
               />

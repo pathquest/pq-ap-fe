@@ -17,6 +17,7 @@ import {
   UserListOptionsProps,
   DocumentGetOverviewListOptions,
   DeleteDocumentOverviewOptionsProps,
+  VendorHistoryListOptions,
 } from '@/models/billPosting'
 import { format, subMonths } from 'date-fns'
 
@@ -40,9 +41,9 @@ const initialState: AuthState = {
   filterFormFields: {
     ft_status: ['1', '2', '6', '8'],
     ft_assignee: '1',
-    ft_process: ['1','2'],
+    ft_process: ['1', '2'],
     ft_select_users: [],
-    ft_overview_status: ['1','2','3','4','5'],
+    ft_overview_status: ['1', '2', '3', '4', '5'],
     ft_vendor: null,
     ft_datepicker: `${formattedDate} to ${formattedCurrentDate}`,
     ft_location: null,
@@ -192,6 +193,14 @@ export const splitDocuments = createAsyncThunk('bill/splitDocuments', async (dat
 export const accountPayableSave = createAsyncThunk('bill/accountPayableSave', async (data: any, thunkAPI) => {
   try {
     return await agent.Bill.accountPayableSave(data)
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue({ error: error.data })
+  }
+})
+
+export const getVendorHistoryList = createAsyncThunk('bill/getVendorHistoryList', async (data: VendorHistoryListOptions, thunkAPI) => {
+  try {
+    return await agent.Bill.getVendorHistoryList(data)
   } catch (error: any) {
     return thunkAPI.rejectWithValue({ error: error.data })
   }

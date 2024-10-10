@@ -26,7 +26,7 @@ const Dashboard: React.FC = () => {
   const router = useRouter()
   const dispatch = useAppDispatch()
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
-  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-500px)] laptopMd:w-[calc(100vw-85px)]')
+  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-480px)] laptopMd:w-[calc(100vw-78px)]')
 
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
   const isDashboardPermission = getModulePermissions(processPermissionsMatrix, "Dashboard") ?? {}
@@ -38,9 +38,8 @@ const Dashboard: React.FC = () => {
   const [locationOption, setLocationOption] = useState<Option[]>([])
 
   useEffect(() => {
-    setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-[calc(100vw-85px)] laptop:w-[calc(100vw-85px)] laptopMd:w-[calc(100vw-85px)]' : 'laptop:w-[calc(100vw-200px)] laptopMd:w-[calc(100vw-200px)]')
+    setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-[calc(100vw-78px)] laptop:w-[calc(100vw-78px)] laptopMd:w-[calc(100vw-78px)]' : 'laptop:w-[calc(100vw-180px)] laptopMd:w-[calc(100vw-180px)]')
   }, [isLeftSidebarCollapsed])
-
 
   useEffect(() => {
     if (!isStaffAccountantView && !isManagerView && !isPracticeView) {
@@ -67,9 +66,9 @@ const Dashboard: React.FC = () => {
   return (
     <Wrapper>
       {/* Navbar */}
-      <div className='sticky top-0 z-[6] flex !h-[66px] items-center justify-between bg-whiteSmoke laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
+      <div className='sticky top-0 z-[6] flex !h-[50px] items-center justify-between bg-whiteSmoke laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
         <div className='flex items-center'>
-          <label className='font-proxima flex items-center laptop:text-base laptopMd:text-base lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg laptop:font-semibold laptopMd:font-semibold lg:font-semibold xl:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>Dashboard</label>
+          <label className='font-proxima flex items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Dashboard</label>
         </div>
       </div>
 
@@ -81,7 +80,7 @@ const Dashboard: React.FC = () => {
         <div>
           <Insights />
         </div>
-        <div className={`overflow-auto ${isLeftSidebarCollapsed ? "w-[calc(100vw-373px)] hd:w-[calc(100vw-389px)] 2xl:w-[calc(100vw-389px)] 3xl:w-[calc(100vw-389px)]" : "md:w-[calc(75vw)] laptop:w-[calc(100vw-488px)] laptopMd:w-[calc(100vw-488px)] hd:w-[calc(100vw-504px)] 2xl:w-[calc(100vw-504px)] 3xl:w-[calc(100vw-504px)]"}`}>
+        <div className={`overflow-auto ${isLeftSidebarCollapsed ? "w-[calc(100vw-353px)] hd:w-[calc(100vw-369px)] 2xl:w-[calc(100vw-369px)] 3xl:w-[calc(100vw-369px)]" : "md:w-[calc(75vw)] laptop:w-[calc(100vw-468px)] laptopMd:w-[calc(100vw-468px)] hd:w-[calc(100vw-484px)] 2xl:w-[calc(100vw-484px)] 3xl:w-[calc(100vw-484px)]"}`}>
           <TotalPostedBillsByMonth LocationOption={locationOption} />
         </div>
       </div>

@@ -6,8 +6,9 @@ import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { setSelectedIndex, vendorAgingSummary } from '@/store/features/reports/reportsSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { Button, DataTable, Datepicker, Loader, MultiSelectChip, Select, Toast, Typography } from 'pq-ap-lib'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import VendorBalDetailedDrawer from '../drawer/VendorBalDetailedDrawer'
+import { useSession } from 'next-auth/react'
 
 interface VendorBalanceSummaryProps {
   vendorOptions: any
@@ -23,7 +24,8 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
   getVendorDetailedModalOpen,
 }) => {
   const dispatch = useAppDispatch()
-
+  const { data: session } = useSession()
+  const CompanyId = session?.user?.CompanyId
   const { selectedIndex } = useAppSelector((state) => state.reports)
 
   const [vendorValue, setVendorValue] = useState<string[]>([])
@@ -32,6 +34,7 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
   const [vendorBalanceSummarys, setVendorBalanceSummarys] = useState([])
 
   const [runReport, setRunReport] = useState<boolean>(false)
+  const [runReportLoading, setRunReportLoading] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [vendorDetailedModalOpen, setVendorDetailedModalOpen] = useState<boolean>(false)
   const [vendorName, setvendorName] = useState<string>('')
@@ -40,15 +43,23 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
   const [reportPeriodValue, setReportPeriodValue] = useState<number>(1)
 
   const [isCheckedValue, setIsCheckedValue] = useState<boolean>(false)
+  const [itemsLoaded, setItemsLoaded] = useState(0)
+  const [apiDataCount, setApiDataCount] = useState(0)
+  const [shouldLoadMore, setShouldLoadMore] = useState(true)
+  const [isLazyLoading, setIsLazyLoading] = useState<boolean>(false)
 
-  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
+  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
+
+  let nextPageIndex: number = 1
+  const lazyRows = 10
+  const tableBottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
-      setTableDynamicWidth('w-full laptop:w-[calc(100vw-85px)]')
+      setTableDynamicWidth('w-full laptop:w-[calc(100vw-78px)]')
     } else {
-      setTableDynamicWidth('w-full laptop:w-[calc(100vw-200px)]')
+      setTableDynamicWidth('w-full laptop:w-[calc(100vw-180px)]')
     }
   }, [isLeftSidebarCollapsed])
 
@@ -63,9 +74,33 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
     },
   ]
 
-  const handleSubmit = () => {
-    setIsLoading(true)
-    if (reportPeriod.trim().length > 0) {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLazyLoading && shouldLoadMore && (itemsLoaded % lazyRows === 0) && apiDataCount > 0) {
+          fetchBalanceSummary()
+        }
+      },
+      { threshold: 0 }
+    )
+
+    if (tableBottomRef.current) {
+      observer.observe(tableBottomRef.current)
+      nextPageIndex = Math.ceil(itemsLoaded / lazyRows) + 1
+    }
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [shouldLoadMore, itemsLoaded, tableBottomRef.current])
+
+  const fetchBalanceSummary = async (pageIndex?: number) => {
+    if (pageIndex === 1) {
+      setVendorBalanceSummarys([])
+      setItemsLoaded(0)
+      setIsLoading(true)
+    }
+    if (CompanyId) {
       const params = {
         Vendors: vendorValue.length > 0 ? vendorValue.length === vendorOptions.length ? null : vendorValue : null,
         StartDate: null,
@@ -73,25 +108,84 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
         ViewBy: viewByValue,
         GroupBy: null,
         IsZeroBalance: isCheckedValue,
+        PageNumber: pageIndex || nextPageIndex,
+        PageSize: lazyRows,
       }
-      performApiAction(
-        dispatch,
-        vendorAgingSummary,
-        params,
-        (responseData: any) => {
-          const List = responseData
-          setVendorBalanceSummarys(List)
-          setRunReport(true)
-          setIsLoading(false)
-          List.length > 0 && setIsExpanded(false)
-        },
-        () => {
-          setIsLoading(false)
+
+      try {
+        setIsLazyLoading(true)
+        const { payload, meta } = await dispatch(vendorAgingSummary(params))
+        const dataMessage = payload?.Message
+
+        if (meta?.requestStatus === 'fulfilled') {
+          if (payload?.ResponseStatus === 'Success') {
+            const responseData = payload?.ResponseData
+            const List = responseData?.SummaryData
+            const newList = responseData?.SummaryData || []
+            const newTotalCount = responseData?.BillCount || 0
+            setApiDataCount(newTotalCount)
+            setRunReport(true)
+            setRunReportLoading(false)
+            List.length > 0 && setIsExpanded(false)
+
+            let updatedData: any = []
+            if (pageIndex === 1) {
+              updatedData = [...newList]
+              setIsLoading(false)
+              setIsLazyLoading(false)
+              setShouldLoadMore(true)
+            } else {
+              updatedData = [...vendorBalanceSummarys, ...newList]
+            }
+            setVendorBalanceSummarys(updatedData)
+            setItemsLoaded(updatedData.length)
+            setIsLazyLoading(false)
+
+            setIsLoading(false)
+
+            if (itemsLoaded >= newTotalCount) {
+              setShouldLoadMore(false);
+            }
+          } else {
+            setRunReportLoading(false)
+            Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
+          }
+        } else {
+          setRunReportLoading(false)
+          Toast.error(`${payload?.status} : ${payload?.statusText}`)
         }
-      )
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setRunReportLoading(false)
+        setIsLoading(false)
+        setIsLazyLoading(false)
+      }
+      // performApiAction(
+      //   dispatch,
+      //   vendorAgingSummary,
+      //   params,
+      //   (responseData: any) => {
+      //     const List = responseData
+      //     setVendorBalanceSummarys(List)
+      //     setRunReport(true)
+      //     setIsLoading(false)
+      //     List.length > 0 && setIsExpanded(false)
+      //   },
+      //   () => {
+      //     setIsLoading(false)
+      //   }
+      // )
+    }
+  }
+
+  const handleSubmit = () => {
+    setRunReportLoading(true)
+    if (reportPeriod.trim().length > 0) {
+      fetchBalanceSummary(1)
     } else {
       setRunReport(false)
-      setIsLoading(false)
+      setRunReportLoading(false)
       Toast.error('Please select the date in order to run the report')
     }
   }
@@ -233,7 +327,7 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
       )
     } else {
       noDataContent = (
-        <div className='fixed flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]'>
+        <div className='fixed flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
           No records available at the moment.
         </div>
       )
@@ -250,28 +344,29 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
     getVendorDetailedModalOpen(false)
     setVendorDetailedModalOpen(false)
     dispatch(setSelectedIndex(selectedIndex))
-    const params = {
-      Vendors: vendorValue.length > 0 ? vendorValue.length === vendorOptions.length ? null : vendorValue : null,
-      StartDate: null,
-      EndDate: reportPeriod !== '' ? convertStringsDateToUTC(reportPeriod) : null,
-      ViewBy: viewByValue,
-      GroupBy: null,
-      IsZeroBalance: isCheckedValue,
-    }
-    performApiAction(
-      dispatch,
-      vendorAgingSummary,
-      params,
-      (responseData: any) => {
-        const List = responseData
-        setVendorBalanceSummarys(List)
-        setRunReport(true)
-        setIsLoading(false)
-      },
-      () => {
-        setIsLoading(false)
-      }
-    )
+    fetchBalanceSummary(1)
+    // const params = {
+    //   Vendors: vendorValue.length > 0 ? vendorValue.length === vendorOptions.length ? null : vendorValue : null,
+    //   StartDate: null,
+    //   EndDate: reportPeriod !== '' ? convertStringsDateToUTC(reportPeriod) : null,
+    //   ViewBy: viewByValue,
+    //   GroupBy: null,
+    //   IsZeroBalance: isCheckedValue,
+    // }
+    // performApiAction(
+    //   dispatch,
+    //   vendorAgingSummary,
+    //   params,
+    //   (responseData: any) => {
+    //     const List = responseData
+    //     setVendorBalanceSummarys(List)
+    //     setRunReport(true)
+    //     setIsLoading(false)
+    //   },
+    //   () => {
+    //     setIsLoading(false)
+    //   }
+    // )
   }
 
   return (
@@ -291,11 +386,11 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
       ) : (
         <>
           <div
-            className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[241px]' : 'h-[66px]'
+            className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[225px]' : 'h-[51px]'
               } items-start border-t border-lightSilver`}>
-            <div className='flex w-full items-center justify-between bg-whiteSmoke h-[66px] px-5 py-4'>
+            <div className='flex w-full items-center justify-between bg-whiteSmoke !h-[50px] px-5 py-4'>
               <div className='flex'>
-                <Typography className='flex text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
+                <Typography className='flex !text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
                   Filter Criteria
                 </Typography>
               </div>
@@ -330,8 +425,8 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
                     id='ft_datepicker'
                     label='As of'
                     value={reportPeriod}
-                    startYear={1995}
-                    endYear={2050}
+                    startYear={1900}
+                    endYear={2099}
                     getValue={(value: any) => {
                       if (value) {
                         const selectedDate = getSpecificDateForReportPeriod(reportPeriodValue)
@@ -383,10 +478,10 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
                   <Button
                     type='submit'
                     onClick={() => handleSubmit()}
-                    className={`btn-sm !h-9 rounded-full ${isLoading && 'pointer-events-none opacity-80'}`}
+                    className={`btn-sm !h-9 rounded-full ${runReportLoading && 'pointer-events-none opacity-80'}`}
                     variant='btn-primary'>
                     <label className={`flex items-center justify-center laptop:px-[12px] laptopMd:px-[12px] lg:px-[12px] xl:px-[12px] hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px] ${isLoading ? "animate-spin laptop:mx-[34px] laptopMd:mx-[34px] lg:mx-[34px] xl:mx-[34px] hd:mx-[41px] 2xl:mx-[41px] 3xl:mx-[41px]" : "!py-1.5 cursor-pointer font-proxima h-full laptop:font-semibold laptopMd:font-semibold lg:font-semibold xl:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em]"}`}>
-                      {isLoading ? <SpinnerIcon bgColor='#FFF' /> : "RUN REPORT"}
+                      {runReportLoading ? <SpinnerIcon bgColor='#FFF' /> : "RUN REPORT"}
                     </label>
                   </Button>
                 </div>
@@ -395,7 +490,7 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
 
           {runReport && (
             <div
-              className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-380px)]' : 'h-[calc(100vh-210px)]'
+              className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-335px)]' : 'h-[calc(100vh-162px)]'
                 } overflow-auto ${tableDynamicWidth}`}
             >
               <div className={`mainTable ${vendorBalanceSummarys.length !== 0 && 'h-0'}`}>
@@ -406,9 +501,15 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
                   sticky
                   hoverEffect
                   isTableLayoutFixed={true}
+                  userClass='innerTable sticky'
+                  lazyLoadRows={lazyRows}
                   getExpandableData={() => { }}
                   getRowId={() => { }}
                 />
+                {isLazyLoading && !isLoading && (
+                  <Loader size='sm' helperText />
+                )}
+                <div ref={tableBottomRef} />
               </div>
               {noDataContent}
             </div>

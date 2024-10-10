@@ -24,35 +24,35 @@ const TextEditor = lazy(() => import('@/app/setup/notification/__components/Text
 
 const columns: TableColumn[] = [
   {
-    header: 'MODULE',
+    header: 'Module',
     accessor: 'module',
     sortable: false,
     colalign: 'left',
     colStyle: '!w-[22%] max-[439px]:!text-xs xsm:!text-sm !tracking-[0.02em]', // !w-[22%] max-[439px]
   },
   {
-    header: 'TRIGGER',
+    header: 'Trigger',
     accessor: 'trigger',
     sortable: false,
     colalign: 'left',
     colStyle: '!w-[33%] max-[439px]:!text-xs xsm:!text-sm !tracking-[0.02em]', //!w-[33%] max-[439px]
   },
   {
-    header: 'EMAIL',
+    header: 'Email',
     accessor: 'email',
     sortable: false,
     colalign: 'center',
     colStyle: '!w-[9%] max-[439px]:!text-xs xsm:!text-sm !tracking-[0.02em]',
   },
   {
-    header: 'PORTAL',
+    header: 'Portal',
     accessor: 'portal',
     sortable: false,
     colalign: 'center',
     colStyle: '!w-[9%] max-[439px]:!text-xs xsm:!text-sm !tracking-[0.02em]',
   },
   {
-    header: 'MOBILE',
+    header: 'Mobile',
     accessor: 'mobile',
     sortable: false,
     colalign: 'center',
@@ -452,9 +452,9 @@ const ListNotification: React.FC = () => {
         ) : (
           <>
             {/* Navbar component */}
-            <div className='sticky top-0 z-[6] flex h-[66px] items-center justify-between bg-whiteSmoke px-5'>
+            <div className='sticky top-0 z-[6] flex h-[50px] items-center justify-between bg-whiteSmoke px-5'>
               <div className='flex items-center'>
-                <label className='font-proxima flex cursor-pointer items-center laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base laptop:font-semibold laptopMd:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>Notification</label>
+                <label className='font-proxima flex cursor-pointer items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Notification</label>
               </div>
               <div className='flex items-center justify-center gap-5'>
                 <Button
@@ -478,7 +478,7 @@ const ListNotification: React.FC = () => {
             </div>
             {/* Data Table */}
             <div
-              className={`approvalMain ${isExpanded ? 'h-[calc(100vh-380px)]' : 'h-[calc(100vh-130px)]'
+              className={`approvalMain ${isExpanded ? 'h-[calc(100vh-380px)]' : 'h-[calc(100vh-112px)]'
                 } overflow-auto duration-700 ease-in-out max-[425px]:mx-1`}
             >
               <div className={`${data?.length !== 0 && 'h-0'}`}>
@@ -500,7 +500,7 @@ const ListNotification: React.FC = () => {
                     <Loader size='md' helperText />
                   </div>
                 ) : (
-                  <div className='flex h-[59px] w-auto items-center justify-center border-b border-b-[#ccc] font-medium'>
+                  <div className='flex h-[44px] w-auto items-center justify-center border-b border-b-[#ccc] font-medium'>
                     No records available at the moment.
                   </div>
                 )

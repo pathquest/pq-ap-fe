@@ -252,28 +252,28 @@ const ListUsers: React.FC = () => {
       colStyle: '!pl-5 !w-[30px]',
     },
     {
-      header: 'NAME',
+      header: 'Name',
       accessor: 'name',
       sortable: false,
     },
     {
-      header: 'E-MAIL ID',
+      header: 'E-Mail Id',
       accessor: 'email',
       sortable: false,
     },
     {
-      header: 'COMPANIES',
+      header: 'Companies',
       accessor: 'companies',
       sortable: false,
       colStyle: '!w-[120px]',
     },
     {
-      header: 'ROLES',
+      header: 'Roles',
       accessor: 'role',
       sortable: false,
     },
     {
-      header: 'STATUS',
+      header: 'Status',
       accessor: 'status',
       sortable: false,
       colStyle: '!w-[140px]',
@@ -285,7 +285,8 @@ const ListUsers: React.FC = () => {
       colalign: 'right',
       colStyle: '!w-[30px]',
     },
-  ]
+  ];
+
 
   const handleMenuChange = (actionName: string, id: number) => {
     setRowId(id)
@@ -465,9 +466,9 @@ const ListUsers: React.FC = () => {
       <WrapperManage onData={globalData}>
         {/* NavBar */}
         <div className={`sticky top-0 z-[6] ${isManageRightsOpen ? 'hidden' : 'block'}`}>
-          <div className='relative flex !h-[66px] items-center justify-between bg-whiteSmoke px-5'>
+          <div className='relative flex !h-[50px] items-center justify-between bg-whiteSmoke px-5'>
             <div className='flex items-center'>
-              <label className='font-proxima flex cursor-pointer items-center laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base laptop:font-semibold laptopMd:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>Manage User</label>
+              <label className='font-proxima flex items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Manage User</label>
             </div>
             <div className='flex items-center gap-5'>
               <div className='flex h-6 items-center justify-center '>
@@ -565,7 +566,7 @@ const ListUsers: React.FC = () => {
         />
 
         {/* Data Table */}
-        <div className='h-[calc(100vh-145px)] approvalMain custom-scroll overflow-auto max-[425px]:mx-1'>
+        <div className='h-[calc(100vh-125px)] approvalMain custom-scroll overflow-auto max-[425px]:mx-1'>
           <div className={`${userData.length !== 0 && 'h-0'}`}>
             <DataTable
               columns={columns}

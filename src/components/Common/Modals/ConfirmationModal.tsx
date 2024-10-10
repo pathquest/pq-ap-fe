@@ -29,7 +29,7 @@ interface ConfirmationModalProps {
   colorVariantNo: ColorVariant
   colorVariantYes: ColorVariant
   modalWidth?: string
-  contentClassName?:string
+  contentClassName?: string
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -44,7 +44,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   modalWidth,
 }) => {
   return (
-    <Modal isOpen={isModalOpen} onClose={modalClose} width={modalWidth ? modalWidth : '500px'}>
+    <Modal isOpen={isModalOpen} onClose={() => { }} width={modalWidth ? modalWidth : '500px'}>
       <ModalTitle className='!h-[64px] laptop:py-3 laptopMd:py-3 lg:py-3 xl:py-3 hd:py-[21px] 2xl:py-[21px] 3xl:py-[21px] laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
         <div className='font-proxima flex cursor-pointer items-center laptop:text-base laptopMd:text-base hd:text-lg 2xl:text-lg 3xl:text-lg laptop:font-semibold laptopMd:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>{title}</div>
         <div className='pt-2.5' onClick={() => modalClose()}>

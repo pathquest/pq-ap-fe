@@ -28,49 +28,49 @@ const VendorWiseMonthlyPayment: React.FC<any> = ({ LocationOption }) => {
 
     const columns: any = [
         {
-            header: "VENDOR ID",
+            header: "Vendor Id",
             accessor: "VendorId",
             sortable: false,
             colalign: "left",
             colStyle: '!w-[120px] !tracking-[0.02em]'
         },
         {
-            header: "VENDOR",
+            header: "Vendor",
             accessor: "Vendor",
             sortable: false,
             colalign: "left",
             colStyle: '!w-[150px] !tracking-[0.02em]'
         },
         {
-            header: "TOTAL",
+            header: "Total",
             accessor: "Total",
             sortable: false,
             colalign: "right",
             colStyle: '!w-[140px] !tracking-[0.02em]'
         },
         {
-            header: "0-30 days",
+            header: "0-30 Days",
             accessor: "0To30",
             sortable: false,
             colalign: "right",
             colStyle: '!w-[140px] !tracking-[0.02em]'
         },
         {
-            header: "31-60 days",
+            header: "31-60 Days",
             accessor: "31To60",
             sortable: false,
             colalign: "right",
             colStyle: '!w-[140px] !tracking-[0.02em]'
         },
         {
-            header: "61-90 days",
+            header: "61-90 Days",
             accessor: "61To90",
             sortable: false,
             colalign: "right",
             colStyle: '!w-[140px] !tracking-[0.02em]'
         },
         {
-            header: "91 + days",
+            header: "91 + Days",
             accessor: "91To",
             sortable: false,
             colalign: "right",
@@ -195,7 +195,7 @@ const VendorWiseMonthlyPayment: React.FC<any> = ({ LocationOption }) => {
                     </div>
                 </div>
             </div>
-            <div className='laptopMd:h-[87.8%] lg:h-[87.8%] xl:h-[87.8%] hd:h-[90%] 2xl:h-[90%] 3xl:h-[90%] overflow-auto dashboardMain custom-scroll'>
+            <div className='laptopMd:h-[87.8%] lg:h-[87.8%] xl:h-[87.8%] hd:h-[90%] 2xl:h-[90%] 3xl:h-[90%] overflow-auto custom-scroll'>
                 <div className={`${vendorList.length === 0 ? 'h-11' : 'h-auto'}`}>
                     <DataTable
                         columns={columns}
@@ -207,13 +207,15 @@ const VendorWiseMonthlyPayment: React.FC<any> = ({ LocationOption }) => {
                         getExpandableData={() => { }}
                     />
                 </div>
-                {vendorList.length === 0 ? isLoading ?
-                    <div className='flex h-[calc(52vh-5px)] w-full items-center justify-center'>
-                        <Loader size='md' />
-                    </div>
-                    : <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
-                        No records available at the moment.
-                    </div> : ""}
+                {vendorList.length === 0
+                    ? isLoading
+                        ? <div className='flex h-[calc(52vh-5px)] w-full items-center justify-center'>
+                            <Loader size='md' />
+                        </div>
+                        : <div className='flex h-[44px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
+                            No records available at the moment.
+                        </div>
+                    : ""}
             </div>
         </div>
         <ExpandModal

@@ -140,7 +140,7 @@ const Status: React.FC<StatusType> = ({ statusList, onSuccessApply }) => {
             onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => (e.key === 'Enter') && setIsOpen(!isOpen)}>
             <div className='flex h-10 items-center px-1' tabIndex={-1}>
                 <label
-                    className={`flex cursor-pointer select-none items-start bg-transparent outline-none ${isOpen ? "text-primary placeholder:text-primary" : "text-black placeholder:text-black"} text-sm placeholder:text-sm placeholder:font-bold font-bold cursor-pointer`}
+                    className={`flex cursor-pointer select-none items-start bg-transparent outline-none ${isOpen ? "text-primary placeholder:text-primary" : "text-black placeholder:text-black"} text-base placeholder:text-base placeholder:font-bold font-bold cursor-pointer`}
                     onClick={handleInput}>
                     {selectedValues.length == 0 ? "Select Status" : selectedValues.length == statusList.length ? "All Status" : selectedValues.length > 1 ? selectedLabel + " +" + (selectedValues.length - 1) : selectedLabel}</label>
                 <div

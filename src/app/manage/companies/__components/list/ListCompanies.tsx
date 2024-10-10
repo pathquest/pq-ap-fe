@@ -1,32 +1,30 @@
 'use client'
-import SpinnerIcon from '@/assets/Icons/spinnerIcon'
-import Actions from '@/components/Common/DatatableActions/DatatableActions'
-import React, { useEffect, useRef, useState } from 'react'
-
-// Library Components
+import agent, { invalidateSessionCache } from '@/api/axios'
 import AvatarWithText from '@/app/manage/companies/__components/AvatarWithText'
 import CompaniesModal from '@/app/manage/companies/__components/CompaniesModal'
 import Drawer from '@/app/manage/companies/__components/Drawer'
 import DrawerOverlay from '@/app/manage/companies/__components/DrawerOverlay'
 import FilterIcon from '@/assets/Icons/FilterIcons'
 import PlusIcon from '@/assets/Icons/PlusIcon'
-import DataLoadingStatus from '@/components/Common/Functions/DataLoadingStatus'
+import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 import { formatDate } from '@/components/Common/Functions/FormatDate'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { getModulePermissions, hasSpecificPermission, hasViewPermission, processPermissions } from '@/components/Common/Functions/ProcessPermission'
 import ConfirmationModal from '@/components/Common/Modals/ConfirmationModal'
 import WrapperManage from '@/components/Common/WrapperManage'
 import { useCompanyContext } from '@/context/companyContext'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { AssignUserToCompany, companyGetList, companyListDropdown, conncetQb, conncetXero, filterAccounting, manageCompanyAssignUser, performCompanyActions, redirectQb, redirectXero, sageCompanyConnect, sageCompanyReconnect, sageUserConnect } from '@/store/features/company/companySlice'
+import { setOrganizationName, setOrgPermissionsMatrix, setProcessPermissionsMatrix, setRoleId } from '@/store/features/profile/profileSlice'
+import { permissionGetList } from '@/store/features/role/roleSlice'
 import { setIsRefresh, setSelectedCompany, userGetManageRights, userListDropdown } from '@/store/features/user/userSlice'
 import { convertStringsToIntegers } from '@/utils'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Avatar, Button, Close, CompanyList, DataTable, Loader, Modal, ModalContent, ModalTitle, MultiSelectChip, Password, SaveCompanyDropdown, Select, Text, Toast, Tooltip, Typography } from 'pq-ap-lib'
-import agent, { invalidateSessionCache } from '@/api/axios'
-import { getModulePermissions, hasSpecificPermission, hasViewPermission, processPermissions } from '@/components/Common/Functions/ProcessPermission'
-import { setOrganizationName, setOrgPermissionsMatrix, setProcessPermissionsMatrix, setRoleId } from '@/store/features/profile/profileSlice'
-import { permissionGetList } from '@/store/features/role/roleSlice'
+import { Avatar, Button, Close, DataTable, Loader, Modal, ModalContent, ModalTitle, MultiSelectChip, Password, SaveCompanyDropdown, Select, Text, Toast, Tooltip, Typography } from 'pq-ap-lib'
+import React, { useEffect, useRef, useState } from 'react'
+import Actions from '../DatatableActions/DatatableActions'
+import ManageConfigurationDrawer from '../ManageConfigurationDrawer'
 
 interface Item {
   clientname: string
@@ -71,14 +69,15 @@ interface IntacctEntityProps {
 }
 
 const ListCompanies = () => {
-  // const user = session ? session?.user : {}
-  const { data: session } = useSession()
-  const UserId = session?.user?.user_id
   const router = useRouter()
   const searchParams = useSearchParams()
+  // const user = session ? session?.user : {}
+
+  const { data: session } = useSession()
+  const UserId = session?.user?.user_id
   const urlToken = session?.user?.access_token
   const user = session ? session?.user : {}
-
+  const IsOrgAdmin = session?.user?.is_organization_admin ?? false
   const { update } = useSession()
 
   const { selectedCompany } = useAppSelector((state) => state.company)
@@ -109,11 +108,12 @@ const ListCompanies = () => {
     assignUser: [],
   })
   const [selectedRowId, setSelectedRowId] = useState(0)
-  const [editId, setEditId] = useState<number | undefined | null>()
+  const [editId, setEditId] = useState<number>(0)
   const [qboCompanyData, setQboCompanyData] = useState<any[] | null>(null)
   const [xeroCompanyData, setXeroCompanyData] = useState<any[] | null>(null)
   const [companyList, setCompanyList] = useState<Company[]>([])
-  const [accountingTool, setAccountingTool] = useState<number | null>()
+  const [accountingTool, setAccountingTool] = useState<number>(0)
+  const [manageConfigAccountingTool, setManageConfigAccountingTool] = useState<number>(0)
   const [orgId, setOrgId] = useState<number | null>(null)
 
   const { setAccountingToolType } = useCompanyContext()
@@ -175,25 +175,25 @@ const ListCompanies = () => {
       colalign: 'center'
     },
     {
-      header: 'COMPANY',
+      header: 'Company',
       accessor: 'Name',
       sortable: false,
       colStyle: '!tracking-[0.02em] !font-bold !w-[130px]',
     },
     {
-      header: 'CONNECTED WITH',
+      header: 'Connected With',
       accessor: 'AccountingTool',
       sortable: false,
       colStyle: '!tracking-[0.02em] !font-bold !w-[100px]',
     },
     {
-      header: 'MODIFIED DATE',
+      header: 'Modified Date',
       accessor: 'UpdatedOn',
       sortable: false,
       colStyle: '!tracking-[0.02em] !font-bold !w-[150px]',
     },
     {
-      header: 'ASSIGN USER',
+      header: 'Assign User',
       accessor: 'AssignUsers',
       sortable: false,
       colStyle: '!tracking-[0.02em] !font-bold !w-[150px]',
@@ -260,9 +260,9 @@ const ListCompanies = () => {
   const qbConnect = () => {
     if (localStorage.getItem('qbcode') && localStorage.getItem('realmId') && localStorage.getItem('state')) {
       const params = {
-        code: localStorage.getItem('qbcode'),
-        realmId: localStorage.getItem('realmId'),
-        CompanyId: localStorage.getItem('state'),
+        Code: localStorage.getItem('qbcode'),
+        RealmId: localStorage.getItem('realmId'),
+        CompanyId: Number(localStorage.getItem('state')),
       }
       performApiAction(dispatch, conncetQb, params, (responseData: any) => {
         setQboCompanyData(responseData)
@@ -420,11 +420,6 @@ const ListCompanies = () => {
         }
       )
     }
-  }
-
-  // This function is call for drawer
-  const clearID = () => {
-    setEditId(undefined)
   }
 
   //Company Connect for Intacct
@@ -615,8 +610,9 @@ const ListCompanies = () => {
 
   // actions menu
   // Match a action and open a drawer
-  const handleActions = async (actionType: string, actionId: number, CompanyName: string) => {
+  const handleActions = async (actionType: string, actionId: number, CompanyName: string, accountingTool: number) => {
     setSelectedRowId(actionId)
+    setManageConfigAccountingTool(accountingTool)
     invalidateSessionCache();
     await update({ ...session?.user, CompanyId: actionId, CompanyName: CompanyName })
 
@@ -648,9 +644,10 @@ const ListCompanies = () => {
       case 'remove':
         setOpenRemoveModal(true)
         break
-      // case 'manage configuration':
-      //   setIsManageConfigurationDrawerOpen(true)
-      //   break
+      case 'manage configuration':
+        setEditId(actionId)
+        setIsManageConfigurationDrawerOpen(true)
+        break
       default:
         break
     }
@@ -803,8 +800,9 @@ const ListCompanies = () => {
   const companyData = companyList && companyList.map((list: any, index) => {
     const actions =
       list?.AccountingTool === 4
-        ? ['Edit', 'Remove']
-        : !list?.IsFieldMappingSet ? ['Field Mapping', 'Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove'] : ['Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove'].filter(Boolean)
+        ? ['Edit', 'Remove', IsOrgAdmin && 'Manage Configuration'].filter(Boolean)
+        : !list?.IsFieldMappingSet ? ['Field Mapping', 'Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove', IsOrgAdmin && 'Manage Configuration'].filter(Boolean) : ['Edit', list?.IsActive ? 'Deactivate' : 'Activate', list?.IsConnected ? 'Disconnect' : 'Connect', 'Remove', IsOrgAdmin && 'Manage Configuration'].filter(Boolean)
+
     return {
       Id: <div className={`${list.IsActive ? '' : 'opacity-[50%]'}`}>{index + 1}</div>,
       Name: (
@@ -828,7 +826,7 @@ const ListCompanies = () => {
         ),
       AssignUsers: (
         <div
-        className={`${isManageCompanyEdit ? "" : "pointer-events-none opacity-80"} ${!list?.IsActive ? 'pointer-events-none opacity-50' : ''} userList_managecompany w-[150px]`}
+          className={`${isManageCompanyEdit ? "" : "pointer-events-none opacity-80"} ${!list?.IsActive ? 'pointer-events-none opacity-50' : ''} userList_managecompany w-[150px]`}
           onClick={() => setRowId(list?.Id)}
         >
           <SaveCompanyDropdown
@@ -852,7 +850,8 @@ const ListCompanies = () => {
           id={list?.Id}
           accountingTool={list?.AccountingTool}
           actions={actions}
-          optionalData={list?.Name}
+          menuClassName={'168px'}
+          companyName={list?.Name}
           actionRowId={() => {
             handleIdGet(list?.Id, list?.AccountingTool)
           }}
@@ -993,10 +992,6 @@ const ListCompanies = () => {
     setOpenRemoveModal(false)
   }
 
-  // const handleManageConfigurationDrawerClose = () => {
-  //   setIsManageConfigurationDrawerOpen(false)
-  // }
-
   // set a dynamic orgId
   const globalData = (data: OrgData) => {
     setOrgId(data?.orgId)
@@ -1015,6 +1010,9 @@ const ListCompanies = () => {
     setIsRefresh(!isRefresh)
     setShouldLoadMore(true)
     setIsNoAccountingToolCompany(false)
+    setIsManageConfigurationDrawerOpen(false)
+    setManageConfigAccountingTool(0)
+    setEditId(0)
   }
 
   const onReset = () => {
@@ -1024,14 +1022,13 @@ const ListCompanies = () => {
     checkIfFiltersChanged({ company: [], accountingTools: [], assignUser: [] })
   }
 
-
   return (
     <>
       <WrapperManage onData={globalData}>
         {/* NavBar */}
-        <div className='sticky top-0 z-[6] flex !h-[66px] items-center justify-between bg-whiteSmoke px-5'>
+        <div className='sticky top-0 z-[6] flex !h-[50px] items-center justify-between bg-whiteSmoke px-5'>
           <div className='flex items-center'>
-            <label className='font-proxima flex cursor-pointer items-center laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base laptop:font-semibold laptopMd:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>Manage Companies</label>
+            <label className='font-proxima flex items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Manage Companies</label>
           </div>
           <div className='flex items-center gap-2'>
             <div className='flex h-6 items-center justify-center'>
@@ -1138,7 +1135,7 @@ const ListCompanies = () => {
         </div>
 
         {/* Data Table */}
-        <div className='h-[calc(100vh-145px)] approvalMain overflow-auto max-[425px]:mx-1'>
+        <div className='h-[calc(100vh-125px)] approvalMain overflow-auto max-[425px]:mx-1'>
           <div className={`${companyData.length !== 0 && 'h-0'}`}>
             <DataTable
               columns={headers}
@@ -1157,10 +1154,10 @@ const ListCompanies = () => {
 
           {companyList.length === 0 ? (
             isLoading ?
-              <div className='flex h-[calc(93vh-150px)] w-full items-center justify-center'>
+              <div className='flex h-[calc(100vh-165px)] w-full items-center justify-center'>
                 <Loader size='md' helperText />
               </div>
-              : !isLoading && <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
+              : !isLoading && <div className='flex h-[44px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
                 No records available at the moment.
               </div>
           ) : ''}
@@ -1193,13 +1190,13 @@ const ListCompanies = () => {
           IntacctAccountinToolId={intacctComDropId}
           IntacctCompanyId={intacctCompanyId}
           IntacctLocationId={intacctEntityListId}
-          clearID={clearID}
           orgId={orgId}
           recordNo={intacctEntities?.find((item) => item?.LOCATIONID === intacctEntityListId)?.RECORDNO ?? ''}
           setShowCancelModal={setShowCancelModal}
           isConfirmCancel={isConfirmCancel}
         />
 
+        <ManageConfigurationDrawer onOpen={isManageConfigurationDrawerOpen} onClose={handleDrawerClose} EditCompanyId={editId ?? 0} AccountingTool={manageConfigAccountingTool ?? 0} />
 
         {/* Drawer Overlay */}
         <DrawerOverlay isOpen={openDrawer || isManageConfigurationDrawerOpen} onClose={() => { }} />

@@ -1,7 +1,7 @@
 @media screen and (max-width: 1023px) {
   .expandDiv {
     left: 0%;
-    width: 200px;
+    width: 180px;
     top: 64px;
     // height: 100%;
     z-index: 20;
@@ -9,7 +9,7 @@
   }
   .collapsedDiv {
     left: -100%;
-    width: 200px;
+    width: 180px;
     top: 64px;
     height: auto;
     animation: rightToLeft 0.3s ease-in-out both;

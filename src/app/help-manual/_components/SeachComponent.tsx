@@ -26,7 +26,7 @@ function HelpManualSeachComponent() {
     try {
       let query = delaySearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '')
       if (query != '') {
-        const data: ResultsData = await fetchSearchResult(query); 
+        const data: ResultsData = await fetchSearchResult(query);
         setSearchResult(data?.data)
         setIsSearchResult(true)
       }
@@ -102,7 +102,7 @@ function HelpManualSeachComponent() {
 
           results.push(
             <div
-              className='cursor-pointer border-b border-[#D8D8D8] p-3 hover:bg-[#f6f6f6]'
+              className='cursor-pointer border-b border-[#D8D8D8] p-3 hover:bg-whiteSmoke'
               key={`${i}` + result?.id}
               onClick={() => handleSearchResultClick(categorySlug, subCategory)}
             >
@@ -114,7 +114,7 @@ function HelpManualSeachComponent() {
     }
     if (!results.length && isSearchResult) {
       results.push(
-        <div className='border-[#D8D8D8] bg-[#f6f6f6] p-4' key={'no-result'}>
+        <div className='border-[#D8D8D8] bg-whiteSmoke p-4' key={'no-result'}>
           <p className='text-lg font-normal'>No Result Found </p>
         </div>
       )
@@ -124,7 +124,7 @@ function HelpManualSeachComponent() {
 
   return (
     <div className='w-full'>
-      <div className='my-4 flex flex-col gap-y-4 bg-[#F6F6F6] p-5 px-20'>
+      <div className='my-4 flex flex-col gap-y-4 bg-whiteSmoke p-5 px-20'>
         <Typography type='h2' className='text-center !text-xl font-normal text-[#333333]'>
           What Are you Looking for?{' '}
         </Typography>
@@ -144,7 +144,7 @@ function HelpManualSeachComponent() {
           </div>
 
           {isSearchResult && (
-            <div className='search-result absolute top-12 max-h-[300px] w-[500px] overflow-y-auto rounded-md border border-[#F6F6F6] bg-white shadow-2xl'>
+            <div className='search-result absolute top-12 max-h-[300px] w-[500px] overflow-y-auto rounded-md border border-whiteSmoke bg-white shadow-2xl'>
               {searchResultsJSX}
             </div>
           )}

@@ -211,7 +211,7 @@ const Page = ({ onData, isFormOpen }: any) => {
               <CandyBox />
             </div>
             <div className='mx-2 flex flex-col items-start justify-center' onClick={() => handleToggleChange('Help')}>
-              <HelpIcon />
+              <HelpIcon isActive={toggleHelpChange}/>
             </div>
             <div className='ml-2 flex flex-col items-start justify-center' onClick={() => handleToggleChange('ProfileMenu')}>
               {profileData && profileData?.first_name === '' ? (

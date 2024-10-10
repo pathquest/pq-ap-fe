@@ -14,25 +14,13 @@ import LeftDoubleArrowIcon from '@/assets/Icons/billposting/LeftDoubleArrowIcon'
 import RightDoubleArrowIcon from '@/assets/Icons/billposting/RightDoubleArrowIcon'
 import AddIcon from '@/assets/Icons/billposting/accountpayable/AddIcon'
 import RemoveIcon from '@/assets/Icons/billposting/accountpayable/RemoveIcon'
+import { formatDate } from '@/components/Common/Functions/FormatDate'
 import EditBillForm from '@/components/Forms/EditBillForm'
 import { BillPostingFilterFormFieldsProps, EditBillPostingDataProps } from '@/models/billPosting'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar } from '@/store/features/bills/billSlice'
 import { convertStringsDateToUTC } from '@/utils'
-import {
-  billStatusEditable,
-  convertFractionToRoundValue,
-  getPDFUrl,
-  getRoundValue,
-  getUpdatedDataFromDetailsResponse,
-  initialBillPostingFilterFormFields,
-  lineItemRemoveArr,
-  returnKeyValueObjForFormFields,
-  taxTotalAmountCalculate,
-  totalAmountCalculate,
-  validate,
-  verifyAllFieldsValues,
-} from '@/utils/billposting'
+import { billStatusEditable, convertFractionToRoundValue, getPDFUrl, getRoundValue, getUpdatedDataFromDetailsResponse, initialBillPostingFilterFormFields, lineItemRemoveArr, returnKeyValueObjForFormFields, taxTotalAmountCalculate, totalAmountCalculate, validate, verifyAllFieldsValues } from '@/utils/billposting'
 import { format } from 'date-fns'
 import { useSession } from 'next-auth/react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
@@ -103,6 +91,7 @@ const EditBillPosting = ({ processtype }: any) => {
 
   const inputRef: RefObject<HTMLInputElement> = useRef(null)
   const billListsRef = useRef<HTMLDivElement>(null)
+  const currentDate = formatDate(new Date() + "");
 
   const dispatch = useAppDispatch()
 
@@ -152,6 +141,8 @@ const EditBillPosting = ({ processtype }: any) => {
 
   const router = useRouter()
   const userId = localStorage.getItem('UserId')
+  const CopyBillViewId = localStorage.getItem('CopyBillViewId')
+  const copyBillData = localStorage.getItem('CopyBillData') ?? ""
 
   const lazyRows = 10
 
@@ -166,7 +157,6 @@ const EditBillPosting = ({ processtype }: any) => {
 
       if (response?.ResponseStatus === 'Success') {
         const responseData = response?.ResponseData
-        setDocumentDetailByIdData(responseData)
 
         const { newLineItems, newLineItemsErrorObj, updatedDataObj, updatedDataErrorObj } = getUpdatedDataFromDetailsResponse(
           responseData,
@@ -176,29 +166,121 @@ const EditBillPosting = ({ processtype }: any) => {
           generateLinetItemFieldsErrorObj,
           vendorOptions
         )
-
-        if (newLineItems.length === 0) {
-          setMainFieldAmount(responseData?.Amount)
-          await setLineItemsFieldsData([
-            {
-              ...lineItemsFieldsDataObj,
-              Index: 1,
-              amount: responseData?.Amount ?? 0
-            },
-          ])
-          await setHasLineItemFieldLibraryErrors([
-            {
-              ...generateLinetItemFieldsErrorObj,
-              amount: responseData?.Amount ? true : false
-            }
-          ])
-        } else {
-          await setLineItemsFieldsData(newLineItems)
-          await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
-        }
         setIsBillDataLoading(false)
 
-        await setFormFields(updatedDataObj)
+        if (CopyBillViewId) {
+          const parsedData = JSON.parse(copyBillData);
+          const newObj = {
+            ...updatedDataObj,
+            billnumber: "",
+            date: currentDate,
+            duedate: currentDate,
+            glPostingDate: currentDate
+          }
+          await setFormFields(newObj)
+
+          const newData = {
+            ...responseData,
+            BillNumber: ""
+          }
+          setDocumentDetailByIdData(newData)
+
+          const selectedVendor = vendorGLTermOptions.find((item: any) => item.value === parsedData['VendorId'])
+
+          let newCurrentLineItems: any = []
+          let newCurrentLineItemsErrorObj: any = []
+
+          const generatedNewLineItems = parsedData?.LineItems?.map((items: any, index: number) => {
+            let updatedLineItemObj: any = {}
+            let updatedLineItemErrorObj: any = {}
+
+            for (const [key, value] of Object.entries(items)) {
+              const filterLineItemObject = keyValueLineItemFieldObj.find((d: any) => d.value === key)
+
+              if (!filterLineItemObject) {
+                continue
+              }
+
+              if (filterLineItemObject) {
+                updatedLineItemObj = {
+                  ...updatedLineItemObj,
+                  Index: index + 1,
+                  Id: items?.Id,
+                  [filterLineItemObject.key]: filterLineItemObject.key === 'releasetopay' && !value
+                    ? false
+                    : (filterLineItemObject.mappedWith === 11 || filterLineItemObject.mappedWith === 23) && !value && parsedData.LocationId
+                      ? parsedData.LocationId.toString()
+                      : (filterLineItemObject?.key === 'account' && parsedData['VendorId'] && !items['GLAccount'] && selectedVendor?.GLAccount)
+                        ? selectedVendor?.GLAccount
+                        : (filterLineItemObject?.key === 'account' && value) ? Number(value) : value,
+                }
+              }
+
+              if (filterLineItemObject && filterLineItemObject.key in generateLinetItemFieldsErrorObj) {
+                updatedLineItemErrorObj = {
+                  ...updatedLineItemErrorObj,
+                  Index: index + 1,
+                  [filterLineItemObject.key]: filterLineItemObject.key === 'releasetopay' && !value
+                    ? false
+                    : (filterLineItemObject.mappedWith === 11 || filterLineItemObject.mappedWith === 23) && !value && parsedData.LocationId
+                      ? true
+                      : (filterLineItemObject?.key === 'account' && parsedData['VendorId'] && !items['GLAccount'] && selectedVendor?.GLAccount)
+                        ? true
+                        : (filterLineItemObject?.key === 'account' && value) ? true : value ? true : false,
+                }
+              }
+            }
+
+
+            return { updatedLineItemObj, updatedLineItemErrorObj }
+          })
+          newCurrentLineItems = generatedNewLineItems.map((item: any) => item.updatedLineItemObj);
+          newCurrentLineItemsErrorObj = generatedNewLineItems.map((item: any) => item.updatedLineItemErrorObj);
+
+          if (newCurrentLineItems.length === 0) {
+            setMainFieldAmount(newData?.Amount)
+            await setLineItemsFieldsData([
+              {
+                ...lineItemsFieldsDataObj,
+                Index: 1,
+                amount: newData?.Amount ?? 0
+              },
+            ])
+            await setHasLineItemFieldLibraryErrors([
+              {
+                ...generateLinetItemFieldsErrorObj,
+                amount: newData?.Amount ? true : false
+              }
+            ])
+          } else {
+            await setLineItemsFieldsData(newCurrentLineItems)
+            await setHasLineItemFieldLibraryErrors(newCurrentLineItemsErrorObj)
+          }
+        } else {
+          if (newLineItems.length === 0) {
+            setMainFieldAmount(responseData?.Amount)
+            await setLineItemsFieldsData([
+              {
+                ...lineItemsFieldsDataObj,
+                Index: 1,
+                amount: responseData?.Amount ?? 0
+              },
+            ])
+            await setHasLineItemFieldLibraryErrors([
+              {
+                ...generateLinetItemFieldsErrorObj,
+                amount: responseData?.Amount ? true : false
+              }
+            ])
+          } else {
+            await setLineItemsFieldsData(newLineItems)
+            await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
+          }
+
+          await setFormFields(updatedDataObj)
+          setDocumentDetailByIdData(responseData)
+        }
+
         await setHasFormFieldLibraryErrors(updatedDataErrorObj)
 
         await getPDFUrl(
@@ -285,12 +367,10 @@ const EditBillPosting = ({ processtype }: any) => {
       // }
 
       const mainFieldConfiguration = [
-        ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.DefaultList,
-        ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.CustomList,
+        ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration
       ]
       const lineItemConfiguration = [
-        ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.DefaultList,
-        ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.CustomList,
+        ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration
       ]
 
       const { keyValueMainFieldObj, keyValueLineItemFieldObj } = returnKeyValueObjForFormFields(
@@ -1081,6 +1161,44 @@ const EditBillPosting = ({ processtype }: any) => {
     }
   }
 
+  const copyBillsDetails = async (billData: any) => {
+    setMainFieldAmount(billData?.Amount)
+
+    const { keyValueMainFieldObj, keyValueLineItemFieldObj } = returnKeyValueObjForFormFields(
+      mainFieldListOptions,
+      lineItemFieldListOptions
+    )
+
+    const { newLineItems, newLineItemsErrorObj, updatedDataObj, updatedDataErrorObj } = getUpdatedDataFromDetailsResponse(
+      billData,
+      keyValueMainFieldObj,
+      keyValueLineItemFieldObj,
+      mainFieldListOptions,
+      generateLinetItemFieldsErrorObj,
+      vendorOptions
+    )
+
+    setLineItemsFieldsData(newLineItems)
+    setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
+
+    const newObj = {
+      ...updatedDataObj,
+      billnumber: "",
+      date: currentDate,
+      duedate: currentDate,
+      glPostingDate: currentDate
+    }
+    setFormFields(newObj)
+    setHasFormFieldLibraryErrors(updatedDataErrorObj)
+
+    const newData = {
+      ...documentDetailByIdData,
+      BillNumber: ""
+    }
+
+    setDocumentDetailByIdData(newData)
+  }
+
   return (
     <EditWrapper
       billLists={billLists}
@@ -1129,6 +1247,7 @@ const EditBillPosting = ({ processtype }: any) => {
       setIsRefreshList={setIsRefreshList}
       setLineItemsFieldsData={setLineItemsFieldsData}
       module={module}
+      copyBillData={(value: any) => copyBillsDetails(value)}
     >
       <div className='mb-5 border-b border-solid border-lightSilver md:flex'>
         {!isOpenInNewWindow && (

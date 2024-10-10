@@ -50,6 +50,7 @@ import { billStatusEditable, getPDFUrl, getTimeDifference, initialBillPostingFil
 import { useSession } from 'next-auth/react'
 import ColumnFilterOverview from '../ColumnFilterOverview'
 import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
+import CopyIcon from '@/assets/Icons/billposting/CopyIcon'
 
 const ListBillPosting = ({ statusOptions }: any) => {
   const { data: session } = useSession()
@@ -147,8 +148,9 @@ const ListBillPosting = ({ statusOptions }: any) => {
   const [getMapColId, setMapColId] = useState(-1)
   const [getOverviewMapColId, setOverviewMapColId] = useState(-1)
 
-  const [sortOrder, setSortOrder] = useState<number | null>(1)
-  const [filterName, setFilterName] = useState<string | null>(null)
+  const [orderBy, setOrderBy] = useState<number | null>(1)
+  const [orderColumnName, setOrderColumnName] = useState<string | null>('CreatedOn')
+  const [hoveredColumn, setHoveredColumn] = useState<string>("");
 
   const [billsOverviewParams, setBillsOverviewParams] = useState<any>([])
 
@@ -198,7 +200,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
   const [columnListVisible, setColumnListVisible] = useState<any>([])
   const [columnListOverviewVisible, setColumnOverviewListVisible] = useState<any>([])
 
-  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
+  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
   const [isResetFilter, setIsResetFilter] = useState<boolean>(false)
   const [editedValues, setEditedValues] = useState({
     reason: '',
@@ -225,13 +227,8 @@ const ListBillPosting = ({ statusOptions }: any) => {
   const [apiDataCount, setApiDataCount] = useState(0)
   const [apiDataCountOverview, setApiDataCountOverview] = useState(0)
 
-  const [sortOrders, setSortOrders] = useState<{ [key: string]: null | 'asc' | 'desc' }>({
-    BillNumber: null,
-    BillDate: null,
-    DueDate: null,
-    Status: null,
-    Amount: null,
-  })
+  const [isCopyBillModalOpen, setIsCopyBillModalOpen] = useState<boolean>(false)
+  const [copyBillId, setCopyBillId] = useState<number>(0)
 
   let nextPageIndex: number = 1
   let nextPageIndexOverview: number = 1
@@ -246,27 +243,27 @@ const ListBillPosting = ({ statusOptions }: any) => {
   const otherProcessColumn = [
     {
       header: (
-        <div className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em]' onClick={() => handleColumn('BillNumber')}>
-          Bill No. <SortIcon order={sortOrders['BillNumber']}></SortIcon>
+        <div className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em]' onClick={() => handleSortColumn('BillNumber')} onMouseEnter={() => setHoveredColumn("BillNumber")} onMouseLeave={() => setHoveredColumn("")}>
+          Bill No. <SortIcon orderColumn="BillNumber" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "BillNumber"}></SortIcon>
         </div>
       ),
       accessor: 'BillNumber',
       visible: true,
       sortable: false,
       colalign: 'left',
-      colStyle: 'w-[159px] !uppercase !tracking-[0.02em]',
+      colStyle: 'w-[159px]  !tracking-[0.02em]',
     },
     {
       header: (
-        <div className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em]' onClick={() => handleColumn('UploadedDate')}>
-          Uploaded Date <SortIcon order={sortOrders['UploadedDate']}></SortIcon>
+        <div className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em]' onClick={() => handleSortColumn('UploadedDate')} onMouseEnter={() => setHoveredColumn("UploadedDate")} onMouseLeave={() => setHoveredColumn("")}>
+          Uploaded Date <SortIcon orderColumn="UploadedDate" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "UploadedDate"}></SortIcon>
         </div>
       ),
       accessor: 'UploadedDate',
       visible: true,
       sortable: false,
       colalign: 'left',
-      colStyle: 'w-[140px] !uppercase !tracking-[0.02em]',
+      colStyle: 'w-[140px]  !tracking-[0.02em]',
     },
     {
       header: 'Vendor Name',
@@ -274,19 +271,19 @@ const ListBillPosting = ({ statusOptions }: any) => {
       visible: true,
       sortable: true,
       colalign: 'left',
-      colStyle: 'w-[160px] !uppercase !tracking-[0.02em]',
+      colStyle: 'w-[160px]  !tracking-[0.02em]',
     },
     {
       header: (
-        <div className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em]' onClick={() => handleColumn('Amount')}>
-          AMOUNT <SortIcon order={sortOrders['Amount']}></SortIcon>
+        <div className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em]' onClick={() => handleSortColumn('Amount')} onMouseEnter={() => setHoveredColumn("Amount")} onMouseLeave={() => setHoveredColumn("")}>
+          Amount <SortIcon orderColumn="Amount" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "Amount"}></SortIcon>
         </div>
       ),
       accessor: 'Amount',
       visible: true,
       sortable: false,
       colalign: 'right',
-      colStyle: 'w-[100px] !uppercase',
+      colStyle: 'w-[100px] ',
     },
   ]
 
@@ -327,8 +324,8 @@ const ListBillPosting = ({ statusOptions }: any) => {
       VendorIds: filterFormFields.ft_vendor && filterFormFields.ft_vendor.length > 0 ? filterFormFields.ft_vendor.length === vendorOptions.length ? vendorOptions.map((option: any) => option.value) : filterFormFields.ft_vendor : vendorOptions.map((option: any) => option.value),
       StartDate: convertStringsDateToUTC(dateRangeVal[0].trim()) ?? null,
       EndDate: convertStringsDateToUTC(dateRangeVal[1].trim()) ?? null,
-      SortColumn: filterName ?? 'CreatedOn',
-      SortOrder: sortOrder,
+      SortColumn: orderColumnName ?? 'CreatedOn',
+      SortOrder: orderBy,
       PageNumber: 1 || nextPageIndexOverview,
       PageSize: lazyRowsOverview,
       IsDownload: false
@@ -385,7 +382,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
     if (isOptionsFetched) {
       selectedProcessTypeInList === '4' ? fetchBillsOverviewData(1) : fetchBillsData(1);
     }
-  }, [selectedProcessTypeInList, sortOrder, CompanyId, isOptionsFetched]);
+  }, [selectedProcessTypeInList, orderBy, CompanyId, isOptionsFetched]);
 
   useEffect(() => {
     if (isApplyFilter) {
@@ -395,9 +392,9 @@ const ListBillPosting = ({ statusOptions }: any) => {
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
-      setTableDynamicWidth('w-full laptop:w-[calc(100vw-85px)]')
+      setTableDynamicWidth('w-full laptop:w-[calc(100vw-78px)]')
     } else {
-      setTableDynamicWidth('w-full laptop:w-[calc(100vw-200px)]')
+      setTableDynamicWidth('w-full laptop:w-[calc(100vw-180px)]')
     }
   }, [isLeftSidebarCollapsed])
 
@@ -492,7 +489,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
           headersSelection = [
             ...headersSelection,
             {
-              header: 'TAT',
+              header: 'Tat',
               accessor: 'tat',
               sortable: false,
               colalign: 'left',
@@ -515,6 +512,9 @@ const ListBillPosting = ({ statusOptions }: any) => {
   }, [duplicateBillCount]);
 
   const fetchBillsData = async (pageIndex?: number) => {
+    localStorage.removeItem('CopyBillViewId')
+    localStorage.removeItem('CopyBillData')
+
     if (pageIndex === 1) {
       setBillLists([])
       setItemsLoaded(0)
@@ -547,8 +547,8 @@ const ListBillPosting = ({ statusOptions }: any) => {
           filterFormFields.ft_vendor && filterFormFields.ft_vendor.length > 0 ? filterFormFields.ft_vendor.length === vendorOptions.length ? null : filterFormFields.ft_vendor.join(',') : null,
         StartDate: convertStringsDateToUTC(dateRangeVal[0].trim()) ?? null,
         EndDate: convertStringsDateToUTC(dateRangeVal[1].trim()) ?? null,
-        SortColumn: filterName ?? 'CreatedOn',
-        SortOrder: sortOrder,
+        SortColumn: orderColumnName ?? 'CreatedOn',
+        SortOrder: orderBy,
         PageNumber: pageIndex || nextPageIndex,
         PageSize: lazyRows,
       }
@@ -619,6 +619,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
         if (payload?.ResponseStatus === 'Success') {
           setMapColId(payload?.ResponseData?.Id)
           const obj = JSON.parse(payload?.ResponseData?.ColumnList)
+
           const data = Object.entries(obj).map(([label, value]: any) => {
             let columnStyle = ''
             let sortable = true
@@ -661,25 +662,24 @@ const ListBillPosting = ({ statusOptions }: any) => {
             let headerContent
 
             if (label.props !== undefined) {
-              headerContent = <span onClick={() => handleColumn(label.props.children)}>{label.props.children}</span>
+              headerContent = <span onClick={() => handleSortColumn(label.props.children)}>{label.props.children}</span>
             } else if (label === 'Amount') {
               headerContent = (
-                <span className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em] font-proxima' onClick={() => handleColumn('Amount')}>
-                  Amount<SortIcon order={sortOrders['Amount']}></SortIcon>
+                <span className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em] font-proxima' onClick={() => handleSortColumn('Amount')} onMouseEnter={() => setHoveredColumn("Amount")} onMouseLeave={() => setHoveredColumn("")}>
+                  Amount <SortIcon orderColumn="Amount" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "Amount"}></SortIcon>
                 </span>
               )
             } else if (label === 'Uploaded Date') {
               headerContent = (
-                <span className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em] font-proxima' onClick={() => handleColumn('CreatedOn')}>
-                  Uploaded Date<SortIcon order={sortOrders['CreatedOn']}></SortIcon>
+                <span className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em] font-proxima' onClick={() => handleSortColumn('CreatedOn')} onMouseEnter={() => setHoveredColumn("CreatedOn")} onMouseLeave={() => setHoveredColumn("")}>
+                  Uploaded Date <SortIcon orderColumn="CreatedOn" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "CreatedOn"}></SortIcon>
                 </span>
               )
             } else if (label === 'Bill No.' || label === 'Adjustment No.') {
               headerContent = (
-                <span className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em] font-proxima' onClick={() => handleColumn('BillNumber')}>
+                <span className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em] font-proxima' onClick={() => handleSortColumn('BillNumber')} onMouseEnter={() => setHoveredColumn("BillNumber")} onMouseLeave={() => setHoveredColumn("")}>
                   {label === 'Bill No.' ? 'Bill No.' : label === 'Adjustment No.' && 'Adjustment No.'}
-
-                  <SortIcon order={sortOrders['BillNumber']}></SortIcon>
+                  <SortIcon orderColumn="BillNumber" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "BillNumber"}></SortIcon>
                 </span>
               )
             } else {
@@ -693,7 +693,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
               visible: value,
               sortable: label === 'Adjustment No.' ? false : sortable,
               colalign: 'left',
-              colStyle: `${columnStyle} !uppercase !tracking-[0.02em] font-proxima`,
+              colStyle: `${columnStyle}  !tracking-[0.02em] font-proxima`,
             }
           })
           const dataVisible = data.filter((h: any) => h.visible === true)
@@ -742,8 +742,8 @@ const ListBillPosting = ({ statusOptions }: any) => {
         VendorIds: filterFormFields.ft_vendor && filterFormFields.ft_vendor.length > 0 ? filterFormFields.ft_vendor.length === vendorOptions.length ? vendorOptions.map((option: any) => option.value) : filterFormFields.ft_vendor : vendorOptions.map((option: any) => option.value),
         StartDate: convertStringsDateToUTC(dateRangeVal[0].trim()) ?? null,
         EndDate: convertStringsDateToUTC(dateRangeVal[1].trim()) ?? null,
-        SortColumn: filterName ?? 'CreatedOn',
-        SortOrder: sortOrder,
+        SortColumn: orderColumnName ?? 'CreatedOn',
+        SortOrder: orderBy,
         PageNumber: pageIndex || nextPageIndexOverview,
         PageSize: lazyRowsOverview,
         IsDownload: false
@@ -813,6 +813,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
         if (payload?.ResponseStatus === 'Success') {
           setOverviewMapColId(payload?.ResponseData?.Id)
           const obj = JSON.parse(payload?.ResponseData?.ColumnList)
+
           const data = Object.entries(obj).map(([label, value]: any) => {
             let columnStyle = ''
             let colalign = ''
@@ -853,7 +854,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
               visible: value,
               sortable: sortable,
               colalign: colalign,
-              colStyle: `${columnStyle} !tracking-[0.02em] !uppercase`,
+              colStyle: `${columnStyle} !tracking-[0.02em] `,
             }
           })
 
@@ -915,28 +916,14 @@ const ListBillPosting = ({ statusOptions }: any) => {
     fetchAssigneData()
   }, [])
 
-  const handleColumn = (name: string) => {
-
-    const currentSortOrder = sortOrders[name]
-    let newSortOrder: 'asc' | 'desc'
-
-    if (currentSortOrder === 'asc') {
-      newSortOrder = 'desc'
-    } else {
-      newSortOrder = 'asc'
-    }
-
-    setSortOrders({ ...sortOrders, [name]: newSortOrder })
-
-    if (name === 'BillNumber' || name === 'Amount' || name === 'CreatedOn') {
-      setFilterName(name)
-      setSortOrder((prevValue) => (prevValue === 1 ? 0 : 1))
-    }
+  const handleSortColumn = (name: string) => {
+    setOrderColumnName(name)
+    setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
   }
 
   useEffect(() => {
     processSelection === '4' ? getMappingOverviewListData() : getMappingListData()
-  }, [processSelection, filterFormFields.ft_process, assigneeValueRow, CompanyId])
+  }, [processSelection, filterFormFields.ft_process, assigneeValueRow, CompanyId, orderBy, hoveredColumn])
 
   useEffect(() => {
     if (selectedRows?.length > 0 && billLists?.length === selectedRows?.length) {
@@ -1127,7 +1114,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
       accessor: 'actions',
       sortable: false,
       colalign: 'right',
-      colStyle: '!w-[300px]',
+      colStyle: '!w-[350px]',
     },
   ]
 
@@ -1247,7 +1234,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
         VendorName: <Typography className='!text-sm text-darkCharcoal'>{d.VendorName ? d.VendorName : ''}</Typography>,
         StatusName: <Typography className='!text-sm text-darkCharcoal'>{d.StatusName}</Typography>,
         Amount: (
-          <Typography className='!text-sm !font-bold text-darkCharcoal'>{`${d?.Amount ? `$${formatCurrency(d?.Amount)}` : '$0.00'}`}</Typography>
+          <Typography className='!pr-[10px] !text-sm !font-bold text-darkCharcoal'>{`${d?.Amount ? `$${formatCurrency(d?.Amount)}` : '$0.00'}`}</Typography>
         ),
         Assignee: (
           <>
@@ -1294,8 +1281,10 @@ const ListBillPosting = ({ statusOptions }: any) => {
               <div
                 className={`z-0 flex items-center border-l ${d.Status !== 3 && d.Status !== 4 && d.Status !== 7 ? 'border-r' : ''
                   } border-[#cccccc] px-4`}
+                onMouseEnter={() => setIsOverFlowVisible(true)}
+                onMouseLeave={() => setIsOverFlowVisible(false)}
               >
-                <BasicTooltip position='left' content='View bill' className='!z-10 !font-proxima !text-sm'>
+                <BasicTooltip position='bottom' content='View bill' className='!z-10 !font-proxima !text-sm'>
                   <div
                     className='cursor-pointer'
                     onClick={() => {
@@ -1323,7 +1312,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                       })
                     }}
                   >
-                    <BasicTooltip position='left' content='Move To' className='!z-10 !font-proxima !text-sm'>
+                    <BasicTooltip position='bottom' content='Move To' className='!z-10 !font-proxima !text-sm'>
                       <div className='flex items-center'>
                         <TabMoveIcon />
                         <span className='!z-0 pl-1.5'>
@@ -1342,8 +1331,10 @@ const ListBillPosting = ({ statusOptions }: any) => {
                     setDeleteId(d.Id)
                     setDeleteModal(true)
                   }}
+                  onMouseEnter={() => setIsOverFlowVisible(true)}
+                  onMouseLeave={() => setIsOverFlowVisible(false)}
                 >
-                  <BasicTooltip position='left' content='Delete' className='!z-10 !font-proxima !text-sm'>
+                  <BasicTooltip position='bottom' content='Delete' className='!z-10 !font-proxima !text-sm'>
                     <div>
                       <DeleteIcon />
                     </div>
@@ -1354,6 +1345,8 @@ const ListBillPosting = ({ statusOptions }: any) => {
               {d.Status === 9 && (
                 <div
                   className='z-0 flex cursor-pointer items-center border-[#cccccc] px-4'
+                  onMouseEnter={() => setIsOverFlowVisible(true)}
+                  onMouseLeave={() => setIsOverFlowVisible(false)}
                   onClick={() => {
                     setIsRestoreModalOpen(true)
                     setIsRestoreFields({
@@ -1363,7 +1356,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                     })
                   }}
                 >
-                  <BasicTooltip position='left' content='Restore' className='!z-10 !font-proxima !text-sm'>
+                  <BasicTooltip position='bottom' content='Restore' className='!z-10 !font-proxima !text-sm'>
                     <RestoreIcon />
                   </BasicTooltip>
                 </div>
@@ -1434,7 +1427,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                 {d.Attachments?.length > 0 && (
                   <div className=''>
                     <div className='flex cursor-pointer justify-end' onClick={() => handleOpenAttachFile(d.Id)}>
-                      <div className='absolute -right-2 -top-3'>
+                      <div className='absolute -right-[11px] -top-[11px]'>
                         <Badge badgetype='error' variant='dot' text={d.Attachments.length.toString()} />
                       </div>
                       <AttachIcon />
@@ -1498,6 +1491,22 @@ const ListBillPosting = ({ statusOptions }: any) => {
         actions: hoveredRow?.Id === d.Id && (
           <div className={`${isOverFlowVisible ? "overflow-visible" : "overflow-hidden"} h-full w-full`}>
             <div className='slideLeft relative flex h-full justify-end'>
+              <div
+                className={`z-0 flex items-center border-l border-[#cccccc] px-4`}
+              >
+                <BasicTooltip position='left' content='Copy Bill' className='!font-proxima !px-0 !text-sm'>
+                  <div
+                    className='cursor-pointer'
+                    onClick={() => {
+                      dispatch(setIsVisibleSidebar(false))
+                      setCopyBillId(d.Id)
+                      setIsCopyBillModalOpen(true)
+                    }}
+                  >
+                    <CopyIcon />
+                  </div>
+                </BasicTooltip>
+              </div>
               {billOverviewStatus.includes(d.Status) && (
                 <div
                   className={`z-0 flex items-center border-l ${d.Status !== 3 && d.Status !== 4 && d.Status !== 7 ? 'border-r' : ''
@@ -2077,7 +2086,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
       )
     } else {
       noDataContent = (
-        <div className='fixed flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]'>
+        <div className='fixed flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
           No records available at the moment.
         </div>
       )
@@ -2097,7 +2106,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
       )
     } else {
       overviewNoDataContent = (
-        <div className='fixed flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]'>
+        <div className='fixed flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
           No records available at the moment.
         </div>
       )
@@ -2106,12 +2115,22 @@ const ListBillPosting = ({ statusOptions }: any) => {
     overviewNoDataContent = ''
   }
 
+
+  const modalClose = () => {
+    setIsCopyBillModalOpen(false)
+    setCopyBillId(0)
+  }
+
+  const handleCopyBillDetails = (id: any) => {
+    router.push(`/bills/create/1/${id}?module=billsOverview`)
+  }
+
   return (
     <>
       <Wrapper masterSettings={false}>
         <div className='billsMain'>
           <div className={`sticky top-0 ${isOpenFilter ? 'z-[99]' : 'z-[6]'} w-full`}>
-            <div className='relative flex h-[66px] items-center justify-between bg-lightGray laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
+            <div className='relative flex h-[50px] items-center justify-between bg-lightGray laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
               <div className='selectMain'>
                 <Select
                   id={'process_selection'}
@@ -2139,7 +2158,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
               {processSelection !== '4' ? (
                 <ul className='flex items-center gap-5'>
                   {processSelection !== '3' && (<>
-                    <li className={`mt-1.5 flex items-center gap-3 ${((processSelection == "1" && isAccountPayableSync) || (processSelection == "2" && isAccountAdjustmentSync) || (processSelection == "4" && isBillsOverviewSync)) ? "flex" : "hidden"}`} tabIndex={0}>
+                    <li className={`flex items-center gap-3 ${((processSelection == "1" && isAccountPayableSync) || (processSelection == "2" && isAccountAdjustmentSync) || (processSelection == "4" && isBillsOverviewSync)) ? "flex" : "hidden"}`} tabIndex={0}>
                       <label className={`text-sm font-proxima tracking-[0.02em] text-darkCharcoal ${inProcessCount == 0 ? "hidden" : "block"}`}>{inProcessCount} File{inProcessCount > 1 ? '(s)' : ''} in automation.</label>
                       <BasicTooltip position='bottom' content='Sync' className='!z-10 !font-proxima !text-sm !px-0'>
                         <div className={`${inProcessCount > 0 && 'animate-spin'}`}>
@@ -2149,7 +2168,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                     </li>
                   </>)}
 
-                  <li className={`mt-1.5 relative`} tabIndex={0} onClick={handlePossibleDuplication}>
+                  <li className={`relative`} tabIndex={0} onClick={handlePossibleDuplication}>
                     <BasicTooltip position='bottom' content='Possible Duplication' className='!z-10 !font-proxima !text-sm'>
                       <BillDuplicationIcon />
                     </BasicTooltip>
@@ -2162,7 +2181,6 @@ const ListBillPosting = ({ statusOptions }: any) => {
                     <>
                       {filterRowsAssignee.length === selectedRows.length && selectedProcessTypeInList !== '3' && (
                         <li
-                          className='mt-1.5'
                           tabIndex={0}
                           onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setIsOpenAssignUserDropDown(true)}
                         >
@@ -2200,7 +2218,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                       )}
 
                       <div
-                        className='cursor-pointer mt-1.5'
+                        className='cursor-pointer'
                         onClick={onClickDeleteMultipleBills}
                         tabIndex={0}
                         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClickDeleteMultipleBills()}
@@ -2213,7 +2231,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                       {isOpenMoveToDropDown.isShow && isOpenMoveToDropDown.index === null && (
                         <div
                           ref={dropdownMoveToRef}
-                          className='absolute right-20 top-12 !z-10 flex h-auto w-[180px]  flex-col rounded-md bg-white shadow-lg'
+                          className='absolute right-20 top-[52px] !z-10 flex h-auto w-[180px]  flex-col rounded-md bg-white shadow-lg'
                         >
                           <div className='flex flex-col items-start justify-start'>
                             {moveToOptions &&
@@ -2250,7 +2268,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                     <>
                       <li
                         onClick={handleFilterIconOpen}
-                        className='mt-1.5'
+                        className=''
                         tabIndex={0}
                         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleFilterIconOpen()}
                       >
@@ -2261,7 +2279,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                       {(processSelection !== '3' && isFileUploadView) && (
                         <li
                           onClick={() => router.push('/fileupload')}
-                          className='mt-1.5'
+                          className=''
                           tabIndex={0}
                           onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && router.push('/fileupload')}
                         >
@@ -2272,7 +2290,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                       )}
                       <li
                         onClick={handleCreateIconOpen}
-                        className={`mt-[7px] ${((processSelection == "1" && isAccountPayableCreate) || (processSelection == "2" && isAccountAdjustmentCreate)) ? "flex" : "hidden"}`}
+                        className={`${((processSelection == "1" && isAccountPayableCreate) || (processSelection == "2" && isAccountAdjustmentCreate)) ? "flex" : "hidden"}`}
                         tabIndex={0}
                         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleCreateIconOpen()}
                       >
@@ -2282,7 +2300,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                         {isOpenCreate && (
                           <div
                             ref={dropdownCreateRef}
-                            className={`absolute ${(selectedProcessTypeInList !== '3' && billLists.length > 0) ? "right-14" : "right-3"} top-13 !z-[999] flex h-auto flex-col rounded-md bg-white shadow-lg`}
+                            className={`absolute ${(selectedProcessTypeInList !== '3' && billLists.length > 0) ? "right-14" : "right-3"} top-[52px] !z-[999] flex h-auto flex-col rounded-md bg-white shadow-lg`}
                           >
                             <Create />
                           </div>
@@ -2291,7 +2309,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                       {selectedProcessTypeInList !== '3' && billLists.length > 0 && (
                         <li
                           onClick={handleViewIconOpen}
-                          className='mt-[7px]'
+                          className=''
                           tabIndex={0}
                           onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleViewIconOpen()}
                         >
@@ -2301,7 +2319,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                           {isOpenView && (
                             <div
                               ref={dropdownViewRef}
-                              className='absolute right-6 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                              className='absolute right-5 top-[48px] !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
                             >
                               <View
                                 Id={billLists[0]?.Id}
@@ -2367,9 +2385,10 @@ const ListBillPosting = ({ statusOptions }: any) => {
           </div>
 
           {processSelection !== '4' ? (
-            <div className={`custom-scroll h-[calc(100vh-145px)] overflow-auto ${tableDynamicWidth}`}>
+            <div className={`custom-scroll h-[calc(100vh-112px)] overflow-auto ${tableDynamicWidth}`}>
               <div className={`mainTable ${billLists.length !== 0 && 'h-0'}`}>
                 <DataTable
+                  key={orderColumnName}
                   zIndex={5}
                   getExpandableData={() => { }}
                   getRowId={(value: any) => {
@@ -2393,7 +2412,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
               {noDataContent}
             </div>
           ) : (
-            <div className={`custom-scroll h-[calc(100vh-145px)] overflow-auto ${tableDynamicWidth}`}>
+            <div className={`custom-scroll h-[calc(100vh-112px)] overflow-auto ${tableDynamicWidth}`}>
               <div className={`mainTable ${billsOverviewList.length !== 0 && 'h-0'}`}>
                 <DataTable
                   zIndex={5}
@@ -2477,6 +2496,18 @@ const ListBillPosting = ({ statusOptions }: any) => {
           selectedPayableId={selectedPayableId}
         />
         <DrawerOverlay isOpen={openDrawer} />
+
+
+        {/* Bill Copy Modal */}
+        {isCopyBillModalOpen && <ConfirmationModal
+          title='Bill Copy'
+          content={`Are you sure you want to copy this bill?`}
+          isModalOpen={isCopyBillModalOpen}
+          modalClose={modalClose}
+          handleSubmit={() => handleCopyBillDetails(copyBillId)}
+          colorVariantNo='btn-outline-primary'
+          colorVariantYes='btn-primary'
+        />}
       </Wrapper>
     </>
   )

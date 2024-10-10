@@ -12,15 +12,7 @@ import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { documentGetList, setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar } from '@/store/features/bills/billSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { BlobServiceClient } from '@azure/storage-blob'
-import {
-  getPDFUrl,
-  getRoundValue,
-  getViewUpdatedDataFromDetailsResponse,
-  initialBillPostingFilterFormFields,
-  returnKeyValueObjForFormFields,
-  taxTotalAmountCalculate,
-  totalAmountCalculate,
-} from '@/utils/billposting'
+import { getPDFUrl, getRoundValue, getViewUpdatedDataFromDetailsResponse, initialBillPostingFilterFormFields, returnKeyValueObjForFormFields, taxTotalAmountCalculate, totalAmountCalculate } from '@/utils/billposting'
 import dynamic from 'next/dynamic'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Badge, DataTable, Toast, BasicTooltip, Typography, Loader } from 'pq-ap-lib'
@@ -32,6 +24,7 @@ import FileModal from '../FileModal'
 import { useSession } from 'next-auth/react'
 import { fetchAPIsData } from '@/api/server/common'
 import { storageConfig } from '@/components/Common/pdfviewer/config'
+import { formatFileSize } from '@/components/Common/Functions/FormatFileSize'
 
 const PDFViewer = dynamic(() => import('@/app/bills/__components/PDFViewer'), {
   ssr: false,
@@ -147,6 +140,7 @@ const ViewBillPosting = () => {
       if (response?.ResponseStatus === 'Success') {
         const responseData = response?.ResponseData
         setDocumentDetailByIdData(responseData)
+        localStorage.setItem('CopyBillData', JSON.stringify(responseData))
 
         const { newLineItems, updatedDataObj } = await getViewUpdatedDataFromDetailsResponse(
           responseData,
@@ -190,6 +184,7 @@ const ViewBillPosting = () => {
         lineItemFieldListOptions
       )
       getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, vendorOptions, termOptions, accountOptions)
+      localStorage.setItem('CopyBillViewId', activeBill + "")
     }
   }, [activeBill])
 
@@ -209,12 +204,10 @@ const ViewBillPosting = () => {
     setLineItemFieldColumns(lineItemFieldColumns)
 
     const mainFieldConfiguration = [
-      ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.DefaultList,
-      ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.CustomList,
+      ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration
     ]
     const lineItemConfiguration = [
-      ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.DefaultList,
-      ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.CustomList,
+      ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration
     ]
 
     const { keyValueMainFieldObj, keyValueLineItemFieldObj } = returnKeyValueObjForFormFields(
@@ -449,7 +442,7 @@ const ViewBillPosting = () => {
     setIsNewWindowUpdate(true)
 
     dispatch(setIsFormDocuments(nextBillFormDocuments))
-    window.history.replaceState(null, '', `/bills/edit/${nextBillId}?module=bills`)
+    window.history.replaceState(null, '', `/bills/view/${nextBillId}`)
   }
 
   const onHandleBackword = (activeBill: any) => {
@@ -466,7 +459,7 @@ const ViewBillPosting = () => {
     setIsNewWindowUpdate(true)
 
     dispatch(setIsFormDocuments(previousBillFormDocuments))
-    window.history.replaceState(null, '', `/bills/edit/${previousBillId}?module=bills`)
+    window.history.replaceState(null, '', `/bills/view/${previousBillId}`)
   }
 
   const onChangeSelectedBillItem = (activeBill: any) => {
@@ -596,14 +589,6 @@ const ViewBillPosting = () => {
     if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
       setOpenAttachFile(false)
     }
-  }
-
-  function formatFileSize(bytes: any) {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
   if (Object.keys(formFields).length === 0) return null
@@ -751,7 +736,7 @@ const ViewBillPosting = () => {
                               <div className='relative flex items-center'>
                                 {value !== null && (
                                   <>
-                                    <span className='absolute -top-3 left-2'>
+                                    <span className='absolute -top-[11px] left-1'>
                                       <Badge badgetype='error' variant='dot' text={value.length.toString()} />
                                     </span>
                                     <span className='cursor-pointer' onClick={() => handleOpenAttachFile(value?.Id)}>

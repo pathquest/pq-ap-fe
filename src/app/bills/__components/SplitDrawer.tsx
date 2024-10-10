@@ -503,7 +503,7 @@ const SplitDrawer: React.FC<SplitDrawerProps> = ({
             <span className=''>
               <Typography className='!text-[18px] !font-bold'>{fileName}</Typography>
             </span>
-            <div className='w-[70px] rounded-sm bg-[#F6F6F6] px-1'>
+            <div className='w-[70px] rounded-sm bg-whiteSmoke px-1'>
               <Typography type='label' className=''>
                 <span>Pages :</span> {numberOfPages}
               </Typography>

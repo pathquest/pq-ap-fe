@@ -18,31 +18,31 @@ export const createOptions = [
   },
 ]
 
-export const columns:any = [
+export const columns: any = [
   {
-    header: 'RECEIVED/UPLOADED',
+    header: 'Received/Uploaded',
     accessor: 'UserName',
     sortable: false,
     colStyle: '!w-[150px] !tracking-[0.02em]',
   },
   {
-    header: 'SOURCE',
+    header: 'Source',
     accessor: 'ProviderTypeName',
     sortable: false,
     colStyle: '!w-[150px] !tracking-[0.02em]',
   },
   {
-    header: 'UPLOADED DATE & TIME',
+    header: 'Uploaded Date & Time',
     accessor: 'UploadedDate',
     sortable: false,
     colStyle: '!w-[200px] !tracking-[0.02em]',
   },
   {
-    header: 'ATTACHMENTS',
+    header: 'Attachments',
     accessor: 'Attachments',
     sortable: false,
     colStyle: '!w-[120px] !tracking-[0.02em]',
-    colalign:'right'
+    colalign: 'right',
   },
   {
     header: '',
@@ -50,7 +50,7 @@ export const columns:any = [
     sortable: false,
     colStyle: '!w-[20px] !tracking-[0.02em]',
   },
-]
+];
 
 export const sourceOptions = [
   {

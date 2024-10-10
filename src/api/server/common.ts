@@ -115,12 +115,10 @@ export const fetchAPIsData = async (processType: string | number, accountingTool
   
   const fieldMappingConfigurations: any = await getFieldMappingConfigurations(Number(processType), Number(CompanyId))
   const mainFieldConfiguration = [
-    ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.DefaultList,
-    ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration?.CustomList
+    ...fieldMappingConfigurations?.ComapnyConfigList?.MainFieldConfiguration
   ]
   const lineItemConfiguration = [
-    ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.DefaultList,
-    ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration?.CustomList
+    ...fieldMappingConfigurations?.ComapnyConfigList?.LineItemConfiguration
   ]
   const mainFieldConfigurationList = mainFieldConfiguration
   const lineItemConfigurationList = lineItemConfiguration

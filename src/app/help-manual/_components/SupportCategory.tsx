@@ -13,7 +13,7 @@ function SupportCategory() {
   let homePageSegment = pathName?.split('/')[1]
 
   return (
-    <div className='bg-[#f6f6f6] p-8'>
+    <div className='bg-whiteSmoke p-8'>
       <div className='mb-8'>
         <Typography type='h3' className='!text-base !font-semibold !font-candara'>
           Support Categories
