@@ -272,8 +272,8 @@ const DashboardFilter: React.FC<any> = ({
                             id='ft_datepicker'
                             label='Date Range'
                             value={chartPeriodRange}
-                            startYear={1995}
-                            endYear={2050}
+                            startYear={1900}
+                            endYear={2099}
                             disabled={chartPeriodValue === "Custom" ? false : true}
                             getValue={(value: any) => {
                                 if (chartPeriodValue === "Custom" && value) {

@@ -133,8 +133,8 @@ const ProcessTypeDashboardFilter: React.FC<any> = ({
                                 id='ft_date'
                                 label='Date'
                                 value={selectedDate}
-                                startYear={1995}
-                                endYear={2050}
+                                startYear={1900}
+                                endYear={2099}
                                 getValue={(value) => {
                                     if (value) {
                                         setSelectedDate(value)

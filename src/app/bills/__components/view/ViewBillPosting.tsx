@@ -24,6 +24,7 @@ import FileModal from '../FileModal'
 import { useSession } from 'next-auth/react'
 import { fetchAPIsData } from '@/api/server/common'
 import { storageConfig } from '@/components/Common/pdfviewer/config'
+import { formatFileSize } from '@/components/Common/Functions/FormatFileSize'
 
 const PDFViewer = dynamic(() => import('@/app/bills/__components/PDFViewer'), {
   ssr: false,
@@ -139,6 +140,7 @@ const ViewBillPosting = () => {
       if (response?.ResponseStatus === 'Success') {
         const responseData = response?.ResponseData
         setDocumentDetailByIdData(responseData)
+        localStorage.setItem('CopyBillData', JSON.stringify(responseData))
 
         const { newLineItems, updatedDataObj } = await getViewUpdatedDataFromDetailsResponse(
           responseData,
@@ -182,6 +184,7 @@ const ViewBillPosting = () => {
         lineItemFieldListOptions
       )
       getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, vendorOptions, termOptions, accountOptions)
+      localStorage.setItem('CopyBillViewId', activeBill + "")
     }
   }, [activeBill])
 
@@ -439,7 +442,7 @@ const ViewBillPosting = () => {
     setIsNewWindowUpdate(true)
 
     dispatch(setIsFormDocuments(nextBillFormDocuments))
-    window.history.replaceState(null, '', `/bills/edit/${nextBillId}?module=bills`)
+    window.history.replaceState(null, '', `/bills/view/${nextBillId}`)
   }
 
   const onHandleBackword = (activeBill: any) => {
@@ -456,7 +459,7 @@ const ViewBillPosting = () => {
     setIsNewWindowUpdate(true)
 
     dispatch(setIsFormDocuments(previousBillFormDocuments))
-    window.history.replaceState(null, '', `/bills/edit/${previousBillId}?module=bills`)
+    window.history.replaceState(null, '', `/bills/view/${previousBillId}`)
   }
 
   const onChangeSelectedBillItem = (activeBill: any) => {
@@ -586,14 +589,6 @@ const ViewBillPosting = () => {
     if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
       setOpenAttachFile(false)
     }
-  }
-
-  function formatFileSize(bytes: any) {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
   if (Object.keys(formFields).length === 0) return null

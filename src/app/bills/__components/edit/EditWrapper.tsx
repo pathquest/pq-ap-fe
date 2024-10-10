@@ -140,6 +140,7 @@ const EditWrapper = ({
   setLineItemsFieldsData,
   copyBillData
 }: EditWrapperProps) => {
+
   const dispatch = useAppDispatch()
   const router = useRouter()
   const [isVisibleMergeDoc, setIsVisibleMergeDoc] = useState<boolean>(false)
@@ -174,7 +175,7 @@ const EditWrapper = ({
   const CopyBillViewId = localStorage.getItem('CopyBillViewId')
   const billStatus = documentDetailByIdData?.Status
   const billStatusName = documentDetailByIdData?.StatusName
-  const vendorId = documentDetailByIdData.VendorId ?? 0
+  const vendorId = documentDetailByIdData.VendorId ?? formFields.vendor
 
   const listRef = useRef<any>(null)
   const [searchValue, setSearchValue] = useState<string>('')
@@ -576,7 +577,7 @@ const EditWrapper = ({
         // return
         // }
 
-        setLoaderState(postSaveAs, loader, setLoader)
+        // setLoaderState(postSaveAs, loader, setLoader)
         return
       } else {
         Toast.error('Error', response?.Message)
@@ -839,7 +840,7 @@ const EditWrapper = ({
     setIsVendorHistoryLoading(true)
     setVendorHistoryList([])
     const params = {
-      VendorId: vendorId ?? 0,
+      VendorId: Number(vendorId) ?? 0,
       // VendorId: 14260,
       SearchKeyword: searchValues,
       ProcessType: 1,
@@ -855,14 +856,16 @@ const EditWrapper = ({
   }
 
   useEffect(() => {
-    getVendorHistoryBillList(null)
-  }, [documentDetailByIdData])
+    if (vendorId) {
+      getVendorHistoryBillList(null)
+    }
+  }, [vendorId])
 
   const handleKeyDown = (e: any) => {
     if (e.key === 'Enter') {
-      if (searchValue && searchValue.trim() !== "") {
-        getVendorHistoryBillList(searchValue)
-      }
+      // if (searchValue && searchValue.trim() !== "") {
+      getVendorHistoryBillList(searchValue)
+      // }
     }
   }
 
@@ -1236,7 +1239,7 @@ const EditWrapper = ({
 
           <div className='custom-bottom-sticky bottom-0 grid place-content-center place-items-center gap-5 !border-t border-lightSilver !h-[66px] px-5 py-[15px] sm:!flex sm:!items-center sm:!justify-end'>
             <span
-              className={`${module == "billsToPay" || billStatus === 10 ? "hidden" : "block"} flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-whiteSmoke`}
+              className={`${module == "billsToPay" ? "hidden" : "block"} flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-whiteSmoke`}
               onClick={() => handleBackword(activeBill)}
               tabIndex={0}
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleBackword(activeBill)}
@@ -1244,11 +1247,11 @@ const EditWrapper = ({
               <LeftArrowIcon />
             </span>
 
-            {selectedProcessTypeInList !== '2' && module !== "billsToPay" && billStatus !== 10 && (
+            {selectedProcessTypeInList !== '2' && module !== "billsToPay" && (
               <Button
-                variant={isDisablePaidButton ? module == "billsToPay" || billStatus === 10 ? 'btn-outline-primary' : 'btn' : 'btn-outline-primary'}
+                variant={isDisablePaidButton ? module == "billsToPay" ? 'btn-outline-primary' : 'btn' : 'btn-outline-primary'}
                 className={`disabled:opacity-50 btn-sm !h-9 rounded-full`}
-                disabled={isDisablePaidButton ? module == "billsToPay" || billStatus === 10 ? false : true : false}
+                disabled={isDisablePaidButton ? module == "billsToPay" ? false : true : false}
                 onClick={() => PostasPiad(12)}
                 tabIndex={0}
                 onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && PostasPiad(12)}
@@ -1257,11 +1260,11 @@ const EditWrapper = ({
               </Button>
             )}
 
-            {(module !== "billsToPay" && billStatus !== 10) && <Button
-              variant={`${isDisableDraftButton ? module == "billsToPay" || billStatus === 10 ? 'btn-outline-primary' : 'btn' : 'btn-outline-primary'}`}
+            {(module !== "billsToPay") && <Button
+              variant={`${isDisableDraftButton ? module == "billsToPay" ? 'btn-outline-primary' : 'btn' : 'btn-outline-primary'}`}
               className={`btn-sm !h-9 rounded-full`}
               onClick={() => onSubmitBill(2)}
-              disabled={isDisableDraftButton ? module == "billsToPay" || billStatus === 10 ? false : true : false}
+              disabled={isDisableDraftButton ? module == "billsToPay" ? false : true : false}
               tabIndex={0}
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSubmitBill(2)}
             >
@@ -1279,10 +1282,10 @@ const EditWrapper = ({
             </Button>}
 
             <Button
-              variant={isDisablePostButton ? module == "billsToPay" || billStatus === 10 ? 'btn-primary' : 'btn' : 'btn-primary'}
+              variant={isDisablePostButton ? module == "billsToPay" ? 'btn-primary' : 'btn' : 'btn-primary'}
               className={`disabled:opacity-50 btn-sm !h-9 rounded-full`}
               onClick={() => onSubmitBill(3)}
-              disabled={isDisablePostButton ? module == "billsToPay" || billStatus === 10 ? false : true : false}
+              disabled={isDisablePostButton ? module == "billsToPay" ? false : true : false}
               tabIndex={0}
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSubmitBill(3)}
             >
@@ -1300,7 +1303,7 @@ const EditWrapper = ({
             </Button>
 
             <span
-              className={`${module == "billsToPay" || billStatus === 10 ? "hidden" : "block"} flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-whiteSmoke`}
+              className={`${module == "billsToPay" ? "hidden" : "block"} flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-whiteSmoke`}
               onClick={() => handleForward(activeBill)}
               tabIndex={0}
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleForward(activeBill)}

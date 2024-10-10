@@ -472,8 +472,8 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
                 id='ft_datepicker'
                 label='As of'
                 value={reportPeriod}
-                startYear={1995}
-                endYear={2050}
+                startYear={1900}
+                endYear={2099}
                 getValue={(value: any) => {
                   if (value) {
                     const selectedDate = getSpecificDateForReportPeriod(reportPeriodValue)
