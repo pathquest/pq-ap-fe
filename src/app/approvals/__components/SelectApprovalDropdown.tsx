@@ -46,16 +46,18 @@ const SelectApprovalDropdown: React.FC = () => {
     ].filter(option => !option.isHidden)
 
     return (
-        <Select
-            id={'approval_selection'}
-            className='processTypeSelection'
-            options={approvalOptions}
-            defaultValue={approvalDropdownFields}
-            value={approvalDropdownFields}
-            getValue={(value) => handleValue(value)}
-            getError={() => { }}
-            noborder
-        />
+        <div className='selectMain'>
+            <Select
+                id={'process_selection'}
+                className='processTypeSelection'
+                options={approvalOptions}
+                defaultValue={approvalDropdownFields}
+                value={approvalDropdownFields}
+                getValue={(value) => handleValue(value)}
+                getError={() => { }}
+                noborder
+            />
+        </div>
     )
 }
 

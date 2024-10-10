@@ -387,11 +387,10 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
 
   return (
     <div
-      className={`${
-        isDropdownVisible || isSearchHistoryVisible || isSearchModalVisible
+      className={`${isDropdownVisible || isSearchHistoryVisible || isSearchModalVisible
           ? 'border border-solid border-[#02B89D]'
-          : 'border border-solid border-transparent'
-      } relative flex items-center justify-center rounded-[300px] bg-[#F4F4F4] px-[10px] laptop:px-[12px] 2xl:px-[15px] py-[3px] hover:border hover:border-solid hover:border-[#02B89D]`}
+          : 'border border-solid border-[#D8D8D8]'
+        } relative flex items-center justify-center rounded-[300px] bg-[#F4F4F4] px-[10px] laptop:px-[12px] 2xl:px-[15px] py-[3px] hover:border hover:border-solid hover:border-[#02B89D]`}
     >
       <div className='flex cursor-pointer items-center' onClick={() => onDownArrowClick()}>
         <div>
@@ -454,9 +453,8 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
                                 item && (
                                   <>
                                     <div
-                                      className={`whitespace-nowrap text-[#333333] ${
-                                        item.includes('$') ? 'flex justify-end font-bold' : ''
-                                      }`}
+                                      className={`whitespace-nowrap text-[#333333] ${item.includes('$') ? 'flex justify-end font-bold' : ''
+                                        }`}
                                     >
                                       {item}
                                     </div>
@@ -491,9 +489,8 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
               return (
                 <div
                   key={index}
-                  className={`flex items-center px-[22px] py-[10px] hover:bg-[#EEF4F8] ${
-                    options.value === searchSelectedModule ? 'bg-[#EEF4F8]' : ''
-                  }`}
+                  className={`flex items-center px-[22px] py-[10px] hover:bg-[#EEF4F8] ${options.value === searchSelectedModule ? 'bg-[#EEF4F8]' : ''
+                    }`}
                   onClick={() => onModuleSelection(options.value)}
                 >
                   <div className='mr-[10px]'>{options.icon}</div>
@@ -510,10 +507,10 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
           className='absolute left-0 top-[34px] overflow-hidden rounded-[4px] border border-solid border-[#D8D8D8] bg-white shadow-[0px_6px_28px_0px_#00000029] z-10'
         >
           {totalResultCount === 0 ? (
-            <div className='w-[500px] bg-[#F6F6F6] py-[15px] text-center text-sm text-[#6E6D7A]'>No Result Found</div>
+            <div className='w-[500px] bg-whiteSmoke py-[15px] text-center text-sm text-[#6E6D7A]'>No Result Found</div>
           ) : (
             <>
-              <div className='border-b border-solid border-[#333333] bg-[#F6F6F6] px-[20px] py-[8px] font-proxima text-sm text-[#6E6D7A]'>
+              <div className='border-b border-solid border-[#333333] bg-whiteSmoke px-[20px] py-[8px] font-proxima text-sm text-[#6E6D7A]'>
                 Check out this similar. <b className='font-proxima text-sm text-[#6E6D7A]'>{totalResultCount} Result Found</b>
               </div>
               <div className='vertical-scroll custom-scroll-filter !max-h-[382px] overflow-y-scroll' onScroll={handleScroll}>
@@ -546,11 +543,10 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
                                     res[fieldName] && (
                                       <>
                                         <div
-                                          className={`whitespace-nowrap text-[#333333] ${
-                                            fieldName === 'TotalOutStanding' || fieldName === 'Amount'
+                                          className={`whitespace-nowrap text-[#333333] ${fieldName === 'TotalOutStanding' || fieldName === 'Amount'
                                               ? 'flex justify-end font-bold'
                                               : ''
-                                          }
+                                            }
                                     `}
                                         >
                                           {fieldName === 'TotalOutStanding' || fieldName === 'Amount'

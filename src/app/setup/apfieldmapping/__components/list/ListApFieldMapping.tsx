@@ -799,10 +799,10 @@ const ListAPFieldMapping: React.FC = () => {
       <DndProvider backend={HTML5Backend}>
         <div>
           <div className={`sticky top-0 z-[6] block`}>
-            <div className='relative flex !h-[66px] justify-between  bg-whiteSmoke px-5'>
-              <div className='flex items-center'>
+            <div className='relative flex !h-[50px] justify-between  bg-whiteSmoke px-5'>
+              <div className='flex items-center selectMain'>
                 <Select
-                  id=''
+                  id='process_selection'
                   options={processSelectionOptions}
                   defaultValue={processSelection}
                   value={processSelection}

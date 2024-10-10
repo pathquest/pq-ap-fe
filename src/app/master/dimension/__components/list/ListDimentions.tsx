@@ -147,7 +147,7 @@ const ListDimentions: React.FC = () => {
 
   return (
     <Wrapper masterSettings={true}>
-      <div className='sticky top-0 z-[6] flex h-[66px] w-full items-center justify-between bg-whiteSmoke'>
+      <div className='sticky top-0 z-[6] flex !h-[50px] w-full items-center justify-between bg-whiteSmoke'>
         <NavigationBar
           key={String(accountingToolChanged)}
           tabs={tabs}

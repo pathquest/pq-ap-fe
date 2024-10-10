@@ -96,7 +96,7 @@ const CheckApprove: React.FC<DrawerProps> = ({ onClose, Mode, accountId, payment
 
     return (<>
         <div className='w-full h-full overflow-hidden'>
-            <div className='sticky top-0 z-[6] px-5 flex h-[66px] w-full items-center justify-between bg-whiteSmoke'>
+            <div className='sticky top-0 z-[6] px-5 flex h-[50px] w-full items-center justify-between bg-whiteSmoke'>
                 <div className='cursor-pointer flex gap-5' onClick={() => handleModalClose("")}>
                     <BackArrow />
                     <label className='flex items-center pt-0 pr-0.5 font-proxima text-base font-bold tracking-wide cursor-pointer'>Check Layout</label>

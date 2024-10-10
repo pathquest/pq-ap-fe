@@ -202,7 +202,7 @@ const ListReports = () => {
 
   return (
     <Wrapper>
-      <div className='sticky top-0 z-[5] flex h-[66px] items-center justify-between bg-whiteSmoke'>
+      <div className='sticky top-0 z-[5] flex !h-[50px] items-center justify-between bg-whiteSmoke'>
         <NavigationTabs
           visibleTab={visibleTab}
           key={AccountingTool}
@@ -211,7 +211,7 @@ const ListReports = () => {
           }}
         />
         {!vendorDetailedModalOpen && (
-          <span className='mr-5 mt-1 flex justify-center items-center'>
+          <span className='mr-5 flex justify-center items-center'>
             <Download
               url={`${API_REPORTS}${getDownloadPayload(reportsTabs)?.url}`}
               params={getDownloadPayload(reportsTabs)?.params}

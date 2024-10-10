@@ -28,48 +28,48 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
   const [isExpanded, setIsExpanded] = useState<boolean>(true)
   const [reportPeriodValue, setReportPeriodValue] = useState<number>(1)
 
-  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
+  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
 
   const getNestedColumns = (groupByValue: any) => {
     return [
       {
-        header: groupByValue === 1 ? 'DUE DATE' : 'VENDOR',
+        header: groupByValue === 1 ? 'Due Date' : 'Vendor',
         accessor: 'Vendor',
         sortable: false,
         colalign: 'left',
         colStyle: '!pl-[13px] !w-[128px] !tracking-[0.02em]',
       },
       {
-        header: 'BILL NUMBER',
+        header: 'Bill Number',
         accessor: 'BillNumber',
         sortable: false,
         colalign: 'left',
         colStyle: '!w-[145px] !tracking-[0.02em]',
       },
       {
-        header: 'BILL DATE',
+        header: 'Bill Date',
         accessor: 'BillDate',
         sortable: false,
         colalign: 'left',
         colStyle: '!w-[125px] !tracking-[0.02em]',
       },
       {
-        header: 'LOCATION',
+        header: 'Location',
         accessor: 'Location',
         sortable: false,
         colalign: 'left',
         colStyle: '!w-[120px] !tracking-[0.02em]',
       },
       {
-        header: 'TRANSACTION TYPE',
+        header: 'Transaction Type',
         accessor: 'TransactionType',
         sortable: false,
         colalign: 'left',
         colStyle: '!w-[120px] !tracking-[0.02em]',
       },
       {
-        header: 'REMAINING AMOUNT',
+        header: 'Remaining Amount',
         accessor: 'Amount',
         sortable: false,
         colalign: 'right',
@@ -82,9 +82,9 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
-      setTableDynamicWidth('w-full laptop:w-[calc(100vw-85px)]')
+      setTableDynamicWidth('w-full laptop:w-[calc(100vw-78px)]')
     } else {
-      setTableDynamicWidth('w-full laptop:w-[calc(100vw-200px)]')
+      setTableDynamicWidth('w-full laptop:w-[calc(100vw-180px)]')
     }
   }, [isLeftSidebarCollapsed])
 
@@ -349,7 +349,7 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
       )
     } else {
       noDataContent = (
-        <div className='flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]'>
+        <div className='flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
           No records available at the moment.
         </div>
       )
@@ -365,11 +365,11 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
   return (
     <>
       <div
-        className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[241px]' : 'h-[66px]'
+        className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[226px]' : 'h-[51px]'
           } items-start border-t border-lightSilver`}>
-        <div className='flex w-full items-center justify-between bg-whiteSmoke !h-[66px] px-5 py-4'>
+        <div className='flex w-full items-center justify-between bg-whiteSmoke !h-[50px] px-5 py-4'>
           <div className='flex'>
-            <Typography className='flex text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
+            <Typography className='flex !text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
               Filter Criteria
             </Typography>
           </div>
@@ -490,7 +490,7 @@ function VendorBalanceDetail({ vendorOptions, locationOptions, setVendorBalanceD
       </div>
 
       {runReport && (
-        <div className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-420px)]' : 'h-[calc(100vh-210px)]'} overflow-auto ${tableDynamicWidth}`}>
+        <div className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-337px)]' : 'h-[calc(100vh-162px)]'} overflow-auto ${tableDynamicWidth}`}>
           <div className={`mainTable ${vendorBalanceDetails.length !== 0 && 'h-0'}`}>
             <DataTable
               zIndex={2}

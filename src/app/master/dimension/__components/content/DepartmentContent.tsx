@@ -46,19 +46,19 @@ const Department: React.FC<DepartmentProps> = ({ onDrawerOpen, onDrawerClose, is
 
   const columns: any = [
     accountingTool === 1 && {
-      header: 'DEPARTMENT ID',
+      header: 'Department Id',
       accessor: 'id',
       colStyle: '!tracking-[0.02em] !pl-5',
       sortable: false,
     },
     {
-      header: 'NAME',
+      header: 'Name',
       accessor: 'name',
       colStyle: '!tracking-[0.02em]',
       sortable: false,
     },
     {
-      header: 'STATUS',
+      header: 'Status',
       accessor: 'status',
       colStyle: '!tracking-[0.02em]',
       sortable: false,
@@ -250,7 +250,7 @@ const Department: React.FC<DepartmentProps> = ({ onDrawerOpen, onDrawerClose, is
   return (
     <>
       {/* DataTable */}
-      <div className='h-[calc(100vh-145px)] overflow-auto custom-scroll max-[425px]:mx-1'>
+      <div className='h-[calc(100vh-112px)] overflow-auto custom-scroll max-[425px]:mx-1'>
         <div className={`${departmentList.length !== 0 && 'h-0'}`}>
           <DataTable
             columns={columns}

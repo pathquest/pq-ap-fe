@@ -49,7 +49,7 @@ const PaymentApproval: React.FC = () => {
   const dispatch = useAppDispatch()
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
+  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
   const [isAllChecked, setIsAllChecked] = useState<boolean>(false)
 
   const [vendorOption, setVendorOption] = useState<any>([])
@@ -60,15 +60,9 @@ const PaymentApproval: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState<any>([])
   const isRowSelected = (id: any) => selectedRows.indexOf(id) !== -1
 
-  const [orderBy, setOrderBy] = useState<number | null>(1)
-  const [orderColumnName, setOrderColumnName] = useState<string | null>(null)
-  const [sortOrders, setSortOrders] = useState<{ [key: string]: null | 'asc' | 'desc' }>({
-    VendorName: null,
-    ApprovalStatus: null,
-    BankAccount: null,
-    PaymentMethodName: null,
-    TotalAmount: null,
-  })
+  const [orderBy, setOrderBy] = useState<number | null>(0)
+  const [orderColumnName, setOrderColumnName] = useState<string | null>("VendorName")
+  const [hoveredColumn, setHoveredColumn] = useState<string>("");
 
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false)
   const [paymentApprovalList, setPaymentApprovalList] = useState<any>([])
@@ -158,40 +152,40 @@ const PaymentApproval: React.FC = () => {
       colalign: 'right',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('VendorName')}>
-        VENDOR NAME <SortIcon order={sortOrders['VendorName']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('VendorName')} onMouseEnter={() => setHoveredColumn("VendorName")} onMouseLeave={() => setHoveredColumn("")}>
+        Vendor Name <SortIcon orderColumn="VendorName" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "VendorName"}></SortIcon>
       </div>,
       accessor: 'VendorName',
       sortable: false,
       colStyle: '!w-[150px] !tracking-[0.02em]',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('ApprovalStatus')}>
-        APPROVAL STATUS <SortIcon order={sortOrders['ApprovalStatus']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('ApprovalStatus')} onMouseEnter={() => setHoveredColumn("ApprovalStatus")} onMouseLeave={() => setHoveredColumn("")}>
+        Approval Status <SortIcon orderColumn="ApprovalStatus" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "ApprovalStatus"}></SortIcon>
       </div>,
       accessor: 'ApprovalStatus',
       sortable: false,
       colStyle: '!w-[170px] !tracking-[0.02em]',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('BankAccount')}>
-        BANK ACCOUNT <SortIcon order={sortOrders['BankAccount']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('BankAccount')} onMouseEnter={() => setHoveredColumn("BankAccount")} onMouseLeave={() => setHoveredColumn("")}>
+        Bank Account <SortIcon orderColumn="BankAccount" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "BankAccount"}></SortIcon>
       </div>,
       accessor: 'BankAccount',
       sortable: false,
       colStyle: '!w-[170px] !tracking-[0.02em]'
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('PaymentMethodName')}>
-        PAYMENT METHOD <SortIcon order={sortOrders['PaymentMethodName']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('PaymentMethodName')} onMouseEnter={() => setHoveredColumn("PaymentMethodName")} onMouseLeave={() => setHoveredColumn("")}>
+        Payment Method <SortIcon orderColumn="PaymentMethodName" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "PaymentMethodName"}></SortIcon>
       </div>,
       accessor: 'PaymentMethodName',
       sortable: false,
       colStyle: '!w-[190px] !tracking-[0.02em]',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('TotalAmount')}>
-        TOTAL PAYMENT AMOUNT <SortIcon order={sortOrders['TotalAmount']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('TotalAmount')} onMouseEnter={() => setHoveredColumn("TotalAmount")} onMouseLeave={() => setHoveredColumn("")}>
+        Total Payment Amount <SortIcon orderColumn="TotalAmount" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "TotalAmount"}></SortIcon>
       </div>,
       accessor: 'TotalAmount',
       sortable: false,
@@ -256,41 +250,13 @@ const PaymentApproval: React.FC = () => {
   ]
 
   useEffect(() => {
-    setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-full laptop:w-[calc(100vw-85px)]' : 'w-full laptop:w-[calc(100vw-200px)]')
+    setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-full laptop:w-[calc(100vw-78px)]' : 'w-full laptop:w-[calc(100vw-180px)]')
   }, [isLeftSidebarCollapsed])
 
   // For Sorting Data
   const handleSortColumn = (name: string) => {
-    const currentSortOrder = sortOrders[name]
-    let newSortOrder: 'asc' | 'desc'
-
-    if (currentSortOrder === 'asc') {
-      newSortOrder = 'desc'
-    } else {
-      newSortOrder = 'asc'
-    }
-
-    setSortOrders({ ...sortOrders, [name]: newSortOrder })
     setOrderColumnName(name)
-    switch (name) {
-      case 'VendorName':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'ApprovalStatus':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'BankAccount':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'PaymentMethodName':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'TotalAmount':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      default:
-        break
-    }
+    setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
   }
 
   // function for select All row (Checkboxes)
@@ -530,7 +496,7 @@ const PaymentApproval: React.FC = () => {
       VendorName: d?.VendorName && d?.VendorName.length > 22
         ? <BasicTooltip position='right' content={d?.VendorName} className='!m-0 !p-0 !z-[4]'>
           <label
-            className="cursor-pointer text-sm w-full"
+            className="cursor-pointer text-sm w-full "
             style={{
               display: '-webkit-box',
               WebkitBoxOrient: 'vertical',
@@ -546,7 +512,7 @@ const PaymentApproval: React.FC = () => {
             {d?.VendorName}
           </label>
         </BasicTooltip>
-        : <label className="font-proxima text-sm hover:cursor-pointer" onClick={() => {
+        : <label className="font-proxima text-sm hover:cursor-pointer " onClick={() => {
           setVendorDetailsView(d?.BillDetail)
           setOpenDetailsView(true);
           setVendorName(d?.VendorName)
@@ -851,11 +817,11 @@ const PaymentApproval: React.FC = () => {
   return (
     <Wrapper>
       {/* Navbar */}
-      <div className='sticky top-0 z-[6] flex h-[66px] w-full items-center justify-between bg-whiteSmoke px-5'>
+      <div className='sticky top-0 z-[6] flex !h-[50px] w-full items-center justify-between bg-whiteSmoke px-5'>
         {isOpenDetailsView ? (
           <>
             <Breadcrumb variant='/' items={[
-              { label: 'Payment Approval',goBack: () => setOpenDetailsView(false) },
+              { label: 'Payment Approval', goBack: () => setOpenDetailsView(false) },
               { label: vendorName, url: '#' },
             ]} />
           </>
@@ -904,7 +870,7 @@ const PaymentApproval: React.FC = () => {
 
       {/* DataTable */}
       {isOpenDetailsView ? (
-        <div className={`h-[calc(100vh-145px)] custom-scroll approvalMain overflow-auto approvalMain max-[425px]:mx-1 ${tableDynamicWidth}`}>
+        <div className={`h-[calc(100vh-128px)] custom-scroll overflow-auto approvalMain max-[425px]:mx-1 ${tableDynamicWidth}`}>
           <div className={`${vendorDetailsView.length === 0 ? 'h-11' : 'h-auto'}`}>
             <DataTable
               zIndex={5}
@@ -927,13 +893,13 @@ const PaymentApproval: React.FC = () => {
               <div className='flex h-[calc(94vh-150px)] w-full items-center justify-center'>
                 <Loader size='md' helperText />
               </div>
-              : <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
+              : <div className='flex h-[44px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
                 No records available at the moment.
               </div>
           ) : ''}
         </div>
       ) : (
-        <div className={`h-[calc(100vh-145px)] custom-scroll approvalMain overflow-auto approvalMain max-[425px]:mx-1 ${tableDynamicWidth}`}>
+        <div className={`h-[calc(100vh-112px)] custom-scroll overflow-auto approvalMain max-[425px]:mx-1 ${tableDynamicWidth}`}>
           <div className={`expandableTable ${paymentApprovalList.length === 0 ? 'h-11' : 'h-auto'}`}>
             <DataTable
               zIndex={5}
@@ -964,7 +930,7 @@ const PaymentApproval: React.FC = () => {
               <div className='flex h-[calc(94vh-150px)] w-full items-center justify-center'>
                 <Loader size='md' helperText />
               </div>
-              : <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
+              : <div className='flex h-[44px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
                 No records available at the moment.
               </div>
           ) : ''}

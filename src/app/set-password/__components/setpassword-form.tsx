@@ -132,7 +132,7 @@ export default function SetNewPasswordForm() {
       <div className='flex flex-col items-center pt-5'>
         <Image src='/logo.png' alt='Logo' className='w-[194px] hd:w-[200px] 2xl:w-[200px]' width={200} height={50} priority />
 
-        <div className='flex h-[calc(100vh-145px)] flex-col items-center justify-center'>
+        <div className='flex h-[calc(100vh-128px)] flex-col items-center justify-center'>
           <span className='mx-5 pb-[25px] text-xl font-bold text-primary sm:mx-auto lg:text-2xl'>
             {setPasswordContent?.description}
           </span>

@@ -25,7 +25,7 @@ module.exports = {
         warningColor: '#FFF3CD',
         infoColor: '#E7F1FF',
         defaultRed: "#DC3545",
-        whiteSmoke: '#F6F6F6',
+        whiteSmoke: '#F5F8F7',
         darkCharcoal: '#333333',
         lightSilver: '#D8D8D8',
         slatyGrey: '#6E6D7A',
