@@ -124,6 +124,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
     const { filterFormFields } = useAppSelector((state) => state.files)
     const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
     const { selectedCompany } = useAppSelector((state) => state.user)
+    const [locationValue, setLocationValue] = useState<string[]>([])
     const AccountingTool = selectedCompany?.accountingTool
 
     const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -317,6 +318,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                 //     };
                 // });
                 // setHistoryDetailsView(updatedHistoryLists)
+                fetchHistoryDetails()
                 setIsRetryLoading(false)
             }
         } catch (error) {
@@ -385,6 +387,15 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
             </div>
         )
     }
+
+    useEffect(() => {
+        setLocationValue(
+            locationOptions.map((option: any) => ({
+                label: String(option.label),
+                value: String(option.value)
+            }))
+        );
+    }, [locationOptions])
 
     const DataRow = ({
         d,
@@ -650,6 +661,10 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
         noDataContent = ''
     }
 
+
+    console.log("locationOptions: ", locationOptions)
+    console.log("processOptions: ", processOptions)
+
     return (
         <div>
             <div className='sticky top-0 z-[6] flex !h-[66px] items-center justify-between bg-whiteSmoke laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
@@ -711,7 +726,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                 setLocalFilterFormFields={setLocalFilterFormFields}
                 receivedUserOptions={userOptions}
                 billNumberOptions={billNumberOptions}
-                locationOptions={locationOptions}
+                locationOptions={locationValue}
             />
 
             <LinkToBillModal
