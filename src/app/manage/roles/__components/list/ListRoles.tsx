@@ -320,7 +320,7 @@ const ListRoles: React.FC = () => {
       {/* NavBar */}
       <div className='sticky top-0 z-[6] flex !h-[50px] items-center justify-between bg-whiteSmoke px-5'>
         <div className='flex items-center'>
-          <label className='font-proxima flex cursor-pointer items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Manage Roles</label>
+          <label className='font-proxima flex items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Manage Roles</label>
         </div>
         <div className='flex items-center gap-5'>
           <div className='flex h-6 items-center justify-center '>

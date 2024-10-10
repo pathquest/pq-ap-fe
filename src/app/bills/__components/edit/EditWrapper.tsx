@@ -981,7 +981,8 @@ const EditWrapper = ({
             <div className='flex items-center justify-center '>
               {!isVisibleLeftSidebar && (
                 <span className='cursor-pointer rounded-full bg-white p-1.5' onClick={() => {
-                  window.history.back()
+                  // window.history.back()
+                  router.push('/bills')
                 }}>
                   <BackIcon />
                 </span>

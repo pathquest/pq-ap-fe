@@ -468,7 +468,7 @@ const ListUsers: React.FC = () => {
         <div className={`sticky top-0 z-[6] ${isManageRightsOpen ? 'hidden' : 'block'}`}>
           <div className='relative flex !h-[50px] items-center justify-between bg-whiteSmoke px-5'>
             <div className='flex items-center'>
-              <label className='font-proxima flex cursor-pointer items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Manage User</label>
+              <label className='font-proxima flex items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Manage User</label>
             </div>
             <div className='flex items-center gap-5'>
               <div className='flex h-6 items-center justify-center '>

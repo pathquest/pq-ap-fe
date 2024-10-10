@@ -7,7 +7,6 @@ import CustomDatePicker from '@/app/bills/__components/CustomDatePickerField'
 import CustomSelectField from '@/app/bills/__components/CustomSelectField'
 import CustomTextField from '@/app/bills/__components/CustomTextField'
 import PostaspaidModal from '@/app/bills/__components/PostaspaidModal'
-import DataTable from '@/app/vendors/__components/Datatable/Datatable'
 import AddIcon from '@/assets/Icons/billposting/accountpayable/AddIcon'
 import BackIcon from '@/assets/Icons/billposting/accountpayable/BackIcon'
 import RemoveIcon from '@/assets/Icons/billposting/accountpayable/RemoveIcon'
@@ -21,7 +20,7 @@ import { convertFractionToRoundValue, getRoundValue, getUpdatedDataFromDetailsRe
 import { format } from 'date-fns'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Button, Loader, Toast, Tooltip } from 'pq-ap-lib'
+import { Button, Loader, Toast, DataTable, Tooltip } from 'pq-ap-lib'
 import { RefObject, useEffect, useRef, useState } from 'react'
 
 const CreateBillPosting = ({
@@ -215,14 +214,21 @@ const CreateBillPosting = ({
               {
                 ...lineItemsFieldsDataObj,
                 Index: 1,
+                amount: newDataObject?.Amount ?? 0
               },
+            ])
+            await setHasLineItemFieldLibraryErrors([
+              {
+                ...generateLinetItemFieldsErrorObj,
+                amount: newDataObject?.Amount ? true : false
+              }
             ])
           } else {
             await setLineItemsFieldsData(newLineItems)
-            setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
+            await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
           }
 
-          setFormFields(updatedDataObj)
+          await setFormFields(updatedDataObj)
           setHasFormFieldLibraryErrors(updatedDataErrorObj)
         }
       }
