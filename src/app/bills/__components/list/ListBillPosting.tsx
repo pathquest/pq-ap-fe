@@ -2319,7 +2319,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                           {isOpenView && (
                             <div
                               ref={dropdownViewRef}
-                              className='absolute right-5 top-[52px] !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                              className='absolute right-5 top-[48px] !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
                             >
                               <View
                                 Id={billLists[0]?.Id}

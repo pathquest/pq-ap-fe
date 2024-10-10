@@ -236,8 +236,26 @@ const EditBillPosting = ({ processtype }: any) => {
           })
           newCurrentLineItems = generatedNewLineItems.map((item: any) => item.updatedLineItemObj);
           newCurrentLineItemsErrorObj = generatedNewLineItems.map((item: any) => item.updatedLineItemErrorObj);
-          await setLineItemsFieldsData(newCurrentLineItems)
-          await setHasLineItemFieldLibraryErrors(newCurrentLineItemsErrorObj)
+
+          if (newCurrentLineItems.length === 0) {
+            setMainFieldAmount(newData?.Amount)
+            await setLineItemsFieldsData([
+              {
+                ...lineItemsFieldsDataObj,
+                Index: 1,
+                amount: newData?.Amount ?? 0
+              },
+            ])
+            await setHasLineItemFieldLibraryErrors([
+              {
+                ...generateLinetItemFieldsErrorObj,
+                amount: newData?.Amount ? true : false
+              }
+            ])
+          } else {
+            await setLineItemsFieldsData(newCurrentLineItems)
+            await setHasLineItemFieldLibraryErrors(newCurrentLineItemsErrorObj)
+          }
         } else {
           if (newLineItems.length === 0) {
             setMainFieldAmount(responseData?.Amount)
