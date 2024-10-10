@@ -188,18 +188,38 @@ const API_REALTIMENOTIFICATION = process.env.REALTIME_NOTIFICATION
 
 const responseBody = (response: AxiosResponse) => response.data;
 let cachedSession: any = null;
-let sessionPromise: Promise<any> | null = null;
+let sessionPromise: any = null;
 
-const fetchSession = async (): Promise<any> => {
+const fetchSession = async () => {
   if (!sessionPromise) {
     sessionPromise = (async () => {
       try {
-        cachedSession = typeof getSession === 'function' ? await getSession() : await auth();
-      } catch (error) {
+        if (typeof getSession === 'function') {
+          cachedSession = await getSession();
+        } else {
+          cachedSession = await auth();
+        }
+
+        const expiresAt = new Date(cachedSession.user.expires_at).getTime();
+        if (Date.now() > expiresAt) {
+          const url = `${process.env.API_SSO}/auth/refreshtoken`;
+          const response = await axios.post(url, {
+            accesstoken: cachedSession.user.access_token,
+            refreshtoken: cachedSession.user.refresh_token,
+          });
+
+          if (response.data.ResponseStatus === 'Success') {
+            cachedSession.user.access_token = response.data.ResponseData.Token;
+            cachedSession.user.refresh_token = response.data.ResponseData.RefreshToken;
+            cachedSession.user.expires_at = response.data.ResponseData.TokenExpiry;
+          } else {
+            throw new Error('Failed to refresh session token');
+          }
+        }
+        return cachedSession;
+      } finally {
         sessionPromise = null;
-        throw error;
       }
-      return cachedSession;
     })();
   }
   return sessionPromise;
@@ -209,50 +229,16 @@ export const invalidateSessionCache = () => {
   cachedSession = null;
 };
 
-const refreshSession = async () => {
-  const url = `${process.env.API_SSO}/auth/refreshtoken`;
-  try {
-    const response = await axios.post(url, {
-      accesstoken: cachedSession.user.access_token,
-      refreshtoken: cachedSession.user.refresh_token,
-    });
-
-    if (response.data.ResponseStatus === 'Success') {
-      cachedSession.user.access_token = response.data.ResponseData.Token;
-      cachedSession.user.refresh_token = response.data.ResponseData.RefreshToken;
-      cachedSession.user.expires_at = response.data.ResponseData.TokenExpiry;
-
-      invalidateSessionCache();
-      return await fetchSession();
-    } else {
-      throw new Error('Refresh token failed');
-    }
-  } catch (error) {
-    throw new Error('Error refreshing token');
-  }
-};
-
-const isTokenExpired = (): boolean => {
-  const expiresAt = new Date(cachedSession.user.expires_at).getTime();
-  return Date.now() > expiresAt;
-};
-
-const setAuthHeaders = (config: any) => {
-  config.headers.Authorization = `bearer ${cachedSession.user.access_token}`;
-  config.headers.CompanyId = cachedSession.user.CompanyId;
-};
-
 axios.interceptors.request.use(
   async (config) => {
     if (!cachedSession) {
       cachedSession = await fetchSession();
     }
 
-    if (isTokenExpired()) {
-      cachedSession = await refreshSession();
-    }
+    // Set headers after session fetch
+    config.headers.Authorization = `bearer ${cachedSession.user.access_token}`;
+    config.headers.CompanyId = cachedSession.user.CompanyId;
 
-    setAuthHeaders(config);
     return config;
   },
   (error) => Promise.reject(error)
@@ -261,18 +247,26 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response.status === 401 && !cachedSession) {
+    if (error.response && error.response.status === 401 && !error.config.__isRetryRequest) {
       try {
         cachedSession = await fetchSession();
-        setAuthHeaders(error.config);
+        
+        // Mark the retry flag to prevent re-triggering this logic
+        error.config.__isRetryRequest = true;
+
+        error.config.headers.Authorization = `bearer ${cachedSession.user.access_token}`;
+        error.config.headers.CompanyId = cachedSession.user.CompanyId;
+
         return axios(error.config);
       } catch (sessionError) {
         return Promise.reject(sessionError);
       }
     }
+
     return Promise.reject(error);
   }
 );
+
 
 const requests = {
   get: (url: string, params?: URLSearchParams) => axios.get(url, { params }).then(responseBody),
