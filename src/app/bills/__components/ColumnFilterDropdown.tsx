@@ -143,7 +143,7 @@ const ColumnFilterDropdown: React.FC<ColumnFilterDropdownProps> = ({
   }
 
   return (
-    <div className='absolute right-2 top-1.5 cursor-pointer'>
+    <div className='mr-[10px] cursor-pointer'>
       <span onClick={() => {
         isOpen ? setOpen(false) : setOpen(true)
       }}>
