@@ -161,7 +161,7 @@ const Vendor: React.FC<VendorType> = ({ vendorOption }) => {
             onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => (e.key === 'Enter') && setIsOpen(!isOpen)}>
             <div className='flex h-full items-center px-1' tabIndex={-1}>
                 <label
-                    className={`flex cursor-pointer select-none items-start bg-transparent outline-none ${isOpen ? "text-primary placeholder:text-primary" : "text-black placeholder:text-black"} text-base placeholder:text-base placeholder:font-bold font-bold cursor-pointer`}
+                    className={`flex cursor-pointer font-proxima select-none items-start bg-transparent outline-none ${isOpen ? "text-primary placeholder:text-primary" : "text-black placeholder:text-black"} text-base placeholder:text-base placeholder:font-bold font-bold cursor-pointer`}
                     onClick={handleInput}>
                     {selectedValues.length == 0
                         ? "Select Vendor"
