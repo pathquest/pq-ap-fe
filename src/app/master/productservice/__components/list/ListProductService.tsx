@@ -219,9 +219,9 @@ const ListProductService: React.FC = () => {
   return (
     <Wrapper masterSettings={true}>
       {/* NavBar  */}
-      <div className='sticky top-0 z-[6] flex !h-[66px] items-center justify-between bg-whiteSmoke px-5'>
+      <div className='sticky top-0 z-[6] flex !h-[50px] items-center justify-between bg-whiteSmoke px-5'>
         <div className='flex items-center'>
-          <label className='font-proxima flex cursor-pointer items-center laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base laptop:font-semibold laptopMd:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>Product & Service</label>
+          <label className='font-proxima flex items-center laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base laptop:font-semibold laptopMd:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>Product & Service</label>
         </div>
         <div className='flex items-center gap-5'>
           <div className='flex h-6 items-center justify-center -mr-3'>
@@ -243,7 +243,7 @@ const ListProductService: React.FC = () => {
       </div>
 
       {/* DataTable */}
-      <div className='h-[calc(100vh-145px)] overflow-auto custom-scroll max-[425px]:mx-1'>
+      <div className='h-[calc(100vh-112px)] overflow-auto custom-scroll max-[425px]:mx-1'>
         <div className={`${productList.length !== 0 && 'h-0'}`}>
           <DataTable
             columns={columns}

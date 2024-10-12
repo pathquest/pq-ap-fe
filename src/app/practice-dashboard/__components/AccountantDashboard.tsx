@@ -405,14 +405,14 @@ function AccountantDashboard({ organizationOptions, sessionData }: any) {
           <div className='relative flex w-[60%] items-center justify-end'>
             <div className={`flex items-center ${tab === 'billInfo' && 'pr-5'}`}>
               <div
-                className='mr-5 cursor-pointer rounded-[4px] border border-[#D8D8D8] bg-whiteSmoke px-2 py-[2px] text-[14px] hover:border-[#02B89D] hover:text-[#02B89D] hover:shadow-lg'
+                className='mr-5 cursor-pointer rounded-[4px] border border-lightSilver bg-whiteSmoke px-2 py-[2px] text-[14px] hover:border-[#02B89D] hover:text-[#02B89D] hover:shadow-lg'
                 onMouseEnter={() => setShowActivePlanPopup(true)}
                 onMouseLeave={() => setShowActivePlanPopup(false)}
               >
                 <span className='text-[#333333] text-[14px]'>Active Plan</span>
               </div>
               <div
-                className='mr-8 cursor-pointer rounded-[4px] border border-[#D8D8D8] bg-whiteSmoke px-2 py-[2px] text-[14px] hover:border-[#02B89D] hover:text-[#02B89D] hover:shadow-lg'
+                className='mr-8 cursor-pointer rounded-[4px] border border-lightSilver bg-whiteSmoke px-2 py-[2px] text-[14px] hover:border-[#02B89D] hover:text-[#02B89D] hover:shadow-lg'
                 onMouseEnter={() => setShowCashBackPopup(true)}
                 onMouseLeave={() => setShowCashBackPopup(false)}
               >

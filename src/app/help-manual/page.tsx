@@ -31,7 +31,7 @@ function Page() {
               categories.map((category: CategoryList) => {
                 return (
                   <React.Fragment key={category.id}>
-                    <Card className=' cursor-pointer !shadow-none border-[#d8d8d8] border-[1px] hover:bg-[#f6f6f6] hover:border-[#0ab8a3] transition-all'>
+                    <Card className=' cursor-pointer !shadow-none border-lightSilver border-[1px] hover:bg-[#f6f6f6] hover:border-[#0ab8a3] transition-all'>
                       <div className='flex w-[16rem] flex-col gap-y-2 p-4' onClick={() => handleCategoryClick(category)}>
                         <img
                           src={`${category.attributes?.Icon?.data?.attributes?.url}`}

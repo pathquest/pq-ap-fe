@@ -763,7 +763,7 @@ const VendorAddScreen: React.FC<DrawerProps> = ({ isOpen, EditId, onClose }) => 
 
     return (
         <div className={`w-full h-full`}>
-            <div className='sticky top-0 z-[6] px-5 flex h-[66px] w-full items-center justify-between bg-whiteSmoke'>
+            <div className='sticky top-0 z-[6] px-5 flex h-[50px] w-full items-center justify-between bg-whiteSmoke'>
                 <div className='cursor-pointer flex items-center'>
                     <span onClick={() => handleModalClose("")}>
                         <BackArrow />
@@ -780,7 +780,7 @@ const VendorAddScreen: React.FC<DrawerProps> = ({ isOpen, EditId, onClose }) => 
                     </div>
                 </div>
             </div>
-            <div className='h-[calc(100vh-203px)] w-5/6 overflow-hidden'>
+            <div className='h-[calc(100vh-170px)] w-5/6 overflow-hidden'>
                 {selectedTab === "generalDetails" &&
                     <div className='w-full h-full overflow-auto p-5'>
                         <div className='w-full grid grid-cols-3 gap-5'>
@@ -1411,8 +1411,8 @@ const VendorAddScreen: React.FC<DrawerProps> = ({ isOpen, EditId, onClose }) => 
                     </div>
                 }
             </div>
-            <div className='sticky bottom-0 flex h-[66px] w-full items-center justify-end border-t border-lightSilver bg-white'>
-                <div className='my-[15px] mx-5 flex gap-5'>
+            <div className='sticky bottom-0 flex h-[60px] w-full items-center justify-end border-t border-lightSilver bg-white'>
+                <div className='mx-5 flex gap-5'>
                     <Button onClick={() => clearAllData("")} className='btn-sm !h-9 rounded-full' variant='btn-outline-primary'>
                         <label className="laptop:px-[12px] laptopMd:px-[12px] lg:px-[12px] xl:px-[12px] hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px] font-proxima font-semibold !py-1.5 h-full laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em] cursor-pointer">CANCEL</label>
                     </Button>

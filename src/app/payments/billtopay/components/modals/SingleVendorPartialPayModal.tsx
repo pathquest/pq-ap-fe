@@ -455,7 +455,7 @@ const SingleVendorPartialPayModal: React.FC<ActionsProps> = ({
           </div>
 
           {updatedDataList.length === 0 && (
-            <div className='mx-5 flex h-[59px] w-auto items-center justify-center border-b border-b-[#ccc]'>
+            <div className='mx-5 flex h-[44px] w-auto items-center justify-center border-b border-b-[#ccc]'>
               No records available at the moment.
             </div>
           )}

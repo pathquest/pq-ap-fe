@@ -1,24 +1,13 @@
 import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 import ChevronDown from '@/components/Common/Dropdown/Icons/ChevronDown'
+import { toInitCap } from '@/components/Common/Functions/FormatText'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import { BillAnalysisDetailColumns, GroupByList, SelectRangeReportPeriodByList, ViewByList } from '@/data/reports'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { billAnalysis, billAnalysisDetail, getBillAnalysisColumnMapping } from '@/store/features/reports/reportsSlice'
 import { convertStringsDateToUTC, convertStringsToIntegers } from '@/utils'
 import { format } from 'date-fns'
-import {
-  BasicTooltip,
-  Button,
-  CheckBox,
-  DataTable,
-  Datepicker,
-  DatepickerRange,
-  Loader,
-  MultiSelectChip,
-  Select,
-  Toast,
-  Typography,
-} from 'pq-ap-lib'
+import { BasicTooltip, Button, CheckBox, DataTable, Datepicker, DatepickerRange, Loader, MultiSelectChip, Select, Toast, Typography } from 'pq-ap-lib'
 import { useEffect, useState } from 'react'
 import ColumnFilter from '../columnFilter/ColumnFilter'
 // import ColumnFilter from '@/components/Common/Custom/ColumnFilter'
@@ -58,9 +47,9 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
-      setTableDynamicWidth('w-full laptopMd:w-[calc(100vw-85px)]')
+      setTableDynamicWidth('w-full laptopMd:w-[calc(100vw-78px)]')
     } else {
-      setTableDynamicWidth('w-full laptopMd:w-[calc(100vw-200px)]')
+      setTableDynamicWidth('w-full laptopMd:w-[calc(100vw-180px)]')
     }
   }, [isLeftSidebarCollapsed])
 
@@ -133,12 +122,12 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
         }
 
         return {
-          header: label,
+          header: toInitCap(label),
           accessor: label.split(' ').join(''),
           visible: value,
           sortable: false,
           colalign: colalign,
-          colStyle: `${columnStyle} !tracking-[0.02em] !uppercase`,
+          colStyle: `${columnStyle} !tracking-[0.02em]`,
         }
       })
       const dataVisible = data.filter((h) => h.visible === true)
@@ -527,7 +516,7 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
       )
     } else {
       noDataContent = (
-        <div className={`fixed flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]`}>
+        <div className={`fixed font-proxima flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]`}>
           No records available at the moment.
         </div>
       )
@@ -543,12 +532,12 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
   return (
     <>
       <div
-        className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[320px]' : 'h-[66px]'
+        className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[225px]' : 'h-[51px]'
           } items-start border-t border-lightSilver`}
       >
-        <div className='flex w-full items-center justify-between bg-whiteSmoke h-[66px] px-5 py-4'>
+        <div className='flex w-full items-center justify-between bg-whiteSmoke !h-[50px] px-5 py-4'>
           <div className='flex'>
-            <Typography className='flex text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
+            <Typography className='flex !text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
               Filter Criteria
             </Typography>
           </div>
@@ -588,8 +577,8 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
                   id='ft_datepicker123'
                   label='As of'
                   value={reportPeriod}
-                  startYear={1995}
-                  endYear={2050}
+                  startYear={1900}
+                  endYear={2099}
                   getValue={(value: any) => {
                     if (value) {
                       setReportPeriodValue(reportPeriodValue)
@@ -605,8 +594,8 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
                   id='ft_datepicker'
                   label='Select Date'
                   value={reportPeriod}
-                  startYear={1995}
-                  endYear={2050}
+                  startYear={1900}
+                  endYear={2099}
                   getValue={(value) => {
                     setReportPeriod(value)
 
@@ -722,7 +711,7 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
 
       {runReport && (
         <div
-          className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-400px)]' : 'h-[calc(100vh-210px)]'
+          className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-335px)]' : 'h-[calc(100vh-162px)]'
             } overflow-auto ${tableDynamicWidth}`}
         >
           <div

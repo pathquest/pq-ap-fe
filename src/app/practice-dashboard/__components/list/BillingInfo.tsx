@@ -66,7 +66,7 @@ function BillingInfo({ billingInfoData, isLoading }: any) {
 
   return (
     <div>
-      <div className={`stickyTable custom-scroll h-[calc(100vh-150px)] overflow-scroll`}>
+      <div className={`stickyTable custom-scroll h-[calc(100vh-150px)] overflow-auto`}>
         <div className={`mainTable ${billingInfoData.length !== 0 && 'h-0'}`}>
           <DataTableDashboard
             columns={billingInfoHeaders}

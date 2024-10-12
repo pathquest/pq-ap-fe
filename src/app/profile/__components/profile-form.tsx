@@ -137,7 +137,7 @@ const ProfileForm = ({ session }: any) => {
       {/* Navigation Bar */}
       <NavBar onData={globalData} isFormOpen={isOpen} />
       <div className='relative flex !flex-col items-center justify-center pb-5'>
-        <div className={`relative flex h-36 w-full items-center ${profilePreviousUrl ? 'justify-start' : 'justify-center'} bg-[#F4F4F4]`}>
+        <div className={`relative flex h-36 w-full items-center ${profilePreviousUrl ? 'justify-start' : 'justify-center'} bg-lightGray`}>
           {profilePreviousUrl ? (
             <div className='flex items-center !justify-start pl-[148px]'>
               <span className='mr-2.5 cursor-pointer' onClick={() => {
@@ -223,7 +223,7 @@ const ProfileForm = ({ session }: any) => {
             </Typography>
           </Button>
 
-          <div className='mt-8 flex w-[50%] flex-col items-center border-t border-[#D8D8D8] p-5'>
+          <div className='mt-8 flex w-[50%] flex-col items-center border-t border-lightSilver p-5'>
             <span className='text-[18px] font-semibold !uppercase'>Profile Password</span>
             <span className='flex pt-5 text-center text-[14px] text-[#6E6D7A]'>
               Changing your password will sign you out of all devices. Please log in again with the new password on each device.

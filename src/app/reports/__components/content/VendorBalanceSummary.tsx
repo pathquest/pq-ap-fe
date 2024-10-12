@@ -41,14 +41,14 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
 
   const [isCheckedValue, setIsCheckedValue] = useState<boolean>(false)
 
-  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
+  const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
-      setTableDynamicWidth('w-full laptop:w-[calc(100vw-85px)]')
+      setTableDynamicWidth('w-full laptop:w-[calc(100vw-78px)]')
     } else {
-      setTableDynamicWidth('w-full laptop:w-[calc(100vw-200px)]')
+      setTableDynamicWidth('w-full laptop:w-[calc(100vw-180px)]')
     }
   }, [isLeftSidebarCollapsed])
 
@@ -233,7 +233,7 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
       )
     } else {
       noDataContent = (
-        <div className='fixed flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]'>
+        <div className='fixed font-proxima flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
           No records available at the moment.
         </div>
       )
@@ -291,11 +291,11 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
       ) : (
         <>
           <div
-            className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[241px]' : 'h-[66px]'
+            className={`sticky top-0 z-[4] flex flex-col ${isExpanded ? 'h-[225px]' : 'h-[51px]'
               } items-start border-t border-lightSilver`}>
-            <div className='flex w-full items-center justify-between bg-whiteSmoke h-[66px] px-5 py-4'>
+            <div className='flex w-full items-center justify-between bg-whiteSmoke !h-[50px] px-5 py-4'>
               <div className='flex'>
-                <Typography className='flex text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
+                <Typography className='flex !text-base items-center justify-center text-center !font-bold !font-proxima !tracking-[0.02em] !text-darkCharcoal'>
                   Filter Criteria
                 </Typography>
               </div>
@@ -330,8 +330,8 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
                     id='ft_datepicker'
                     label='As of'
                     value={reportPeriod}
-                    startYear={1995}
-                    endYear={2050}
+                    startYear={1900}
+                    endYear={2099}
                     getValue={(value: any) => {
                       if (value) {
                         const selectedDate = getSpecificDateForReportPeriod(reportPeriodValue)
@@ -395,7 +395,7 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
 
           {runReport && (
             <div
-              className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-380px)]' : 'h-[calc(100vh-210px)]'
+              className={`custom-scroll stickyTable ${isExpanded ? 'h-[calc(100vh-335px)]' : 'h-[calc(100vh-162px)]'
                 } overflow-auto ${tableDynamicWidth}`}
             >
               <div className={`mainTable ${vendorBalanceSummarys.length !== 0 && 'h-0'}`}>

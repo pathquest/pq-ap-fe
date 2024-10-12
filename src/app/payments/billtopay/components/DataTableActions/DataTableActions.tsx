@@ -32,4 +32,3 @@ export const Actions: React.FC<ActionsProps> = ({ actions, id, Guid, vendorId, a
         </Dropdown>
     )
 }
-

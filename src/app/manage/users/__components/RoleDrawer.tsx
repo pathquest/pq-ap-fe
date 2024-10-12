@@ -7,6 +7,7 @@ import { setProcessPermissionsMatrix } from '@/store/features/profile/profileSli
 import { SaveAssignRoles, getAssignUsertoCompany, userGetManageRights, userListDropdown } from '@/store/features/user/userSlice'
 import { Button, CheckBox, DataTable, Select, Toast, Typography } from 'pq-ap-lib'
 import React, { useEffect, useState } from 'react'
+import BackArrow from '@/assets/Icons/payments/BackArrow'
 
 interface DrawerProps {
   onOpen: boolean
@@ -36,42 +37,42 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
   //Nested 1st Level Datatable Header
   const nested1Headers: any = [
     {
-      header: 'MODULE',
+      header: 'Module',
       accessor: 'Key',
       sortable: false,
       colalign: 'left',
       colStyle: '!w-[16%] !tracking-[0.02em]',
     },
     {
-      header: 'VIEW',
+      header: 'View',
       accessor: 'View',
       sortable: false,
       colalign: 'center',
       colStyle: '!w-[16%] !tracking-[0.02em]',
     },
     {
-      header: 'EDIT',
+      header: 'Edit',
       accessor: 'Edit',
       sortable: false,
       colalign: 'center',
       colStyle: '!w-[16%] !tracking-[0.02em]',
     },
     {
-      header: 'CREATE',
+      header: 'Create',
       accessor: 'Create',
       sortable: false,
       colalign: 'center',
       colStyle: '!w-[16%] !tracking-[0.02em]',
     },
     {
-      header: 'IMPORT',
+      header: 'Import',
       accessor: 'Import',
       sortable: false,
       colalign: 'center',
       colStyle: '!w-[16%] !tracking-[0.02em]',
     },
     {
-      header: 'SYNC',
+      header: 'Sync',
       accessor: 'Sync',
       sortable: false,
       colalign: 'center',
@@ -251,13 +252,15 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
         className={`fixed z-[6] flex h-[calc(100vh-65px)] w-screen flex-col justify-between overflow-y-auto bg-white max-[425px]:h-[80%] ${onOpen ? 'translate-x-0' : 'translate-x-full'
           } transition-transform duration-300 ease-out`}
       >
-        <div className='sticky top-0 flex w-full  justify-start bg-whiteSmoke p-5 gap-5'>
-          <span className='cursor-pointer' onClick={onClose}>
+        <div className='sticky top-0 flex w-full !h-[50px] justify-start bg-whiteSmoke p-5 gap-5'>
+          <div className='flex items-center gap-3 h-full'>
+            <span className='cursor-pointer' onClick={onClose}>
             <ChevronLeftIcon bgColor='white' />
-          </span>
-          <Typography type='h5' className='flex items-center tracking-[0.02em] text-darkCharcoal justify-center text-center !font-bold'>
-            Admin Manage Rights
-          </Typography>
+            </span>
+            <Typography type='h5' className='flex items-center tracking-[0.02em] text-darkCharcoal justify-center text-center !font-bold'>
+              Admin Manage Rights
+            </Typography>
+          </div>
         </div>
         <div className='flex p-5 gap-5'>
           <div className=''>
@@ -289,18 +292,17 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
           </div>
         </div>
         {/* Data Table */}
-        <div className='h-full approvalMain w-full overflow-y-auto max-[640px]:mx-1'>
+        <div className='h-[calc(100vh-200px)] w-full overflow-y-auto max-[640px]:mx-1'>
           <DataTable
             expandable
             sticky
             getExpandableData={() => { }}
             getRowId={() => { }}
-            userClass='uppercase'
             columns={nested1Headers}
             data={updatedRoleData}
           />
         </div>
-        <div className='!h-[66px] sticky bottom-0 flex w-full items-center justify-end border-t border-lightSilver bg-white'>
+        <div className='!h-[60px] sticky bottom-0 flex w-full items-center justify-end border-t border-lightSilver bg-white'>
           <div className='flex gap-5 laptop:p-4 laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5'>
             <Button onClick={onClose} className='btn-sm !h-9 rounded-full' variant='btn-outline-primary'>
               <label className="laptop:px-[12px] laptopMd:px-[12px] lg:px-[12px] xl:px-[12px] hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px] font-proxima font-semibold !py-1.5 h-full laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em] cursor-pointer">CANCEL</label>

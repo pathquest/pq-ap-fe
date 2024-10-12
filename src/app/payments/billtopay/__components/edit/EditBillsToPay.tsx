@@ -913,7 +913,7 @@ const EditBillsToPay = () => {
       setIsRefreshList={setIsRefreshList}
       setLineItemsFieldsData={setLineItemsFieldsData}
     >
-      <div className='mb-5 border-b border-solid border-[#D8D8D8] md:flex'>
+      <div className='mb-5 border-b border-solid border-lightSilver md:flex'>
         <Resizable
           className='border-r-2 border-[#888] pr-2'
           minWidth={'20%'}
@@ -977,7 +977,7 @@ const EditBillsToPay = () => {
             />
           </div>
         </Resizable>
-        <div className='custom-scroll !z-0 h-[100vh] w-full overflow-auto border-l border-solid border-[#D8D8D8]'>
+        <div className='custom-scroll !z-0 h-[100vh] w-full overflow-auto border-l border-solid border-lightSilver'>
           <EditBillForm
             selectedProcessTypeInList={selectedProcessTypeInList}
             mainFieldListOptions={mainFieldListOptions}

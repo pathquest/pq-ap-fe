@@ -126,8 +126,8 @@ const HistoryFilter = ({
               id='fh_uploaded_date'
               label='Uploaded Date'
               value={localFilterFormFields?.fh_uploaded_date}
-              startYear={1995}
-              endYear={2050}
+              startYear={1900}
+              endYear={2099}
               getValue={(value) => {
                 if (setLocalFilterFormFields) {
                   setLocalFilterFormFields((prevState: any) => ({

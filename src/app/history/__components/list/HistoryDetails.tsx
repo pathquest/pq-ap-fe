@@ -635,13 +635,13 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
     if (historyDetailsView.length === 0) {
         if (isLoading) {
             noDataContent = (
-                <div className='flex h-full w-full items-center justify-center'>
+                <div className='flex h-[calc(100vh-160px)] w-full items-center justify-center'>
                     <Loader size='md' helperText />
                 </div>
             )
         } else {
             noDataContent = (
-                <div className='fixed flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]'>
+                <div className='fixed font-proxima flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
                     No records available at the moment.
                 </div>
             )
@@ -658,7 +658,6 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                     { label: userDetails.userName, url: '#' },
                 ]} />
                 <div className='flex items-center laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5'>
-
                     <div className='flex justify-center items-center mt-1' onClick={() => setIsFilterVisible(true)}>
                         <BasicTooltip position='bottom' content='Filter' className='!px-0 !pb-2.5 !font-proxima !text-sm'>
                             <FilterIcon />
@@ -667,7 +666,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                 </div>
             </div >
 
-            <div className={`custom-scroll h-[calc(100vh-145px)] approvalMain overflow-auto ${tableDynamicWidth}`} >
+            <div className={`custom-scroll h-[calc(100vh-112px)] approvalMain overflow-auto ${tableDynamicWidth}`} >
                 <div className={`historyTable !outline-none ${historyDetailsView.length === 0 ? 'h-11' : 'h-auto'}`}>
                     <DataTable
                         columns={filteredNestedColumns}
