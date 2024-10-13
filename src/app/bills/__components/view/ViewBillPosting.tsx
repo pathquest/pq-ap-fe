@@ -12,15 +12,7 @@ import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { documentGetList, setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar } from '@/store/features/bills/billSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { BlobServiceClient } from '@azure/storage-blob'
-import {
-  getPDFUrl,
-  getRoundValue,
-  getViewUpdatedDataFromDetailsResponse,
-  initialBillPostingFilterFormFields,
-  returnKeyValueObjForFormFields,
-  taxTotalAmountCalculate,
-  totalAmountCalculate,
-} from '@/utils/billposting'
+import { getPDFUrl, getRoundValue, getViewUpdatedDataFromDetailsResponse, initialBillPostingFilterFormFields, returnKeyValueObjForFormFields, taxTotalAmountCalculate, totalAmountCalculate } from '@/utils/billposting'
 import dynamic from 'next/dynamic'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Badge, DataTable, Toast, BasicTooltip, Typography, Loader } from 'pq-ap-lib'
@@ -649,7 +641,7 @@ const ViewBillPosting = () => {
             <Loader size='md' helperText />
           </div>
         ) : (
-          <div className='mb-5 border-solid border-[#D8D8D8] md:flex'>
+          <div className='mb-5 border-solid border-lightSilver md:flex'>
             <div className='flex h-full w-full pt-5'>
               {!isOpenInNewWindow && (
                 <Resizable
@@ -673,7 +665,7 @@ const ViewBillPosting = () => {
                   }}
                 >
                   <span className='pl-5 text-[16px] font-bold font-proxima tracking-[0.02em]'>Document</span>
-                  <div className='group relative mt-[15px] border-b border-r border-t border-[#D8D8D8]'>
+                  <div className='group relative mt-[15px] border-b border-r border-t border-lightSilver'>
                     {!documentDetailByIdData?.FilePath ? (
                       <span className='flex h-[100vh] w-full items-center justify-center border-r border-lightSilver'>
                         <ImageIcon />
@@ -732,8 +724,8 @@ const ViewBillPosting = () => {
               <div className='ml-[34px] mr-[11px] w-full flex-grow overflow-auto'>
                 <span className='text-[16px] font-bold font-proxima tracking-[0.02em]'>Document edited</span>
 
-                <div ref={rightBoxRef} className='mt-[15px] flex h-auto flex-col overflow-hidden border border-[#D8D8D8]'>
-                  <div className='flex border-b border-[#D8D8D8] px-5 py-[14px]'>
+                <div ref={rightBoxRef} className='mt-[15px] flex h-auto flex-col overflow-hidden border border-lightSilver'>
+                  <div className='flex border-b border-lightSilver px-5 py-[14px]'>
                     <div className='!py-0 !pl-0 !pr-1 !font-proxima !text-[14px]'>
                       <span className='text-[16px] font-proxima tracking-[0.02em]'>BILL INFO : </span>
                       <span className='break-all pl-[18px] text-[16px] font-bold font-proxima tracking-[0.02em]'>{documentDetailByIdData?.BillNumber}</span>

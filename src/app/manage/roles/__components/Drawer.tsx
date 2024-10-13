@@ -72,42 +72,42 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, EditId, DuplicateI
   //Nested 1st Level Datatable Header
   const nestedHeaders: any = [
     {
-      header: 'MODULE',
+      header: 'Module',
       accessor: 'Key',
       sortable: false,
       colalign: 'left',
       colStyle: '!w-[16%] !tracking-[0.02em]',
     },
     {
-      header: 'VIEW',
+      header: 'View',
       accessor: 'View',
       sortable: false,
       colalign: 'center',
       colStyle: '!w-[16%] !tracking-[0.02em]',
     },
     {
-      header: 'EDIT',
+      header: 'Edit',
       accessor: 'Edit',
       sortable: false,
       colalign: 'center',
       colStyle: '!w-[16%] !tracking-[0.02em]',
     },
     {
-      header: 'CREATE',
+      header: 'Create',
       accessor: 'Create',
       sortable: false,
       colalign: 'center',
       colStyle: '!w-[16%] !tracking-[0.02em]',
     },
     {
-      header: 'IMPORT',
+      header: 'Import',
       accessor: 'Import',
       sortable: false,
       colalign: 'center',
       colStyle: '!w-[16%] !tracking-[0.02em]',
     },
     {
-      header: 'SYNC',
+      header: 'Sync',
       accessor: 'Sync',
       sortable: false,
       colalign: 'center',

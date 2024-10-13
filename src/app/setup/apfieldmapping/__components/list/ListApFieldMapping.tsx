@@ -791,10 +791,11 @@ const ListAPFieldMapping: React.FC = () => {
       <DndProvider backend={HTML5Backend}>
         <div>
           <div className={`sticky top-0 z-[6] block`}>
-            <div className='relative flex !h-[66px] justify-between  bg-whiteSmoke px-5'>
-              <div className='flex items-center'>
+            <div className='relative flex !h-[50px] justify-between  bg-whiteSmoke px-5'>
+              <div className='flex items-center selectMain w-[180px]'>
                 <Select
-                  id=''
+                  className='!font-proxima'
+                  id='process_selection'
                   options={processSelectionOptions}
                   defaultValue={processSelection}
                   value={processSelection}
@@ -817,7 +818,7 @@ const ListAPFieldMapping: React.FC = () => {
 
               {/* View List */}
               <ul
-                className={`absolute right-5 top-12 z-[10] mt-[1px] w-auto rounded-md bg-white  py-2.5 shadow-lg ${isViewOpen ? 'visible' : 'hidden'
+                className={`absolute right-5 top-10 z-10 mt-[1px] w-auto rounded-md bg-white  py-2.5 shadow-lg ${isViewOpen ? 'visible' : 'hidden'
                   } `}
               >
                 <li
@@ -899,7 +900,7 @@ const ListAPFieldMapping: React.FC = () => {
                   </div>
                 )}
 
-                <div className='h-[calc(100vh-202px)] w-full overflow-y-scroll'>
+                <div className='h-[calc(100vh-112px)] w-full overflow-y-scroll'>
                   {/* Main Field  */}
                   <div className='flex h-3/4 border-b border-lightSilver'>
                     <div className='flex w-full items-center justify-center border-r border-lightSilver'>

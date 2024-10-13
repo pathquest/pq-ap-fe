@@ -54,14 +54,7 @@ const ListVendors: React.FC = () => {
 
   const [orderBy, setOrderBy] = useState<number | null>(1)
   const [orderColumnName, setOrderColumnName] = useState<string>("VendorId")
-  const [sortOrders, setSortOrders] = useState<{ [key: string]: null | 'asc' | 'desc' }>({
-    VendorId: null,
-    Payables: null,
-    Name: null,
-    PhoneNumber: null,
-    Email: null,
-    PreferredPaymentMethodStr: null,
-  })
+  const [hoveredColumn, setHoveredColumn] = useState<string>("");
 
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false)
   const [isInactiveModalOpen, setIsInactiveModalOpen] = useState<boolean>(false)
@@ -107,24 +100,24 @@ const ListVendors: React.FC = () => {
       colalign: 'right',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('VendorId')}>
-        VENDOR ID <SortIcon order={sortOrders['VendorId']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('VendorId')} onMouseEnter={() => setHoveredColumn("VendorId")} onMouseLeave={() => setHoveredColumn("")}>
+        Vendor Id <SortIcon orderColumn="VendorId" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "VendorId"}></SortIcon>
       </div>,
       accessor: 'VendorId',
       sortable: false,
       colStyle: '!w-[70px] !tracking-[0.02em]',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Name')}>
-        VENDOR NAME <SortIcon order={sortOrders['Name']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Name')} onMouseEnter={() => setHoveredColumn("Name")} onMouseLeave={() => setHoveredColumn("")}>
+        Vendor Name <SortIcon orderColumn="Name" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "Name"}></SortIcon>
       </div>,
       accessor: 'Name',
       sortable: false,
       colStyle: '!w-[100px] !tracking-[0.02em]',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('PhoneNumber')}>
-        PHONE NUMBER <SortIcon order={sortOrders['PhoneNumber']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('PhoneNumber')} onMouseEnter={() => setHoveredColumn("PhoneNumber")} onMouseLeave={() => setHoveredColumn("")}>
+        Phone Number <SortIcon orderColumn="PhoneNumber" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "PhoneNumber"}></SortIcon>
       </div>,
       accessor: 'PhoneNumber',
       sortable: false,
@@ -132,24 +125,24 @@ const ListVendors: React.FC = () => {
       colalign: 'right',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Email')}>
-        EMAIL ADDRESS <SortIcon order={sortOrders['Email']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Email')} onMouseEnter={() => setHoveredColumn("Email")} onMouseLeave={() => setHoveredColumn("")}>
+        Email Address <SortIcon orderColumn="Email" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "Email"}></SortIcon>
       </div>,
       accessor: 'Email',
       sortable: false,
       colStyle: '!w-[110px] !tracking-[0.02em]',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('PreferredPaymentMethod')}>
-        PREFERRED PAYMENT METHOD <SortIcon order={sortOrders['PreferredPaymentMethod']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('PreferredPaymentMethod')} onMouseEnter={() => setHoveredColumn("PreferredPaymentMethod")} onMouseLeave={() => setHoveredColumn("")}>
+        Preferred Payment Method <SortIcon orderColumn="PreferredPaymentMethod" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "PreferredPaymentMethod"}></SortIcon>
       </div>,
       accessor: 'PreferredPaymentMethodStr',
       sortable: false,
       colStyle: '!w-[150px] !tracking-[0.02em]',
     },
     {
-      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Payables')}>
-        PAYABLES <SortIcon order={sortOrders['Payables']}></SortIcon>
+      header: <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('Payables')} onMouseEnter={() => setHoveredColumn("Payables")} onMouseLeave={() => setHoveredColumn("")}>
+        Payables <SortIcon orderColumn="Payables" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "Payables"}></SortIcon>
       </div>,
       accessor: 'Payables',
       sortable: false,
@@ -182,39 +175,8 @@ const ListVendors: React.FC = () => {
 
   // For Sorting Data
   const handleSortColumn = (name: string) => {
-    const currentSortOrder = sortOrders[name]
-    let newSortOrder: 'asc' | 'desc'
-
-    if (currentSortOrder === 'asc') {
-      newSortOrder = 'desc'
-    } else {
-      newSortOrder = 'asc'
-    }
-
-    setSortOrders({ ...sortOrders, [name]: newSortOrder })
     setOrderColumnName(name)
-    switch (name) {
-      case 'VendorId':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'Name':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'PhoneNumber':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'Email':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'PreferredPaymentMethod':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      case 'Payables':
-        setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
-        break
-      default:
-        break
-    }
+    setOrderBy((prevValue) => (prevValue === 1 ? 0 : 1))
   }
 
   // function for select All row (Checkboxes)
@@ -561,13 +523,13 @@ const ListVendors: React.FC = () => {
   if (vendorListData.length === 0) {
     if (isLoading) {
       noDataContent = (
-        <div className='flex h-full w-full items-center justify-center'>
+        <div className='flex h-[calc(100vh-155px)] w-full items-center justify-center'>
           <Loader size='md' helperText />
         </div>
       )
     } else {
       noDataContent = (
-        <div className='sticky flex h-[59px] w-full items-center justify-center border-b border-b-[#ccc]'>
+        <div className='sticky flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
           No records available at the moment.
         </div>
       )
@@ -583,9 +545,9 @@ const ListVendors: React.FC = () => {
         ? <VendorAddScreen EditId={EditId ?? 0} isOpen={isVendorAddScreenOpen} onClose={(value: string) => handleModalClose(value)} />
         :
         <>
-          <div className='sticky top-0 z-[6] flex h-[66px] w-full items-center justify-between bg-whiteSmoke laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
+          <div className='sticky top-0 z-[6] flex !h-[50px] w-full items-center justify-between bg-whiteSmoke laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
             <div className='flex items-center'>
-              <label className='font-proxima flex cursor-pointer items-center laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base laptop:font-semibold laptopMd:font-semibold lg:font-semibold xl:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>Vendors</label>
+              <label className='font-proxima flex items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Vendors</label>
             </div>
             <div className='flex items-center gap-5'>
               {selectedRows.length > 1
@@ -628,7 +590,7 @@ const ListVendors: React.FC = () => {
           </div>
 
           {/* DataTable */}
-          <div className='h-[calc(100vh-145px)] overflow-auto max-[425px]:mx-1 custom-scroll'>
+          <div className='h-[calc(100vh-112px)] overflow-auto max-[425px]:mx-1 custom-scroll'>
             <div className={`${vendorList.length === 0 ? 'h-11' : 'h-auto'}`}>
               <DataTable
                 columns={columns}

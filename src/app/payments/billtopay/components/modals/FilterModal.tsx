@@ -320,8 +320,8 @@ const FilterModal = ({ onOpen, onClose }: any) => {
             {isDueDateClicked === 1 && <div className='w-[70%] customDatePickerRangeExpandWidth'>
               <DatepickerRangeExpanded
                 label='Due Date'
-                startYear={2023}
-                endYear={2025}
+                startYear={1900}
+                endYear={2099}
                 id='due-date'
                 getValue={(dateRange) => {
                   setIsResetClicked(false)

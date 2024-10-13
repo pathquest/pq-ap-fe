@@ -78,13 +78,13 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
 
   const [isCollapsed, setCollapse] = useState<boolean>(false)
   const [isOpen, setIsOpen] = useState<boolean>(false)
-  const [windowSize, setWindowSize] = useState(0)
+  const [windowSize, setWindowSize] = useState(992)
   const [selectedOption, setSelectedOption] = useState<string>('')
-  const [topPosition, setTopPosition] = useState<number>(65)
+  const [topPosition, setTopPosition] = useState<number>(63)
 
   const calculateTopPosition = (index: number) => {
-    const basePosition = 65
-    const incrementPerPosition = 60
+    const basePosition = 63
+    const incrementPerPosition = 50
     return basePosition + (index * incrementPerPosition)
   }
 
@@ -146,48 +146,49 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
     {
       name: 'Dashboard',
       href: '/dashboard',
-      icon: <DashboardIcon />,
+      icon: <DashboardIcon isActive={pathname === "/dashboard" ? true : false} />,
     },
     {
       name: 'Files',
       href: '/history',
-      icon: <DocumentHistoryIcon />,
+      icon: <DocumentHistoryIcon isActive={pathname === "/history" ? true : false} />,
     },
     // {
     //   name: 'Purchase Order',
     //   href: '/purchaseorder',
-    //   icon: <PurchaseIcon />,
+    //   icon: <PurchaseIcon isActive={pathname === "/purchaseorder" ? true : false} />,
     // },
     {
       name: 'Bills',
       href: '/bills',
-      icon: <BillsIcon />,
+      icon: <BillsIcon isActive={pathname.includes('bills') ? true : false} />,
     },
     {
       name: 'Payments',
       href: '/payments',
       icon: (
         <span ref={paymentsIconRef}>
-          <PaymentsIcon />
+          <PaymentsIcon isActive={pathname.includes('payments') ? true : false} />
         </span>
       ),
     },
     {
       name: 'Approval',
       href: '/approvals',
-      icon: <ApprovalIcon />,
+      icon: <ApprovalIcon isActive={pathname === "/approvals" ? true : false} />,
     },
     {
       name: 'Reports',
       href: '/reports',
-      icon: <ReportsIcon />,
+      icon: <ReportsIcon isActive={pathname === "/reports" ? true : false} />,
     },
     {
       name: 'Vendor',
       href: '/vendors',
-      icon: <VendorIcon />,
+      icon: <VendorIcon isActive={pathname === "/vendors" ? true : false} />,
     }
   ].filter(item => hasViewPermission(processPermissionsMatrix, item.name))
+
 
   useEffect(() => {
     const paymentIndex = sidebarItems.findIndex(item => item.name === 'Payments')
@@ -254,36 +255,35 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
     return (
       <>
         {sidebarItems.map((item, index) => (
-          <div onClick={() => {
-            localStorage.removeItem('previousUrl')
-            handleDashboardIconClick(item.name)
-          }}
+          <div
             key={item.name}
             tabIndex={0}
+            className={`pl-[22px] h-[50px] outline-none focus:border-primary focus:bg-whiteSmoke flex cursor-pointer items-center whitespace-nowrap  border-l-[4px] hover:border-primary hover:bg-whiteSmoke
+                ${(pathname.includes('bills') && item.name === 'Bills') || (pathname.includes('payments') && item.name === 'Payments')
+                ? 'border-primary bg-whiteSmoke text-primary'
+                : pathname === item.href
+                  ? 'border-primary bg-whiteSmoke text-primary'
+                  : 'border-pureWhite'
+              }`}
             onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) =>
               (e.key === 'Enter') && handleDashboardIconClick(item.name)
             }
-            // href={item.href}
-            className={`mb-1 outline-none focus:border-primary focus:bg-whiteSmoke flex cursor-pointer items-center whitespace-nowrap ${isCollapsed ? 'pl-4' : 'pl-[27px]'
-              } border-l-[4px] hover:border-primary hover:bg-whiteSmoke
-       ${(pathname.includes('bills') && item.name === 'Bills') || (pathname.includes('payments') && item.name === 'Payments')
-                ? 'border-primary bg-whiteSmoke'
-                : pathname === item.href
-                  ? 'border-primary bg-whiteSmoke'
-                  : 'border-pureWhite'
-              }`}>
+            onClick={() => {
+              localStorage.removeItem('previousUrl')
+              handleDashboardIconClick(item.name)
+            }}
+          // href={item.href}
+          >
             {isCollapsed ? (
-              <span className='pt-[16px] pb-[13.5px] pl-[10.5px]'>
+              <span className='w-full flex items-center justify-start'>
                 <Tooltip position='right' content={item.name} className='!py-0 !pl-0'>
                   {item.icon}
                 </Tooltip>
               </span>
             ) : (
-              <div className='flex items-center'>
-                <span className='py-[17.68px]'>{item.icon}</span>
-                <span className='select-none py-[14.5px] pl-[10px]'>
-                  <Typography type='h6'>{item.name}</Typography>
-                </span>
+              <div className='flex justify-center items-center'>
+                <span className='h-full w-6 mr-2'>{item.icon}</span>
+                <span className={`pt-1 h-full select-none flex justify-center items-center cursor-pointer text-sm tracking-[0.02em] font-proxima text-darkCharcoal ${pathname == item.href || (pathname.includes('payments') && item.name === 'Payments') ? "text-primary font-bold" : "font-medium"}`}>{item.name}</span>
               </div>
             )}
           </div>
@@ -418,14 +418,12 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
       {/* Sidebar Dashboard */}
       <div
         ref={sidebarRef}
-        className={`transition-width duration-300 ease-out ${isLeftSidebarCollapsed && !isMasterSetting ? 'laptop:w-[85px]' : 'laptop:w-[200px]'
+        className={`transition-width duration-300 ease-out ${isLeftSidebarCollapsed && !isMasterSetting ? 'laptop:w-[78px]' : 'laptop:w-[180px]'
           } flex flex-col justify-between overflow-y-auto overflow-x-hidden border-r border-lightSilver text-darkCharcoal laptop:h-screen`}
       >
         <div className={`h-full overflow-y-auto`}>
           <div className={`sticky top-0 flex items-center justify-between ${isOpen && 'z-[7] bg-white'} `}>
-            <span
-              className={`!z-10 flex h-16 w-full items-center border-lightSilver bg-white px-6 py-4 text-[24px] font-medium text-primary laptop:border-b`}
-            >
+            <span className={`!z-10 flex h-[60px] w-full justify-center items-center border-lightSilver bg-white px-6 py-4 text-[24px] font-medium text-primary laptop:border-b`}>
               <PQlogoIcon isCollapsed={isLeftSidebarCollapsed && !isMasterSetting} />
             </span>
             <span className='laptop:hidden'>
@@ -454,7 +452,7 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
           {windowSize <= 991 ? (
             <>
               <div
-                className={`absolute flex w-[183px] flex-col ${isMasterSetting ? 'top-[64px]' : 'top-[79px]'} z-[7]  bg-white  ${isOpen ? styles.expandDiv : styles.collapsedDiv
+                className={`!h-auto overflow-hidden absolute flex w-[170px] flex-col top-[60px] z-[7] bg-white  ${isOpen ? styles.expandDiv : styles.collapsedDiv
                   }`}
               >
                 {isMasterSetting ? (
@@ -506,8 +504,7 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
         {windowSize >= 992 && !isMasterSetting && (
           <span
             tabIndex={0}
-            className={`!h-[66px] outline-none sticky bottom-0 focus:bg-whiteSmoke bg-white py-[30px] pl-[29px] ${isLeftSidebarCollapsed ? 'pr-[50px]' : 'pr-[174px]'
-              } cursor-pointer  border-t border-[#E6E6E6]`}
+            className={`!h-[66px] outline-none sticky flex items-center justify-start bottom-0 focus:bg-whiteSmoke bg-white pl-[22px] cursor-pointer  border-t border-[#E6E6E6]`}
             onClick={handelSidebarCollaped}
             onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) =>
               (e.key === 'Enter') && handelSidebarCollaped()
@@ -520,7 +517,7 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
       <div
         ref={divRef}
         className={`${selectedOption === 'Payments' ? 'overflow-y-clip' : 'overflow-y-auto'} ${selectedOption == 'Payments' ? 'translate-x-0' : '!z-[-10] translate-x-1/2 opacity-0'
-          } absolute w-[244px] rounded border border-lightSilver transition-transform duration-300 ease-in-out ${isLeftSidebarCollapsed ? 'left-[85px]' : 'left-[200px]'
+          } absolute w-[244px] rounded border border-lightSilver transition-transform duration-300 ease-in-out ${isLeftSidebarCollapsed ? 'left-[78px]' : 'left-[180px]'
           }  z-10 ml-[9px] bg-white`}
         style={{ boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.3)', top: `${topPosition}px` }}
       >
@@ -529,13 +526,13 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
         <div className={` transition-height w-full duration-[400ms] ease-in-out ${selectedOption == 'Payments' ? `${(isBillsToPayView && isPaymentStatusView) ? "h-[95px]" : "h-[50px]"}  delay-[350ms]` : 'h-0 delay-0 '}`}>
           <div
             tabIndex={selectedOption == 'Payments' ? 0 : -1}
-            className={`${isBillsToPayView ? "flex" : "hidden"} cursor-pointer py-[10px] hover:text-primary`}
+            className={`mainSidebarItem ${isBillsToPayView ? "flex" : "hidden"} cursor-pointer py-[10px] hover:text-primary font-proxima text-darkCharcoal`}
             onClick={() => handlePageRoute('BillsToPay')}
             onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) =>
               (e.key === 'Enter') && handlePageRoute('BillsToPay')
             }
           >
-            <span className='pl-[27px] pr-5'>
+            <span className='pl-[27px] pr-5 sidebarIcon'>
               <BillsToPayIcon />
             </span>
             Bills to pay
@@ -551,13 +548,13 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
           </div> */}
           <div
             tabIndex={selectedOption == 'Payments' ? 0 : -1}
-            className={`${isPaymentStatusView ? "flex" : "hidden"} cursor-pointer py-[10px] hover:text-primary`}
+            className={`mainSidebarItem ${isPaymentStatusView ? "flex" : "hidden"} cursor-pointer py-[10px] hover:text-primary font-proxima text-darkCharcoal`}
             onClick={() => handlePageRoute('Status')}
             onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) =>
               (e.key === 'Enter') && handlePageRoute('Status')
             }
           >
-            <span className='pl-[27px] pr-5'>
+            <span className='pl-[27px] pr-5 sidebarIcon'>
               <PaymentStatusIcon />
             </span>
             Payment Status

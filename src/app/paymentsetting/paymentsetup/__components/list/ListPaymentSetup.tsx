@@ -450,7 +450,7 @@ const ListPaymentSetup: React.FC = () => {
         ? <CheckApprove onClose={(value: string) => handleModalClose(value)} Mode={mode} accountId={accountId} paymentMethodSetupId={paymentMethodSetupId} />
         : <div className='w-full h-full'>
           {/* Navbar */}
-          <div key={CompanyId} className='sticky top-0 z-[6] flex h-[66px] w-full items-center justify-between bg-whiteSmoke'>
+          <div key={CompanyId} className='sticky top-0 z-[6] flex h-[50px] w-full items-center justify-between bg-whiteSmoke'>
             <div className='flex items-center justify-center ml-2.5'>
               {tabs.map((tab, index) => (
                 <label

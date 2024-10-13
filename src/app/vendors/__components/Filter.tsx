@@ -132,7 +132,7 @@ const Filter: React.FC<any> = ({
                 </div>
 
                 {/* Content */}
-                <div className='grid grid-cols-3 gap-5 p-5 custom-scroll overflow-y-auto'>
+                <div className='grid grid-cols-3 gap-5 p-5'>
                     <div>
                         <MultiSelectChip
                             id='vendorName'

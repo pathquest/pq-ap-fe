@@ -169,7 +169,7 @@ function MergeDocDrawer({ isOpen, onClose, selectedBillItems, removeItem, billLi
           } bg-white transition-transform duration-300 ease-in-out`}
       >
         <div className='z-50 h-full w-full bg-white'>
-          <div className='flex items-center justify-between border-b-[1px] border-[#D8D8D8] p-[15px]'>
+          <div className='flex items-center justify-between border-b-[1px] border-lightSilver p-[15px]'>
             <div className='flex flex-col'>
               <span className=''>
                 <Typography className='!text-[18px] !font-bold !tracking-[0.02em] !text-darkCharcoal'>Merged Document</Typography>
@@ -230,7 +230,7 @@ function MergeDocDrawer({ isOpen, onClose, selectedBillItems, removeItem, billLi
                     <span>File Name</span>
                     <span>No Of Pages</span>
                   </div>
-                  <div className='custom-scroll-PDF vertical-scroll !max-h-[55vh] overflow-scroll'>
+                  <div className='custom-scroll-PDF vertical-scroll !max-h-[55vh] overflow-auto'>
                     <DragDropContext onDragEnd={handleDragEnd}>
                       <Droppable droppableId='droppable'>
                         {(provided) => (

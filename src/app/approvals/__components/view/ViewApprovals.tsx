@@ -395,7 +395,7 @@ const ViewApprovals = ({ processtype }: any) => {
 
   return (
     <ViewApprovalsWrapper>
-      <div className='sticky  top-0 z-[6] flex h-[64px] items-center justify-between bg-whiteSmoke'>
+      <div className='sticky  top-0 z-[6] flex h-[50px] items-center justify-between bg-whiteSmoke'>
         <div className='mx-3 flex cursor-pointer place-content-center' onClick={handleClose}>
           <ChevronLeftIcon bgColor='white' />
         </div>
@@ -455,7 +455,7 @@ const ViewApprovals = ({ processtype }: any) => {
             <Loader size='md' helperText />
           </div>
         ) : (
-          <div className='mb-5 border-solid border-[#D8D8D8] md:flex'>
+          <div className='mb-5 border-solid border-lightSilver md:flex'>
             <div className='flex h-full w-full pt-5'>
               <Resizable
                 className='border-r-2 border-[#888] pr-2'
@@ -478,7 +478,7 @@ const ViewApprovals = ({ processtype }: any) => {
                 }}
               >
                 <span className='pl-5 text-[16px] font-bold font-proxima tracking-[0.02em]'>Document</span>
-                <div className='group relative mt-[15px] border-b border-r border-t border-[#D8D8D8]'>
+                <div className='group relative mt-[15px] border-b border-r border-t border-lightSilver'>
                   {!documentDetailByIdData?.FilePath ? (
                     <span className='flex h-[100vh] w-full items-center justify-center border-r border-lightSilver'>
                       <ImageIcon />
@@ -520,8 +520,8 @@ const ViewApprovals = ({ processtype }: any) => {
               <div className='ml-[34px] mr-[11px] w-full flex-grow overflow-auto'>
                 <span className='text-[16px] font-bold font-proxima tracking-[0.02em]'>Document edited</span>
 
-                <div ref={rightBoxRef} className='mt-[15px] flex h-auto flex-col overflow-hidden border border-[#D8D8D8]'>
-                  <div className='flex border-b border-[#D8D8D8] px-5 py-[14px]'>
+                <div ref={rightBoxRef} className='mt-[15px] flex h-auto flex-col overflow-hidden border border-lightSilver'>
+                  <div className='flex border-b border-lightSilver px-5 py-[14px]'>
                     <div className='!py-0 !pl-0 !pr-1 !font-proxima !text-[14px]'>
                       <span className='text-[16px] font-proxima tracking-[0.02em]'>BILL INFO : </span>
                       <span className='break-all pl-[18px] text-[16px] font-bold font-proxima tracking-[0.02em]'>{documentDetailByIdData?.BillNumber}</span>

@@ -183,7 +183,7 @@ const AgingDetailedDrawer: React.FC<ActionsProps> = ({
     <div className={`${onOpen ? 'visible' : 'hidden'}`}>
       {/* Navbar */}
       <div className='sticky top-0'>
-        <div className='relative flex h-16 items-center justify-between bg-[#F4F4F4] px-4'>
+        <div className='relative flex h-16 items-center justify-between bg-lightGray px-4'>
           <div className='flex items-center gap-5'>
             <span className='cursor-pointer' onClick={handleModalClose}>
               <BackArrow />

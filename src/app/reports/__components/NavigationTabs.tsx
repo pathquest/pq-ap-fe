@@ -168,7 +168,7 @@ const NavigationTabs: React.FC<NavigationBarProps> = ({ className, getValue, var
           <div>
             <ul
               className={`custom-scroll-PDF absolute z-[1] overflow-y-auto rounded-md bg-pureWhite shadow-md transition-transform max-[694px]:right-0 max-[694px]:w-full min-[695px]:w-[294px] ${isOpen
-                ? 'top-12 max-h-[320px] translate-y-0 opacity-100 transition-opacity duration-500 ease-out'
+                ? 'top-10 max-h-[320px] translate-y-0 opacity-100 transition-opacity duration-500 ease-out'
                 : 'max-h-0 translate-y-10 opacity-0 transition-opacity duration-500'
                 }`}
             >

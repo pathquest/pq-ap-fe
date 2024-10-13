@@ -317,8 +317,8 @@ const Filter: React.FC<any> = ({
                             id='bilDate'
                             label='Bill Date'
                             className='!pt-[3px]'
-                            startYear={new Date().getFullYear()}
-                            endYear={new Date().getFullYear()}
+                            startYear={1900}
+                            endYear={2099}
                             value={billDateRange}
                             getValue={(value) => {
                                 setIsResetClicked(false);
@@ -334,8 +334,8 @@ const Filter: React.FC<any> = ({
                             id='dueDate'
                             label='Due Date'
                             className='!pt-[3px]'
-                            startYear={new Date().getFullYear()}
-                            endYear={new Date().getFullYear()}
+                            startYear={1900}
+                            endYear={2099}
                             value={dueDateRange}
                             getValue={(value) => {
                                 setIsResetClicked(false);

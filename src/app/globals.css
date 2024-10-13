@@ -66,7 +66,7 @@
 /* Remove Pedding from Table for Approval table - Bhargav */
 .approvalMain table tr td,
 .billsMain table tr td {
-  height: 60px;
+  height: 44px;
 }
 
 .approvalMain table tr td,
@@ -83,7 +83,7 @@
 }
 
 .configurationMain table tr td {
-  height: 56px;
+  height: 44px;
 }
 
 .configurationMain table tr td,
@@ -96,20 +96,6 @@
   height: 100% !important;
 }
 
-.dashboardMain table tr td {
-  height: 50px;
-}
-
-.dashboardMain table tr td,
-.dashboardMain table tr td:last-child>span {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-.dashboardMain table tr td:last-child>span {
-  height: 100% !important;
-}
-
 .processTypeSelection>div>input {
   font-weight: 700;
 }
@@ -119,7 +105,7 @@
 }
 
 .processTypeSelection .bottomAnimation li.active {
-  background: #f6f6f6;
+  background: #F5F8F7;
 }
 
 .userCompanyDropdown .bottomAnimation {
@@ -423,6 +409,7 @@ tr.row-disabled {
 
 .selectMain #process_selection {
   font-weight: 700 !important;
+  font-size: 16px;
 }
 
 .fieldWrapper label,
@@ -528,7 +515,7 @@ tr.row-disabled {
 }
 
 .AgingDetailTable table tbody tr .border-none {
-  background-color: #f6f6f6 !important;
+  background-color: #F5F8F7 !important;
   border-bottom: 1px solid #d8d8d8 !important;
 }
 
@@ -598,4 +585,8 @@ tr.row-disabled {
 .fileuploadHeaderSelectDrop #processType,
 .fileuploadHeaderSelectDrop #locationSelect {
   font-weight: 600;
+}
+
+.mainSidebarItem:hover .sidebarIcon path {
+  fill: #02b89d;
 }

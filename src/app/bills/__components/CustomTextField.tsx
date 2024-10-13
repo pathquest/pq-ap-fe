@@ -40,7 +40,7 @@ const CustomTextField = ({
       placeholder={`Enter ${field.Label}`}
       type='input'
       childRef={inputRef}
-      // ${isDisabled ? 'bg-[#F4F4F4] w-full opacity-75 pointer-events-none' : ''}
+      // ${isDisabled ? 'bg-lightGray w-full opacity-75 pointer-events-none' : ''}
       borderClassName={`w-full
                 ${currentRowHasLineItemFieldErrorsObj && currentRowHasLineItemFieldErrorsObj[fieldName]
           ? '!text-[#DC3545] border-none'
