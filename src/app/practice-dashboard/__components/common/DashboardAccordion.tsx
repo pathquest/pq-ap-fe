@@ -4,7 +4,7 @@ import AccUpArrow from '@/assets/Icons/practice_dashboard/AccUpArrow'
 
 const DashboardAccordion = ({ title, children, onToggle, isOpen }:any) => {
   return (
-    <div className="border border-[#D8D8D8] rounded-md w-full mb-4">
+    <div className="border border-lightSilver rounded-md w-full mb-4">
       <div
         className="sticky cursor-pointer bg-whiteSmoke py-3 px-4 flex justify-between items-center"
         onClick={onToggle}

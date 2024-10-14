@@ -727,7 +727,7 @@ function ManageCompanyList({ orgIdValue, session, selectedAccountingTool, select
 
   return (
     <div>
-      <div className={`stickyTable custom-scroll h-[calc(100vh-160px)] overflow-scroll`}>
+      <div className={`stickyTable custom-scroll h-[calc(100vh-160px)] overflow-auto`}>
         <div className={`mainTable ${manageCompanyList.length !== 0 && 'h-0'}`}>
           <DataTable
             columns={companyListHeaders}

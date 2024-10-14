@@ -126,7 +126,7 @@ export default function WatcherListDropdown({
             <input
               type='search'
               id='default-search'
-              className='block  h-[42px] w-full rounded-sm border-b border-[#D8D8D8] pl-9 text-sm outline-none focus:border-[#02b89d]'
+              className='block  h-[42px] w-full rounded-sm border-b border-lightSilver pl-9 text-sm outline-none focus:border-[#02b89d]'
               placeholder='Search'
               onChange={handleSearch}
               value={searchText}

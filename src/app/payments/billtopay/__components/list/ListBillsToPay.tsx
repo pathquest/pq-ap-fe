@@ -1,6 +1,7 @@
 'use client'
 
 import { BlobServiceClient } from '@azure/storage-blob'
+import { format, parse } from 'date-fns'
 import { usePathname, useRouter } from 'next/navigation'
 import { Badge, BasicTooltip, Button, CheckBox, DataTable, Loader, Toast, Tooltip, Typography } from 'pq-ap-lib'
 import 'pq-ap-lib/dist/index.css'
@@ -8,80 +9,111 @@ import React, { useEffect, useRef, useState } from 'react'
 
 // Common components
 import FileModal from '@/app/bills/__components/FileModal'
-import Actions from '@/components/Common/DatatableActions/DatatableActions'
 import Wrapper from '@/components/Common/Wrapper'
-import AgingDaysDropdown from '../../components/dropdowns/AgingDaysDropdown'
+import VendorsDropdown from '../../components/dropdowns/Vendor'
 import BillsOnHoldModal from '../../components/modals/BillsOnHoldModal'
+import FilterModal from '../../components/modals/FilterModal'
 import MarkAsPaidModal from '../../components/modals/MarkAsPaidModal'
 import MoveBillsToPayModals from '../../components/modals/MoveBillsToPayModal'
 
 // Icons
 import GetFileIcon from '@/app/bills/__components/GetFileIcon'
+import PaymentAgingIcon from '@/assets/Icons/PaymentAgingIcon'
+import SortIcon from '@/assets/Icons/SortIcon'
 import AttachIcon from '@/assets/Icons/billposting/AttachIcon'
-import BackArrow from '@/assets/Icons/payments/BackArrow'
+import FilterIcon from '@/assets/Icons/billposting/FilterIcon'
 import ExclamationIcon from '@/assets/Icons/payments/ExclamationIcon'
 
 // Store
 import ColumnFilter from '@/components/Common/Custom/ColumnFilter'
 import Download from '@/components/Common/Custom/Download'
-import DataLoadingStatus from '@/components/Common/Functions/DataLoadingStatus'
+import DrawerOverlay from '@/components/Common/DrawerOverlay'
 import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
 import { formatDate } from '@/components/Common/Functions/FormatDate'
-import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
-import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import { setSelectedStatus, vendorDropdown } from '@/store/features/bills/billSlice'
-import {
-  getPaymentColumnMapping,
-  paymentGetList,
-  savePaymentColumnMapping,
-  setCurrentPath,
-  setEndDay,
-  setStartDay,
-} from '@/store/features/billsToPay/billsToPaySlice'
-
 import { formatFileSize } from '@/components/Common/Functions/FormatFileSize'
+import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
+import ActivityDrawer from '@/components/Common/Modals/Activitydrawer'
+import { storageConfig } from '@/components/Common/pdfviewer/config'
+import { useAppDispatch, useAppSelector } from '@/store/configureStore'
+import { setIsVisibleSidebar, setSelectedStatus, vendorDropdown } from '@/store/features/bills/billSlice'
+import { getPaymentColumnMapping, paymentGetList, savePaymentColumnMapping, setCurrentPath, setVendorIdList } from '@/store/features/billsToPay/billsToPaySlice'
+import { setSearchSelectedModule } from '@/store/features/globalSearch/globalSearchSlice'
 import { useSession } from 'next-auth/react'
+import { Actions } from '../../components/DataTableActions/DataTableActions'
 import MultipleVendorMultiplePaymentDetailsModal from '../../components/payment-details/MultipleVendorMultiplePaymentDetailsModal'
 import SinglePaymentDetailsModal from '../../components/payment-details/SinglePaymentDetailsModal'
 import SingleVendorMultiplePaymentDetailsModal from '../../components/payment-details/SingleVendorMultiplePaymentDetailsModal'
-import { storageConfig } from '@/components/Common/pdfviewer/config'
-import SortIcon from '@/assets/Icons/SortIcon'
 
-const PaymentAgingDays: React.FC = () => {
-  const UserId = localStorage.getItem('UserId')
+const ListBillsToPay: React.FC = () => {
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
+  const isPaymentPermission = getModulePermissions(processPermissionsMatrix, "Payments") ?? {}
+  const isBillsToPayEdit = isPaymentPermission["Bills to pay"]?.Edit ?? false;
+  const isBillsToPayView = isPaymentPermission["Bills to pay"]?.View ?? false;
+
+  // For Dynamic Company Id & AccountingTool
+  const { data: session } = useSession()
+  const CompanyId = Number(session?.user?.CompanyId)
+  const { filterFormFields, vendorIdList } = useAppSelector((state) => state.billsToPayReducer)
+  const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
+  const dispatch = useAppDispatch()
+
+  const userId = localStorage.getItem('UserId')
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const [selectedRows, setSelectedRows] = useState<any>([])
+  const [selectRowsStatus, setSelectRowsStatus] = useState<number[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [rowId, setRowId] = useState<number[]>([])
+  const [isBillOnHoldClicked, setBillOnHoldClicked] = useState<boolean>(false)
 
   const [isSingleBillPaymentModalOpen, setIsSingleBillPaymentModalOpen] = useState<boolean>(false)
   const [isSingleVendorMultipleBillPayModalOpen, setIsSingleVendorMultipleBillPayModalOpen] = useState<boolean>(false)
   const [isMultipleVendorMultipleBillPayModalOpen, setIsMultipleVendorMultipleBillPayModalOpen] = useState<boolean>(false)
 
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [selectedRows, setSelectedRows] = useState<any>([])
-  const [selectRowsStatus, setSelectRowsStatus] = useState<number[]>([])
-  const [currentFilterLabel, setCurrentFilterLabel] = useState('')
-  const [currentFilterValue, setCurrentFilterValue] = useState('')
-  const [rowId, setRowId] = useState<number[]>([])
-  const [isBillOnHoldClicked, setBillOnHoldClicked] = useState<boolean>(false)
   const [isMarkAsPaidClicked, setMarkAsPaidClicked] = useState<boolean>(false)
   const [isBillsToPayClicked, setBillsToPayClicked] = useState<boolean>(false)
-  const [totalAmountToPay, setTotalAmountToPay] = useState<number>(0)
-  const [dataList, setDataList] = useState<any[]>([])
-  const [tableDynamicWidth, setTableDynamicWidth] = useState('w-full laptop:w-[calc(100vw-200px)]')
-  const [currSelectedBillDetails, setCurrSelectedBillDetails] = useState<any[]>([])
-  const [headersDropdown, setHeadersDropdown] = useState<any>([])
-  const [columnListVisible, setColumnListVisible] = useState<any>([])
-  const [billsToPayHeaders, setBillsToPayHeaders] = useState<any>([])
-  const [mapColId, setMapColId] = useState(-1)
   const [isOpenAttchFile, setOpenAttachFile] = useState<boolean>(false)
+  const [isFilterClicked, setFilterClicked] = useState<boolean>(false)
+  const [paymentList, setPaymentList] = useState<any[]>([])
+  const [totalAmountToPay, setTotalAmountToPay] = useState<number>(0)
   const [fileBlob, setFileBlob] = useState<any>('')
   const [PDFUrl, setPDFUrl] = useState<any>('')
+  const [tableDynamicWidth, setTableDynamicWidth] = useState('w-full w-[calc(100vw-180px)]')
+  const [currSelectedBillDetails, setCurrSelectedBillDetails] = useState<any[]>([])
   const [isFileModal, setFileModal] = useState(false)
   const [isPdfLoading, setIsPdfLoading] = useState<boolean>(false)
   const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false)
+  const [headersDropdown, setHeadersDropdown] = useState<any>([])
+  const [columnListVisible, setColumnListVisible] = useState<any>([])
+  const [billsToPayHeaders, setBillsToPayHeaders] = useState<any>([])
+  const [mapColId, setMapColId] = useState<number>(-1)
+  const [vendorOptions, setVendorOptions] = useState<any>([])
 
-  const [orderBy, setOrderBy] = useState<number | null>()
+  const [isVisibleActivities, setIsVisibleActivities] = useState<boolean>(false)
+  const [selectedPayableId, setSelectedPayableId] = useState<number | null>(null)
+
+  const [orderBy, setOrderBy] = useState<number | null>(1)
   const [orderColumnName, setOrderColumnName] = useState<string | null>('DueDate')
   const [hoveredColumn, setHoveredColumn] = useState<string>("");
   const [parsedColumnData, setParsedColumnData] = useState<any>([])
+
+  const [isGuid, setGuid] = useState<string>('')
+  const isRowSelected = (id: any) => selectedRows.indexOf(id) !== -1
+
+  //For Lazy Loading
+  const [shouldLoadMore, setShouldLoadMore] = useState<boolean>(true)
+  const [itemsLoaded, setItemsLoaded] = useState<number>(0)
+  const [loaderCounter, setLoaderCounter] = useState<number>(0)
+  const [apiDataCount, setApiDataCount] = useState<number>(0)
+  const [checkLoader, setCheckLoader] = useState<boolean>(true)
+  const [vendorsId, setVendorsId] = useState<any[]>([])
+  let nextPageIndex: number = 1
+  const lazyRows: number = 70
+  const tableBottomRef = useRef<HTMLDivElement>(null)
 
   const [currentPayValue, setCurrentPayValue] = useState({
     billNumber: '',
@@ -94,55 +126,126 @@ const PaymentAgingDays: React.FC = () => {
     accountPaybleId: null,
     vendorId: 0,
   })
+
   const [isIntermediate, setIsIntermediate] = useState<any>({
     isEnable: false,
     isChecked: false,
   })
+
   const [isFileRecord, setIsFileRecord] = useState<any>({
     FileName: '',
     PageCount: '',
     BillNumber: '',
   })
 
-  const [shouldLoadMore, setShouldLoadMore] = useState(true)
-  const [itemsLoaded, setItemsLoaded] = useState(0)
-  const [loaderCounter, setLoaderCounter] = useState(0)
-  const [apiDataCount, setApiDataCount] = useState(0)
-  const [checkLoader, setCheckLoader] = useState(true)
+  useEffect(() => {
+    if (!isBillsToPayView) {
+      router.push('/manage/companies');
+    }
+  }, [isBillsToPayView]);
 
-  const router = useRouter()
-  const dispatch = useAppDispatch()
-  const pathname = usePathname()
-  const { data: session } = useSession()
-  const CompanyId = Number(session?.user?.CompanyId)
-  const [vendorsId, setVendorsId] = useState<any[]>([])
-  const billsToPayReducer = useAppSelector((state) => state.billsToPayReducer)
-  const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
-  const [vendorOptions, setVendorOptions] = useState<any>([])
+  useEffect(() => {
+    dispatch(setSearchSelectedModule('4'))
+  }, [])
 
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const tableBottomRef = useRef<HTMLDivElement>(null)
-  const isRowSelected = (id: any) => selectedRows.indexOf(id) !== -1
-  const lazyRows = 70
-  let nextPageIndex: number = 1
+  //Vendor List API
+  const getAllVendorOptions = () => {
+    const params = {
+      CompanyId: CompanyId,
+      isActive: true,
+    }
+    performApiAction(dispatch, vendorDropdown, params, (responseData: any) => {
+      setVendorOptions(responseData)
+      const allValues = responseData.map((option: any) => option.value);
+      vendorIdList.length == 0 && dispatch(setVendorIdList(allValues))
+    })
+  }
 
-  const getAgingDaysPaymentListParams = {
-    CompanyId: CompanyId,
-    LocationIds: null,
-    VendorIds: billsToPayReducer.vendorIdList,
-    Status: ["1", "2", "3", "4"],
-    StartDay: billsToPayReducer.startDay,
-    EndDay: billsToPayReducer.endDay,
-    StartDate: null,
-    EndDate: null,
-    AgingFilter: billsToPayReducer.agingFilter,
-    // OrderColumn: lastClickedColumn.trim().length > 0 ? lastClickedColumn.trim() : null,
-    // OrderBy: sortableFields[lastClickedColumn] ? 1 : 0,
+  const clearLocalStorage = () => {
+    localStorage.removeItem('DataList')
+    localStorage.removeItem('BillsData')
+    localStorage.removeItem('totalPayableAmount')
+    localStorage.removeItem('MultipleVendorTableData')
+    localStorage.removeItem('billAmount')
+    localStorage.removeItem('availCredits')
+    localStorage.removeItem('PartialPaymentDataList')
+    localStorage.removeItem('CreditData')
+    localStorage.removeItem('PaymentMethodList')
+    localStorage.removeItem('MultipleVendorCreditData')
+    localStorage.removeItem('MultipleVendorPartialPaymentDataList')
+  }
+
+  useEffect(() => {
+    setSelectedRows([])
+    setSelectRowsStatus([])
+    getAllVendorOptions()
+    clearLocalStorage()
+    setCurrSelectedBillDetails([])
+  }, [CompanyId])
+
+  const getDateParams = () => {
+    const lastMonth = new Date()
+    lastMonth.setMonth(lastMonth.getMonth() - 1)
+    const startDateFormatted = formatDate(lastMonth + '')
+
+    const futureMonth = new Date()
+    futureMonth.setMonth(futureMonth.getMonth() + 1)
+    const endDateFormatted = formatDate(futureMonth + '')
+
+    return { startDateFormatted, endDateFormatted }
+  }
+
+  const dateParams = getDateParams()
+  let startDate
+  let endDate
+
+  if (filterFormFields?.dueDateFrom !== null) {
+    startDate = filterFormFields?.dueDateFrom
+  } else if (filterFormFields?.isDueDateClicked === 1) {
+    startDate = dateParams.startDateFormatted
+  } else {
+    startDate = null
+  }
+
+  if (filterFormFields?.dueDateTo !== null) {
+    endDate = filterFormFields?.dueDateTo
+  } else if (filterFormFields?.isDueDateClicked === 1) {
+    endDate = dateParams.endDateFormatted
+  } else {
+    endDate = null
+  }
+
+  const getPaymentListParams = {
+    VendorIds: vendorIdList,
+    LocationIds: filterFormFields?.location.map(item => parseInt(item)) ?? null,
+    Status: filterFormFields?.paymentStatus ?? null,
+    StartDay: filterFormFields?.startDay !== null ? filterFormFields?.startDay : null,
+    EndDay: filterFormFields?.endDay !== null ? filterFormFields?.endDay : null,
+    StartDate:
+      typeof startDate === 'string' && startDate.length === 0
+        ? null
+        : typeof startDate === 'string'
+          ? format(parse(startDate.trim(), 'MM/dd/yyyy', new Date()), "yyyy-MM-dd'T'HH:mm:ss")
+          : null,
+    EndDate:
+      typeof endDate === 'string' && endDate.length === 0
+        ? null
+        : typeof endDate === 'string'
+          ? format(parse(endDate.trim(), 'MM/dd/yyyy', new Date()), "yyyy-MM-dd'T'HH:mm:ss")
+          : null,
+    AgingFilter: 0,
+    // OrderColumn: orderColumnName ?? null,
+    // OrderBy: sortableFields[orderColumnName] ? 1 : 0,
     OrderColumn: 'DueDate',
     OrderBy: 0,
-    PageSize: lazyRows,
+    IsDownload: false,
     // PageNumber: pageIndex || nextPageIndex,
+    PageSize: lazyRows,
   }
+
+  // const handleSelectVendors = (values: any) => {
+  //   dispatch(setSelectedVendors(values))
+  // }
 
   const handleModalClose = () => {
     setBillOnHoldClicked(false)
@@ -150,14 +253,11 @@ const PaymentAgingDays: React.FC = () => {
   }
 
   const handleClosePayBillModal = () => {
-    localStorage.removeItem('billAmount')
-    localStorage.removeItem('availCredits')
-    localStorage.removeItem('PartialPaymentDataList')
-    localStorage.removeItem('CreditData')
     setIsSingleBillPaymentModalOpen(false)
     setIsSingleVendorMultipleBillPayModalOpen(false)
     setIsMultipleVendorMultipleBillPayModalOpen(false)
     setRowId([])
+    clearLocalStorage()
     setCurrentPayValue({
       billNumber: '',
       billDate: '',
@@ -181,9 +281,8 @@ const PaymentAgingDays: React.FC = () => {
     setBillsToPayClicked(false)
   }
 
-  const handleFilterChange = (actionLabel: string, actionValue: string) => {
-    setCurrentFilterLabel(actionLabel)
-    setCurrentFilterValue(actionValue)
+  const handleFilterClose = () => {
+    setFilterClicked(false)
   }
 
   // Function to calculate the total AmountToPay for selected rows
@@ -191,12 +290,13 @@ const PaymentAgingDays: React.FC = () => {
     let totalAmountToPay = 0
 
     selectedRows.forEach((selectedId) => {
-      const selectedRow = dataList.find((row) => row.Id === selectedId)
+      const selectedRow = paymentList.find((row) => row.Id === selectedId)
       if (selectedRow) {
         totalAmountToPay += selectedRow.RemanningDue
       }
     })
 
+    // Format the total to have 2 decimal places
     return totalAmountToPay.toFixed(2)
   }
 
@@ -286,15 +386,15 @@ const PaymentAgingDays: React.FC = () => {
       const newSelecteds = tableData.map((row: any) => row.Id)
       setSelectedRows(newSelecteds)
 
-      const selectedBillDetails = dataList.map((row: any) => ({
-        VendorId: row.VendorId,
+      const selectedBillDetails = paymentList.map((row: any) => ({
+        VendorId: Number(row.VendorId),
         AccountPaybleId: row.Id,
         Amount: row.RemanningDue,
       }))
 
       setCurrSelectedBillDetails(selectedBillDetails)
 
-      const selectedStatus = dataList.map((row: any) => Number(row.PaymentStatus))
+      const selectedStatus = paymentList.map((row: any) => Number(row.PaymentStatus))
       setSelectRowsStatus(selectedStatus)
 
       // Calculate and log the totalAmountToPay for selected rows
@@ -309,7 +409,7 @@ const PaymentAgingDays: React.FC = () => {
   }
 
   // function for row select (CheckBox)
-  const handleRowSelect = (event: any, id: any, statusId: any) => {
+  const handleRowSelect = (event: any, id: any, statusId: any, VendorId: number) => {
     setSelectedRows((prevSelectedRows: any) => {
       const selectedIndex = prevSelectedRows.indexOf(id)
       let newSelected: any[] = []
@@ -323,56 +423,58 @@ const PaymentAgingDays: React.FC = () => {
         newStatuses = selectRowsStatus.filter((rowStatus: any, index: number) => prevSelectedRows[index] !== id)
       }
 
-      const selectedBillDetails = dataList
+      const selectedBillDetails = paymentList
         .filter((row: any) => newSelected.includes(row.Id))
         .map((row: any) => ({
-          VendorId: row.VendorId,
+          VendorId: Number(row.VendorId),
           AccountPaybleId: row.Id,
           Amount: row.RemanningDue,
         }))
-
       setCurrSelectedBillDetails(selectedBillDetails)
 
       // Calculate and log the totalAmountToPay for selected rows
       const totalAmount = calculateTotalAmountToPay(newSelected)
       setTotalAmountToPay(Number(totalAmount))
+
       setSelectRowsStatus(newStatuses)
+
       const uniqueVendorIds = Array.from(new Set(selectedBillDetails.map((detail) => detail.VendorId)))
       setVendorsId(uniqueVendorIds)
       return newSelected
     })
   }
 
-  const actionArray = ['Mark as Paid', 'Edit Bill', 'Move to Bills on Hold']
-  const actionArrForOnHold = ['Edit Bill', 'Move to Bills to Pay']
-
   // when user click on action icon set a id
   const handleIdGet = (id: number) => {
     setRowId([id])
   }
 
-  const handleMenuChange = (actionName: string, id: number) => {
+  const handleMenuChange = (actionName: string, id: number, Guid: string, vendorId: number, amount: number) => {
     switch (actionName) {
       case 'Mark as Paid':
         setMarkAsPaidClicked(true)
+        setCurrSelectedBillDetails([
+          {
+            VendorId: vendorId,
+            AccountPaybleId: id,
+            Amount: amount,
+          },
+        ])
         break
       case 'Edit Bill':
-        router.push(`/payments/billtopay/edit/${id}`)
+        // router.push(`/payments/billtopay/edit/${id}`)
+        // dispatch(setSelectedStatus(0))
+        router.push(`/bills/edit/${id}?module=billsToPay`)
         dispatch(setSelectedStatus(0))
+        dispatch(setIsVisibleSidebar(false))
         break
       case 'Move to Bills on Hold':
         setBillOnHoldClicked(true)
         break
-      default:
-        break
-    }
-  }
-
-  const handleMenuChangeForOnHold = (actionName: string, id: number) => {
-    switch (actionName) {
-      case 'Edit Bill':
-        router.push(`/payments/billtopay/edit/${id}`)
-        dispatch(setSelectedStatus(0))
+      case 'Activities':
+        setGuid(Guid)
+        setSelectedPayableId(id)
+        setIsVisibleActivities(true)
         break
       case 'Move to Bills to Pay':
         setBillsToPayClicked(true)
@@ -382,45 +484,29 @@ const PaymentAgingDays: React.FC = () => {
     }
   }
 
-  useEffect(() => {
-    if (selectedRows.length > 0 && dataList.length === selectedRows.length) {
-      setIsIntermediate({
-        isEnable: false,
-        isChecked: true,
-      })
-    } else if (selectedRows.length > 1) {
-      setIsIntermediate({
-        isEnable: true,
-        isChecked: true,
-      })
-    } else {
-      setIsIntermediate({
-        isEnable: false,
-        isChecked: false,
-      })
-    }
-  }, [selectedRows])
-
-  useEffect(() => {
-    // Update the reducer values based on label
-    if (currentFilterLabel === '00-30 Days') {
-      dispatch(setStartDay(0))
-      dispatch(setEndDay(30))
-    } else if (currentFilterLabel === '31-60 Days') {
-      dispatch(setStartDay(31))
-      dispatch(setEndDay(60))
-    } else if (currentFilterLabel === '61-90 Days') {
-      dispatch(setStartDay(61))
-      dispatch(setEndDay(90))
-    } else if (currentFilterLabel === '90+ Days') {
-      dispatch(setStartDay(91))
-      dispatch(setEndDay(null))
-    }
-  }, [currentFilterLabel, billsToPayReducer.startDay, billsToPayReducer.endDay])
+  // const handleMenuChangeForOnHold = (actionName: string, id: number) => {
+  //   switch (actionName) {
+  //     case 'Edit Bill':
+  //       // router.push(`/payments/billtopay/edit/${id}`)
+  //       // dispatch(setSelectedStatus(0))
+  //       router.push(`/bills/edit/${id}`)
+  //       dispatch(setSelectedStatus(0))
+  //       break
+  //     case 'Move to Bills to Pay':
+  //       setBillsToPayClicked(true)
+  //       break
+  //     case 'Activities':
+  //       break
+  //     default:
+  //       break
+  //   }
+  // }
 
   useEffect(() => {
     getBillsPaymentListData(1)
-  }, [orderBy, billsToPayReducer.startDay, billsToPayReducer.endDay, billsToPayReducer.agingFilter, billsToPayReducer.vendorIdList, billsToPayReducer.filterFormFields, CompanyId])
+    setSelectedRows([])
+    setSelectRowsStatus([])
+  }, [orderBy, vendorIdList, filterFormFields, CompanyId])
 
   const getNewList = (responseData: any) => {
     return responseData?.List || []
@@ -449,24 +535,28 @@ const PaymentAgingDays: React.FC = () => {
     setCheckLoader(true)
   }
 
-  // getList API
-  const getBillsPaymentListData = async (pageIndex?: number) => {
-    setIsLoading(true)
+  const responseFailure = () => {
+    setIsLoading(false)
+    setLoaderCounter(0)
+    setApiDataCount(0)
+  }
 
+  const getBillsPaymentListData = async (pageIndex?: number) => {
     if (pageIndex === 1) {
-      setDataList([])
+      setCurrSelectedBillDetails([])
+      setVendorsId([])
+      setPaymentList([])
       setItemsLoaded(0)
     }
 
-    const params = {
-      ...getAgingDaysPaymentListParams,
-      OrderColumn: orderColumnName ?? '',
-      OrderBy: orderBy ?? 0,
-      PageNumber: pageIndex || nextPageIndex,
-      IsDownload: false,
-    }
-
+    setIsLoading(true)
     try {
+      const params = {
+        ...getPaymentListParams,
+        OrderColumn: orderColumnName ?? '',
+        OrderBy: orderBy ?? 0,
+        PageNumber: pageIndex || nextPageIndex,
+      }
       const { payload, meta } = await dispatch(paymentGetList(params))
       const dataMessage = payload?.Message
 
@@ -475,6 +565,7 @@ const PaymentAgingDays: React.FC = () => {
           const responseData = payload?.ResponseData
           const newList = getNewList(responseData)
           const newTotalCount = getNewTotalCount(responseData)
+
           setApiDataCount(newTotalCount)
 
           let updatedData = []
@@ -486,9 +577,9 @@ const PaymentAgingDays: React.FC = () => {
             setRowId([])
             setSelectRowsStatus([])
           } else {
-            updatedData = [...newList]
+            updatedData = [...paymentList, ...newList]
           }
-          setDataList(updatedData)
+          setPaymentList(updatedData)
           setItemsLoaded(updatedData.length)
           setIsLoading(false)
 
@@ -496,12 +587,15 @@ const PaymentAgingDays: React.FC = () => {
             setShouldLoadMore(false)
           }
         } else {
+          responseFailure()
           handleErrorResponse(dataMessage)
         }
       } else {
+        responseFailure()
         handleStatusErrorResponse(payload)
       }
     } catch (error) {
+      responseFailure()
       console.error(error)
     } finally {
       handleFinallyBlock()
@@ -517,7 +611,7 @@ const PaymentAgingDays: React.FC = () => {
   // Column Mapping API
   const getMappingListData = () => {
     const params = {
-      UserId: Number(UserId),
+      UserId: Number(userId),
     }
     performApiAction(dispatch, getPaymentColumnMapping, params, (responseData: any) => {
       setMapColId(responseData?.Id)
@@ -583,7 +677,7 @@ const PaymentAgingDays: React.FC = () => {
       return {
         header:
           label === 'Due Date' ? (
-            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('DueDate')} onMouseEnter={() => setHoveredColumn("DueDate")} onMouseLeave={() => setHoveredColumn("")}>
+            <div className='flex cursor-pointer items-center gap-1.5 group' onClick={() => handleSortColumn('DueDate')} onMouseEnter={() => setHoveredColumn("DueDate")} onMouseLeave={() => setHoveredColumn("")}>
               Due Date <SortIcon orderColumn="DueDate" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "DueDate"}></SortIcon>
             </div>
           ) : label === 'Bill Number' ? (
@@ -630,29 +724,27 @@ const PaymentAgingDays: React.FC = () => {
 
   // Adding checkboxes before Headers
   useEffect(() => {
-    const newArr =
-      billsToPayHeaders &&
-      billsToPayHeaders.map((item: any) => {
-        if (item?.accessor === 'check') {
-          return {
-            header: dataList.length !== 0 && (
-              <CheckBox
-                id='ad-select-all'
-                intermediate={isIntermediate.isEnable}
-                checked={isIntermediate.isChecked}
-                onChange={(e) => handleSelectAll(e)}
-                disabled={dataList.length === 0}
-              />
-            ),
-            accessor: 'check',
-            sortable: false,
-            colStyle: '!w-[50px]',
-            colalign: 'center',
-          }
-        } else {
-          return item
+    const newArr = billsToPayHeaders && billsToPayHeaders.map((item: any) => {
+      if (item?.accessor === 'check') {
+        return {
+          header: paymentList.length !== 0 && (
+            <CheckBox
+              id='select-all'
+              intermediate={isIntermediate.isEnable}
+              checked={isIntermediate.isChecked}
+              onChange={(e) => handleSelectAll(e)}
+              disabled={paymentList.length === 0}
+            />
+          ),
+          accessor: 'check',
+          sortable: false,
+          colStyle: '!w-[50px]',
+          colalign: 'center',
         }
-      })
+      } else {
+        return item
+      }
+    })
     setBillsToPayHeaders(newArr)
   }, [isIntermediate])
 
@@ -661,13 +753,13 @@ const PaymentAgingDays: React.FC = () => {
     ...billsToPayHeaders,
     {
       header: (
-        headersDropdown.length > 0 ? <ColumnFilter
+        <ColumnFilter
           headers={headersDropdown.map((h: any) => (h?.header.props ? h?.header?.props?.children : h?.header))}
           visibleHeaders={billsToPayHeaders.slice(1).map((h: any) => (h?.header.props ? h?.header?.props?.children : h?.header))}
           columnId={mapColId}
           getMappingListData={getMappingListData}
           url={savePaymentColumnMapping}
-        /> : ""
+        />
       ),
       accessor: 'action',
       sortable: false,
@@ -684,7 +776,7 @@ const PaymentAgingDays: React.FC = () => {
         headersSelection = [
           ...headersSelection,
           {
-            header: (
+            header: paymentList.length !== 0 && (
               <CheckBox
                 id='select-all'
                 intermediate={isIntermediate.isEnable}
@@ -707,7 +799,9 @@ const PaymentAgingDays: React.FC = () => {
   }, [columnListVisible])
 
   // Customizing Table Data
-  const tableData = dataList.map((d: any) => {
+  const tableData = paymentList.map((d: any) => {
+    const actionArray = [Number(d.PaymentStatus) === 3 ? "" : 'Mark as Paid', (isBillsToPayEdit && (d.PaymentStatusName == "Unpaid" || Number(d.PaymentStatus) == 3)) && 'Edit Bill', Number(d.PaymentStatus) === 3 ? 'Move to Bills to Pay' : 'Move to Bills on Hold', 'Activities'].filter(Boolean)
+
     const dueDate = new Date(d.DueDate)
     const today = new Date()
     dueDate.setHours(0, 0, 0, 0)
@@ -721,12 +815,12 @@ const PaymentAgingDays: React.FC = () => {
         <CheckBox
           id={`BTP-${d.Id}`}
           checked={isRowSelected(d.Id)}
-          onChange={(event: any) => handleRowSelect(event, d.Id, d.PaymentStatus)}
+          onChange={(event: any) => handleRowSelect(event, d.Id, d.PaymentStatus, d.VendorId)}
         />
       ),
       DueDate: (
         <div className='flex items-center gap-4'>
-          <span className='!text-sm'>{formatDate(d.DueDate)}</span>
+          <span className='!text-sm font-proxima tracking-[0.02em] text-darkCharcoal'>{formatDate(d.DueDate)}</span>
           {isPastDueDate && <span className='h-2 w-2 rounded-full bg-[#DC3545]'></span>}
         </div>
       ),
@@ -805,18 +899,19 @@ const PaymentAgingDays: React.FC = () => {
             </label>
           </BasicTooltip>
         </div>
-        : <label className={`font-proxima text-sm w-full`}>{d?.VendorName}</label>,
-      Remaining: (
-        <Typography className='!pr-[15px] !text-sm !font-bold !text-darkCharcoal'>${formatCurrency(d?.RemanningDue)}</Typography>
+        : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.VendorName}</label>,
+      RemanningDue: (
+        <Typography className='!pr-[20px] !text-sm !font-bold !text-darkCharcoal !tracking-[0.02em] !w-full !break-all text-end'>${formatCurrency(d?.RemanningDue)}</Typography>
       ),
       AvailableCredit: (
-        <Typography className='!pr-[10px] !text-sm !font-bold !text-[#1BB55C]'>${formatCurrency(d.AvailableCredit)}</Typography>
+        <Typography className='!pr-[10px] !text-sm !font-bold !text-[#1BB55C] !tracking-[0.02em] !w-full !break-all text-end'>${formatCurrency(d?.AvailableCredit)}</Typography>
       ),
-      BillAmount: <span className='!pr-[15px] !text-sm !font-bold !text-darkCharcoal'>${formatCurrency(d?.TotalAmount)}</span>,
-      PaymentStatus: <Typography className='!text-sm'>{d?.PaymentStatusName}</Typography>,
-      Discount: <Typography className='!text-sm'>{d?.Discount ?? '-'}</Typography>,
-      BillDate: <Typography className='!text-sm'>{formatDate(d?.BillDate)}</Typography>,
-      Location: <Typography className='!text-sm'>{d?.LocationName}</Typography>,
+      Remaining: <span className='!pr-[10px] !text-sm !font-bold !text-darkCharcoal !tracking-[0.02em] !w-full !break-all text-end'>${formatCurrency(d?.RemanningDue)}</span>,
+      BillAmount: <span className='!pr-[10px] !text-sm !font-bold !text-darkCharcoal !tracking-[0.02em] !w-full !break-all text-end'>${formatCurrency(d?.TotalAmount)}</span>,
+      PaymentStatus: <Typography className='!text-sm !text-darkCharcoal !tracking-[0.02em] !w-full !break-all'>{d?.PaymentStatusName}</Typography>,
+      Discount: <Typography className='!text-sm !font-bold !text-darkCharcoal !tracking-[0.02em] !w-full !break-all text-end'>{d?.Discount ?? '-'}</Typography>,
+      BillDate: <Typography className='!text-sm !text-darkCharcoal !tracking-[0.02em]'>{formatDate(d.BillDate)}</Typography>,
+      Location: <Typography className='!text-sm !text-darkCharcoal !tracking-[0.02em] !w-full !break-all'>{d.LocationName}</Typography>,
       action: (
         <div className='flex items-center gap-3'>
           {Number(d.PaymentStatus) !== 3 && (
@@ -825,11 +920,12 @@ const PaymentAgingDays: React.FC = () => {
               disabled={selectedRows.length > 1}
               className={`flex !h-6 pb-1 items-center rounded-full cursor-pointer font-proxima font-semibold text-sm tracking-[0.02em] ${selectedRows.length > 1 ? 'opacity-30' : ''}`}
               onClick={() => {
+                setVendorsId([d.VendorId])
                 setIsSingleBillPaymentModalOpen(true)
 
                 setCurrSelectedBillDetails([
                   {
-                    VendorId: d.VendorId,
+                    VendorId: Number(d.VendorId),
                     AccountPaybleId: d.Id,
                     Amount: d.RemanningDue,
                   },
@@ -840,9 +936,9 @@ const PaymentAgingDays: React.FC = () => {
                   billDate: d.BillDate,
                   dueDate: d.DueDate,
                   vendorName: d.VendorName,
-                  vendorId: d.VendorId,
+                  vendorId: Number(d.VendorId),
                   discount: d.Discount,
-                  payAmount: d.AmountToPay,
+                  payAmount: d.TotalAmount,
                   remainingAmount: d.RemanningDue,
                   accountPaybleId: d.Id,
                 })
@@ -853,11 +949,13 @@ const PaymentAgingDays: React.FC = () => {
             </Button>
           )}
           <Actions
-            menuClassName='200px'
             id={d.Id}
-            actions={Number(d.PaymentStatus) === 3 ? actionArrForOnHold : actionArray}
+            amount={d.RemanningDue}
+            vendorId={Number(d.VendorId)}
+            actions={actionArray}
+            Guid={d?.Guid}
             actionRowId={() => handleIdGet(d.Id)}
-            handleClick={Number(d.PaymentStatus) === 3 ? handleMenuChangeForOnHold : handleMenuChange}
+            handleClick={handleMenuChange}
           />
         </div>
       ),
@@ -876,8 +974,13 @@ const PaymentAgingDays: React.FC = () => {
     }
   }, [isOpenAttchFile])
 
+
   useEffect(() => {
-    if (selectedRows.length > 0 && dataList.length === selectedRows.length) {
+    setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-[calc(100vw-78px)] laptop:w-[calc(100vw-78px)] laptopMd:w-[calc(100vw-78px)]' : 'laptop:w-[calc(100vw-180px)] laptopMd:w-[calc(100vw-180px)]')
+  }, [isLeftSidebarCollapsed])
+
+  useEffect(() => {
+    if (selectedRows.length > 0 && paymentList.length === selectedRows.length) {
       setIsIntermediate({
         isEnable: false,
         isChecked: true,
@@ -893,11 +996,7 @@ const PaymentAgingDays: React.FC = () => {
         isChecked: false,
       })
     }
-  }, [selectedRows, dataList])
-
-  useEffect(() => {
-    setTableDynamicWidth(isLeftSidebarCollapsed ? 'w-full laptop:w-[calc(100vw-85px)]' : 'w-full laptop:w-[calc(100vw-200px)]')
-  }, [isLeftSidebarCollapsed])
+  }, [selectedRows, paymentList])
 
   // For Lazy-loading
   useEffect(() => {
@@ -941,129 +1040,115 @@ const PaymentAgingDays: React.FC = () => {
     </div>
   );
 
-  const getAllVendorOptions = () => {
-    const params = {
-      CompanyId: CompanyId,
-      isActive: true,
-    }
-    performApiAction(dispatch, vendorDropdown, params, (responseData: any) => {
-      setVendorOptions(responseData)
-    })
-  }
-
-  useEffect(() => {
-    getAllVendorOptions()
-  }, [CompanyId])
-
   return (
     <Wrapper>
       {/* Navbar */}
-      <div className='sticky top-0 z-[6]'>
-        <div className='flex !h-[50px] items-center justify-between bg-lightGray sm:px-4 md:px-4 laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
-          <div className='flex items-center gap-1'>
-            <span
-              className='cursor-pointer'
-              onClick={() => {
-                router.push('/payments/billtopay/aging')
-              }}
-            >
-              <BackArrow />
-            </span>
+      <div className={`sticky top-0 z-[6] flex !h-[50px] items-center justify-between border-b border-b-lightSilver bg-whiteSmoke sm:px-4 md:px-4 laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5 ${tableDynamicWidth}`}>
 
-            {/* Days filter dropdown */}
-            <AgingDaysDropdown label={`${currentFilterLabel} | ${currentFilterValue} bills`} handleClick={handleFilterChange} />
-          </div>
-
-          {selectedRows.length > 1 ? (
-            <ul className='flex items-center justify-center h-fit laptopMd:h-7 lg:h-7 xl:h-full'>
-              {selectRowsStatus.every((status) => status === 3) ? (
-                <li className='h-full place-content-center border-r border-r-lightSilver sm:px-3 md:px-3 laptop:px-3 laptopMd:px-3 lg:px-3 xl:px-3 hd:px-5 2xl:px-5 3xl:px-5 py-1'>
+        <div className='min-w-fit'>
+          <VendorsDropdown key={CompanyId} vendorOption={vendorOptions} />
+        </div>
+        {selectedRows.length > 1 ? (
+          <ul className='flex items-center justify-center h-fit laptopMd:h-7 lg:h-7 xl:h-full'>
+            {selectRowsStatus.every((status) => status === 3) ? (
+              <li className='h-full place-content-center border-r border-r-lightSilver sm:px-3 md:px-3 laptop:px-3 laptopMd:px-3 lg:px-3 xl:px-3 hd:px-5 2xl:px-5 3xl:px-5 py-1'>
+                <span
+                  className='flex cursor-pointer items-center justify-center'
+                  onClick={() => setBillsToPayClicked(!isBillsToPayClicked)}
+                >
+                  <CheckBox
+                    id='bills-to-pay'
+                    checked={isBillsToPayClicked}
+                    onChange={(e) => setBillsToPayClicked(!e.target.checked)}
+                  />
+                  <label className='cursor-pointer text-sm font-proxima tracking-[0.02em] pt-0.5'>Move to Bills to Pay</label>
+                </span>
+              </li>
+            ) : !selectRowsStatus.includes(3) ? (
+              <>
+                <li className='h-full place-content-center sm:px-3 md:px-3 laptop:px-3 laptopMd:px-3 lg:px-3 xl:px-3 hd:px-5 2xl:px-5 3xl:px-5 py-1 sm:hidden md:hidden laptop:hidden laptopMd:hidden lg:hidden xl:block'>
                   <span
                     className='flex cursor-pointer items-center justify-center'
-                    onClick={() => setBillsToPayClicked(!isBillsToPayClicked)}
+                    onClick={() => setMarkAsPaidClicked(!isMarkAsPaidClicked)}
                   >
                     <CheckBox
-                      id='bills-to-pay'
-                      checked={isBillsToPayClicked}
-                      onChange={(e) => setBillsToPayClicked(!e.target.checked)}
+                      id='mark-as-paid'
+                      checked={isMarkAsPaidClicked}
+                      onChange={(e) => setMarkAsPaidClicked(!e.target.checked)}
                     />
-                    <label className='cursor-pointer text-sm font-proxima tracking-[0.02em] pt-0.5'>Move to Bills to Pay</label>
+                    <label className='cursor-pointer text-sm font-proxima tracking-[0.02em] pt-0.5'>Mark as Paid</label>
                   </span>
                 </li>
-              ) : !selectRowsStatus.includes(3) ? (
-                <>
-                  <li className='h-full place-content-center sm:px-3 md:px-3 laptop:px-3 laptopMd:px-3 lg:px-3 xl:px-3 hd:px-5 2xl:px-5 3xl:px-5 py-1 sm:hidden md:hidden laptop:hidden laptopMd:hidden lg:hidden xl:block'>
-                    <span
-                      className='flex cursor-pointer items-center justify-center'
-                      onClick={() => setMarkAsPaidClicked(!isMarkAsPaidClicked)}
-                    >
-                      <CheckBox
-                        id='mark-as-paid'
-                        checked={isMarkAsPaidClicked}
-                        onChange={(e) => setMarkAsPaidClicked(!e.target.checked)}
-                      />
-                      <label className='cursor-pointer text-sm font-proxima tracking-[0.02em] pt-0.5'>Mark as Paid</label>
-                    </span>
-                  </li>
-                  <span className='w-[2px] h-7 border-r border-lightSilver sm:hidden md:hidden laptop:hidden laptopMd:hidden lg:hidden xl:block' />
-                  <li className='h-full place-content-center sm:px-3 md:px-3 laptop:px-3 laptopMd:px-3 lg:px-3 xl:px-3 hd:px-5 2xl:px-5 3xl:px-5 py-1 sm:hidden md:hidden laptop:hidden laptopMd:hidden lg:hidden xl:block'>
-                    <span
-                      className='flex cursor-pointer items-center justify-center'
-                      onClick={() => setBillOnHoldClicked(!isBillOnHoldClicked)}
-                    >
-                      <CheckBox
-                        id='on-hold'
-                        checked={isBillOnHoldClicked}
-                        onChange={(e) => setBillOnHoldClicked(!e.target.checked)}
-                      />
-                      <label className='cursor-pointer text-sm font-proxima tracking-[0.02em] pt-0.5'>Place bills on hold</label>
-                    </span>
-                  </li>
-                  <span className='w-[2px] h-7 border-r border-lightSilver sm:hidden md:hidden laptop:hidden laptopMd:hidden lg:hidden xl:block' />
-                </>
-              ) : null}
-              <li className='flex h-full items-center gap-[5px] sm:px-3 md:px-3 laptop:px-3 laptopMd:px-3 lg:px-3 xl:px-3 hd:px-5 2xl:px-5 3xl:px-5 pt-[7px] pb-[3px]'>
-                <span className='text-sm font-bold font-proxima'>{selectedRows.length}</span>
-                <span className='text-sm font-proxima tracking-[0.02em]'>Bills Selected</span>
-              </li>
-              {!selectRowsStatus.includes(3) && (
-                <>
-                  <li className='flex h-7 items-center gap-[5px] border-x border-lightSilver pt-[6px] pb-[4px] sm:px-3 md:px-3 laptop:px-3 laptopMd:px-3 lg:px-3 xl:px-3 hd:px-5 2xl:px-5 3xl:px-5'>
-                    <Tooltip
-                      className='!z-[8] !p-0'
-                      position='bottom'
-                      content={exclamationIconContent}
-                    >
-                      <ExclamationIcon />
-                    </Tooltip>
-                    <span className='text-sm font-proxima tracking-[0.02em] pl-1.5 pt-0.5'>Amount to pay:</span>
-                    <span className='text-sm font-proxima tracking-[0.02em] pt-1 font-bold'>${(totalAmountToPay).toFixed(2)}</span>
-                  </li>
-                  <li className='h-full mt-[5px] flex items-center sm:pl-3 md:pl-3 laptop:pl-3 laptopMd:pl-3 lg:pl-3 xl:pl-3 hd:pl-5 2xl:pl-5 3xl:pl-5'>
-                    <Button
-                      variant='btn-primary'
-                      className='flex h-7 sm:h-7 md:h-7 laptop:h-7 laptopMd:h-7 lg:h-9 xl:h-7 items-center justify-center rounded-full text-sm font-bold sm:!px-4 md:!px-4 laptop:!px-4 laptopMd:!px-4 lg:!px-4 xl:!px-4 hd:!px-5 2xl:!px-5 3xl:!px-5 !pt-[8px] !font-proxima'
-                      onClick={() => {
-                        vendorsId.length === 1
-                          ? setIsSingleVendorMultipleBillPayModalOpen(true)
-                          : setIsMultipleVendorMultipleBillPayModalOpen(true)
-                      }}>
-                      PAY BILLS
-                    </Button>
-                  </li>
-                </>
-              )}
-            </ul>
-          ) : (
-            <div className='flex justify-center items-center mt-1'>
-              <Download url={`${process.env.API_BILLSTOPAY}/payment/getlist`} params={getAgingDaysPaymentListParams} fileName='Bills_To_Pay' />
+                <span className='w-[2px] h-7 border-r border-lightSilver sm:hidden md:hidden laptop:hidden laptopMd:hidden lg:hidden xl:block' />
+                <li className='h-full place-content-center sm:px-3 md:px-3 laptop:px-3 laptopMd:px-3 lg:px-3 xl:px-3 hd:px-5 2xl:px-5 3xl:px-5 py-1 sm:hidden md:hidden laptop:hidden laptopMd:hidden lg:hidden xl:block'>
+                  <span
+                    className='flex cursor-pointer items-center justify-center'
+                    onClick={() => setBillOnHoldClicked(!isBillOnHoldClicked)}
+                  >
+                    <CheckBox
+                      id='on-hold'
+                      checked={isBillOnHoldClicked}
+                      onChange={(e) => setBillOnHoldClicked(!e.target.checked)}
+                    />
+                    <label className='cursor-pointer text-sm font-proxima tracking-[0.02em] pt-0.5'>Place bills on hold</label>
+                  </span>
+                </li>
+                <span className='w-[2px] h-7 border-r border-lightSilver sm:hidden md:hidden laptop:hidden laptopMd:hidden lg:hidden xl:block' />
+              </>
+            ) : null}
+            <li className='flex h-full items-center gap-[5px] sm:px-3 md:px-3 laptop:px-3 laptopMd:px-3 lg:px-3 xl:px-3 hd:px-5 2xl:px-5 3xl:px-5 pt-[7px] pb-[3px]'>
+              <span className='text-sm font-bold font-proxima'>{selectedRows.length}</span>
+              <span className='text-sm font-proxima tracking-[0.02em]'>Bills Selected</span>
+            </li>
+            {!selectRowsStatus.includes(3) && (
+              <>
+                <li className='flex h-7 items-center gap-[5px] border-x border-lightSilver pt-[6px] pb-[4px] sm:px-3 md:px-3 laptop:px-3 laptopMd:px-3 lg:px-3 xl:px-3 hd:px-5 2xl:px-5 3xl:px-5'>
+                  <Tooltip
+                    className='!z-[8] !px-0 !py-2'
+                    position='bottom'
+                    content={exclamationIconContent}
+                  >
+                    <ExclamationIcon />
+                  </Tooltip>
+                  <span className='text-sm font-proxima tracking-[0.02em] pl-1.5 pt-0.5'>Amount to pay:</span>
+                  <span className='text-sm font-proxima tracking-[0.02em] pt-1 font-bold'>${(totalAmountToPay).toFixed(2)}</span>
+                </li>
+                <li className='h-full mt-[5px] flex items-center sm:pl-3 md:pl-3 laptop:pl-3 laptopMd:pl-3 lg:pl-3 xl:pl-3 hd:pl-5 2xl:pl-5 3xl:pl-5'>
+                  <Button
+                    variant='btn-primary'
+                    className='h-6 flex items-center justify-center rounded-full text-sm font-semibold px-5 pb-1 !font-proxima'
+                    onClick={() => {
+                      vendorsId.length === 1
+                        ? setIsSingleVendorMultipleBillPayModalOpen(true)
+                        : setIsMultipleVendorMultipleBillPayModalOpen(true)
+                    }}>
+                    PAY BILLS
+                  </Button>
+                </li>
+              </>
+            )}
+          </ul>
+        ) : (<>
+          <div className='w-full h-full flex justify-end items-center laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5'>
+            <div className='h-full flex justify-center items-center' onClick={() => setFilterClicked(true)}>
+              <Tooltip position='bottom' content='Filter' className='!px-0 !pb-1.5 !font-proxima !text-sm !z-[6]'>
+                <FilterIcon />
+              </Tooltip>
             </div>
-          )}
-        </div>
+            <div className='flex justify-center items-center pt-2 h-full' onClick={() => router.push('/payments/billtopay/aging')}>
+              <Tooltip position='bottom' content='Payment Aging' className='!px-0 !pb-2.5 !font-proxima !text-sm !z-[6]'>
+                <PaymentAgingIcon />
+              </Tooltip>
+            </div>
+            <div className='flex justify-center items-center h-full pt-0.5'>
+              <Download url={`${process.env.API_BILLSTOPAY}/payment/getlist`} params={getPaymentListParams} fileName='Bills_To_Pay' />
+            </div>
+          </div>
+        </>
+        )}
       </div>
-
       {(selectedRows.length > 1 && !selectRowsStatus.includes(3)) ? (
-        <div className='bg-lightGray flex items-center justify-end mr-5 sm:h-16 md:h-16 laptop:h-16 laptopMd:h-16 lg:h-[66px] xl:h-0 2xl:h-0'>
+        <div className='flex items-center justify-end mr-5 sm:h-16 md:h-16 laptop:h-16 laptopMd:h-16 lg:h-16 xl:h-0 2xl:h-0'>
           <div className='h-7 place-content-center px-3 py-1 sm:block md:block laptop:block laptopMd:block lg:block xl:hidden 2xl:hidden'>
             <span
               className='flex cursor-pointer items-center justify-center gap-2'
@@ -1091,23 +1176,32 @@ const PaymentAgingDays: React.FC = () => {
             </span>
           </div>
         </div>) : ""}
-
-      {/* Datatable */}
-      <div className={`custom-scroll h-[calc(100vh-112px)] approvalMain overflow-auto ${tableDynamicWidth}`}>
-        <div className={`mainTable ${dataList.length === 0 ? 'h-11' : 'h-auto'}`}>
+      {/* Data Table */}
+      <div className={`custom-scroll h-[calc(100vh-112px)] overflow-auto ${tableDynamicWidth}`}>
+        <div className={`${paymentList.length === 0 ? 'h-11' : 'h-auto'}`}>
           <DataTable
             columns={columns}
-            data={dataList.length > 0 ? tableData : []}
+            data={paymentList.length > 0 ? tableData : []}
             hoverEffect={true}
             sticky
-            getRowId={() => { }}
+            zIndex={5}
             getExpandableData={() => { }}
+            getRowId={() => { }}
             isTableLayoutFixed
           />
           {isLoading && loaderCounter === 1 && checkLoader && <Loader size='sm' helperText />}
           <div ref={tableBottomRef} />
         </div>
-        <DataLoadingStatus isLoading={isLoading} data={dataList} />
+        {/* <DataLoadingStatus isLoading={isLoading} data={paymentList} /> */}
+        {paymentList.length === 0 ? (
+          isLoading ?
+            <div className='flex h-[calc(94vh-150px)] w-full items-center justify-center'>
+              <Loader size='md' helperText />
+            </div>
+            : <div className='flex h-[44px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
+              No records available at the moment.
+            </div>
+        ) : ''}
       </div>
 
       {isFileModal && ['pdf'].includes(isFileRecord.FileName.split('.').pop().toLowerCase()) && (
@@ -1120,10 +1214,20 @@ const PaymentAgingDays: React.FC = () => {
           setIsOpenDrawer={(value: boolean) => setIsOpenDrawer(value)}
           setFileModal={(value: boolean) => setFileModal(value)}
           fileBlob={fileBlob}
+          isFileNameVisible={true}
           isPdfLoading={isPdfLoading}
           openInNewWindow={openInNewWindow}
         />
       )}
+
+      <ActivityDrawer
+        noCommentBox={false}
+        isOpen={isVisibleActivities}
+        onClose={() => setIsVisibleActivities(false)}
+        GUID={isGuid}
+        selectedPayableId={selectedPayableId}
+      />
+      <DrawerOverlay isOpen={isVisibleActivities} />
 
       {/* Modal for paying single bill */}
       {isSingleBillPaymentModalOpen && <SinglePaymentDetailsModal
@@ -1156,7 +1260,6 @@ const PaymentAgingDays: React.FC = () => {
         onDataFetch={() => getBillsPaymentListData(1)}
       />}
 
-
       {/* Modal for moving a bill on hold. */}
       <BillsOnHoldModal
         onOpen={isBillOnHoldClicked}
@@ -1181,8 +1284,11 @@ const PaymentAgingDays: React.FC = () => {
         selectedRowIds={rowId.length > 0 ? rowId : selectedRows}
         onDataFetch={() => getBillsPaymentListData(1)}
       />
+
+      {/* Filter Modal */}
+      <FilterModal onOpen={isFilterClicked} onClose={handleFilterClose} />
     </Wrapper>
   )
 }
 
-export default PaymentAgingDays
+export default ListBillsToPay
