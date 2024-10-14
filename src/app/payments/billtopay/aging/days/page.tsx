@@ -2,7 +2,7 @@
 
 import { BlobServiceClient } from '@azure/storage-blob'
 import { usePathname, useRouter } from 'next/navigation'
-import { Badge, Button, CheckBox, DataTable, Loader, Toast, Tooltip, Typography } from 'pq-ap-lib'
+import { Badge, BasicTooltip, Button, CheckBox, DataTable, Loader, Toast, Tooltip, Typography } from 'pq-ap-lib'
 import 'pq-ap-lib/dist/index.css'
 import React, { useEffect, useRef, useState } from 'react'
 
@@ -542,40 +542,40 @@ const PaymentAgingDays: React.FC = () => {
       let colalign = ''
       switch (label) {
         case 'Due Date':
-          columnStyle = '!w-[140px]'
+          columnStyle = '!w-[120px]'
           break
         case 'Bill Number':
-          columnStyle = '!w-[150px]'
+          columnStyle = '!w-[130px]'
           break
         case 'Vendor':
           columnStyle = '!w-[180px]'
           colalign = 'left'
           break
         case 'Remaining':
-          columnStyle = '!w-[160px]'
+          columnStyle = '!w-[100px]'
           colalign = 'right'
           break
         case 'Available Credit':
-          columnStyle = '!w-[180px]'
+          columnStyle = '!w-[130px]'
           colalign = 'right'
           break
         case 'Bill Amount':
-          columnStyle = '!w-[140px] !pr-[10px]'
+          columnStyle = '!w-[100px]'
           colalign = 'right'
           break
         case 'Payment Status':
-          columnStyle = '!w-[140px]'
+          columnStyle = '!w-[130px]'
           break
         case 'Discount':
-          columnStyle = '!w-[140px]'
+          columnStyle = '!w-[120px]'
           colalign = 'right'
           break
         case 'Location':
-          columnStyle = '!w-[140px]'
+          columnStyle = '!w-[130px]'
           colalign = 'right'
           break
         case 'Bill Date':
-          columnStyle = '!w-[100px]'
+          columnStyle = '!w-[120px]'
           break
         default:
           break
@@ -731,24 +731,30 @@ const PaymentAgingDays: React.FC = () => {
         </div>
       ),
       BillNumber: (
-        <div className='flex w-28 justify-between'>
+        <div className='flex w-[130px] justify-between gap-1'>
           <div
-            className='mr-5 cursor-pointer text-sm'
+            className={`${d.Attachments !== null ? "w-[90px]" : "w-[120px]"}  cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal`}
             onClick={() => {
               router.push(`/payments/billtopay/${d.Id}`)
             }}
           >
-            {d.BillNumber?.length > 8 ? d.BillNumber.substring(0, 8) + '...' : d?.BillNumber}
+            {d.BillNumber?.length > 12 ?
+              <BasicTooltip position='right' content={d?.BillNumber} className='!m-0 !p-0 !z-[1]'>
+                <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
+                  {d?.BillNumber}
+                </label>
+              </BasicTooltip>
+              : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.BillNumber}</label>}
           </div>
-          <div className='relative flex items-center'>
+          <div className={`${d.Attachments !== null ? "w-[23px]" : ""} relative flex items-center`}>
             {d.Attachments !== null && (
               <>
-                <span className='absolute -top-2.5 left-1'>
-                  <Badge badgetype='error' variant='dot' text={d.Attachments?.length.toString()} />
-                </span>
-                <span className='cursor-pointer' onClick={() => handleOpenAttachFile(d.Id)}>
+                <div className='flex cursor-pointer justify-end' onClick={() => handleOpenAttachFile(d.Id)}>
+                  <div className='absolute left-1 -top-2.5'>
+                    <Badge badgetype='error' variant='dot' text={d.Attachments.length.toString()} />
+                  </div>
                   <AttachIcon />
-                </span>
+                </div>
 
                 {isOpenAttchFile && d.Id === rowId[0] && (
                   <div
@@ -791,25 +797,15 @@ const PaymentAgingDays: React.FC = () => {
           </div>
         </div>
       ),
-      Vendor:
-        d.VendorName?.length > (billsToPayHeaders.length < 7 ? 30 : 19) ? (
-          <Tooltip position='right' content={d.VendorName} className='!m-0 !p-0'>
-            <label
-              className='cursor-pointer'
-              style={{
-                display: '-webkit-box',
-                WebkitBoxOrient: 'vertical',
-                WebkitLineClamp: 1,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
+      Vendor: d.VendorName?.length > 27
+        ? <div className='w-[170px]'>
+          <BasicTooltip position='right' content={d?.VendorName} className='!m-0 !p-0 !z-[1]'>
+            <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
               {d?.VendorName}
             </label>
-          </Tooltip>
-        ) : (
-          <label className='font-proxima text-sm'>{d?.VendorName}</label>
-        ),
+          </BasicTooltip>
+        </div>
+        : <label className={`font-proxima text-sm w-full`}>{d?.VendorName}</label>,
       Remaining: (
         <Typography className='!pr-[15px] !text-sm !font-bold !text-darkCharcoal'>${formatCurrency(d?.RemanningDue)}</Typography>
       ),

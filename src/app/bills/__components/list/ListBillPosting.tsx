@@ -620,35 +620,41 @@ const ListBillPosting = ({ statusOptions }: any) => {
             let sortable = true
             switch (label) {
               case 'Bill No.':
-                columnStyle = 'w-[159px]'
-                sortable = false
-                break
-              case 'Uploaded Date':
-                columnStyle = 'w-[160px]'
-                sortable = false
-                break
-              case 'Vendor Name':
-                columnStyle = 'w-[160px]'
-                break
-              case 'Amount':
                 columnStyle = 'w-[130px]'
                 sortable = false
                 break
+              case 'Uploaded Date':
+                columnStyle = 'w-[130px]'
+                sortable = false
+                break
+              case 'Vendor Name':
+                columnStyle = 'w-[180px]'
+                break
+              case 'Amount':
+                columnStyle = 'w-[100px]'
+                sortable = false
+                break
               case 'Status':
-                columnStyle = 'w-[140px]'
+                columnStyle = 'w-[100px]'
+                break
+              case 'Document Name':
+                columnStyle = 'w-[150px]'
                 break
               case 'Assignee':
-                columnStyle = 'w-[180px]'
+                columnStyle = 'w-[150px]'
                 sortable = false
                 break
               case 'Source':
-                columnStyle = 'w-[110px]'
+                columnStyle = 'w-[90px]'
                 break
               case 'Last Updated Date':
-                columnStyle = 'w-[160px]'
+                columnStyle = 'w-[150px]'
                 break
               case 'Last Updated By':
-                columnStyle = 'w-[160px]'
+                columnStyle = 'w-[140px]'
+                break
+              case 'Location':
+                columnStyle = 'w-[100px]'
                 break
               default:
                 break
@@ -688,7 +694,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
               visible: value,
               sortable: label === 'Adjustment No.' ? false : sortable,
               colalign: 'left',
-              colStyle: `${columnStyle}  !tracking-[0.02em] font-proxima`,
+              colStyle: `${columnStyle} !tracking-[0.02em] font-proxima`,
             }
           })
           const dataVisible = data.filter((h: any) => h.visible === true)
@@ -1158,75 +1164,94 @@ const ListBillPosting = ({ statusOptions }: any) => {
           </div>
         ),
         BillNumber: (
-          <>
-            <div className='flex w-full justify-between'>
-              <div
-                className='w-4/5 cursor-pointer'
-                onClick={() => {
-                  dispatch(setIsFormDocuments(d.IsFromDocuments))
-                  dispatch(setIsVisibleSidebar(false))
-                  d.Id && router.push(`/bills/view/${d.Id}`)
-                }}
-              >
-                <Typography className='pl-0 !text-sm text-darkCharcoal'>{d.BillNumber ? d.BillNumber : ''}</Typography>
-              </div>
-
-              <div className='relative mr-4 w-1/5'>
-                {d.Attachments?.length > 0 && (
-                  <div className=''>
-                    <div className='flex cursor-pointer justify-end' onClick={() => handleOpenAttachFile(d.Id)}>
-                      <div className='absolute -right-2 -top-3'>
-                        <Badge badgetype='error' variant='dot' text={d.Attachments.length.toString()} />
-                      </div>
-                      <AttachIcon />
-                    </div>
-
-                    {isOpenAttchFile && d.Id === rowId && (
-                      <div
-                        ref={dropdownRef}
-                        className='absolute !z-[4] flex w-[443px] flex-col rounded-md border border-[#cccccc] bg-white p-5 shadow-md'
-                      >
-                        <DataTable
-                          getExpandableData={() => { }}
-                          columns={attachfileheaders}
-                          data={d.Attachments.map(
-                            (e: any) =>
-                              new Object({
-                                ...d,
-                                FileName: (
-                                  <div
-                                    className='flex cursor-pointer items-center gap-1'
-                                    onClick={() => {
-                                      handleFileOpen(e.FilePath, e.FileName)
-                                      setIsFileRecord({ FileName: e.FileName, PageCount: e.PageCount, BillNumber: d.BillNumber })
-                                      setOpenAttachFile(false)
-                                    }}
-                                  >
-                                    <GetFileIcon FileName={e.FileName} />
-                                    <span className='w-52 truncate' title={e.FileName}>
-                                      {e.FileName} &nbsp;
-                                    </span>
-                                  </div>
-                                ),
-                                Size: <Typography className='!text-sm text-darkCharcoal'>{formatFileSize(e.Size)}</Typography>,
-                              })
-                          )}
-                          sticky
-                          hoverEffect
-                          getRowId={() => { }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+          <div className='flex w-[130px] justify-between gap-1'>
+            <div
+              className={`${d.Attachments !== null ? "w-[90px]" : "w-[120px]"}  cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal`}
+              onClick={() => {
+                dispatch(setIsFormDocuments(d.IsFromDocuments))
+                dispatch(setIsVisibleSidebar(false))
+                d.Id && router.push(`/bills/view/${d.Id}`)
+              }}
+            >
+              {d.BillNumber?.length > 12 ?
+                <BasicTooltip position='right' content={d?.BillNumber} className='!m-0 !p-0 !z-[1]'>
+                  <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
+                    {d?.BillNumber}
+                  </label>
+                </BasicTooltip>
+                : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.BillNumber}</label>}
             </div>
-          </>
+            <div className={`${d.Attachments !== null ? "w-[23px]" : ""} relative flex items-center`}>
+              {d.Attachments !== null && (
+                <>
+                  <div className='flex cursor-pointer justify-end' onClick={() => handleOpenAttachFile(d.Id)}>
+                    <div className='absolute left-1 -top-2.5'>
+                      <Badge badgetype='error' variant='dot' text={d.Attachments.length.toString()} />
+                    </div>
+                    <AttachIcon />
+                  </div>
+
+                  {isOpenAttchFile && d.Id === rowId && (
+                    <div
+                      ref={dropdownRef}
+                      className='absolute left-[5px] top-5 !z-[4] flex w-[443px] flex-col rounded-md border border-[#cccccc] bg-white p-5 shadow-md'
+                    >
+                      <DataTable
+                        getExpandableData={() => { }}
+                        columns={attachfileheaders}
+                        data={d.Attachments.map(
+                          (e: any) =>
+                            new Object({
+                              ...d,
+                              FileName: (
+                                <div
+                                  className='flex cursor-pointer items-center gap-1'
+                                  onClick={() => {
+                                    handleFileOpen(e.FilePath, e.FileName)
+                                    setIsFileRecord({ FileName: e.FileName, PageCount: e.PageCount, BillNumber: d.BillNumber })
+                                    setOpenAttachFile(false)
+                                  }}
+                                >
+                                  <GetFileIcon FileName={e.FileName} />
+                                  <span className='w-52 truncate' title={e.FileName}>
+                                    {e.FileName} &nbsp;
+                                  </span>
+                                </div>
+                              ),
+                              Size: <Typography className='!text-[14px] text-[#333]'>{formatFileSize(e.Size)}</Typography>,
+                            })
+                        )}
+                        sticky
+                        hoverEffect
+                        getRowId={() => { }}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
         ),
+        VendorName: d.VendorName?.length > 27
+          ? <div className='w-[170px]'>
+            <BasicTooltip position='right' content={d?.VendorName} className='!m-0 !p-0 !z-[1]'>
+              <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
+                {d?.VendorName}
+              </label>
+            </BasicTooltip>
+          </div>
+          : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.VendorName}</label>,
         Source: <Typography className='!text-sm text-darkCharcoal'>{d.ProviderTypeName}</Typography>,
         UploadedDate: <Typography className='!text-sm text-darkCharcoal'>{formattedCreatedOn}</Typography>,
-        VendorName: <Typography className='!text-sm text-darkCharcoal'>{d.VendorName ? d.VendorName : ''}</Typography>,
-        StatusName: <Typography className='!text-sm text-darkCharcoal'>{d.StatusName}</Typography>,
+        StatusName: d.StatusName?.length > 12
+          ? <div className='w-[90px]'>
+            <BasicTooltip position='right' content={d?.StatusName} className='!m-0 !p-0 !z-[1]'>
+              <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
+                {d?.StatusName}
+              </label>
+            </BasicTooltip>
+          </div>
+          : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.StatusName}</label>,
         Amount: (
           <Typography className='!pr-[10px] !text-sm !font-bold text-darkCharcoal'>{`${d?.Amount ? `$${formatCurrency(d?.Amount)}` : '$0.00'}`}</Typography>
         ),
@@ -1265,10 +1290,26 @@ const ListBillPosting = ({ statusOptions }: any) => {
             {formattedUpdatedOn ? formattedUpdatedOn : formattedCreatedOn}
           </Typography>
         ),
-        DocumentName: <label className='!w-[170px] overflow-hidden text-ellipsis !text-sm font-proxima tracking-[0.02em] text-darkCharcoal'>{d.FileName ? d.FileName : ''}</label>,
+        DocumentName: d.FileName?.length > 12
+          ? <div className='w-[140px]'>
+            <BasicTooltip position='right' content={d?.FileName} className='!m-0 !p-0 !z-[1]'>
+              <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
+                {d?.FileName}
+              </label>
+            </BasicTooltip>
+          </div>
+          : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.FileName}</label>,
         Pages: <Typography className='!text-sm text-darkCharcoal'>{d.PageCount ? d.PageCount : ''}</Typography>,
         LastUpdatedBy: <Typography className='!text-sm text-darkCharcoal'>{updatedByName && updatedByName?.label}</Typography>,
-        Location: <Typography className='!text-sm text-darkCharcoal'>{locationName && locationName?.label}</Typography>,
+        Location: locationName && locationName?.label.length > 12
+        ? <div className='w-[100px]'>
+          <BasicTooltip position='right' content={locationName && locationName?.label} className='!m-0 !p-0 !z-[1]'>
+            <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
+              {locationName && locationName?.label}
+            </label>
+          </BasicTooltip>
+        </div>
+        : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{locationName && locationName?.label}</label>,
         actions: hoveredRow?.Id === d.Id && (
           <div className={`${isOverFlowVisible ? "overflow-visible" : "overflow-hidden"} h-full w-full`}>
             <div className='slideLeft relative flex h-full justify-end'>
