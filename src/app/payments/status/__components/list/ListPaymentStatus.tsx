@@ -39,10 +39,10 @@ const ListPaymentStatus: React.FC = () => {
   const { selectedCompany } = useAppSelector((state) => state.user)
   const { filterFields, statusIdList } = useAppSelector((state) => state.paymentStatus)
   const CompanyId = selectedCompany?.value
+  const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
   const dispatch = useAppDispatch()
   const router = useRouter()
 
-  const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
   const { showPDFViewerModal, PDFUrl, setPDFUrl, fileBlob, isPdfLoading } = usePdfViewer()
 
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)

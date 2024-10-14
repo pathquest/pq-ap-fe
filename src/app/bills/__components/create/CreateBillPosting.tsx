@@ -732,6 +732,7 @@ const CreateBillPosting = ({
       }
 
       const hasError = hasFormFieldErrors[item.Name] && !formFields[item.Name]
+
       let optionsObj: any = []
       switch (item?.Name) {
         case 'vendor':
@@ -1032,6 +1033,7 @@ const CreateBillPosting = ({
 
     setHasLineItemFieldErrors(newLineItemErrorValues)
     setHasFormFieldErrors(newErrorValues)
+
     if (validate(hasFormFieldLibraryErrors)) {
       if (errorInItems > 0) {
         let newLoaderSuccess
