@@ -151,6 +151,7 @@ const Page = ({ onData, isFormOpen }: any) => {
     localStorage.removeItem('OrgId')
     localStorage.removeItem('IsAdmin')
     localStorage.removeItem('IsOrgAdmin')
+    localStorage.removeItem('qbotoken')
 
     await handleSignOut()
   }

@@ -210,6 +210,7 @@ function ManageCompanyList({ orgIdValue, session, selectedAccountingTool, select
       }
       performApiAction(dispatch, conncetQb, params, (responseData: any) => {
         setQboCompanyData(responseData)
+        localStorage.setItem('qbotoken', responseData?.TokenId)
         if (responseData?.Name === null) {
           Toast.success('Company Connected!')
           setOpenDrawer(false)

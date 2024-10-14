@@ -168,6 +168,13 @@ const Navbar = ({ onData }: any) => {
   ]
 
   const handleLogout = async () => {
+    localStorage.removeItem('UserId')
+    localStorage.removeItem('previousUrl')
+    localStorage.removeItem('OrgId')
+    localStorage.removeItem('IsAdmin')
+    localStorage.removeItem('IsOrgAdmin')
+    localStorage.removeItem('qbotoken')
+    
     await handleSignOut()
   }
 
