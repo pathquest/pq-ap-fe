@@ -292,18 +292,17 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
           </div>
         </div>
         {/* Data Table */}
-        <div className='h-full approvalMain w-full overflow-y-auto max-[640px]:mx-1'>
+        <div className='h-[calc(100vh-200px)] w-full overflow-y-auto max-[640px]:mx-1'>
           <DataTable
             expandable
             sticky
             getExpandableData={() => { }}
             getRowId={() => { }}
-            userClass='uppercase'
             columns={nested1Headers}
             data={updatedRoleData}
           />
         </div>
-        <div className='!h-[66px] sticky bottom-0 flex w-full items-center justify-end border-t border-lightSilver bg-white'>
+        <div className='!h-[60px] sticky bottom-0 flex w-full items-center justify-end border-t border-lightSilver bg-white'>
           <div className='flex gap-5 laptop:p-4 laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5'>
             <Button onClick={onClose} className='btn-sm !h-9 rounded-full' variant='btn-outline-primary'>
               <label className="laptop:px-[12px] laptopMd:px-[12px] lg:px-[12px] xl:px-[12px] hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px] font-proxima font-semibold !py-1.5 h-full laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em] cursor-pointer">CANCEL</label>

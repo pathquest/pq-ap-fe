@@ -78,7 +78,7 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
 
   const [isCollapsed, setCollapse] = useState<boolean>(false)
   const [isOpen, setIsOpen] = useState<boolean>(false)
-  const [windowSize, setWindowSize] = useState(0)
+  const [windowSize, setWindowSize] = useState(992)
   const [selectedOption, setSelectedOption] = useState<string>('')
   const [topPosition, setTopPosition] = useState<number>(63)
 
@@ -452,7 +452,7 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
           {windowSize <= 991 ? (
             <>
               <div
-                className={`!max-h-fit overflow-hidden absolute flex w-[200px] flex-col top-[59px] z-[7] bg-white  ${isOpen ? styles.expandDiv : styles.collapsedDiv
+                className={`!h-auto overflow-hidden absolute flex w-[170px] flex-col top-[60px] z-[7] bg-white  ${isOpen ? styles.expandDiv : styles.collapsedDiv
                   }`}
               >
                 {isMasterSetting ? (
@@ -504,8 +504,7 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
         {windowSize >= 992 && !isMasterSetting && (
           <span
             tabIndex={0}
-            className={`!h-[66px] outline-none sticky bottom-0 focus:bg-whiteSmoke bg-white py-[30px] pl-[29px] ${isLeftSidebarCollapsed ? 'pr-[50px]' : 'pr-[174px]'
-              } cursor-pointer  border-t border-[#E6E6E6]`}
+            className={`!h-[66px] outline-none sticky flex items-center justify-start bottom-0 focus:bg-whiteSmoke bg-white pl-[22px] cursor-pointer  border-t border-[#E6E6E6]`}
             onClick={handelSidebarCollaped}
             onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) =>
               (e.key === 'Enter') && handelSidebarCollaped()

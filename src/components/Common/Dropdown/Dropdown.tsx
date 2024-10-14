@@ -241,7 +241,7 @@ const Dropdown: React.FC = () => {
         </div>
         <div className='flex h-full w-full items-center justify-center px-2'>
           <span
-            className={`flex h-full pl-1 w-full cursor-pointer items-center text-sm ${selectedValue === '' ? 'text-slatyGrey' : 'text-black'}`}
+            className={`!font-proxima flex h-full pl-1 w-full cursor-pointer items-center text-sm ${selectedValue === '' ? 'text-slatyGrey' : 'text-black'}`}
             onClick={handleInput}
           >{selectedValue === '' ? 'Select Company' : selectedValue}
           </span>

@@ -132,7 +132,7 @@ const BillApproval: React.FC = () => {
 
   const columns: any = [
     {
-      header: billApprovalList.length !== 0 && (
+      header: (billApprovalFilterFields?.Assignee != "2" && billApprovalList.length !== 0) && (
         <CheckBox
           id='select-all'
           intermediate={isIntermediate.isEnable}
@@ -141,7 +141,7 @@ const BillApproval: React.FC = () => {
           disabled={billApprovalList.length === 0}
         />
       ),
-      accessor: 'check',
+      accessor: billApprovalFilterFields?.Assignee == "2" ? "" : 'check',
       sortable: false,
       colStyle: '!w-[50px]',
       colalign: 'right',
@@ -198,7 +198,7 @@ const BillApproval: React.FC = () => {
     },
     {
       header: '',
-      accessor: 'action',
+      accessor: billApprovalFilterFields?.Assignee == "2" ? "" : 'action',
       sortable: false,
       colStyle: '!w-[400px]',
       colalign: "right"

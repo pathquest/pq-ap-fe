@@ -39,10 +39,10 @@ const ListPaymentStatus: React.FC = () => {
   const { selectedCompany } = useAppSelector((state) => state.user)
   const { filterFields, statusIdList } = useAppSelector((state) => state.paymentStatus)
   const CompanyId = selectedCompany?.value
+  const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
   const dispatch = useAppDispatch()
   const router = useRouter()
 
-  const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
   const { showPDFViewerModal, PDFUrl, setPDFUrl, fileBlob, isPdfLoading } = usePdfViewer()
 
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
@@ -382,7 +382,7 @@ const ListPaymentStatus: React.FC = () => {
           columnStyle = '!w-[230px]'
           colalign = 'right'
           break
-        case 'Avail Credit':
+        case 'Availed Credit':
           columnStyle = '!w-[180px]'
           colalign = 'right'
           break
@@ -401,8 +401,8 @@ const ListPaymentStatus: React.FC = () => {
               Bills <SortIcon orderColumn="Bills" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "Bills"}></SortIcon>
             </div>
           ) : label === 'Avail Credit' ? (
-            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('AvailCredit')} onMouseEnter={() => setHoveredColumn("AvailCredit")} onMouseLeave={() => setHoveredColumn("")}>
-              Availed Credit <SortIcon orderColumn="AvailCredit" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "AvailCredit"}></SortIcon>
+            <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('AvailedCredit')} onMouseEnter={() => setHoveredColumn("AvailedCredit")} onMouseLeave={() => setHoveredColumn("")}>
+              Availed Credit <SortIcon orderColumn="AvailedCredit" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "AvailedCredit"}></SortIcon>
             </div>
           ) : label === 'Payment Date' ? (
             <div className='flex cursor-pointer items-center gap-1.5' onClick={() => handleSortColumn('PaymentDate')} onMouseEnter={() => setHoveredColumn("PaymentDate")} onMouseLeave={() => setHoveredColumn("")}>
@@ -572,10 +572,10 @@ const ListPaymentStatus: React.FC = () => {
         </label>
       ),
       PaymentMethod: <label className={`font-proxima break-words text-sm`}>{d.PaymentMethod}</label>,
-      TotalBillAmount: <label className='font-proxima text-sm !font-bold !tracking-[0.02em] text-darkCharcoal'>${formatCurrency(d?.TotalBillAmount)}</label>,
-      SelectedforPayment: <label className='font-proxima text-sm !font-bold !tracking-[0.02em] text-darkCharcoal'>${formatCurrency(d?.SelectedForPayment)}</label>,
-      TotalPayable: <label className='font-proxima text-sm !font-bold !tracking-[0.02em] text-darkCharcoal'>${formatCurrency(d?.TotalPayable)}</label>,
-      AvailCredit: <label className='font-proxima text-sm !font-bold !tracking-[0.02em]'>${formatCurrency(d?.AvailCredit)}</label>,
+      TotalBillAmount: <label className='pr-[10px] font-proxima text-sm !font-bold !tracking-[0.02em] text-darkCharcoal'>${formatCurrency(d?.TotalBillAmount)}</label>,
+      SelectedforPayment: <label className='pr-[10px] font-proxima text-sm !font-bold !tracking-[0.02em] text-darkCharcoal'>${formatCurrency(d?.SelectedForPayment)}</label>,
+      TotalPayable: <label className='pr-[10px] font-proxima text-sm !font-bold !tracking-[0.02em] text-darkCharcoal'>${formatCurrency(d?.TotalPayable)}</label>,
+      AvailedCredit: <label className='pr-[10px] font-proxima text-sm !font-bold !tracking-[0.02em]'>${formatCurrency(d?.AvailCredit)}</label>,
       actions: (
         <div className='ml-7 mr-[16px] flex items-center gap-5'>
           {((d.PaymentMethod == "Virtual Card" || d.PaymentMethod == "Check") && d.Status === 6) ? (
@@ -724,7 +724,7 @@ const ListPaymentStatus: React.FC = () => {
                 onMouseLeave={() => setIsInfoTextVisible(false)}
               >
                 <PaymentInfoIcon />
-                {isInfoTextVisible && <span className='tracking-[0.02em] font-proxima text-sm text-darkCharcoal absolute bg-white w-[231px] right-0 top-12 rounded-md p-4 shadow-md'>
+                {isInfoTextVisible && <span className='tracking-[0.02em] font-proxima text-sm text-darkCharcoal absolute bg-white w-[231px] right-0 top-10 rounded-md p-4 shadow-md'>
                   Payments can be canceled while "Under process". Once processed, cancellation is not possible.
                 </span>}
               </div>

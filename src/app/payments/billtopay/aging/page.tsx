@@ -395,7 +395,7 @@ const PaymentAging: React.FC = () => {
             </div>
           </div>
 
-          <div className={`custom-scroll h-[calc(100vh-128px)] approvalMain overflow-auto ${tableDynamicWidth}`}>
+          <div className={`custom-scroll h-[calc(100vh-112px)] overflow-auto ${tableDynamicWidth}`}>
             <div className={`mainTable ${dataList?.length === 0 ? 'h-11' : 'h-auto'}`}>
               <DataTable
                 columns={columns}

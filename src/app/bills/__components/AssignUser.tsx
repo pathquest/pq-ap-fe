@@ -138,7 +138,7 @@ export default function AssignUser({
             <input
               type='search'
               id='default-search'
-              className='block h-8 w-full rounded border border-[#D8D8D8] pl-8 text-sm outline-none focus:border-[#02b89d]'
+              className='block h-8 w-full rounded border border-lightSilver pl-8 text-sm outline-none focus:border-[#02b89d]'
               placeholder='Search'
               onChange={handleSearch}
               value={searchText}

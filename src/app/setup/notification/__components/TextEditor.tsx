@@ -183,7 +183,7 @@ const TextEditor: React.FC<DrawerProps> = ({ setIsEdit, matrixId }) => {
   return (
     <>
       {/* Navbar component */}
-      <div className='sticky top-0 z-[6] flex h-[66px] items-center justify-between bg-whiteSmoke px-5'>
+      <div className='sticky top-0 z-[6] flex h-[50px] items-center justify-between bg-whiteSmoke px-5'>
         <div className='flex place-content-center'>
           <button className='cursor-pointer pr-5' onClick={() => setIsEdit(false)}>
             <LeftArrowicon />
@@ -213,7 +213,7 @@ const TextEditor: React.FC<DrawerProps> = ({ setIsEdit, matrixId }) => {
         </div>
       </div>
       {isLoading ? (
-        <div className='flex h-screen items-center justify-center'>
+        <div className='flex h-[calc(100vh-112px)] items-center justify-center'>
           <Loader helperText />
         </div>
       ) : (

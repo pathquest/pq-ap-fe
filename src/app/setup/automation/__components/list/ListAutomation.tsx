@@ -495,8 +495,9 @@ const ListAutomation: React.FC = () => {
     <Wrapper masterSettings={true}>
       {/* NavBar  */}
       <div className='sticky  top-0 z-[6] flex !h-[50px] items-center justify-between bg-whiteSmoke px-5'>
-        <div className='flex place-content-center !w-[250px] selectMain'>
+        <div className='flex place-content-center !w-[180px] selectMain'>
           <Select
+            className='!font-proxima !tracking-[0.02em]'
             id='process_selection'
             options={automationOptions}
             defaultValue={automationRule}
