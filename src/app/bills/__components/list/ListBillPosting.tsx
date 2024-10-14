@@ -623,15 +623,15 @@ const ListBillPosting = ({ statusOptions }: any) => {
                 columnStyle = 'w-[130px]'
                 sortable = false
                 break
-              case 'Uploaded Date':
-                columnStyle = 'w-[130px]'
+              case 'Uploaded Date ':
+                columnStyle = 'w-[140px]'
                 sortable = false
                 break
               case 'Vendor Name':
                 columnStyle = 'w-[180px]'
                 break
-              case 'Amount':
-                columnStyle = 'w-[100px]'
+              case 'Amount ':
+                columnStyle = 'w-[120px]'
                 sortable = false
                 break
               case 'Status':
@@ -656,6 +656,9 @@ const ListBillPosting = ({ statusOptions }: any) => {
               case 'Location':
                 columnStyle = 'w-[100px]'
                 break
+              case 'Pages':
+                columnStyle = 'w-[70px]'
+                break
               default:
                 break
             }
@@ -664,13 +667,13 @@ const ListBillPosting = ({ statusOptions }: any) => {
 
             if (label.props !== undefined) {
               headerContent = <span onClick={() => handleSortColumn(label.props.children)}>{label.props.children}</span>
-            } else if (label === 'Amount') {
+            } else if (label === 'Amount ') {
               headerContent = (
                 <span className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em] font-proxima' onClick={() => handleSortColumn('Amount')} onMouseEnter={() => setHoveredColumn("Amount")} onMouseLeave={() => setHoveredColumn("")}>
                   Amount <SortIcon orderColumn="Amount" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "Amount"}></SortIcon>
                 </span>
               )
-            } else if (label === 'Uploaded Date') {
+            } else if (label === 'Uploaded Date ') {
               headerContent = (
                 <span className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em] font-proxima' onClick={() => handleSortColumn('CreatedOn')} onMouseEnter={() => setHoveredColumn("CreatedOn")} onMouseLeave={() => setHoveredColumn("")}>
                   Uploaded Date <SortIcon orderColumn="CreatedOn" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "CreatedOn"}></SortIcon>
@@ -1302,14 +1305,14 @@ const ListBillPosting = ({ statusOptions }: any) => {
         Pages: <Typography className='!text-sm text-darkCharcoal'>{d.PageCount ? d.PageCount : ''}</Typography>,
         LastUpdatedBy: <Typography className='!text-sm text-darkCharcoal'>{updatedByName && updatedByName?.label}</Typography>,
         Location: locationName && locationName?.label.length > 12
-        ? <div className='w-[100px]'>
-          <BasicTooltip position='right' content={locationName && locationName?.label} className='!m-0 !p-0 !z-[1]'>
-            <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
-              {locationName && locationName?.label}
-            </label>
-          </BasicTooltip>
-        </div>
-        : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{locationName && locationName?.label}</label>,
+          ? <div className='w-[100px]'>
+            <BasicTooltip position='right' content={locationName && locationName?.label} className='!m-0 !p-0 !z-[1]'>
+              <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
+                {locationName && locationName?.label}
+              </label>
+            </BasicTooltip>
+          </div>
+          : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{locationName && locationName?.label}</label>,
         actions: hoveredRow?.Id === d.Id && (
           <div className={`${isOverFlowVisible ? "overflow-visible" : "overflow-hidden"} h-full w-full`}>
             <div className='slideLeft relative flex h-full justify-end'>
