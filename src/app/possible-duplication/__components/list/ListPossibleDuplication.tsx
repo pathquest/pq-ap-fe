@@ -102,7 +102,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
 
     const [columnListVisible, setColumnListVisible] = useState<any>([])
 
-    const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
+    const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
     const [isResetFilter, setIsResetFilter] = useState<boolean>(false)
     const [editedValues, setEditedValues] = useState({
         reason: '',
@@ -223,9 +223,9 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
 
     useEffect(() => {
         if (isLeftSidebarCollapsed) {
-            setTableDynamicWidth('w-full laptop:w-[calc(100vw-85px)]')
+            setTableDynamicWidth('w-full laptop:w-[calc(100vw-78px)]')
         } else {
-            setTableDynamicWidth('w-full laptop:w-[calc(100vw-200px)]')
+            setTableDynamicWidth('w-full laptop:w-[calc(100vw-180px)]')
         }
     }, [isLeftSidebarCollapsed])
 

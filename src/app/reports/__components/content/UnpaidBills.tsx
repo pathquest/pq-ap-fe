@@ -48,7 +48,7 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
 
   let nextPageIndex: number = 1
-  const lazyRows = 10
+  const lazyRows: number = 10
   const tableBottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -172,7 +172,7 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
     return () => {
       observer.disconnect()
     }
-  }, [shouldLoadMore, itemsLoaded, tableBottomRef.current])
+  }, [shouldLoadMore, itemsLoaded, tableBottomRef])
 
   const fetchUnpaidBills = async (pageIndex?: number) => {
     if (pageIndex === 1) {
@@ -202,10 +202,13 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
             const List = responseData?.UnpaidBills
             const newList = responseData?.UnpaidBills || []
             const newTotalCount = responseData?.BillCount || 0
-            setApiDataCount(newTotalCount)
             setRunReport(true)
             setRunReportLoading(false)
             List.length > 0 && setIsExpanded(false)
+
+            if (pageIndex === 1) {
+              setApiDataCount(newTotalCount)
+            }
 
             let updatedData = []
             if (pageIndex === 1) {
@@ -222,7 +225,9 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
 
             setIsLoading(false)
 
-            if (itemsLoaded >= newTotalCount) {
+            if (itemsLoaded >= newTotalCount && pageIndex === 1) {
+              setShouldLoadMore(false);
+            } else if (itemsLoaded >= apiDataCount) {
               setShouldLoadMore(false);
             }
           } else {

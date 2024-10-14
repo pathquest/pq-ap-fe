@@ -12,10 +12,10 @@ export const createOptions = [
     id: '3',
     label: 'Existing Bill',
   },
-  {
-    id: '4',
-    label: 'Existing Vendor Document',
-  },
+  // {
+  //   id: '4',
+  //   label: 'Existing Vendor Document',
+  // },
 ]
 
 export const columns: any = [
