@@ -233,8 +233,8 @@ const ListBillPosting = ({ statusOptions }: any) => {
   let nextPageIndexOverview: number = 1
   const billOverviewStatus = ['Posted']
 
-  const lazyRows = 10
-  const lazyRowsOverview = 10
+  const lazyRows = 12
+  const lazyRowsOverview = 12
   const tableBottomRef = useRef<HTMLDivElement>(null)
   const tableBottomRefOverview = useRef<HTMLDivElement>(null)
   const userId = localStorage.getItem('UserId')
@@ -618,20 +618,20 @@ const ListBillPosting = ({ statusOptions }: any) => {
           const data = Object.entries(obj).map(([label, value]: any) => {
             let columnStyle = ''
             let sortable = true
-            switch (label) {
+            switch (label.trim()) {
               case 'Bill No.':
                 columnStyle = 'w-[130px]'
                 sortable = false
                 break
-              case 'Uploaded Date ':
-                columnStyle = 'w-[140px]'
+              case 'Uploaded Date':
+                columnStyle = 'w-[130px]'
                 sortable = false
                 break
               case 'Vendor Name':
                 columnStyle = 'w-[180px]'
                 break
-              case 'Amount ':
-                columnStyle = 'w-[120px]'
+              case 'Amount':
+                columnStyle = 'w-[110px]'
                 sortable = false
                 break
               case 'Status':
@@ -654,7 +654,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                 columnStyle = 'w-[140px]'
                 break
               case 'Location':
-                columnStyle = 'w-[100px]'
+                columnStyle = 'w-[120px]'
                 break
               case 'Pages':
                 columnStyle = 'w-[70px]'
@@ -667,19 +667,19 @@ const ListBillPosting = ({ statusOptions }: any) => {
 
             if (label.props !== undefined) {
               headerContent = <span onClick={() => handleSortColumn(label.props.children)}>{label.props.children}</span>
-            } else if (label === 'Amount ') {
+            } else if (label.trim() === 'Amount') {
               headerContent = (
                 <span className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em] font-proxima' onClick={() => handleSortColumn('Amount')} onMouseEnter={() => setHoveredColumn("Amount")} onMouseLeave={() => setHoveredColumn("")}>
                   Amount <SortIcon orderColumn="Amount" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "Amount"}></SortIcon>
                 </span>
               )
-            } else if (label === 'Uploaded Date ') {
+            } else if (label.trim() === 'Uploaded Date') {
               headerContent = (
                 <span className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em] font-proxima' onClick={() => handleSortColumn('CreatedOn')} onMouseEnter={() => setHoveredColumn("CreatedOn")} onMouseLeave={() => setHoveredColumn("")}>
                   Uploaded Date <SortIcon orderColumn="CreatedOn" sortedColumn={orderColumnName} order={orderBy} isHovered={hoveredColumn == "CreatedOn"}></SortIcon>
                 </span>
               )
-            } else if (label === 'Bill No.' || label === 'Adjustment No.') {
+            } else if (label.trim() === 'Bill No.' || label.trim() === 'Adjustment No.') {
               headerContent = (
                 <span className='flex cursor-pointer items-center gap-1.5 !tracking-[0.02em] font-proxima' onClick={() => handleSortColumn('BillNumber')} onMouseEnter={() => setHoveredColumn("BillNumber")} onMouseLeave={() => setHoveredColumn("")}>
                   {label === 'Bill No.' ? 'Bill No.' : label === 'Adjustment No.' && 'Adjustment No.'}
@@ -687,7 +687,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
                 </span>
               )
             } else {
-              headerContent = label
+              headerContent = label.trim()
             }
 
             return {
@@ -1178,7 +1178,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
             >
               {d.BillNumber?.length > 12 ?
                 <BasicTooltip position='right' content={d?.BillNumber} className='!m-0 !p-0 !z-[1]'>
-                  <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
+                  <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate break-words whitespace-nowrap">
                     {d?.BillNumber}
                   </label>
                 </BasicTooltip>
@@ -1255,9 +1255,15 @@ const ListBillPosting = ({ statusOptions }: any) => {
             </BasicTooltip>
           </div>
           : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.StatusName}</label>,
-        Amount: (
-          <Typography className='!pr-[10px] !text-sm !font-bold text-darkCharcoal'>{`${d?.Amount ? `$${formatCurrency(d?.Amount)}` : '$0.00'}`}</Typography>
-        ),
+        Amount: d.Amount && String(d.Amount)?.length > 10
+          ? <div className='w-[100px]'>
+            <BasicTooltip position='right' content={d?.Amount ? `$${formatCurrency(d?.Amount)}` : '$0.00'} className='!m-0 !p-0 !z-[1]'>
+              <label className="!pr-[10px] !font-bold block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate w-full">
+                {d?.Amount ? `$${formatCurrency(d?.Amount)}` : '$0.00'}
+              </label>
+            </BasicTooltip>
+          </div>
+          : <label className={`!pr-[10px] !text-sm !font-bold text-darkCharcoal font-proxima w-full tracking-[0.02em] flex items-end justify-end`}>{d?.Amount ? `$${formatCurrency(d?.Amount)}` : '$0.00'} </label>,
         Assignee: (
           <>
             <AvatarSelect
@@ -1303,10 +1309,18 @@ const ListBillPosting = ({ statusOptions }: any) => {
           </div>
           : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.FileName}</label>,
         Pages: <Typography className='!text-sm text-darkCharcoal'>{d.PageCount ? d.PageCount : ''}</Typography>,
-        LastUpdatedBy: <Typography className='!text-sm text-darkCharcoal'>{updatedByName && updatedByName?.label}</Typography>,
-        Location: locationName && locationName?.label.length > 12
+        LastUpdatedBy: updatedByName && updatedByName?.label?.length > 12
           ? <div className='w-[100px]'>
-            <BasicTooltip position='right' content={locationName && locationName?.label} className='!m-0 !p-0 !z-[1]'>
+            <BasicTooltip position='right' content={updatedByName && updatedByName?.label} className='!m-0 !p-0 !z-[1]'>
+              <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
+                {updatedByName && updatedByName?.label}
+              </label>
+            </BasicTooltip>
+          </div>
+          : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{updatedByName && updatedByName?.label}</label>,
+        Location: locationName && locationName?.label.length > 12
+          ? <div className='w-[110px]'>
+            <BasicTooltip position='left' content={locationName && locationName?.label} className='!m-0 !p-0 !z-[1]'>
               <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
                 {locationName && locationName?.label}
               </label>
