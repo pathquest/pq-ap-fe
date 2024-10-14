@@ -640,7 +640,7 @@ const ListBillsToPay: React.FC = () => {
           columnStyle = '!w-[120px]'
           break
         case 'Bill Number':
-          columnStyle = '!w-[130px]'
+          columnStyle = '!w-[150px]'
           break
         case 'Vendor':
           columnStyle = '!w-[170px]'
