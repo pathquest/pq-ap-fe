@@ -794,7 +794,7 @@ const ViewWrapper = ({
           className={`${isVisibleLeftSidebar ? 'col-span-8 laptop:col-span-9' : 'col-span-12'
             } h-[calc(100vh_-_65px)] overflow-y-auto`}
         >
-          <div className={`!h-[66px] sticky top-0 z-[5] flex w-full flex-row justify-between bg-[#F4F4F4] px-5`}>
+          <div className={`!h-[50px] sticky top-0 z-[5] flex w-full flex-row justify-between bg-lightGray px-5`}>
             <div className='flex items-center justify-center'>
               {!isVisibleLeftSidebar && (
                 <span
@@ -905,7 +905,7 @@ const ViewWrapper = ({
                         {isOpenMoveToDropDown && (
                           <div
                             ref={dropdownMoveToRef}
-                            className='absolute right-28 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                            className='absolute right-28 top-[45px] !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
                           >
                             <div className='flex flex-col items-start justify-start'>
                               {moveToOptions &&
@@ -976,7 +976,7 @@ const ViewWrapper = ({
                   {isOpenViewMode && (
                     <div
                       ref={dropdownViewModeRef}
-                      className='absolute right-6 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                      className='absolute right-6 top-[45px] !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
                     >
                       <div className='flex flex-col items-start justify-start'>
                         <span
@@ -1036,7 +1036,7 @@ const ViewWrapper = ({
           {children}
 
           {processSelection !== '4' && (
-            <div className='!h-[66px] custom-bottom-sticky bottom-0 grid place-content-center place-items-center gap-2 !border-t border-lightSilver px-5 py-[12px] sm:!flex sm:!items-center sm:!justify-end'>
+            <div className='!h-[55px] custom-bottom-sticky bottom-0 grid place-content-center place-items-center gap-2 !border-t border-lightSilver px-5 sm:!flex sm:!items-center sm:!justify-end'>
               <span
                 className='mr-[20px] flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-whiteSmoke'
                 onClick={() => handleBackword(activeBill)}

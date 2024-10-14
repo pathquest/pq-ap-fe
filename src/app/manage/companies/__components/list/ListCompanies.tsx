@@ -175,25 +175,25 @@ const ListCompanies = () => {
       colalign: 'center'
     },
     {
-      header: 'COMPANY',
+      header: 'Company',
       accessor: 'Name',
       sortable: false,
       colStyle: '!tracking-[0.02em] !font-bold !w-[130px]',
     },
     {
-      header: 'CONNECTED WITH',
+      header: 'Connected With',
       accessor: 'AccountingTool',
       sortable: false,
       colStyle: '!tracking-[0.02em] !font-bold !w-[100px]',
     },
     {
-      header: 'MODIFIED DATE',
+      header: 'Modified Date',
       accessor: 'UpdatedOn',
       sortable: false,
       colStyle: '!tracking-[0.02em] !font-bold !w-[150px]',
     },
     {
-      header: 'ASSIGN USER',
+      header: 'Assign User',
       accessor: 'AssignUsers',
       sortable: false,
       colStyle: '!tracking-[0.02em] !font-bold !w-[150px]',
@@ -828,7 +828,7 @@ const ListCompanies = () => {
         ),
       AssignUsers: (
         <div
-        className={`${isManageCompanyEdit ? "" : "pointer-events-none opacity-80"} ${!list?.IsActive ? 'pointer-events-none opacity-50' : ''} userList_managecompany w-[150px]`}
+          className={`${isManageCompanyEdit ? "" : "pointer-events-none opacity-80"} ${!list?.IsActive ? 'pointer-events-none opacity-50' : ''} userList_managecompany w-[150px]`}
           onClick={() => setRowId(list?.Id)}
         >
           <SaveCompanyDropdown
@@ -1029,9 +1029,9 @@ const ListCompanies = () => {
     <>
       <WrapperManage onData={globalData}>
         {/* NavBar */}
-        <div className='sticky top-0 z-[6] flex !h-[66px] items-center justify-between bg-whiteSmoke px-5'>
+        <div className='sticky top-0 z-[6] flex !h-[50px] items-center justify-between bg-whiteSmoke px-5'>
           <div className='flex items-center'>
-            <label className='font-proxima flex cursor-pointer items-center laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base laptop:font-semibold laptopMd:font-semibold hd:font-bold 2xl:font-bold 3xl:font-bold tracking-[0.02em] text-darkCharcoal'>Manage Companies</label>
+            <label className='font-proxima flex items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Manage Companies</label>
           </div>
           <div className='flex items-center gap-2'>
             <div className='flex h-6 items-center justify-center'>
@@ -1138,7 +1138,7 @@ const ListCompanies = () => {
         </div>
 
         {/* Data Table */}
-        <div className='h-[calc(100vh-145px)] approvalMain overflow-auto max-[425px]:mx-1'>
+        <div className='h-[calc(100vh-112px)] overflow-auto max-[425px]:mx-1'>
           <div className={`${companyData.length !== 0 && 'h-0'}`}>
             <DataTable
               columns={headers}

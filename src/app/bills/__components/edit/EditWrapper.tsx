@@ -844,7 +844,7 @@ const EditWrapper = ({
           ref={rightBoxRef}
           className={`${isVisibleLeftSidebar ? 'col-span-9' : 'col-span-12'} h-[calc(100vh_-_65px)] overflow-y-auto`}
         >
-          <div className={`!h-[66px] sticky top-0 z-[5] flex w-full flex-row justify-between bg-lightGray px-5`}>
+          <div className={`!h-[50px] sticky top-0 z-[5] flex w-full flex-row justify-between bg-lightGray px-5`}>
             <div className='flex items-center justify-center '>
               {!isVisibleLeftSidebar && (
                 <span className='cursor-pointer rounded-full bg-white p-1.5' onClick={() => {
@@ -939,7 +939,7 @@ const EditWrapper = ({
             {isOpenMoveToDropDown && (
               <div
                 ref={dropdownMoveToRef}
-                className='absolute right-28 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                className='absolute right-28 top-[45px] !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
               >
                 <div className='flex flex-col items-start justify-start'>
                   {moveToOptions &&
@@ -975,7 +975,7 @@ const EditWrapper = ({
             {isOpenViewMode && (
               <div
                 ref={dropdownViewModeRef}
-                className='absolute right-6 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                className='absolute right-6 top-[45px] !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
               >
                 <div className='flex flex-col items-start justify-start'>
                   <span
@@ -1030,7 +1030,7 @@ const EditWrapper = ({
 
           {children}
 
-          <div className='custom-bottom-sticky bottom-0 grid place-content-center place-items-center gap-5 !border-t border-lightSilver !h-[66px] px-5 py-[15px] sm:!flex sm:!items-center sm:!justify-end'>
+          <div className='custom-bottom-sticky bottom-0 grid place-content-center place-items-center gap-5 !border-t border-lightSilver !h-[55px] px-5 sm:!flex sm:!items-center sm:!justify-end'>
             <span
               className={`${module == "billsToPay" || billStatus === 10 ? "hidden" : "block"} flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-whiteSmoke`}
               onClick={() => handleBackword(activeBill)}

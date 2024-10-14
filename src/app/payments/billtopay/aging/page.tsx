@@ -373,7 +373,7 @@ const PaymentAging: React.FC = () => {
         <>
           {/* Navbar */}
           <div className='sticky top-0 z-[6]'>
-            <div className='relative flex !h-[66px] items-center justify-between bg-lightGray sm:px-4 md:px-4 laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
+            <div className='relative flex !h-[50px] items-center justify-between bg-lightGray sm:px-4 md:px-4 laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
               <div className='flex items-center sm:gap-5 md:gap-5 laptop:gap-5 laptopMd:gap-5 lg:gap-5 xl:gap-5 hd:gap-[30px] 2xl:gap-[30px] 3xl:gap-[30px]'>
                 <span
                   className='cursor-pointer'
@@ -395,7 +395,7 @@ const PaymentAging: React.FC = () => {
             </div>
           </div>
 
-          <div className={`custom-scroll h-[calc(100vh-128px)] approvalMain overflow-auto ${tableDynamicWidth}`}>
+          <div className={`custom-scroll h-[calc(100vh-112px)] overflow-auto ${tableDynamicWidth}`}>
             <div className={`mainTable ${dataList?.length === 0 ? 'h-11' : 'h-auto'}`}>
               <DataTable
                 columns={columns}

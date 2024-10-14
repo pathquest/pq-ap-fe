@@ -522,14 +522,14 @@ const FileUpload = ({ processOptions }: any) => {
       <Wrapper masterSettings={false}>
         <div className='main-cantainer'>
           <div className={`sticky top-0 z-[2] w-full`}>
-            <div className={`flex items-center !h-[60px] justify-start border-b-[1px] border-lightSilver bg-whiteSmoke px-5`}>
+            <div className={`flex items-center gap-5 !h-[50px] justify-start border-b-[1px] border-lightSilver bg-whiteSmoke px-5`}>
               <button className='cursor-pointer' onClick={handleBack} disabled={isUploading}>
                 <LeftArrowIcon />
               </button>
-              <div className='pl-5 pr-10'>
+              <div className='selectMain w-[180px]'>
                 <Select
-                  id={'processType'}
-                  className='fileuploadHeaderSelectDrop'
+                  id={'process_selection'}
+                  className='!font-proxima'
                   defaultValue={processType}
                   options={processOptions.filter((item: any) => item.value !== '3')}
                   getValue={(value: number | null) => setProcessType(value)}
@@ -537,10 +537,10 @@ const FileUpload = ({ processOptions }: any) => {
                   noborder
                 />
               </div>
-              <div className={` ${locationOption.length > 0 ? "block" : "hidden"}`}>
+              <div className={`${locationOption.length > 0 ? "block selectMain w-[180px]" : "hidden"}`}>
                 <Select
-                  id={'locationSelect'}
-                  className='fileuploadHeaderSelectDrop'
+                  id={'process_selection'}
+                  className='!font-proxima'
                   placeholder={'Select Location'}
                   options={locationOption}
                   getValue={(value: number | null | string) => setSelectedLocation(value)}
@@ -550,7 +550,7 @@ const FileUpload = ({ processOptions }: any) => {
               </div>
             </div>
             {fileData.length > 0 && (
-              <div className={`${isUploading && 'pointer-events-none'} flex items-center justify-between bg-white p-5`}>
+              <div className={`${isUploading && 'pointer-events-none'} flex items-center justify-between bg-white px-5 py-2.5`}>
                 <div
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
@@ -597,7 +597,7 @@ const FileUpload = ({ processOptions }: any) => {
           </div>
           <div>
             {fileData.length > 0 ? (
-              <div className='h-[calc(100vh-275px)] overflow-auto max-[425px]:mx-1 custom-scroll'>
+              <div className='h-[calc(100vh-243px)] overflow-auto max-[425px]:mx-1 custom-scroll'>
                 <div className={`${fileData.length === 0 ? 'h-11' : 'h-auto'}`}>
                   <DataTable
                     getExpandableData={() => { }}
@@ -647,7 +647,7 @@ const FileUpload = ({ processOptions }: any) => {
                 </div>
               </div>
             )}
-            <div className='h-[66px] fileUploadWidth absolute bottom-0 box-border flex items-center justify-end border-t  border-lightSilver bg-white p-5 gap-5'>
+            <div className='h-[60px] fileUploadWidth absolute bottom-0 box-border flex items-center justify-end border-t  border-lightSilver bg-white p-5 gap-5'>
               <Button
                 className={`btn-sm !h-9 rounded-full !w-[94px]`}
                 variant={`${isUploading ? "btn-outline" : 'btn-outline-primary'}`}

@@ -1063,7 +1063,7 @@ const CreateBillPosting = ({
 
   return (
     <Wrapper masterSettings={false}>
-      <div className='sticky top-0 !z-[3] !h-[66px] flex w-full flex-row justify-between bg-lightGray p-5'>
+      <div className='sticky top-0 !z-[3] !h-[50px] flex w-full flex-row justify-between bg-lightGray p-5'>
         <div className='flex items-center justify-center'>
           <span
             className='cursor-pointer rounded-full bg-white p-1.5'
@@ -1073,7 +1073,7 @@ const CreateBillPosting = ({
           >
             <BackIcon />
           </span>
-          <span className='pl-5 !text-[14px] font-bold font-proxima tracking-[0.02em] text-darkCharcoal'>
+          <span className='pl-5 !text-base font-bold font-proxima tracking-[0.02em] text-darkCharcoal'>
             {processtype === '1' ? 'Accounts Payable' : 'Accounts Adjustment'}
           </span>
         </div>
@@ -1132,7 +1132,7 @@ const CreateBillPosting = ({
               </div>
             </div>
 
-            <div className='sticky bottom-0 !z-[6] bg-white flex items-center justify-end !border-t border-lightSilver px-5 py-[15px] !h-[66px] gap-5'>
+            <div className='sticky bottom-0 !z-[6] bg-white flex items-center justify-end !border-t border-lightSilver px-5 py-[10px] !h-[60px] gap-5'>
               {processtype !== '2' && (<>
                 <Button
                   variant={isDisablePaidButton ? 'btn' : 'btn-outline-primary'}

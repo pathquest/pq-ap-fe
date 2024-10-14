@@ -32,7 +32,7 @@ function ActivePlan() {
           </div>
         </div>
       </div>
-      <div className='flex items-center justify-center border-t border-[#D8D8D8] py-3 text-[14px] font-semibold'>
+      <div className='flex items-center justify-center border-t border-lightSilver py-3 text-[14px] font-semibold'>
         <span>Remaining Bills - {activePlanData.remainingBills}</span>
       </div>
     </div>

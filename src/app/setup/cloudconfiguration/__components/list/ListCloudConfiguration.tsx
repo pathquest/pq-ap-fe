@@ -95,7 +95,7 @@ const ListCloudConfiguration: React.FC = () => {
       </div>
 
       <div>
-        <div className='h-[265px] w-[260px] rounded-[12px] border border-solid border-[#D8D8D8] p-[20px]'>
+        <div className='h-[265px] w-[260px] rounded-[12px] border border-solid border-lightSilver p-[20px]'>
           <div className='flex items-center justify-between'>
             <div className='h-[16px] w-[16px] rounded-full bg-[#02B89D]' />
             <Dropdown>
@@ -152,7 +152,7 @@ const ListCloudConfiguration: React.FC = () => {
             {options &&
               options.map((option) => {
                 return (
-                  <div key={option.Id} className='flex cursor-pointer items-center py-2 hover:bg-[#F4F4F4]'>
+                  <div key={option.Id} className='flex cursor-pointer items-center py-2 hover:bg-lightGray'>
                     <div className='w-1/12'>
                       <Radio
                         className='text-sm'

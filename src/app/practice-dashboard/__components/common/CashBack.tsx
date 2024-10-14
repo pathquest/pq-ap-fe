@@ -40,8 +40,8 @@ function CashBack({ totalVirtualCard }: any) {
       <table className='m-2 w-full border-collapse border border-black'>
         <thead className='border border-black'>
           <tr className='text-[14px] font-semibold'>
-            <th className='w-[40%] border-r border-r-[#D8D8D8] p-2'>Payment Method</th>
-            <th className='w-[30%] border-r border-r-[#D8D8D8] p-2'>Range</th>
+            <th className='w-[40%] border-r border-r-lightSilver p-2'>Payment Method</th>
+            <th className='w-[30%] border-r border-r-lightSilver p-2'>Range</th>
             <th className='w-[30%] p-2'>Rebate %</th>
           </tr>
         </thead>
@@ -53,7 +53,7 @@ function CashBack({ totalVirtualCard }: any) {
                   {idx === 0 && (
                     <td
                       rowSpan={item.ranges.length}
-                      className={`w-[40%] border-r border-r-[#D8D8D8] p-2 text-center text-[14px] font-semibold`}
+                      className={`w-[40%] border-r border-r-lightSilver p-2 text-center text-[14px] font-semibold`}
                     >
                       {item.paymentMethodId === 1
                         ? `${item.paymentMethod} $${parseInt(totalVirtualCard).toFixed(2) ?? `0.00`}`
@@ -63,7 +63,7 @@ function CashBack({ totalVirtualCard }: any) {
                   <td
                     className={`${index === 0 && idx === 2 ? 'border-b border-r border-b-black' : ''} ${
                       index === 1 && idx === 1 ? 'border-r' : 'border-b border-r'
-                    } w-[30%] border-[#D8D8D8] px-3 py-2 text-[14px]`}
+                    } w-[30%] border-lightSilver px-3 py-2 text-[14px]`}
                   >
                     <span className='flex items-center gap-1'>
                       {isInRange(totalVirtualCard, range.range) ? <CheckActiveIcon /> : <RejectIcon />}
@@ -73,7 +73,7 @@ function CashBack({ totalVirtualCard }: any) {
                   <td
                     className={`${index === 0 && idx === 2 ? 'border-b border-black' : ''} ${
                       index === 1 && idx === 1 ? '' : 'border-b'
-                    } w-[30%] border-r-[#D8D8D8] px-3 py-2 text-[14px]`}
+                    } w-[30%] border-r-lightSilver px-3 py-2 text-[14px]`}
                   >
                     {range.rebate}
                   </td>

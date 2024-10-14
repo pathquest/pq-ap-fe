@@ -71,19 +71,19 @@ const ListAutomation: React.FC = () => {
 
   const columns: any = [
     {
-      header: 'RULE NAME',
+      header: 'Rule Name',
       accessor: 'ruleName',
       sortable: false,
       colStyle: '!pl-5 !w-[5%] !tracking-[0.02em]',
     },
     {
-      header: automationRule == "AllAutomationRules" ? 'PROCESS' : "RULE TYPE",
+      header: automationRule == "AllAutomationRules" ? 'Process' : "Rule Type",
       accessor: 'process',
       sortable: false,
       colStyle: '!w-[5%] !tracking-[0.02em]',
     },
     {
-      header: 'DESCRIPTION',
+      header: 'Description',
       accessor: 'description',
       sortable: false,
       colStyle: '!w-[20%] !tracking-[0.02em]',
@@ -494,10 +494,11 @@ const ListAutomation: React.FC = () => {
   return (
     <Wrapper masterSettings={true}>
       {/* NavBar  */}
-      <div className='sticky  top-0 z-[6] flex !h-[66px] items-center justify-between bg-whiteSmoke px-5'>
-        <div className='flex place-content-center !w-[250px]'>
+      <div className='sticky  top-0 z-[6] flex !h-[50px] items-center justify-between bg-whiteSmoke px-5'>
+        <div className='flex place-content-center !w-[180px] selectMain'>
           <Select
-            id='automationRule'
+            className='!font-proxima !tracking-[0.02em]'
+            id='process_selection'
             options={automationOptions}
             defaultValue={automationRule}
             noborder
@@ -536,7 +537,7 @@ const ListAutomation: React.FC = () => {
       </div>
 
       {/* DataTable */}
-      <div className='h-[calc(100vh-145px)] approvalMain overflow-auto custom-scroll max-[425px]:mx-1'>
+      <div className='h-[calc(100vh-112px)] approvalMain overflow-auto custom-scroll max-[425px]:mx-1'>
         <div className={`${FilteredData.length === 0 ? 'h-11' : 'h-auto'}`}>
           <DataTable
             columns={columns}

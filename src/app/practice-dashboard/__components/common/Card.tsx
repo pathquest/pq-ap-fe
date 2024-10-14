@@ -61,7 +61,7 @@ const Card = ({ company, isLastCardInRow }: any) => {
 
   return (
     <>
-      <div className='rounded-md border border-[#d8d8d8] text-[14px] hover:border-[#02B89D]'>
+      <div className='rounded-md border border-lightSilver text-[14px] hover:border-[#02B89D]'>
         <div className='relative flex flex-col items-center justify-center gap-2 py-6'>
           {company?.CompanyImage ? (
             <Avatar imageUrl={''} variant='medium' />
@@ -71,13 +71,13 @@ const Card = ({ company, isLastCardInRow }: any) => {
           <span className='!text-[16px] font-semibold'>{company?.CompanyName}</span>
           <div className='relative flex gap-5'>
             <span
-              className='cursor-pointer rounded-md border border-[#F4F4F4] bg-[#F4F4F4] px-[12px] py-[2px] hover:border-[#02B89D]'
+              className='cursor-pointer rounded-md border border-lightGray bg-lightGray px-[12px] py-[2px] hover:border-[#02B89D]'
               onClick={() => handleDashboardClick(company?.CompanyName, company?.CompanyId, company?.AccountingTool)}
             >
               Dashboard
             </span>
             <span
-              className='relative cursor-pointer rounded-md border border-[#F4F4F4] bg-[#F4F4F4] px-[12px] py-[2px] hover:border-[#02B89D]'
+              className='relative cursor-pointer rounded-md border border-lightGray bg-lightGray px-[12px] py-[2px] hover:border-[#02B89D]'
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
@@ -95,16 +95,16 @@ const Card = ({ company, isLastCardInRow }: any) => {
             </div>
           )}
         </div>
-        <div className='flex border-t-2 border-dotted border-[#D8D8D8]'>
+        <div className='flex border-t-2 border-dotted border-lightSilver'>
           <div className='flex w-[38%] flex-col items-start justify-center p-3'>
             <span>Possible Duplicate Bills</span>
             <span className='!text-[16px] font-semibold'>{company?.PossibleDuplication}</span>
           </div>
-          <div className='flex w-[37%] flex-col items-start justify-center border-l-2 border-dotted border-[#D8D8D8] p-2'>
+          <div className='flex w-[37%] flex-col items-start justify-center border-l-2 border-dotted border-lightSilver p-2'>
             <span>Pending Payment Approval</span>
             <span className='!text-[16px] font-semibold'>{company?.PendingPaymentAproval}</span>
           </div>
-          <div className='flex w-[25%] flex-col items-center justify-center border-l-2 border-dotted border-[#D8D8D8] p-2'>
+          <div className='flex w-[25%] flex-col items-center justify-center border-l-2 border-dotted border-lightSilver p-2'>
             <Tooltip
               position={isLastCardInRow ? 'left' : 'top'}
               content={customContent}
@@ -114,7 +114,7 @@ const Card = ({ company, isLastCardInRow }: any) => {
             </Tooltip>
           </div>
         </div>
-        <div className='flex items-center justify-between border-t border-[#D8D8D8] bg-[#F4F4F4] px-3 py-4'>
+        <div className='flex items-center justify-between border-t border-lightSilver bg-lightGray px-3 py-4'>
           <div className='flex items-center'>
             <span>TAT Missed Bills: </span>
             <span className='pl-2 !text-[16px] font-semibold'>{company?.PendingOverDueBills}</span>

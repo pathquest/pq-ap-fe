@@ -39,7 +39,7 @@ const WrapperManage: React.FC<WrapperProps> = ({ children, onData }: any) => {
       </div>
 
       {/* Main Content */}
-      <main className='h-full w-full overflow-scroll bg-white'>{children}</main>
+      <main className='h-full w-full overflow-auto bg-white'>{children}</main>
     </div>
   )
 }

@@ -319,8 +319,7 @@ const AgingDays: React.FC<ActionsProps> = ({
       action: Number(d.PaymentStatus) !== 3 && (
         <Button
           variant='btn-primary'
-          className={`flex !h-7 !px-[18px] !pt-[7px] !pb-[5px] items-center rounded-full cursor-pointer font-proxima font-semibold text-sm tracking-[0.02em] ${selectedRows.length > 1 ? 'opacity-30' : ''
-            }`}
+          className={`flex !h-6 pb-1 items-center rounded-full cursor-pointer font-proxima font-semibold text-sm tracking-[0.02em] ${selectedRows.length > 1 ? 'opacity-30' : ''}`}
           onClick={() => {
             setVendorsId([d.VendorId])
             setIsSingleBillPaymentModalOpen(true)
@@ -389,14 +388,14 @@ const AgingDays: React.FC<ActionsProps> = ({
     <div className={`${onOpen ? "block" : "hidden"}`}>
       {/* Navbar */}
       <div className='sticky top-0 z-[6]'>
-        <div className='relative flex !h-[66px] items-center justify-between bg-lightGray px-4'>
+        <div className='relative flex !h-[50px] items-center justify-between bg-lightGray px-4'>
           <div className='flex items-center gap-3'>
             <span className='cursor-pointer' onClick={handleModalClose}>
               <BackArrow />
             </span>
 
             <div className='flex items-center justify-center gap-5'>
-              <span className='border-r border-slatyGrey pr-5 text-base font-bold text-darkCharcoal'>
+              <span className='border-r border-slatyGrey font-proxima tracking-[0.02em]  pr-5 text-base font-bold text-darkCharcoal'>
                 {currentVendorName && currentVendorName.length > 15
                   ? currentVendorName.substring(0, 15) + '...'
                   : currentVendorName}
@@ -461,7 +460,7 @@ const AgingDays: React.FC<ActionsProps> = ({
                   <span className='text-sm font-proxima tracking-[0.02em]'>Bills Selected</span>
                 </li>
                 {!selectRowsStatus.includes(3) && (
-                  <li className='border-l border-lightSilver h-full mt-[5px] flex items-center sm:pl-3 md:pl-3 laptop:pl-3 laptopMd:pl-3 lg:pl-3 xl:pl-3 hd:pl-5 2xl:pl-5 3xl:pl-5'>
+                  <li className='border-l border-lightSilver h-full flex items-center sm:pl-3 md:pl-3 laptop:pl-3 laptopMd:pl-3 lg:pl-3 xl:pl-3 hd:pl-5 2xl:pl-5 3xl:pl-5'>
                     <Button
                       variant='btn-primary'
                       className='!tracking-[0.02em] flex h-7 sm:h-7 md:h-7 laptop:h-7 laptopMd:h-7 lg:h-9 xl:h-7 items-center justify-center rounded-full text-sm font-bold sm:!px-4 md:!px-4 laptop:!px-4 laptopMd:!px-4 lg:!px-4 xl:!px-4 hd:!px-5 2xl:!px-5 3xl:!px-5 !pt-[8px] !font-proxima'
@@ -482,7 +481,7 @@ const AgingDays: React.FC<ActionsProps> = ({
       </div>
 
       {/* Datatable */}
-      <div className='custom-scroll h-[calc(100vh-145px)] w-full approvalMain overflow-auto max-[425px]:mx-1'>
+      <div className='custom-scroll h-[calc(100vh-112px)] w-full approvalMain overflow-auto max-[425px]:mx-1'>
         <div className={`mainTable ${dataList.length === 0 ? 'h-11' : 'h-auto'}`}>
           <DataTable
             columns={columns}

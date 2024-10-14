@@ -20,7 +20,7 @@ const DataLoadingStatus: React.FC<DataLoadingStatusProps> = ({
         <Loader size='md' helperText={loadingText} />
       </div>
     ) : (
-      <div className='flex h-[59px] w-auto items-center justify-center border-b font-proxima border-b-[#ccc]'>{noDataText}</div>
+      <div className='flex h-[44px] w-auto items-center justify-center border-b font-proxima border-b-[#ccc]'>{noDataText}</div>
     )
   }
 

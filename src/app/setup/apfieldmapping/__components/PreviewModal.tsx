@@ -46,7 +46,7 @@ const PreviewModal: React.FC<DrawerProps> = ({ onOpen, onClose, mainFields, line
   data['Id'] = <label className='pl-3 font-proxima text-darkCharcoal'>1</label>
 
   return (
-    <Modal isOpen={onOpen} onClose={onClose} className='w-[94vw] laptop:h-[560px] laptopMd:h-[560px] lg:h-[560px] xl:h-[560px] hd:h-[678px] 2xl:h-[678px] 3xl:h-[678px]'>
+    <Modal isOpen={onOpen} onClose={onClose} width='94vw' Height='600px' className='w-[94vw] laptop:h-[560px] laptopMd:h-[560px] lg:h-[560px] xl:h-[560px] hd:h-[678px] 2xl:h-[678px] 3xl:h-[678px]'>
       <ModalTitle className='h-[66px] p-5 font-bold'>
         <div>
           <Typography className='!font-bold !text-lg tracking-[0.02em] text-darkCharcoal'>Accounts Payable</Typography>
