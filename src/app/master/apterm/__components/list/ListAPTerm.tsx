@@ -44,7 +44,6 @@ const ListAPTerm: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isImport, setIsImport] = useState<boolean>(false)
   const [refreshTable, setRefreshTable] = useState<boolean>(false)
-  const [searchValue, setSearchValue] = useState('')
 
   //For Lazy Loading
   const [shouldLoadMore, setShouldLoadMore] = useState(true)
@@ -55,6 +54,9 @@ const ListAPTerm: React.FC = () => {
   let nextPageIndex: number = 1
   const lazyRows = 70
   const tableBottomRef = useRef<HTMLDivElement>(null)
+
+  // For search ApTerm
+  const [searchValue, setSearchValue] = useState('')
 
   const columns: any = [
     {

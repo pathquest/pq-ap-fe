@@ -285,7 +285,6 @@ const Drawer: React.FC<DrawerProps> = ({
     setImageName('')
   }
 
-
   // save company for after edit and create new company
   const CompanySave = () => {
     setIsLoading(true)

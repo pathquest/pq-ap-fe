@@ -229,6 +229,13 @@ const ListBillPosting = ({ statusOptions }: any) => {
   const [isCopyBillModalOpen, setIsCopyBillModalOpen] = useState<boolean>(false)
   const [copyBillId, setCopyBillId] = useState<number>(0)
 
+  const [sortBillsOverviewOrders, setSortBillOverviewOrders] = useState<{ [key: string]: null | 'asc' | 'desc' }>({
+    BillNumber: null,
+    BillDate: null,
+    CreatedOn: null,
+    Amount: null,
+  })
+
   let nextPageIndex: number = 1
   let nextPageIndexOverview: number = 1
   const billOverviewStatus = ['Posted']
