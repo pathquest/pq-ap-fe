@@ -485,7 +485,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
           headersSelection = [
             ...headersSelection,
             {
-              header: 'Tat',
+              header: 'TAT',
               accessor: 'tat',
               sortable: false,
               colalign: 'left',
@@ -1089,7 +1089,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
       accessor: 'actions',
       sortable: false,
       colalign: 'right',
-      colStyle: '!w-[310px]',
+      colStyle: '!w-[250px]',
     },
   ];
 
@@ -2125,8 +2125,9 @@ const ListBillPosting = ({ statusOptions }: any) => {
         <div className='billsMain'>
           <div className={`sticky top-0 ${isOpenFilter ? 'z-[99]' : 'z-[6]'} w-full`}>
             <div className='relative flex h-[50px] items-center justify-between bg-lightGray laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
-              <div className='selectMain'>
+              <div className='selectMain w-[180px]'>
                 <Select
+                  className='!font-proxima'
                   id={'process_selection'}
                   options={accountOptions}
                   defaultValue={processSelection}
