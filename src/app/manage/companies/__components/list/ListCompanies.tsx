@@ -266,6 +266,7 @@ const ListCompanies = () => {
       }
       performApiAction(dispatch, conncetQb, params, (responseData: any) => {
         setQboCompanyData(responseData)
+        localStorage.setItem('qbotoken', responseData?.TokenId)
         if (responseData?.Name === null) {
           Toast.success('Company Connected!')
           setOpenDrawer(false)
@@ -1183,7 +1184,7 @@ const ListCompanies = () => {
           onClose={handleDrawerClose}
           hasEditId={editId}
           accountingTool={accountingTool}
-          CompanyData={(qboCompanyData ? qboCompanyData[0] : null) || (xeroCompanyData ? xeroCompanyData[0] : null)}
+          CompanyData={(qboCompanyData ? qboCompanyData : null) || (xeroCompanyData ? xeroCompanyData[0] : null)}
           getCompanyList={() => getCompanyList(1)}
           IntacctUserId={intacctUserId}
           IntacctPassword={intacctPassword}
