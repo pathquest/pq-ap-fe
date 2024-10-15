@@ -1,34 +1,27 @@
 'use client'
 
-import { ReactNode, useEffect, useRef, useState } from 'react'
-import GlobalSearch from './Icons/GlobalSearch'
 import DownArrowIcon from '@/assets/Icons/billposting/DownArrowIcon'
-import ShoppingCart from './Icons/ShoppingCart'
-import ReceiptLong from './Icons/ReceiptLong'
-import AccountBalance from './Icons/AccountBalance'
-import ApprovalDelegation from './Icons/ApprovalDelegation'
-import Analytics from './Icons/Analytics'
-import FramePerson from './Icons/FramePerson'
-import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-
-import SearchBills from './Icons/SearchBills'
-import SearchVendor from './Icons/SearchVendor'
-import SearchPurchaseOrder from './Icons/SearchPurchaseOrder'
-import SearchPayments from './Icons/SearchPayments'
-import SearchApprovals from './Icons/SearchApprovals'
-import SearchReports from './Icons/SearchReports'
 import useDebouncedValue from '@/hooks/useDebounce'
-import {
-  getSearchHistory,
-  getSearchResult,
-  saveSearchHistory,
-  setSearchSelectedModule,
-} from '@/store/features/globalSearch/globalSearchSlice'
-import { format, parseISO } from 'date-fns'
 import { GlobalSearchResultRes, SaveSearchHistoryOptions } from '@/models/global'
-import { useRouter } from 'next/navigation'
-import { setIsFormDocuments, setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
+import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { setApprovalDropdownFields } from '@/store/features/billApproval/approvalSlice'
+import { setIsFormDocuments, setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
+import { getSearchHistory, getSearchResult, saveSearchHistory, setSearchSelectedModule } from '@/store/features/globalSearch/globalSearchSlice'
+import { format, parseISO } from 'date-fns'
+import { useRouter } from 'next/navigation'
+import { ReactNode, useEffect, useRef, useState } from 'react'
+import AccountBalance from './Icons/AccountBalance'
+import Analytics from './Icons/Analytics'
+import ApprovalDelegation from './Icons/ApprovalDelegation'
+import FramePerson from './Icons/FramePerson'
+import GlobalSearch from './Icons/GlobalSearch'
+import ReceiptLong from './Icons/ReceiptLong'
+import SearchApprovals from './Icons/SearchApprovals'
+import SearchBills from './Icons/SearchBills'
+import SearchPayments from './Icons/SearchPayments'
+import SearchPurchaseOrder from './Icons/SearchPurchaseOrder'
+import SearchReports from './Icons/SearchReports'
+import SearchVendor from './Icons/SearchVendor'
 
 interface SearchComponentProps {
   children?: ReactNode
@@ -388,9 +381,9 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
   return (
     <div
       className={`${isDropdownVisible || isSearchHistoryVisible || isSearchModalVisible
-          ? 'border border-solid border-[#02B89D]'
-          : 'border border-solid border-[#D8D8D8]'
-        } relative flex items-center justify-center rounded-[300px] bg-[#F4F4F4] px-[10px] laptop:px-[12px] 2xl:px-[15px] py-[3px] hover:border hover:border-solid hover:border-[#02B89D]`}
+        ? 'border border-solid border-primary'
+        : 'border border-solid border-lightSilver'
+        } relative flex items-center justify-center rounded-[300px] bg-lightGray px-[10px] laptop:px-[12px] 2xl:px-[15px] py-[3px] hover:border hover:border-solid hover:border-primary`}
     >
       <div className='flex cursor-pointer items-center' onClick={() => onDownArrowClick()}>
         <div>
@@ -401,7 +394,7 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
         </div>
         <div>{selectedIcon}</div>
       </div>
-      <div className='mx-[10px] h-[14px] w-[1px] bg-[#6E6D7A]' />
+      <div className='mx-[10px] h-[14px] w-[1px] bg-slatyGrey' />
       <div>
         <input
           ref={inputRef}
@@ -410,7 +403,7 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
           onFocus={onFocus}
           onBlur={onBlur}
           placeholder={`Search in ${dropDownOptions.find((item) => item.value === searchSelectedModule)?.label}`}
-          className='searchPlaceholder w-[200px] 2xl:w-[250px] bg-[#F4F4F4] font-proxima text-[14px] font-medium text-[#333333] placeholder:text-[#6E6D7A] focus:outline-none'
+          className='searchPlaceholder w-[200px] 2xl:w-[250px] bg-lightGray font-proxima text-[14px] font-medium text-darkCharcoal placeholder:text-slatyGrey focus:outline-none'
           onChange={onChangeSearchField}
           onKeyDown={(e) => handleKeyDown(e)}
         />
@@ -418,7 +411,7 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
         {isSearchHistoryVisible && searchHistoryResults && searchHistoryResults.length > 0 && (
           <div
             ref={searchHistoryRef}
-            className='absolute left-0 top-[34px] min-w-[250px] rounded-[4px] border border-solid border-[#D8D8D8] bg-white shadow-[0px_6px_28px_0px_#00000029]'
+            className='absolute left-0 top-[34px] min-w-[250px] rounded-[4px] border border-solid border-lightSilver bg-white shadow-[0px_6px_28px_0px_#00000029]'
           >
             <div>
               {searchHistoryResults &&
@@ -426,7 +419,7 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
                   const historyData = JSON.parse(history?.DisplayKey)
                   const fieldLength = historyData.length
                   return (
-                    <div className='border-b border-solid border-[#D8D8D8] px-[20px] py-[8px] hover:bg-[#EEF4F8]'>
+                    <div className='border-b border-solid border-lightSilver px-[20px] py-[8px] hover:bg-[#EEF4F8]'>
                       <div className='w-max max-w-[550px]'>
                         <div
                           key={index}
@@ -453,12 +446,12 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
                                 item && (
                                   <>
                                     <div
-                                      className={`whitespace-nowrap text-[#333333] ${item.includes('$') ? 'flex justify-end font-bold' : ''
+                                      className={`whitespace-nowrap text-darkCharcoal ${item.includes('$') ? 'flex justify-end font-bold' : ''
                                         }`}
                                     >
                                       {item}
                                     </div>
-                                    {inx + 1 < fieldLength && <div className='mx-[10px] h-[12px] w-[1px] bg-[#333333]' />}
+                                    {inx + 1 < fieldLength && <div className='mx-[10px] h-[12px] w-[1px] bg-darkCharcoal' />}
                                   </>
                                 )
                               )
@@ -474,7 +467,7 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
       </div>
 
       {searchValue && searchValue.length >= 1 && searchValue.length < 3 && (
-        <div className='absolute left-0 top-[34px] rounded-[4px] border border-solid border-[#D8D8D8] bg-white py-[6px] shadow-[0px_6px_28px_0px_#00000029] z-10'>
+        <div className='absolute left-0 top-[34px] rounded-[4px] border border-solid border-lightSilver bg-white py-[6px] shadow-[0px_6px_28px_0px_#00000029] z-10'>
           <div className='whitespace-nowrap px-[20px] py-[6px] font-proxima text-[14px]'>Enter minimum 3 character to search</div>
         </div>
       )}
@@ -482,7 +475,7 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
       {isDropdownVisible && (
         <div
           ref={dropdownRef}
-          className='absolute left-0 top-[34px] w-[250px] rounded-[4px] border border-solid border-[#D8D8D8] bg-white py-[6px] shadow-[0px_6px_28px_0px_#00000029] z-10'
+          className='absolute left-0 top-[34px] w-[250px] rounded-[4px] border border-solid border-lightSilver bg-white py-[6px] shadow-[0px_6px_28px_0px_#00000029] z-10'
         >
           {dropDownOptions &&
             dropDownOptions.map((options, index) => {
@@ -504,21 +497,21 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
       {isSearchModalVisible && searchValue.length !== 0 && (
         <div
           ref={searchModalRef}
-          className='absolute left-0 top-[34px] overflow-hidden rounded-[4px] border border-solid border-[#D8D8D8] bg-white shadow-[0px_6px_28px_0px_#00000029] z-10'
+          className='absolute left-0 top-[34px] overflow-hidden rounded-[4px] border border-solid border-lightSilver bg-white shadow-[0px_6px_28px_0px_#00000029] z-10'
         >
           {totalResultCount === 0 ? (
-            <div className='w-[500px] bg-whiteSmoke py-[15px] text-center text-sm text-[#6E6D7A]'>No Result Found</div>
+            <div className='w-[500px] bg-whiteSmoke py-[15px] text-center text-sm text-slatyGrey'>No Result Found</div>
           ) : (
             <>
-              <div className='border-b border-solid border-[#333333] bg-whiteSmoke px-[20px] py-[8px] font-proxima text-sm text-[#6E6D7A]'>
-                Check out this similar. <b className='font-proxima text-sm text-[#6E6D7A]'>{totalResultCount} Result Found</b>
+              <div className='border-b border-solid border-darkCharcoal bg-whiteSmoke px-[20px] py-[8px] font-proxima text-sm text-slatyGrey'>
+                Check out this similar. <b className='font-proxima text-sm text-slatyGrey'>{totalResultCount} Result Found</b>
               </div>
               <div className='vertical-scroll custom-scroll-filter !max-h-[382px] overflow-y-scroll' onScroll={handleScroll}>
                 <div ref={modalRef}>
                   {searchResults &&
                     searchResults.map((res: any) => {
                       return (
-                        <div className='border-b border-solid border-[#D8D8D8] px-[20px] py-[8px] hover:bg-[#EEF4F8]'>
+                        <div className='border-b border-solid border-lightSilver px-[20px] py-[8px] hover:bg-[#EEF4F8]'>
                           <div className='w-max max-w-[550px]'>
                             <div
                               className='flex cursor-pointer flex-wrap items-center whitespace-nowrap font-proxima text-[14px]'
@@ -543,9 +536,9 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
                                     res[fieldName] && (
                                       <>
                                         <div
-                                          className={`whitespace-nowrap text-[#333333] ${fieldName === 'TotalOutStanding' || fieldName === 'Amount'
-                                              ? 'flex justify-end font-bold'
-                                              : ''
+                                          className={`whitespace-nowrap text-darkCharcoal ${fieldName === 'TotalOutStanding' || fieldName === 'Amount'
+                                            ? 'flex justify-end font-bold'
+                                            : ''
                                             }
                                     `}
                                         >
@@ -558,7 +551,7 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
                                               : res[fieldName]}
                                         </div>
                                         {index + 1 < selectedModuleField.length && (
-                                          <div className='mx-[10px] h-[12px] w-[1px] bg-[#333333]' />
+                                          <div className='mx-[10px] h-[12px] w-[1px] bg-darkCharcoal' />
                                         )}
                                       </>
                                     )

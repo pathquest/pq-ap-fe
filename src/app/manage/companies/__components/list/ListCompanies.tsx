@@ -266,6 +266,7 @@ const ListCompanies = () => {
       }
       performApiAction(dispatch, conncetQb, params, (responseData: any) => {
         setQboCompanyData(responseData)
+        localStorage.setItem('qbotoken', responseData?.TokenId)
         if (responseData?.Name === null) {
           Toast.success('Company Connected!')
           setOpenDrawer(false)
@@ -1135,7 +1136,7 @@ const ListCompanies = () => {
         </div>
 
         {/* Data Table */}
-        <div className='h-[calc(100vh-125px)] approvalMain overflow-auto max-[425px]:mx-1'>
+        <div className='h-[calc(100vh-112px)] overflow-auto max-[425px]:mx-1'>
           <div className={`${companyData.length !== 0 && 'h-0'}`}>
             <DataTable
               columns={headers}
@@ -1154,10 +1155,10 @@ const ListCompanies = () => {
 
           {companyList.length === 0 ? (
             isLoading ?
-              <div className='flex h-[calc(100vh-165px)] w-full items-center justify-center'>
+              <div className='flex h-[calc(93vh-150px)] w-full items-center justify-center'>
                 <Loader size='md' helperText />
               </div>
-              : !isLoading && <div className='flex h-[44px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
+              : !isLoading && <div className='flex h-[59px] sticky top-0 left-0 w-full font-proxima items-center justify-center border-b border-b-[#ccc]'>
                 No records available at the moment.
               </div>
           ) : ''}
@@ -1183,7 +1184,7 @@ const ListCompanies = () => {
           onClose={handleDrawerClose}
           hasEditId={editId}
           accountingTool={accountingTool}
-          CompanyData={(qboCompanyData ? qboCompanyData[0] : null) || (xeroCompanyData ? xeroCompanyData[0] : null)}
+          CompanyData={(qboCompanyData ? qboCompanyData : null) || (xeroCompanyData ? xeroCompanyData[0] : null)}
           getCompanyList={() => getCompanyList(1)}
           IntacctUserId={intacctUserId}
           IntacctPassword={intacctPassword}

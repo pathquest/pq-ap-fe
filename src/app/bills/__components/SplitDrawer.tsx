@@ -495,10 +495,11 @@ const SplitDrawer: React.FC<SplitDrawerProps> = ({
   return (
     <>
       <div
-        className={`fixed right-0 top-0 z-10 flex h-full w-5/6 flex-col overflow-scroll bg-white shadow-2xl ${onOpen ? 'translate-x-0' : 'translate-x-full'
-          } transition-transform duration-300 ease-in-out`}
+        className={`fixed right-0 top-0 z-10 flex h-full w-5/6 flex-col overflow-auto bg-white shadow-2xl ${
+          onOpen ? 'translate-x-0' : 'translate-x-full'
+        } transition-transform duration-300 ease-in-out`}
       >
-        <div className='flex items-center justify-between border-b-[1px] border-[#D8D8D8] p-2.5'>
+        <div className='flex items-center justify-between border-b-[1px] border-lightSilver p-2.5'>
           <div className='flex flex-col'>
             <span className=''>
               <Typography className='!text-[18px] !font-bold'>{fileName}</Typography>
@@ -566,7 +567,7 @@ const SplitDrawer: React.FC<SplitDrawerProps> = ({
               </div>
               {tabId === '2' ? (
                 <>
-                  <div className='mt-7 h-[calc(100vh-280px)] overflow-scroll max-[425px]:mx-1'>
+                  <div className='mt-7 h-[calc(100vh-280px)] overflow-auto max-[425px]:mx-1'>
                     <DataTable
                       columns={columns}
                       data={tableData}

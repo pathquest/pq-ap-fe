@@ -454,7 +454,7 @@ const ListNotification: React.FC = () => {
             {/* Navbar component */}
             <div className='sticky top-0 z-[6] flex h-[50px] items-center justify-between bg-whiteSmoke px-5'>
               <div className='flex items-center'>
-                <label className='font-proxima flex cursor-pointer items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Notification</label>
+                <label className='font-proxima flex items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>Notification</label>
               </div>
               <div className='flex items-center justify-center gap-5'>
                 <Button

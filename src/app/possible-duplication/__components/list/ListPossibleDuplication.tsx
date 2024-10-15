@@ -102,7 +102,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
 
     const [columnListVisible, setColumnListVisible] = useState<any>([])
 
-    const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
+    const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
     const [isResetFilter, setIsResetFilter] = useState<boolean>(false)
     const [editedValues, setEditedValues] = useState({
         reason: '',
@@ -223,9 +223,9 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
 
     useEffect(() => {
         if (isLeftSidebarCollapsed) {
-            setTableDynamicWidth('w-full laptop:w-[calc(100vw-85px)]')
+            setTableDynamicWidth('w-full laptop:w-[calc(100vw-78px)]')
         } else {
-            setTableDynamicWidth('w-full laptop:w-[calc(100vw-200px)]')
+            setTableDynamicWidth('w-full laptop:w-[calc(100vw-180px)]')
         }
     }, [isLeftSidebarCollapsed])
 
@@ -757,24 +757,22 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
         ...billPostingHeaders,
         {
             header: (
-                <Tooltip position='left' content='Add column' className='!font-proxima !text-sm'>
-                    <span className='pl-5'>
-                        {selectedProcessTypeInList !== '3' && (
-                            <ColumnFilterDropdown
-                                headers={headersDropdown.map((h: any) => (h?.header.props ? h?.header?.props?.children?.[0] : h?.header))}
-                                visibleHeaders={billPostingHeaders.map((h: any) =>
-                                    h?.header.props ? h?.header?.props?.children?.[0] : h?.header
-                                )}
-                                isOpen={isOpen}
-                                getColMapId={getMapColId}
-                                setOpen={handleOpen}
-                                getMappingListData={getMappingListData}
-                                handleHeaderToggle={handleHeaderToggle}
-                                setMapColId={() => setMapColId(-1)}
-                            />
-                        )}
-                    </span>
-                </Tooltip>
+                billPostingHeaders.length > 0 && (<span className='pl-5'>
+                    {selectedProcessTypeInList !== '3' && (
+                        <ColumnFilterDropdown
+                            headers={headersDropdown.map((h: any) => (h?.header.props ? h?.header?.props?.children?.[0] : h?.header))}
+                            visibleHeaders={billPostingHeaders.map((h: any) =>
+                                h?.header.props ? h?.header?.props?.children?.[0] : h?.header
+                            )}
+                            isOpen={isOpen}
+                            getColMapId={getMapColId}
+                            setOpen={handleOpen}
+                            getMappingListData={getMappingListData}
+                            handleHeaderToggle={handleHeaderToggle}
+                            setMapColId={() => setMapColId(-1)}
+                        />
+                    )}
+                </span>)
             ),
             accessor: 'actions',
             sortable: false,
@@ -1269,7 +1267,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
     if (table_Data.length === 0) {
         if (isLoading) {
             noDataContent = (
-                <div className='flex h-full w-full items-center justify-center'>
+                <div className='flex h-[calc(100vh-155px)] w-full items-center justify-center'>
                     <Loader size='md' helperText />
                 </div>
             )
@@ -1288,7 +1286,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
         <Wrapper>
             <div className='billsMain'>
                 <div className={`sticky top-0 ${isOpenFilter ? 'z-[99]' : 'z-[6]'} w-full`}>
-                    <div className='relative flex h-16 items-center justify-between bg-[#F4F4F4] px-[20px]'>
+                    <div className='relative flex h-[50px] items-center justify-between bg-[#F4F4F4] px-[20px]'>
                         <div className='flex items-center justify-center'>
                             <span
                                 className='cursor-pointer rounded-full bg-white p-1.5'
@@ -1339,7 +1337,7 @@ const ListPossibleDuplication = ({ vendorOptions, locationOptions, statusOptions
                     />
                 </div>
 
-                <div className={`custom-scroll h-[calc(100vh-128px)] overflow-scroll ${tableDynamicWidth}`}>
+                <div className={`custom-scroll h-[calc(100vh-112px)] overflow-auto ${tableDynamicWidth}`}>
                     <div className={`mainTable ${billLists.length !== 0 && 'h-0'}`}>
                         <DataTable
                             getExpandableData={() => { }}

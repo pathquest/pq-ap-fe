@@ -44,7 +44,6 @@ const ListAPTerm: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isImport, setIsImport] = useState<boolean>(false)
   const [refreshTable, setRefreshTable] = useState<boolean>(false)
-  const [searchValue, setSearchValue] = useState('')
 
   //For Lazy Loading
   const [shouldLoadMore, setShouldLoadMore] = useState(true)
@@ -55,6 +54,9 @@ const ListAPTerm: React.FC = () => {
   let nextPageIndex: number = 1
   const lazyRows = 70
   const tableBottomRef = useRef<HTMLDivElement>(null)
+
+  // For search ApTerm
+  const [searchValue, setSearchValue] = useState('')
 
   const columns: any = [
     {
@@ -358,7 +360,7 @@ const ListAPTerm: React.FC = () => {
       {/* Navbar */}
       <div className='sticky top-0 z-[6] flex !h-[50px] items-center justify-between bg-whiteSmoke px-5'>
         <div className='flex items-center'>
-          <label className='font-proxima flex cursor-pointer items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>AP Term</label>
+          <label className='font-proxima flex items-center text-base font-bold tracking-[0.02em] text-darkCharcoal'>AP Term</label>
         </div>
         <div className='flex items-center gap-5'>
           <div className='flex h-6 items-center justify-center -mr-3'>

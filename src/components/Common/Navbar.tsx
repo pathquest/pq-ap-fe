@@ -168,6 +168,13 @@ const Navbar = ({ onData }: any) => {
   ]
 
   const handleLogout = async () => {
+    localStorage.removeItem('UserId')
+    localStorage.removeItem('previousUrl')
+    localStorage.removeItem('OrgId')
+    localStorage.removeItem('IsAdmin')
+    localStorage.removeItem('IsOrgAdmin')
+    localStorage.removeItem('qbotoken')
+    
     await handleSignOut()
   }
 
@@ -210,37 +217,35 @@ const Navbar = ({ onData }: any) => {
     }
   }, [CompanyId])
 
-  // useEffect(() => {
-  //   let userId = localStorage.getItem('UserId')
-  //   const client = new WebPubSubClient({
-  //     getClientAccessUrl: async () =>
-  //       (await fetch(`${process.env.REALTIME_NOTIFICATION}/event-stream/get-access-token?userId=${userId}`)).text(),
-  //   })
+  useEffect(() => {
+    let userId = localStorage.getItem('UserId')
+    const client = new WebPubSubClient({
+      getClientAccessUrl: async () =>
+        (await fetch(`${process.env.REALTIME_NOTIFICATION}/event-stream/get-access-token?userId=${userId}`)).text(),
+    })
 
-  //   const handleConnected = (e: any) => { }
+    const handleConnected = (e: any) => { }
 
-  //   const handleServerMessage = (data: any) => {
-  //     Toast.success(`${data?.message?.data?.message}`)
-  //     if (data?.message?.data?.company_id === parseInt(`${CompanyId}`)) {
-  //       setCount(() => notificationCount + 1)
-  //     }
+    const handleServerMessage = (data: any) => {
+      Toast.success(`${data?.message?.data?.message}`)
+      if (data?.message?.data?.company_id === parseInt(`${CompanyId}`)) {
+        setCount(() => notificationCount + 1)
+      }
+    }
 
-  //   }
+    async function connect() {
+      await client.start()
+      client.on('connected', handleConnected)
+      client.on('server-message', handleServerMessage)
+    }
+    connect()
 
+    return () => {
+      client.off('connected', handleConnected)
+      client.off('server-message', handleServerMessage)
+    }
 
-  //   async function connect() {
-  //     await client.start()
-  //     client.on('connected', handleConnected)
-  //     client.on('server-message', handleServerMessage)
-  //   }
-  //   connect()
-
-  //   return () => {
-  //     client.off('connected', handleConnected)
-  //     client.off('server-message', handleServerMessage)
-  //   }
-
-  // }, [])
+  }, [])
 
   useEffect(() => {
     dispatch(setNotificationCount(count))
@@ -272,7 +277,7 @@ const Navbar = ({ onData }: any) => {
 
   return (
     <>
-      <div className='border-b border-lightSilver laptop:h-[60px] laptopMd:h-[60px] lg:h-[60px] xl:h-[60px] hd:h-[60px] 2xl:h-[60px] 3xl:h-[60px]'>
+      <div className='border-b border-lightSilver h-[60px]'>
         <div className='grid md:!flex h-full w-full gap-5'>
           {settingsFocusedArr.includes(pathname) && (
             <div key={pathname} className='!w-[90px] flex items-center justify-center border-lightSilver laptop:border-r'>

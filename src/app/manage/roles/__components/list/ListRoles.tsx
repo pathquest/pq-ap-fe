@@ -345,7 +345,7 @@ const ListRoles: React.FC = () => {
       </div>
 
       {/* Data Table */}
-      <div className='h-[calc(100vh-128px)] overflow-auto approvalMain custom-scroll max-[425px]:mx-1'>
+      <div className='h-[calc(100vh-112px)] overflow-auto approvalMain custom-scroll max-[425px]:mx-1'>
         <div className={`${roleListData.length !== 0 && 'h-0'}`}>
           <DataTable
             columns={columns}

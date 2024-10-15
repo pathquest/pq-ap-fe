@@ -282,9 +282,9 @@ const Drawer: React.FC<DrawerProps> = ({
     setImageName('')
   }
 
-
   // save company for after edit and create new company
   const CompanySave = () => {
+    const qboToken = localStorage.getItem('qbotoken')
     setIsLoading(true)
     const params = {
       Id: Id > 0 ? Id : 0,
@@ -309,6 +309,7 @@ const Drawer: React.FC<DrawerProps> = ({
       DeleteFilesInDays: Number(deletedFile),
       IsActive: true,
       RecordNo: recordNo,
+      TokenId: qboToken ? Number(qboToken) : null
     }
     // setDeletedFile(0)
     performApiAction(
