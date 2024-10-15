@@ -987,7 +987,7 @@ const CreateBillPosting = ({
       lineItemsFieldsData,
       postSaveAs,
       documentDetailByIdData,
-      documentId
+      documentId ?? 0
     )
 
     const isValidAttachments = validateAttachments(formFields, onErrorLoader, postSaveAs)

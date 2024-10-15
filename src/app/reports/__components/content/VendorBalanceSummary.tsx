@@ -92,7 +92,7 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
     return () => {
       observer.disconnect()
     }
-  }, [shouldLoadMore, itemsLoaded, tableBottomRef.current])
+  }, [shouldLoadMore, itemsLoaded, tableBottomRef])
 
   const fetchBalanceSummary = async (pageIndex?: number) => {
     if (pageIndex === 1) {
@@ -123,10 +123,13 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
             const List = responseData?.SummaryData
             const newList = responseData?.SummaryData || []
             const newTotalCount = responseData?.BillCount || 0
-            setApiDataCount(newTotalCount)
             setRunReport(true)
             setRunReportLoading(false)
             List.length > 0 && setIsExpanded(false)
+
+            if (pageIndex === 1) {
+              setApiDataCount(newTotalCount)
+            }
 
             let updatedData: any = []
             if (pageIndex === 1) {
@@ -143,7 +146,9 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
 
             setIsLoading(false)
 
-            if (itemsLoaded >= newTotalCount) {
+            if (itemsLoaded >= newTotalCount && pageIndex === 1) {
+              setShouldLoadMore(false);
+            } else if (itemsLoaded >= apiDataCount) {
               setShouldLoadMore(false);
             }
           } else {
@@ -161,21 +166,6 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
         setIsLoading(false)
         setIsLazyLoading(false)
       }
-      // performApiAction(
-      //   dispatch,
-      //   vendorAgingSummary,
-      //   params,
-      //   (responseData: any) => {
-      //     const List = responseData
-      //     setVendorBalanceSummarys(List)
-      //     setRunReport(true)
-      //     setIsLoading(false)
-      //     List.length > 0 && setIsExpanded(false)
-      //   },
-      //   () => {
-      //     setIsLoading(false)
-      //   }
-      // )
     }
   }
 
