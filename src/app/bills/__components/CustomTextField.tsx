@@ -1,5 +1,5 @@
-import Editable from '@/components/Common/Editable'
-import { Text } from 'pq-ap-lib'
+import Editable from '@/components/Common/Editable';
+import TextField from '@/components/Common/MUI/CustomTextField';
 
 const CustomTextField = ({
   fieldName,
@@ -51,13 +51,13 @@ const CustomTextField = ({
             `}
     >
       <span className='textError'>
-        <Text
+        <TextField
           validate={field.IsRequired}
           inputRef={inputRef}
           type={
             fieldName === 'qty' || fieldName === 'rate' || fieldName === 'amount' || fieldName === 'markup' ? 'number' : 'text'
           }
-          value={d[fieldName]}
+          defaultValue={d[fieldName]}
           // tabIndex={0}
           getValue={(value) => {
             onChangeTableFieldValue(d.Index, fieldName === 'amount' ? parseFloat(value) : value, fieldName)
