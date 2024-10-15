@@ -552,7 +552,7 @@ const PaymentAgingDays: React.FC = () => {
           colalign = 'left'
           break
         case 'Remaining':
-          columnStyle = '!w-[100px]'
+          columnStyle = '!w-[120px]'
           colalign = 'right'
           break
         case 'Available Credit':
@@ -560,7 +560,7 @@ const PaymentAgingDays: React.FC = () => {
           colalign = 'right'
           break
         case 'Bill Amount':
-          columnStyle = '!w-[100px]'
+          columnStyle = '!w-[120px]'
           colalign = 'right'
           break
         case 'Payment Status':
@@ -571,7 +571,7 @@ const PaymentAgingDays: React.FC = () => {
           colalign = 'right'
           break
         case 'Location':
-          columnStyle = '!w-[130px]'
+          columnStyle = '!w-[120px]'
           colalign = 'right'
           break
         case 'Bill Date':
@@ -725,8 +725,8 @@ const PaymentAgingDays: React.FC = () => {
         />
       ),
       DueDate: (
-        <div className='flex items-center gap-4'>
-          <span className='!text-sm'>{formatDate(d.DueDate)}</span>
+        <div className='flex items-center gap-4 w-full justify-between'>
+          <span className='!text-sm font-proxima tracking-[0.02em] text-darkCharcoal'>{formatDate(d.DueDate)}</span>
           {isPastDueDate && <span className='h-2 w-2 rounded-full bg-[#DC3545]'></span>}
         </div>
       ),
@@ -744,7 +744,7 @@ const PaymentAgingDays: React.FC = () => {
                   {d?.BillNumber}
                 </label>
               </BasicTooltip>
-              : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.BillNumber}</label>}
+              : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em] break-words whitespace-nowrap`}>{d?.BillNumber}</label>}
           </div>
           <div className={`${d.Attachments !== null ? "w-[23px]" : ""} relative flex items-center`}>
             {d.Attachments !== null && (
@@ -805,18 +805,62 @@ const PaymentAgingDays: React.FC = () => {
             </label>
           </BasicTooltip>
         </div>
-        : <label className={`font-proxima text-sm w-full`}>{d?.VendorName}</label>,
-      Remaining: (
-        <Typography className='!pr-[15px] !text-sm !font-bold !text-darkCharcoal'>${formatCurrency(d?.RemanningDue)}</Typography>
-      ),
-      AvailableCredit: (
-        <Typography className='!pr-[10px] !text-sm !font-bold !text-[#1BB55C]'>${formatCurrency(d.AvailableCredit)}</Typography>
-      ),
-      BillAmount: <span className='!pr-[15px] !text-sm !font-bold !text-darkCharcoal'>${formatCurrency(d?.TotalAmount)}</span>,
-      PaymentStatus: <Typography className='!text-sm'>{d?.PaymentStatusName}</Typography>,
-      Discount: <Typography className='!text-sm'>{d?.Discount ?? '-'}</Typography>,
-      BillDate: <Typography className='!text-sm'>{formatDate(d?.BillDate)}</Typography>,
-      Location: <Typography className='!text-sm'>{d?.LocationName}</Typography>,
+        : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.VendorName}</label>,
+      BillDate: <Typography className='!text-sm !text-darkCharcoal !tracking-[0.02em]'>{formatDate(d.BillDate)}</Typography>,
+      Remaining: d.RemanningDue && String(d.RemanningDue)?.length > 10
+        ? <div className='w-[110px]'>
+          <BasicTooltip position='right' content={`$${formatCurrency(d?.RemanningDue)}`} className='!m-0 !p-0 !z-[1]'>
+            <label className="!pr-[10px] !font-bold block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate w-full">
+              ${formatCurrency(d?.RemanningDue)}
+            </label>
+          </BasicTooltip>
+        </div>
+        : <label className={`!pr-[10px] !text-sm !font-bold text-darkCharcoal font-proxima w-full tracking-[0.02em] text-end`}>${formatCurrency(d?.RemanningDue)}</label>,
+      AvailableCredit: d.AvailableCredit && String(d.AvailableCredit)?.length > 13
+        ? <div className='w-[120px]'>
+          <BasicTooltip position='right' content={`$${formatCurrency(d?.AvailableCredit)}`} className='!m-0 !p-0 !z-[1]'>
+            <label className="!pr-[10px] !font-bold block cursor-pointer text-sm font-proxima tracking-[0.02em] !text-[#1BB55C] truncate w-full">
+              ${formatCurrency(d?.AvailableCredit)}
+            </label>
+          </BasicTooltip>
+        </div>
+        : <label className={`!pr-[10px] !text-sm !font-bold !text-[#1BB55C] font-proxima w-full tracking-[0.02em] text-end`}>${formatCurrency(d?.AvailableCredit)}</label>,
+      BillAmount: d.TotalAmount && String(d.TotalAmount)?.length > 10
+        ? <div className='w-[110px]'>
+          <BasicTooltip position='right' content={`$${formatCurrency(d?.TotalAmount)}`} className='!m-0 !p-0 !z-[1]'>
+            <label className="!pr-[10px] !font-bold block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate w-full">
+              ${formatCurrency(d?.TotalAmount)}
+            </label>
+          </BasicTooltip>
+        </div>
+        : <label className={`!pr-[10px] !text-sm !font-bold text-darkCharcoal font-proxima w-full tracking-[0.02em] text-end`}>${formatCurrency(d?.TotalAmount)}</label>,
+      PaymentStatus: d.PaymentStatusName?.length > 12
+        ? <div className='w-[120px]'>
+          <BasicTooltip position='right' content={d?.PaymentStatusName} className='!m-0 !p-0 !z-[1]'>
+            <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
+              {d?.PaymentStatusName}
+            </label>
+          </BasicTooltip>
+        </div>
+        : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.PaymentStatusName}</label>,
+      Discount: d.Discount && String(d.Discount)?.length > 10
+        ? <div className='w-[110px]'>
+          <BasicTooltip position='right' content={d?.Discount ?? '-'} className='!m-0 !p-0 !z-[1]'>
+            <label className="!font-bold block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate w-full">
+              {d?.Discount ?? '-'}
+            </label>
+          </BasicTooltip>
+        </div>
+        : <label className={`!text-sm !font-bold text-darkCharcoal font-proxima w-full tracking-[0.02em] text-end`}>{d?.Discount ?? '-'}</label>,
+      Location: d.LocationName && d.LocationName?.length > 12
+        ? <div className='w-[110px]'>
+          <BasicTooltip position='left' content={d?.LocationName} className='!m-0 !p-0 !z-[1]'>
+            <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
+              {d?.LocationName}
+            </label>
+          </BasicTooltip>
+        </div>
+        : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.LocationName}</label>,
       action: (
         <div className='flex items-center gap-3'>
           {Number(d.PaymentStatus) !== 3 && (
@@ -826,7 +870,6 @@ const PaymentAgingDays: React.FC = () => {
               className={`flex !h-6 pb-1 items-center rounded-full cursor-pointer font-proxima font-semibold text-sm tracking-[0.02em] ${selectedRows.length > 1 ? 'opacity-30' : ''}`}
               onClick={() => {
                 setIsSingleBillPaymentModalOpen(true)
-
                 setCurrSelectedBillDetails([
                   {
                     VendorId: d.VendorId,
