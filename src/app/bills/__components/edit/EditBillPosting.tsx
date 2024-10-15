@@ -146,8 +146,10 @@ const EditBillPosting = ({ processtype }: any) => {
 
   const lazyRows = 10
 
-  const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any, mainFieldListOptions: any, generateLinetItemFieldsErrorObj: any, vendorOptions: any, lineItemsFieldsDataObj: any) => {
+  const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any, mainFieldListOptions: any, generateLinetItemFieldsErrorObj: any, vendorOptions: any, lineItemsFieldsDataObj: any, lineItemFieldColumns: any) => {
     setIsBillDataLoading(true)
+    const IsFindLocation = keyValueLineItemFieldObj.find((item: any) => item.mappedWith === 11 || item.mappedWith === 23)
+
     try {
       const response = await agent.APIs.getDocumentDetails({
         Id: Number(activeBill as string),
@@ -243,13 +245,15 @@ const EditBillPosting = ({ processtype }: any) => {
               {
                 ...lineItemsFieldsDataObj,
                 Index: 1,
-                amount: newData?.Amount ?? 0
+                    amount: newData?.Amount ?? 0,
+                    ...((IsFindLocation && Object.keys(IsFindLocation)?.length > 0) ? { [IsFindLocation?.key]: newData?.LocationId?.toString() ?? 0 } : {}),
               },
             ])
             await setHasLineItemFieldLibraryErrors([
               {
                 ...generateLinetItemFieldsErrorObj,
-                amount: newData?.Amount ? true : false
+                amount: newData?.Amount ? true : false,
+                ...((IsFindLocation && Object.keys(IsFindLocation)?.length > 0) ? { [IsFindLocation?.key]: newData?.LocationId ? true : false } : {}),
               }
             ])
           } else {
@@ -257,25 +261,28 @@ const EditBillPosting = ({ processtype }: any) => {
             await setHasLineItemFieldLibraryErrors(newCurrentLineItemsErrorObj)
           }
         } else {
-          if (newLineItems.length === 0) {
-            setMainFieldAmount(responseData?.Amount)
-            await setLineItemsFieldsData([
-              {
-                ...lineItemsFieldsDataObj,
-                Index: 1,
-                amount: responseData?.Amount ?? 0
-              },
-            ])
-            await setHasLineItemFieldLibraryErrors([
-              {
-                ...generateLinetItemFieldsErrorObj,
-                amount: responseData?.Amount ? true : false
-              }
-            ])
-          } else {
-            await setLineItemsFieldsData(newLineItems)
-            await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
-          }
+            if (newLineItems.length === 0) {
+                setMainFieldAmount(responseData?.Amount)
+                await setLineItemsFieldsData([
+                    {
+                        ...lineItemsFieldsDataObj,
+                        Index: 1,
+                        amount: responseData?.Amount ?? 0,
+                        ...((IsFindLocation && Object.keys(IsFindLocation)?.length > 0) ? { [IsFindLocation?.key]: responseData?.LocationId?.toString() ?? 0 } : {}),
+                    },
+                ])
+                await setHasLineItemFieldLibraryErrors([
+                    {
+                        ...generateLinetItemFieldsErrorObj,
+                        amount: responseData?.Amount ? true : false,
+                        ...((IsFindLocation && Object.keys(IsFindLocation)?.length > 0) ? { [IsFindLocation?.key]: responseData?.LocationId ? true : false } : {}),
+                    }
+                ])
+            } else {
+                await setLineItemsFieldsData(newLineItems)
+                await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
+            }
+            setIsBillDataLoading(false)
 
           await setFormFields(updatedDataObj)
           setDocumentDetailByIdData(responseData)
@@ -382,7 +389,7 @@ const EditBillPosting = ({ processtype }: any) => {
       await setLineItemFieldListOptions(lineItemConfiguration)
 
       if (activeBill) {
-        await getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldConfiguration, generateLinetItemFieldsErrorObj, vendorOptions, lineItemsFieldsDataObj)
+        await getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldConfiguration, generateLinetItemFieldsErrorObj, vendorOptions, lineItemsFieldsDataObj, lineItemFieldColumns)
       }
 
       setIsLoading(false)
@@ -398,7 +405,7 @@ const EditBillPosting = ({ processtype }: any) => {
         mainFieldListOptions,
         lineItemFieldListOptions
       )
-      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldListOptions, generateLinetItemFieldsErrorObj, vendorGLTermOptions, lineItemsFieldsDataObj)
+      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldListOptions, generateLinetItemFieldsErrorObj, vendorGLTermOptions, lineItemsFieldsDataObj, lineItemFieldColumns)
     }
   }, [activeBill])
 
@@ -953,14 +960,14 @@ const EditBillPosting = ({ processtype }: any) => {
 
   const setFormValues = async (key: string, value: string | number) => {
     if (key === 'date') {
-      if (checkFormFieldErrors.hasOwnProperty('term') && formFields.term) {
+      if (formFields.hasOwnProperty('term') && formFields.term) {
         const filterTerm = defaultTermOptions?.find((t: any) => t.Id === formFields.term)
         let formattedDueDateCalculated = ''
 
         if (value) {
           const dueDateCalculatedValue = addDays(new Date(value), parseInt(filterTerm?.DueDate))
           formattedDueDateCalculated =
-            dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
+          dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
         } else {
           const dueDateCalculatedValue = addDays(new Date(), parseInt(filterTerm?.DueDate))
           formattedDueDateCalculated =

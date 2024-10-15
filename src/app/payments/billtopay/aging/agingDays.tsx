@@ -481,7 +481,7 @@ const AgingDays: React.FC<ActionsProps> = ({
       </div>
 
       {/* Datatable */}
-      <div className='custom-scroll h-[calc(100vh-128px)] w-full approvalMain overflow-auto max-[425px]:mx-1'>
+      <div className='custom-scroll h-[calc(100vh-112px)] w-full approvalMain overflow-auto max-[425px]:mx-1'>
         <div className={`mainTable ${dataList.length === 0 ? 'h-11' : 'h-auto'}`}>
           <DataTable
             columns={columns}

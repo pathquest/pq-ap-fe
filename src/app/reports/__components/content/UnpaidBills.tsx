@@ -1,5 +1,6 @@
 import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 import ChevronDown from '@/components/Common/Dropdown/Icons/ChevronDown'
+import { toInitCap } from '@/components/Common/Functions/FormatText'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 import { AsOfReportPeriodByList, ViewByList } from '@/data/reports'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
@@ -9,7 +10,6 @@ import { format } from 'date-fns'
 import { Button, DataTable, Datepicker, Loader, MultiSelectChip, Select, Toast, Typography } from 'pq-ap-lib'
 import { useEffect, useRef, useState } from 'react'
 import ColumnFilter from '../columnFilter/ColumnFilter'
-import { toInitCap } from '@/components/Common/Functions/FormatText'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
@@ -426,7 +426,7 @@ function UnpaidBills({ vendorOptions, locationOptions, setUnpaidBillsParams }: a
       )
     } else {
       noDataContent = (
-        <div className={`fixed flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]`}>
+        <div className={`fixed font-proxima flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]`}>
           No records available at the moment.
         </div>
       )

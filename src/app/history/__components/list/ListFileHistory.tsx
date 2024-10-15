@@ -448,13 +448,13 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
   if (table_Data.length === 0) {
     if (isLoading) {
       noDataContent = (
-        <div className='flex h-full w-full items-center justify-center'>
+        <div className='flex h-[calc(100vh-160px)] w-full items-center justify-center'>
           <Loader size='md' helperText />
         </div>
       )
     } else {
       noDataContent = (
-        <div className='fixed flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
+        <div className='fixed font-proxima flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
           No records available at the moment.
         </div>
       )
@@ -495,7 +495,7 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
               </div>
               <div className='flex items-center laptop:gap-4 laptopMd:gap-4 lg:gap-4 xl:gap-4 hd:gap-5 2xl:gap-5 3xl:gap-5'>
                 <div className='flex justify-center items-center h-6 laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5 border-r border-lightSilver laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em] text-darkCharcoal'>
-                  Total Uploaded Files: <span className='font-bold text-darkCharcoal'>{apiDataCount}</span>
+                  Total Uploaded Files: <span className='font-bold text-darkCharcoal pl-1'> {apiDataCount}</span>
                 </div>
                 <div className='flex justify-center items-center mt-1' onClick={() => setIsFilterVisible(true)}>
                   <BasicTooltip position='bottom' content='Filter' className='!px-0 !pb-2.5 !font-proxima !text-sm'>

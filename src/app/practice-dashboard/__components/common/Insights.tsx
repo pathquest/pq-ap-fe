@@ -20,7 +20,7 @@ function Insights({ InsightsData }: any) {
   const { month } = getPreviousMonthYear();
 
   return (
-    <div className='flex w-[300px] bg-white z-10 flex-col rounded-md border border-[#d8d8d8] p-4'>
+    <div className='flex w-[300px] bg-white z-10 flex-col rounded-md border border-lightSilver p-4'>
       <div className='flex flex-col gap-3'>
         <div className='flex items-center justify-center'>
           <span className='text-[14px] font-semibold'>Quick Insights for the {month} Month</span>
