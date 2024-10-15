@@ -15,13 +15,7 @@ import { EditBillPostingDataProps } from '@/models/billPosting'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { billReAssign, billsApproval, setApprovalDropdownFields } from '@/store/features/billApproval/approvalSlice'
 import { companyAssignUser } from '@/store/features/company/companySlice'
-import {
-  getPDFUrl,
-  getRoundValue,
-  getViewUpdatedDataFromDetailsResponse,
-  returnKeyValueObjForFormFields,
-  totalAmountCalculate,
-} from '@/utils/billposting'
+import { getPDFUrl, getRoundValue, getViewUpdatedDataFromDetailsResponse, returnKeyValueObjForFormFields, totalAmountCalculate } from '@/utils/billposting'
 import dynamic from 'next/dynamic'
 import { useParams, useRouter } from 'next/navigation'
 import { Badge, DataTable, Loader, Select, Textarea, Toast, BasicTooltip, Typography } from 'pq-ap-lib'
@@ -115,6 +109,7 @@ const ViewApprovals = ({ processtype }: any) => {
   const router = useRouter()
   const dispatch = useAppDispatch()
   const userId = localStorage.getItem('UserId')
+  const batchId = localStorage.getItem('BatchId')
 
   const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any) => {
     try {
@@ -278,15 +273,22 @@ const ViewApprovals = ({ processtype }: any) => {
     const ids = [id]
       ; (reason.trim().length <= 0 || reason.trim().length > 150) && setReasonError(true)
 
+    const approvalDetailList = [{
+      Ids: documentDetailByIdData.Id ?? 0,
+      BatchId: Number(batchId) ?? 0
+    }];
+
     if ((status === 2 && !(reason.trim().length <= 0 || !reasonHasError)) || status === 1) {
       const params = {
-        Ids: ids.map((id) => Number(id)),
+        ApprovalDetailList: approvalDetailList,
+        // Ids: ids.map((id) => Number(id)),
         StatusId: status, // Pending = 0,Approved = 1,Rejected = 2,Reasigned = 3 -- only for backend,
         Remark: status === 1 ? null : reason,
       }
       performApiAction(dispatch, billsApproval, params, () => {
         setIsApprovalModal(false)
         clearAll()
+        localStorage.removeItem('BatchId')
         Toast.success(
           `Bill No.${documentDetailByIdData?.BillNumber} ${status == 1 ? 'Approved!' : 'Rejected!'}`
         )
