@@ -500,7 +500,7 @@ const EditBillsToPayWrapper = ({
 
           {children}
 
-          <div className='custom-bottom-sticky bottom-0 grid place-content-center place-items-center gap-2 !border-t border-[#D8D8D8] px-5 py-[12px] sm:!flex sm:!items-center sm:!justify-end'>
+          <div className='custom-bottom-sticky bottom-0 grid place-content-center place-items-center gap-2 !border-t border-lightSilver px-5 py-[12px] sm:!flex sm:!items-center sm:!justify-end'>
             {selectedProcessTypeInList !== '2' && (
               <Button
                 variant={'btn-outline-primary'}

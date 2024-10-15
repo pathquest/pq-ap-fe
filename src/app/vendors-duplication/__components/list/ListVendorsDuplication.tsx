@@ -401,7 +401,7 @@ const ListVendorsDuplication: React.FC = () => {
           </div>
 
           {/* DataTable */}
-          <div className='h-[calc(100vh-128px)] overflow-auto max-[425px]:mx-1'>
+          <div className='h-[calc(100vh-112px)] overflow-auto max-[425px]:mx-1'>
             <div className={`${(vendorList.length !== 0) && 'h-0'}`}>
               <DataTable
                 columns={columns}

@@ -327,7 +327,7 @@ const VendorBalanceSummary: React.FC<VendorBalanceSummaryProps> = ({
       )
     } else {
       noDataContent = (
-        <div className='fixed flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
+        <div className='fixed font-proxima flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
           No records available at the moment.
         </div>
       )

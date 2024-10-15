@@ -51,7 +51,7 @@ const ChatBox = ({ chatItem, className, watcherList, tabId, getSummaryData }: Ch
     const storageAccount = storageConfig.storageAccount
     const containerName: any = storageConfig.containerName
     const sasToken = storageConfig.sassToken
-    
+
     const blobServiceClient = new BlobServiceClient(`https://${storageAccount}.blob.core.windows.net?${sasToken}`)
     const containerClient = blobServiceClient.getContainerClient(containerName)
     const blockBlobClient = containerClient?.getBlockBlobClient(`${filePath}`)
@@ -171,7 +171,7 @@ const ChatBox = ({ chatItem, className, watcherList, tabId, getSummaryData }: Ch
                   <span>{chat?.CreatedByName}</span>
                   <div className='flex items-end justify-end'>
                     {chat.Type !== 'Activity' && (
-                      <Typography className={` bg-[#F4F4F4] !text-[10px] font-normal uppercase`}>
+                      <Typography className={` bg-lightGray !text-[10px] font-normal uppercase`}>
                         {chat?.IsResolved ? 'Query Resloved' : chat?.Type}
                       </Typography>
                     )}
@@ -208,7 +208,7 @@ const ChatBox = ({ chatItem, className, watcherList, tabId, getSummaryData }: Ch
                   {chat.Attachments?.map((file: ActivityAttachmentList, index: number) => (
                     <label
                       key={file.ActivityId}
-                      className='cursor-pointer rounded-sm bg-[#F4F4F4] px-2 py-1 text-black'
+                      className='cursor-pointer rounded-sm bg-lightGray px-2 py-1 text-black'
                       onClick={() => {
                         showPDFViewerModal(file.AttachmentPath, file.AttachmentName)
                       }}

@@ -9,11 +9,7 @@ import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { setNotificationCount } from '@/store/features/auth/authSlice'
 import { setApprovalDropdownFields } from '@/store/features/billApproval/approvalSlice'
 import { setFilterFormFields, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
-import {
-  deleteAllNotifications,
-  getNotificationList,
-  readAllNotifications,
-} from '@/store/features/notification/notificationSlice'
+import { deleteAllNotifications, getNotificationList, readAllNotifications } from '@/store/features/notification/notificationSlice'
 import { format, subMonths } from 'date-fns'
 import { Badge, Loader, Tooltip, Typography } from 'pq-ap-lib'
 import { useEffect, useRef, useState } from 'react'

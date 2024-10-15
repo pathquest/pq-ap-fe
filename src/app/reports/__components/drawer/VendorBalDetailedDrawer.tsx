@@ -144,21 +144,21 @@ const VendorBalDetailedDrawer: React.FC<ActionsProps> = ({
     <div className={`${onOpen ? 'block' : 'hidden'}`}>
       {/* Navbar */}
       <div className='sticky top-0 border-t border-lightSilver'>
-        <div className='relative flex h-16 items-center justify-between bg-[#F4F4F4] px-4'>
+        <div className='relative flex !h-[50px] items-center justify-between bg-lightGray px-4'>
           <div className='flex items-center gap-5'>
             <span className='cursor-pointer' onClick={handleModalClose}>
               <BackArrow />
             </span>
 
             <div className='flex items-center justify-center gap-5'>
-              <span className=' pr-5 text-base font-bold text-darkCharcoal'>{currentVendorName}</span>
+              <span className='!font-proxima tracking-[0.02em] pr-5 text-base font-bold text-darkCharcoal'>{currentVendorName}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Datatable */}
-      <div className={`custom-scroll stickyTable h-[calc(100vh-210px)] overflow-scroll`}>
+      <div className={`custom-scroll stickyTable h-[calc(100vh-210px)] overflow-auto`}>
         <div className={`mainTable ${dataList.length !== 0 && 'h-0'}`}>
           <DataTable
             columns={VendorSummaryDetail}

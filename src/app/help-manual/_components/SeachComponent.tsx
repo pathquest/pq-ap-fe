@@ -102,7 +102,7 @@ function HelpManualSeachComponent() {
 
           results.push(
             <div
-              className='cursor-pointer border-b border-[#D8D8D8] p-3 hover:bg-whiteSmoke'
+              className='cursor-pointer border-b border-lightSilver p-3 hover:bg-[#f6f6f6]'
               key={`${i}` + result?.id}
               onClick={() => handleSearchResultClick(categorySlug, subCategory)}
             >
@@ -114,7 +114,7 @@ function HelpManualSeachComponent() {
     }
     if (!results.length && isSearchResult) {
       results.push(
-        <div className='border-[#D8D8D8] bg-whiteSmoke p-4' key={'no-result'}>
+        <div className='border-lightSilver bg-[#f6f6f6] p-4' key={'no-result'}>
           <p className='text-lg font-normal'>No Result Found </p>
         </div>
       )
@@ -131,7 +131,7 @@ function HelpManualSeachComponent() {
 
         <div className='relative flex justify-center' ref={searchResultRef}>
           <div
-            className='flex w-[500px] items-center justify-center space-x-3  rounded-3xl border border-[#D8D8D8] bg-white p-2 px-4 hover:border-[#0ab8a3]'
+            className='flex w-[500px] items-center justify-center space-x-3  rounded-3xl border border-lightSilver bg-white p-2 px-4 hover:border-[#0ab8a3]'
           >
             <GlobalSearch />
             <input
