@@ -115,8 +115,6 @@ const TextField: React.FC<InputProps> = ({
     };
 
     const handleInputChange = (e: any) => {
-        console.log("🚀 ~ handleInputChange ~ e:", e.key)
-        console.log("🚀 ~ handleInputChange ~ e.target.value:", e.target.value)
         if (e.key === "Tab") {
             getValue(e.target.value);
         }
