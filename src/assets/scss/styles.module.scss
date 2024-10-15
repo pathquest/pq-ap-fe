@@ -2,7 +2,7 @@
   .expandDiv {
     left: 0%;
     width: 180px;
-    top: 64px;
+    top: 60px;
     // height: 100%;
     z-index: 20;
     animation: leftToRight 0.3s ease-in-out both;
@@ -10,7 +10,7 @@
   .collapsedDiv {
     left: -100%;
     width: 180px;
-    top: 64px;
+    top: 60px;
     height: auto;
     animation: rightToLeft 0.3s ease-in-out both;
   }

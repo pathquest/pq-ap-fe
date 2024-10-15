@@ -566,7 +566,7 @@ const ListUsers: React.FC = () => {
         />
 
         {/* Data Table */}
-        <div className='h-[calc(100vh-125px)] approvalMain custom-scroll overflow-auto max-[425px]:mx-1'>
+        <div className='h-[calc(100vh-112px)] approvalMain custom-scroll overflow-auto max-[425px]:mx-1'>
           <div className={`${userData.length !== 0 && 'h-0'}`}>
             <DataTable
               columns={columns}

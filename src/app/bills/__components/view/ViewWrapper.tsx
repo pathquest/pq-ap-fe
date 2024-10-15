@@ -905,7 +905,7 @@ const ViewWrapper = ({
           className={`${isVisibleLeftSidebar ? 'col-span-8 laptop:col-span-9' : 'col-span-12'
             } h-[calc(100vh_-_65px)] overflow-y-auto`}
         >
-          <div className={`!h-[66px] sticky top-0 ${isVendorBillHistoryListOpen ? "z-[7]" : "z-[6]"} flex w-full flex-row justify-between bg-[#F4F4F4] px-5`}>
+          <div className={`!h-[50px] sticky top-0 z-[5] flex w-full flex-row justify-between bg-lightGray px-5`}>
             <div className='flex items-center justify-center'>
               {!isVisibleLeftSidebar && (
                 <span
@@ -1085,113 +1085,113 @@ const ViewWrapper = ({
                   </BasicTooltip>
                 </li>
 
-                {processSelection !== '4' && (
-                  <>
-                    {billStatus !== 3 &&
-                      billStatus !== 9 &&
-                      billStatus !== 4 &&
-                      billStatus !== 7 &&
-                      selectedStates[0]?.id === userId && (
-                        <li
-                          className='h-full flex items-center'
-                          onClick={onClickMoveToDropdown}
-                          tabIndex={0}
-                          onKeyDown={(e) => (e.key === 'Enter') && onClickMoveToDropdown()}
-                        >
-                          <BasicTooltip position='bottom' content='Move' className='!font-proxima !text-[14px] !px-0'>
-                            <div className='flex items-center gap-2'>
-                              <TabMoveIcon />
-                              <div className={`transition-transform ${isOpenMoveToDropDown ? "duration-400 rotate-180" : "duration-200"}`}>
-                                <DownArrowIcon />
-                              </div>
-                            </div>
-                          </BasicTooltip>
-                          {isOpenMoveToDropDown && (
-                            <div
-                              ref={dropdownMoveToRef}
-                              className='absolute right-28 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
-                            >
-                              <div className='flex flex-col items-start justify-start'>
-                                {moveToOptions &&
-                                  moveToOptions
-                                    .filter((m) => {
-                                      if (parseInt(processSelection) === 1) {
-                                        return m.value !== 1
-                                      } else if (parseInt(processSelection) === 2) {
-                                        return m.value !== 2
-                                      } else if (parseInt(processSelection) === 3) {
-                                        return m.value !== 3
-                                      } else {
-                                        return true
-                                      }
-                                    })
-                                    .map((item) => {
-                                      return (
-                                        <span
-                                          className='flex w-full cursor-pointer items-center justify-start px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
-                                          onClick={() => {
-                                            onSelectCategory(item.value)
-                                          }}
-                                          key={item.value}
-                                        >
-                                          <Typography>{item?.label}</Typography>
-                                        </span>
-                                      )
-                                    })}
-                              </div>
-                            </div>
-                          )}
-                        </li>
-                      )}
-                  </>
-                )}
-                {processSelection !== '4' && (
-                  <>
-                    {billStatus !== 3 &&
-                      billStatus !== 9 &&
-                      billStatus !== 4 &&
-                      billStatus !== 7 &&
-                      selectedStates[0]?.id === userId && (
-                        <li
-                          className='h-full flex items-center'
-                          onClick={() => setIsVisibleRemoveConfirm(true)}
-                          tabIndex={0}
-                          onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleRemoveConfirm(true)}
-                        >
-                          <BasicTooltip position='bottom' content='Delete' className='!font-proxima !text-[14px] !px-0'>
-                            <DeleteIcon />
-                          </BasicTooltip>
-                        </li>
-                      )}
-                  </>
-                )}
-
-
-                {processSelection !== '4' && (
-                  <li
-                    className='h-full flex items-center'
-                    onClick={handleViewMode}
-                    tabIndex={0}
-                    onKeyDown={(e) => (e.key === 'Enter') && handleViewMode()}
-                  >
-                    <BasicTooltip position='bottom' content='View' className='!font-proxima !px-0 !text-[14px]'>
-                      <ViewIcon />
-                    </BasicTooltip>
-                    {isOpenViewMode && (
-                      <div
-                        ref={dropdownViewModeRef}
-                        className='absolute right-6 top-12 !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+              {processSelection !== '4' && (
+                <>
+                  {billStatus !== 3 &&
+                    billStatus !== 9 &&
+                    billStatus !== 4 &&
+                    billStatus !== 7 &&
+                    selectedStates[0]?.id === userId && (
+                      <li
+                        className='h-full flex items-center'
+                        onClick={onClickMoveToDropdown}
+                        tabIndex={0}
+                        onKeyDown={(e) => (e.key === 'Enter') && onClickMoveToDropdown()}
                       >
-                        <div className='flex flex-col items-start justify-start'>
-                          <span
-                            className='flex w-full cursor-pointer items-center justify-center px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
-                            onClick={() => router.push('/bills')}
+                        <BasicTooltip position='bottom' content='Move' className='!font-proxima !text-[14px] !px-0'>
+                          <div className='flex items-center gap-2'>
+                            <TabMoveIcon />
+                            <div className={`transition-transform ${isOpenMoveToDropDown ? "duration-400 rotate-180" : "duration-200"}`}>
+                              <DownArrowIcon />
+                            </div>
+                          </div>
+                        </BasicTooltip>
+                        {isOpenMoveToDropDown && (
+                          <div
+                            ref={dropdownMoveToRef}
+                            className='absolute right-28 top-[45px] !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
                           >
-                            <span className='pr-[10px]'>
-                              <ListIcon />
-                            </span>
-                            <Typography>List Mode</Typography>
+                            <div className='flex flex-col items-start justify-start'>
+                              {moveToOptions &&
+                                moveToOptions
+                                  .filter((m) => {
+                                    if (parseInt(processSelection) === 1) {
+                                      return m.value !== 1
+                                    } else if (parseInt(processSelection) === 2) {
+                                      return m.value !== 2
+                                    } else if (parseInt(processSelection) === 3) {
+                                      return m.value !== 3
+                                    } else {
+                                      return true
+                                    }
+                                  })
+                                  .map((item) => {
+                                    return (
+                                      <span
+                                        className='flex w-full cursor-pointer items-center justify-start px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
+                                        onClick={() => {
+                                          onSelectCategory(item.value)
+                                        }}
+                                        key={item.value}
+                                      >
+                                        <Typography>{item?.label}</Typography>
+                                      </span>
+                                    )
+                                  })}
+                            </div>
+                          </div>
+                        )}
+                      </li>
+                    )}
+                </>
+              )}
+              {processSelection !== '4' && (
+                <>
+                  {billStatus !== 3 &&
+                    billStatus !== 9 &&
+                    billStatus !== 4 &&
+                    billStatus !== 7 &&
+                    selectedStates[0]?.id === userId && (
+                      <li
+                        className='h-full flex items-center'
+                        onClick={() => setIsVisibleRemoveConfirm(true)}
+                        tabIndex={0}
+                        onKeyDown={(e) => (e.key === 'Enter') && setIsVisibleRemoveConfirm(true)}
+                      >
+                        <BasicTooltip position='bottom' content='Delete' className='!font-proxima !text-[14px] !px-0'>
+                          <DeleteIcon />
+                        </BasicTooltip>
+                      </li>
+                    )}
+                </>
+              )}
+
+
+              {processSelection !== '4' && (
+                <li
+                  className='h-full flex items-center'
+                  onClick={handleViewMode}
+                  tabIndex={0}
+                  onKeyDown={(e) => (e.key === 'Enter') && handleViewMode()}
+                >
+                  <BasicTooltip position='bottom' content='View' className='!font-proxima !px-0 !text-[14px]'>
+                    <ViewIcon />
+                  </BasicTooltip>
+                  {isOpenViewMode && (
+                    <div
+                      ref={dropdownViewModeRef}
+                      className='absolute right-6 top-[45px] !z-10 flex h-auto flex-col rounded-md bg-white py-2 shadow-lg'
+                    >
+                      <div className='flex flex-col items-start justify-start'>
+                        <span
+                          className='flex w-full cursor-pointer items-center justify-center px-[15px] py-[11px] !text-[14px] hover:bg-blue-50'
+                          onClick={() => router.push('/bills')}
+                        >
+                          <span className='pr-[10px]'>
+                            <ListIcon />
                           </span>
+                          <Typography>List Mode</Typography>
+                        </span>
 
                           {billStatusEditable.includes(billStatus) &&
                             processSelection !== '3' &&
@@ -1239,8 +1239,8 @@ const ViewWrapper = ({
 
           {children}
 
-          {(processSelection !== '4' && module != "copybill") && (
-            <div className='!h-[66px] custom-bottom-sticky bottom-0 grid place-content-center place-items-center gap-2 !border-t border-lightSilver px-5 py-[12px] sm:!flex sm:!items-center sm:!justify-end'>
+          {processSelection !== '4' && (
+            <div className='!h-[55px] custom-bottom-sticky bottom-0 grid place-content-center place-items-center gap-2 !border-t border-lightSilver px-5 sm:!flex sm:!items-center sm:!justify-end'>
               <span
                 className='mr-[20px] flex h-[36px] w-[36px] cursor-pointer items-center justify-center rounded-full bg-whiteSmoke'
                 onClick={() => handleBackword(activeBill)}

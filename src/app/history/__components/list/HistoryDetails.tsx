@@ -635,13 +635,13 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
     if (historyDetailsView.length === 0) {
         if (isLoading) {
             noDataContent = (
-                <div className='flex h-full w-full items-center justify-center'>
+                <div className='flex h-[calc(100vh-160px)] w-full items-center justify-center'>
                     <Loader size='md' helperText />
                 </div>
             )
         } else {
             noDataContent = (
-                <div className='fixed flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
+                <div className='fixed font-proxima flex h-[44px] w-full items-center justify-center border-b border-b-[#ccc]'>
                     No records available at the moment.
                 </div>
             )
@@ -666,7 +666,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                 </div>
             </div >
 
-            <div className={`custom-scroll h-[calc(100vh-128px)] approvalMain overflow-auto ${tableDynamicWidth}`} >
+            <div className={`custom-scroll h-[calc(100vh-112px)] approvalMain overflow-auto ${tableDynamicWidth}`} >
                 <div className={`historyTable !outline-none ${historyDetailsView.length === 0 ? 'h-11' : 'h-auto'}`}>
                     <DataTable
                         columns={filteredNestedColumns}

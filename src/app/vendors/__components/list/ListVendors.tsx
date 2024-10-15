@@ -523,7 +523,7 @@ const ListVendors: React.FC = () => {
   if (vendorListData.length === 0) {
     if (isLoading) {
       noDataContent = (
-        <div className='flex h-[calc(100vh-128px)] w-full items-center justify-center'>
+        <div className='flex h-[calc(100vh-155px)] w-full items-center justify-center'>
           <Loader size='md' helperText />
         </div>
       )
@@ -590,7 +590,7 @@ const ListVendors: React.FC = () => {
           </div>
 
           {/* DataTable */}
-          <div className='h-[calc(100vh-128px)] overflow-auto max-[425px]:mx-1 custom-scroll'>
+          <div className='h-[calc(100vh-112px)] overflow-auto max-[425px]:mx-1 custom-scroll'>
             <div className={`${vendorList.length === 0 ? 'h-11' : 'h-auto'}`}>
               <DataTable
                 columns={columns}

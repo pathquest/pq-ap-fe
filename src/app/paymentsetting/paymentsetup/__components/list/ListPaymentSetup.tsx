@@ -408,19 +408,21 @@ const ListPaymentSetup: React.FC = () => {
   }
 
   const handleTabClick = (tabId: string) => {
-    if (selectedTab == "bank") {
-      if (bankAccountList.length === 0 && customerKycStatus === "Approved") {
-        setSelectedTab("bank");
-        Toast.error('Add Bank Account First', 'You need to add bank account first before creating payment method setup')
-      } if (bankAccountList.length > 0 && customerKycStatus === "Approved") {
-        setSelectedTab('payment');
+    if (!isLoading) {
+      if (selectedTab == "bank") {
+        if (bankAccountList.length === 0 && customerKycStatus === "Approved") {
+          setSelectedTab("bank");
+          Toast.error('Add Bank Account First', 'You need to add bank account first before creating payment method setup')
+        } if (bankAccountList.length > 0 && customerKycStatus === "Approved") {
+          setSelectedTab('payment');
+        }
+        else {
+          setSelectedTab("bank");
+          Toast.error('Complete KYC Process First', 'You need to complete KYC process and add at least one bank account before payment method setup')
+        }
+      } else {
+        setSelectedTab(tabId);
       }
-      else {
-        setSelectedTab("bank");
-        Toast.error('Complete KYC Process First', 'You need to complete KYC process and add at least one bank account before payment method setup')
-      }
-    } else {
-      setSelectedTab(tabId);
     }
   };
 
@@ -472,7 +474,7 @@ const ListPaymentSetup: React.FC = () => {
                     <KYCIcon />
                   </Tooltip>
                 </div></>}
-              <div className={`cursor-pointer ${isSyncing && 'animate-spin'} ${accountingTool == 4 ? "hidden" : "flex justify-center items-center"}`} onClick={() => setIsSyncModalOpen(true)}>
+              <div className={`cursor-pointer ${isSyncing && 'animate-spin'} ${accountingTool == 4 ? "hidden" : isPaymentSetupSync ? "flex justify-center items-center" : "hidden"}`} onClick={() => setIsSyncModalOpen(true)}>
                 <Tooltip content={`Sync Bank Account`} position='left' className='!z-[6] !p-0 h-8 w-8 flex justify-center items-center'>
                   <SyncIcon />
                 </Tooltip>
@@ -523,7 +525,7 @@ const ListPaymentSetup: React.FC = () => {
 
           {/* Cards */}
           {isStatusLoading || isLoading
-            ? <div className='flex h-full w-full items-center justify-center'>
+            ? <div className='flex h-[calc(100vh-130px)] w-full items-center justify-center'>
               <Loader size='md' helperText />
             </div>
             : bankAccountList.length === 0 && !isLoading && selectedTab == "bank"
