@@ -7,17 +7,15 @@ import { useEffect } from "react"
 import jwt from 'jsonwebtoken'
 
 export default function VerifyTokenPage() {
-    const router = useRouter()
-    const { data: session } = useSession()
     const searchParams = useSearchParams()
     const urlToken = searchParams.get('token') ?? ''
-    const urlRefreshToken = searchParams.get('refreshToken') ?? ''
+    const refreshToken = searchParams.get('refreshToken') ?? ''
     const isFirstConfig = searchParams.get('isFirstConfig') ?? 'false'
 
     const checkUrlToken = async () => {
         if (urlToken) {
             const decodedToken: any = jwt.decode(urlToken);
-
+            const decodedRefreshToken: any = decodeURIComponent(refreshToken);
             const expirationDate = new Date(decodedToken.exp * 1000);
 
             // Convert to ISO 8601 format
@@ -25,7 +23,7 @@ export default function VerifyTokenPage() {
             await handleTokenSave({
                 token: urlToken,
                 expires_at:isoFormatDate,
-                refresh_token:urlRefreshToken,
+                refresh_token:decodedRefreshToken,
                 isFirstConfig: isFirstConfig
             })
         }
