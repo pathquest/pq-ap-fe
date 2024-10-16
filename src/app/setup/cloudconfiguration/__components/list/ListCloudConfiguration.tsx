@@ -26,6 +26,7 @@ import DropboxIcon from '@/assets/Icons/DropboxIcon'
 import FolderIcon from '@/assets/Icons/FolderIcon'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { setSelectedConnectorId } from '@/store/features/cloudConfiguration/cloudConfigurationSlice'
+import AliasPopupModal from '../AliasPopupModal'
 
 interface CloudConfigProps {
   ConnectorId: number
@@ -49,6 +50,7 @@ const ListCloudConfiguration: React.FC = () => {
   const [visibleFolderModal, setVisibleFolderModal] = useState(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isIMAPConfigOpen, setIsIMAPConfigOpen] = useState<boolean>(false)
+  const [isAliasNameOpen, setIsAliasNameOpen] = useState<boolean>(false)
   const [cloudConfigList, setCloudConfigList] = useState<any>([])
   const [folders, setFolders] = useState<any>([])
   // const [selectedCloudConnectorId, setSelectedCloudConnectorId] = useState<number | null>(null)
@@ -221,17 +223,17 @@ const ListCloudConfiguration: React.FC = () => {
                           <MenuButton className={'!border-none !bg-transparent !outline-black'} onClick={() => { }}>
                             <MoreOptionsIcon />
                           </MenuButton>
-                          {/* <Menu className={`!z-[6] !-ml-4 !-mt-2 !w-[168px]`}>
+                          <Menu className={`!z-[6] !-ml-4 !-mt-2 !w-[168px]`}>
                             <MenuItem
                               key={'open'}
                               className='!font-proxima !font-normal !text-black !outline-black'
                               onClick={() => { }}
                             >
                               <Typography type='h6' className='!font-normal'>
-                                Open
+                                Rename Alias
                               </Typography>
                             </MenuItem>
-                          </Menu> */}
+                          </Menu>
                         </Dropdown>
                       </div>
                       <div className='flex justify-center pb-2 pt-4'>
@@ -246,7 +248,7 @@ const ListCloudConfiguration: React.FC = () => {
                         )}
                       </div>
                       <div className='text-center font-proxima !text-sm text-[#333]'>
-                          {!!imapConnectedEmail && config.ConnectorId === 4 ? imapConnectedEmail : config.AuthUserEmail}
+                        {!!imapConnectedEmail && config.ConnectorId === 4 ? imapConnectedEmail : config.AuthUserEmail}
                       </div>
 
                       <div className={`${config.ConnectorId !== 4 ? 'py-1' : 'py-4'} flex items-center justify-center`}>
@@ -289,9 +291,18 @@ const ListCloudConfiguration: React.FC = () => {
                 setVisibleFolderModal(false)
                 window.location.href = '/setup/cloudconfiguration';
               }}
+              setFolderSelected={(value: boolean) => setIsAliasNameOpen(value)}
               companyId={CompanyId}
               selectedCloudConnectorId={selectedConnecterId}
             />
+
+            <AliasPopupModal
+              visibleAliasName={isAliasNameOpen}
+              setOnCloseAliasModal={() => {
+                setIsAliasNameOpen(false)
+              }}
+            />
+
             <IMAPConfigModal
               fetchCloudList={fetchCloudList}
               isIMAPConfigOpen={isIMAPConfigOpen}
