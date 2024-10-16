@@ -16,6 +16,8 @@ import { useRouter } from 'next/navigation'
 import { Button, Toast, Typography } from 'pq-ap-lib'
 import { performApiAction } from '../Functions/PerformApiAction'
 import { getModulePermissions, hasViewPermission, processPermissions } from '../Functions/ProcessPermission'
+import { setFilterFormFields } from '@/store/features/bills/billSlice'
+import { initialBillPostingFilterFormFields } from '@/utils/billposting'
 
 const Dropdown: React.FC = () => {
   const { data: session } = useSession()
@@ -79,7 +81,7 @@ const Dropdown: React.FC = () => {
       localStorage.setItem('CompanyId', value)
       invalidateSessionCache();
       await update({ ...user, CompanyId: value, CompanyName: label, AccountingTool: accountingTool })
-
+      await dispatch(setFilterFormFields(initialBillPostingFilterFormFields));
       // dispatch(setVendorIdList([]))
       setSelectedValue(label)
       setIsOpen(false)

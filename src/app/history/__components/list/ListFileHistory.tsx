@@ -91,16 +91,12 @@ export const nestedColumns: Column[] = [
 const DropboxIcon = lazy(() => import('@/assets/Icons/DropboxIcon'))
 const EmailIcon = lazy(() => import('@/assets/Icons/EmailIcon'))
 const FileUploadIcon = lazy(() => import('@/assets/Icons/FileUploadIcon'))
-const FilesAddIcon = lazy(() => import('@/assets/Icons/FilesAddIcon'))
-const FilesRetryIcon = lazy(() => import('@/assets/Icons/FilesRetryIcon'))
 const HistorySystemUpdateIcon = lazy(() => import('@/assets/Icons/HistorySystemUpdate'))
-const AttachIcon = lazy(() => import('@/assets/Icons/billposting/AttachIcon'))
 const FilterIcon = lazy(() => import('@/assets/Icons/billposting/FilterIcon'))
 const ConfirmationModal = lazy(() => import('@/components/Common/Modals/ConfirmationModal'))
 const Wrapper = lazy(() => import('@/components/Common/Wrapper'))
 
 const FileModal = lazy(() => import('@/app/bills/__components/FileModal'))
-const GetFileIcon = lazy(() => import('@/app/bills/__components/GetFileIcon'))
 const HistoryFilter = lazy(() => import('@/app/history/__components/HistoryFilter'))
 const LinkToBillModal = lazy(() => import('@/app/history/__components/LinkToBillModal'))
 
@@ -156,6 +152,7 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
   const [isLinkToBillModalVisible, setIsLinkToBillModalVisible] = useState(false)
 
   const [historyLists, setHistoryLists] = useState<any>([])
+  const [updatedUserOptions, setUpdateUserOptions] = useState<any>([])
 
   const [isResetFilter, setIsResetFilter] = useState<boolean>(false)
   const [isApplyFilter, setIsApplyFilter] = useState<boolean>(false)
@@ -177,7 +174,6 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
     BillNumber: '',
   })
   const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false)
-  const [isRetryLoading, setIsRetryLoading] = useState<boolean>(false)
   const [shouldLoadMore, setShouldLoadMore] = useState(true)
   const [isLazyLoading, setIsLazyLoading] = useState<boolean>(false)
 
@@ -467,6 +463,17 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
     noDataContent = ''
   }
 
+  useEffect(() => {
+    const updatedUserOptions = userOptions.map((e: any) => {
+      return {
+        isChecked: e.isChecked,
+        label: e.label,
+        value: e.value
+      };
+    });
+    setUpdateUserOptions(updatedUserOptions)
+  }, [userOptions])
+
   return (
     <Wrapper masterSettings={false}>
       {
@@ -560,7 +567,7 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
         filterFormFields={filterFormFields}
         localFilterFormFields={localFilterFormFields}
         setLocalFilterFormFields={setLocalFilterFormFields}
-        receivedUserOptions={userOptions}
+        receivedUserOptions={updatedUserOptions}
       />
 
       <LinkToBillModal

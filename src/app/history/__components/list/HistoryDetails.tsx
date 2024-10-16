@@ -6,9 +6,7 @@ import { Badge, BasicTooltip, Breadcrumb, DataTable, Loader, Select, Toast, Typo
 import { lazy, useEffect, useRef, useState } from 'react'
 
 import agent from '@/api/axios'
-import Download from '@/components/Common/Custom/Download'
 import SpinnerIcon from '@/assets/Icons/spinnerIcon'
-import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
 import { formatFileSize } from '@/components/Common/Functions/FormatFileSize'
 import { attachfileheaders } from '@/data/billPosting'
 import { columns, createOptions, processOptions } from '@/data/fileHistory'
@@ -82,9 +80,6 @@ export const nestedColumns: Column[] = [
     },
 ]
 
-const DropboxIcon = lazy(() => import('@/assets/Icons/DropboxIcon'))
-const EmailIcon = lazy(() => import('@/assets/Icons/EmailIcon'))
-const FileUploadIcon = lazy(() => import('@/assets/Icons/FileUploadIcon'))
 const FilesAddIcon = lazy(() => import('@/assets/Icons/FilesAddIcon'))
 const FilesRetryIcon = lazy(() => import('@/assets/Icons/FilesRetryIcon'))
 const AttachIcon = lazy(() => import('@/assets/Icons/billposting/AttachIcon'))
@@ -93,7 +88,6 @@ const ConfirmationModal = lazy(() => import('@/components/Common/Modals/Confirma
 
 const FileModal = lazy(() => import('@/app/bills/__components/FileModal'))
 const GetFileIcon = lazy(() => import('@/app/bills/__components/GetFileIcon'))
-const HistoryFilter = lazy(() => import('@/app/history/__components/HistoryFilter'))
 const LinkToBillModal = lazy(() => import('@/app/history/__components/LinkToBillModal'))
 
 const initialFilterFormFields: HistoryFilterFormFieldsProps = {
@@ -105,7 +99,6 @@ const initialFilterFormFields: HistoryFilterFormFieldsProps = {
 }
 
 export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, userOptions, billNumberOptions, locationOptions }: any) {
-    const lazyRows = 10
 
     const dropdownRef = useRef<HTMLDivElement>(null)
     const createModalRef = useRef<HTMLDivElement>(null)
@@ -124,12 +117,13 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
     const { filterFormFields } = useAppSelector((state) => state.files)
     const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
     const { selectedCompany } = useAppSelector((state) => state.user)
+    const [locationValue, setLocationValue] = useState<string[]>([])
     const AccountingTool = selectedCompany?.accountingTool
 
     const [isLoading, setIsLoading] = useState<boolean>(false)
 
     const [localFilterFormFields, setLocalFilterFormFields] = useState<HistoryFilterFormFieldsProps>(filterFormFields)
-    const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
+    const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
 
     const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
     const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false)
@@ -175,15 +169,15 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
             .filter((item): item is Column => !!item)
 
     const fetchHistoryDetails = async () => {
-        const dateRangeVal = filterFormFields?.fh_uploaded_date ? filterFormFields?.fh_uploaded_date?.split('to') : ''
+        const dateRangeVal = filterFormFields?.fh_uploaded_date ? filterFormFields?.fh_uploaded_date?.split('to') : '';
         const billNumbersSelected =
             billNumberOptions
                 .map((item: BillNumberProps) => {
                     if (filterFormFields?.fh_bill_number?.includes(item?.value)) {
-                        return item.label
+                        return item.label;
                     }
                 })
-                .filter(Boolean) ?? []
+                .filter(Boolean) ?? [];
 
         const params = {
             PageNumber: 1,
@@ -198,53 +192,31 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
         };
 
         try {
-            setIsLoading(true)
-            const { payload, meta } = await dispatch(historyGetList(params))
-            const dataMessage = payload?.Message
+            setIsLoading(true);
+            const { payload, meta } = await dispatch(historyGetList(params));
+            const dataMessage = payload?.Message;
 
             if (meta?.requestStatus === 'fulfilled') {
                 if (payload?.ResponseStatus === 'Success') {
-                    const rowAttachmentData = payload?.ResponseData?.List.flatMap((d: any) => {
-                        const filteredAttachmentData = d.AttachmentData && d.AttachmentData?.filter(
-                            (nestedData: any) => d.UserId === userDetails.userId && d.ProviderType === userDetails.ProviderType && format(convertUTCtoLocal(d?.UploadedDate), 'MM/dd/yyyy, HH:mm:ss') === userDetails.uploadedDate
-                        ) || [];
-
-                        return filteredAttachmentData?.map((nestedData: any) =>
-                            DataRow({
-                                d,
-                                nestedData,
-                                handleFileOpen,
-                                handleOpenAttachFile,
-                                setIsFileRecord,
-                                handleCreateFile,
-                                handleRetryFile,
-                                isRetryLoading,
-                                isCreateModalVisible,
-                                createOptions,
-                                selectedDocument,
-                                createModalRef,
-                            })
-                        );
-                    });
-                    setHistoryDetailsView(rowAttachmentData)
-                    setIsLoading(false)
-                    setIsApplyFilter(false)
-                    setIsResetFilter(false)
+                    // Store raw data directly into state
+                    setHistoryDetailsView(payload?.ResponseData?.List ?? []);
+                    setIsLoading(false);
+                    setIsApplyFilter(false);
+                    setIsResetFilter(false);
                 } else {
-                    // responseFailure()
-                    Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
+                    Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`);
                 }
             } else {
-                // responseFailure()
-                Toast.error(`${payload?.status} : ${payload?.statusText}`)
+                Toast.error(`${payload?.status} : ${payload?.statusText}`);
             }
         } catch (error) {
-            setIsLoading(false)
-            Toast.error('Something Went Wrong!')
+            setIsLoading(false);
+            Toast.error('Something Went Wrong!');
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
-    }
+    };
+
 
     useEffect(() => {
         if (isDetailsOpen) {
@@ -260,9 +232,9 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
 
     useEffect(() => {
         if (isLeftSidebarCollapsed) {
-            setTableDynamicWidth('w-full laptop:w-[calc(100vw-85px)]')
+            setTableDynamicWidth('w-full laptop:w-[calc(100vw-78px)]')
         } else {
-            setTableDynamicWidth('w-full laptop:w-[calc(100vw-200px)]')
+            setTableDynamicWidth('w-full laptop:w-[calc(100vw-180px)]')
         }
     }, [isLeftSidebarCollapsed])
 
@@ -299,24 +271,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
             const response = await agent.APIs.handleFileHistoryRetry({ Id: documentId })
 
             if (response?.ResponseStatus === 'Success') {
-                // const updatedHistoryLists = historyLists.map((historyItem: any) => {
-                //     const updatedAttachmentData = historyItem.AttachmentData.map((attachmentItem: any) => {
-                //         if (attachmentItem.DocumentsId === documentId) {
-                //             return {
-                //                 ...attachmentItem,
-                //                 Status: 'Moved To Automation',
-                //                 IsShowOptions: false,
-                //             };
-                //         }
-                //         return attachmentItem;
-                //     });
-
-                //     return {
-                //         ...historyItem,
-                //         AttachmentData: updatedAttachmentData,
-                //     };
-                // });
-                // setHistoryDetailsView(updatedHistoryLists)
+                fetchHistoryDetails()
                 setIsRetryLoading(false)
             }
         } catch (error) {
@@ -386,6 +341,15 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
         )
     }
 
+    useEffect(() => {
+        setLocationValue(
+            locationOptions.map((option: any) => ({
+                label: String(option.label),
+                value: String(option.value)
+            }))
+        );
+    }, [locationOptions])
+
     const DataRow = ({
         d,
         nestedData,
@@ -422,32 +386,34 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
             ),
             FileName: nestedData.FileName && nestedData.FileName.length > 5
                 ? <BasicTooltip position='right' content={nestedData.FileName} className='!m-0 !p-0 !z-[4]'>
-                    <span>{limitString(nestedData.FileName, 13)}</span>
+                    <span onClick={() => {
+                        setIsFileRecord({
+                            FileName: nestedData.FileName,
+                            PageCount: nestedData.Pages,
+                            BillNumber: nestedData.BillNo,
+                        })
+                        handleFileOpen(nestedData.FilePath, nestedData.FileName)
+                    }}>{limitString(nestedData.FileName, 13)}</span>
                 </BasicTooltip>
-                : <label className="font-proxima text-sm cursor-pointer">{nestedData.FileName}</label>,
+                : <label className="font-proxima text-sm cursor-pointer" onClick={() => {
+                    setIsFileRecord({
+                        FileName: nestedData.FileName,
+                        PageCount: nestedData.Pages,
+                        BillNumber: nestedData.BillNo,
+                    })
+                    handleFileOpen(nestedData.FilePath, nestedData.FileName)
+                }}>{nestedData.FileName}</label>,
             APProviderType: apProviderTypeText,
             UploadedDate: <Typography className='!text-sm tracking-[0.02em] text-darkCharcoal'>{formattedNestedUploadedDate}</Typography>,
             BillNo: (
                 <div className='flex w-full items-center justify-between'>
-                    <div
-                        className='w-4/5 cursor-pointer'
-                        onClick={() => {
-                            setIsFileRecord({
-                                FileName: nestedData.FileName,
-                                PageCount: nestedData.Pages,
-                                BillNumber: nestedData.BillNo,
-                            })
-                            handleFileOpen(nestedData.FilePath, nestedData.FileName)
-                        }}
-                    >
-                        <Typography className='pl-0 !text-sm text-darkCharcoal'>{nestedData.BillNo || ''}</Typography>
-                    </div>
+                    <Typography className='pl-0 !text-sm text-darkCharcoal'>{nestedData.BillNo || ''}</Typography>
                     <div className='relative mr-4 w-1/5'>
-                        {nestedData.DocumentAttachment?.length > 0 && (
+                        {nestedData.AccountPayableAttachment?.length > 0 && (
                             <BasicTooltip position='right' content='Additional Attachments' className='!z-[2] !font-proxima !text-sm'>
                                 <div className='flex cursor-pointer justify-end' onClick={() => handleOpenAttachFile(nestedData?.DocumentsId)}>
                                     <div className='absolute -top-1 right-0'>
-                                        <Badge badgetype='error' variant='dot' text={nestedData.DocumentAttachment.length.toString()} />
+                                        <Badge badgetype='error' variant='dot' text={nestedData.AccountPayableAttachment.length.toString()} />
                                     </div>
                                     <AttachIcon />
                                 </div>
@@ -461,29 +427,28 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                                 <DataTable
                                     getExpandableData={() => { }}
                                     columns={attachfileheaders}
-                                    data={nestedData.DocumentAttachment.map((e: any) => ({
-                                        ...e,
-                                        FileName: (
-                                            <div
-                                                className='flex cursor-pointer items-center gap-1'
-                                                onClick={() => {
-                                                    handleFileOpen(e.FilePath, e.FileName)
-                                                    setIsFileRecord({
-                                                        FileName: e.FileName,
-                                                        PageCount: e.PageCount,
-                                                        BillNumber: d.BillNumber,
-                                                    })
-                                                    setIsAttachmentVisible(false)
-                                                }}
-                                            >
-                                                <GetFileIcon FileName={e.FileName} />
-                                                <span className='w-52 truncate' title={e.FileName}>
-                                                    {e.FileName} &nbsp;
-                                                </span>
-                                            </div>
-                                        ),
-                                        Size: <Typography className='!text-sm text-darkCharcoal'>{formatFileSize(e.FileSize)}</Typography>,
-                                    }))}
+                                    data={nestedData?.AccountPayableAttachment.map(
+                                        (e: any) =>
+                                            new Object({
+                                                ...e,
+                                                FileName: (
+                                                    <div
+                                                        className='flex cursor-pointer items-center gap-1'
+                                                        onClick={() => {
+                                                            handleFileOpen(e.FilePath, e.FileName)
+                                                            setIsFileRecord({ FileName: e.FileName, PageCount: e.PageCount, BillNumber: d.BillNumber })
+                                                            setIsAttachmentVisible(false)
+                                                        }}
+                                                    >
+                                                        <GetFileIcon FileName={e.FileName} />
+                                                        <span className='w-52 truncate' title={e.FileName}>
+                                                            {e.FileName} &nbsp;
+                                                        </span>
+                                                    </div>
+                                                ),
+                                                Size: <Typography className='!text-sm text-darkCharcoal'>{formatFileSize(e.Size)}</Typography>,
+                                            })
+                                    )}
                                     sticky
                                     hoverEffect
                                     getRowId={() => { }}
@@ -503,32 +468,45 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
             ),
             actions: (
                 <div className='relative flex h-full justify-end'>
-                    {nestedData?.IsShowOptions && (
-                        <div className='flex justify-center items-center'>
-                            {isFilesCreate && <BasicTooltip position='left' content='Create' className='!z-[2] !font-proxima !text-sm'>
-                                <div className='cursor-pointer' onClick={() => handleCreateFile(nestedData?.DocumentsId)}>
+                    <div className="flex justify-center items-center">
+                        {nestedData?.IsRetry && isFilesCreate && (
+                            <BasicTooltip position="left" content="Create" className="!z-[2] !font-proxima !text-sm">
+                                <div
+                                    className="cursor-pointer"
+                                    onClick={() => handleCreateFile(nestedData?.DocumentsId)}
+                                >
                                     <FilesAddIcon />
                                 </div>
-                            </BasicTooltip>}
-                            {isRetryLoading && nestedRowId === nestedData?.DocumentsId ? (
-                                <div className='pointer-events-none cursor-default px-2 py-1.5'>
-                                    <div className='animate-spin'>
-                                        <SpinnerIcon bgColor='#6E6D7A' />
+                            </BasicTooltip>
+                        )}
+
+                        {nestedData?.IsRetry && (
+                            isRetryLoading && nestedRowId === nestedData?.DocumentsId ? (
+                                <div className="pointer-events-none cursor-default px-2 py-1.5">
+                                    <div className="animate-spin">
+                                        <SpinnerIcon bgColor="#6E6D7A" />
                                     </div>
                                 </div>
                             ) : (
-                                <BasicTooltip position='left' content='Retry' className={`${isRetryLoading ? 'pointer-events-none' : 'cursor-pointer'} !z-[2] !font-proxima !text-sm`}>
-                                    <div className='cursor-pointer' onClick={() => {
-                                        setNestedRowId(nestedData?.DocumentsId);
-                                        handleRetryFile(nestedData?.DocumentsId);
-                                    }}>
+                                <BasicTooltip
+                                    position="left"
+                                    content="Retry"
+                                    className={`${isRetryLoading ? 'pointer-events-none' : 'cursor-pointer'} !z-[2] !font-proxima !text-sm`}
+                                >
+                                    <div
+                                        className="cursor-pointer"
+                                        onClick={() => {
+                                            setNestedRowId(nestedData?.DocumentsId);
+                                            handleRetryFile(nestedData?.DocumentsId);
+                                        }}
+                                    >
                                         <FilesRetryIcon />
                                     </div>
                                 </BasicTooltip>
-                            )}
-                        </div>
-                    )}
-                    {/* {isRetryLoading && <div className='spin'></div>} */}
+                            )
+                        )}
+                    </div>
+
                     {selectedDocument === nestedData?.DocumentsId && isCreateModalVisible && (
                         <div
                             ref={createModalRef}
@@ -670,7 +648,31 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                 <div className={`historyTable !outline-none ${historyDetailsView.length === 0 ? 'h-11' : 'h-auto'}`}>
                     <DataTable
                         columns={filteredNestedColumns}
-                        data={historyDetailsView ? historyDetailsView : []}
+                        data={
+                            historyDetailsView.map((d: any) => {
+                                return d.AttachmentData?.filter(
+                                    () =>
+                                        d.UserId === userDetails.userId &&
+                                        d.ProviderType === userDetails.ProviderType &&
+                                        format(convertUTCtoLocal(d?.UploadedDate), 'MM/dd/yyyy, HH:mm:ss') === userDetails.uploadedDate
+                                ).map((nestedData: any) =>
+                                    DataRow({
+                                        d,
+                                        nestedData,
+                                        handleFileOpen,
+                                        handleOpenAttachFile,
+                                        setIsFileRecord,
+                                        handleCreateFile,
+                                        handleRetryFile,
+                                        isRetryLoading,
+                                        isCreateModalVisible,
+                                        createOptions,
+                                        selectedDocument,
+                                        createModalRef,
+                                    })
+                                );
+                            }).flat()
+                        }
                         sticky
                         hoverEffect
                         isTableLayoutFixed
@@ -679,7 +681,8 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                     />
                 </div>
                 {noDataContent}
-            </div >
+            </div>
+
 
             {
                 isFileModal && ['pdf'].includes(fileExtensions ?? '') && (
@@ -711,7 +714,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                 setLocalFilterFormFields={setLocalFilterFormFields}
                 receivedUserOptions={userOptions}
                 billNumberOptions={billNumberOptions}
-                locationOptions={locationOptions}
+                locationOptions={locationValue}
             />
 
             <LinkToBillModal
