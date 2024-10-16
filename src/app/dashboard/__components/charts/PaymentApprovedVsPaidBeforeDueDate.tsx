@@ -77,18 +77,18 @@ const PaidAfterVsPaidBeforeDueDate: React.FC<any> = ({ LocationOption }) => {
         chartData.forEach((item: any) => {
           const key = `${item.Year}-${item.Month}`;
           if (!monthData[key]) {
-            monthData[key] = { PaymentApproveCount: 0, PaidBeforeDueDateCount: 0 };
+            monthData[key] = { PaidAfterDueDateCount: 0, PaidBeforeDueDateCount: 0 };
           }
-          monthData[key].PaymentApproveCount += item.PaymentApproveCount;
+          monthData[key].PaidAfterDueDateCount += item.PaidAfterDueDateCount;
           monthData[key].PaidBeforeDueDateCount += item.PaidBeforeDueDateCount;
         });
 
         const sortedKeys = Object.keys(monthData).sort();
         sortedKeys.forEach(key => {
           const [year, month] = key.split('-');
-          if (monthData[key].PaymentApproveCount > 0 || monthData[key].PaidBeforeDueDateCount > 0) {
+          if (monthData[key].PaidAfterDueDateCount > 0 || monthData[key].PaidBeforeDueDateCount > 0) {
             categories.push(`${monthNames[parseInt(month) - 1]} ${year}`);
-            paymentApproved.push(monthData[key].PaymentApproveCount);
+            paymentApproved.push(monthData[key].PaidAfterDueDateCount);
             paidBeforeDueDate.push(monthData[key].PaidBeforeDueDateCount);
           }
         });
@@ -117,7 +117,7 @@ const PaidAfterVsPaidBeforeDueDate: React.FC<any> = ({ LocationOption }) => {
             item.Day == day
           ));
 
-          paymentApproved.push(matchingData ? matchingData.PaymentApproveCount : 0);
+          paymentApproved.push(matchingData ? matchingData.PaidAfterDueDateCount : 0);
           paidBeforeDueDate.push(matchingData ? matchingData.PaidBeforeDueDateCount : 0);
 
           // Increment the date by one day
@@ -132,7 +132,7 @@ const PaidAfterVsPaidBeforeDueDate: React.FC<any> = ({ LocationOption }) => {
 
       chartData.forEach((item: any) => {
         const monthIndex = parseInt(item.Month, 10) - 1;
-        paymentApproved[monthIndex] = item.PaymentApproveCount;
+        paymentApproved[monthIndex] = item.PaidAfterDueDateCount;
         paidBeforeDueDate[monthIndex] = item.PaidBeforeDueDateCount;
       });
     }
@@ -271,7 +271,7 @@ const PaidAfterVsPaidBeforeDueDate: React.FC<any> = ({ LocationOption }) => {
       <div className='main_chart w-full'>
         {isLoading
           ? <div className='h-[400px] w-full flex justify-center'>
-            <Loader size='md'/>
+            <Loader size='md' />
           </div>
           : <HighchartsReact highcharts={Highcharts} options={getChartOptions()} />}
       </div>

@@ -14,7 +14,7 @@ import { attachfileheaders } from '@/data/billPosting'
 import { columns, createOptions } from '@/data/fileHistory'
 import { DocumentDropdownOptionsProps, FileRecordType } from '@/models/billPosting'
 import { setIsFormDocuments } from '@/store/features/bills/billSlice'
-import { historyGetList, setFilterFormFields } from '@/store/features/files/filesSlice'
+import { getBillNumbersList, historyGetList, setFilterFormFields } from '@/store/features/files/filesSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { convertUTCtoLocal, getPDFUrl, limitString } from '@/utils/billposting'
 import { format } from 'date-fns'
@@ -22,6 +22,9 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import HistoryDetails from './HistoryDetails'
 import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
+import { locationListDropdown } from '@/store/features/master/dimensionSlice'
+import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { manageCompanyAssignUser } from '@/store/features/company/companySlice'
 
 export const nestedColumns: Column[] = [
   {
@@ -112,8 +115,8 @@ const initialFilterFormFields: HistoryFilterFormFieldsProps = {
   fh_process: [],
 }
 
-export default function ListFileHistory({ userOptions, billNumberOptions, locationOptions }: any) {
-  const lazyRows = 10
+export default function ListFileHistory() {
+  const lazyRows = 15
   let nextPageIndex: number = 1
 
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -185,12 +188,48 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
   const [selectedBillNumber, setSelectedBillNumber] = useState<string>('')
 
   const [currentWindow, setCurrentWindow] = useState<any>(null)
+  const [userOptions, setUserOptions] = useState<any>([])
+  const [billNumberOptions, setBillNumberOptions] = useState<any>([])
+  const [locationOptions, setLocationOptions] = useState<any>([])
 
   useEffect(() => {
     if (!isFilesView) {
       router.push('/manage/companies');
     }
   }, [isFilesView]);
+
+  const getUserOptionDropdown = async () => {
+    const params = {
+      CompanyId: CompanyId,
+    }
+    performApiAction(dispatch, manageCompanyAssignUser, params, (response: any) => {
+      setUserOptions(response)
+    })
+  }
+
+  const getLocationOptionDropdown = () => {
+    const params = {
+      CompanyId: Number(CompanyId),
+      IsActive: true,
+    }
+    performApiAction(dispatch, locationListDropdown, params, (responseData: any) => {
+      setLocationOptions(responseData)
+    })
+  }
+
+  const getBillNumberOptionDropdown = async () => {
+    performApiAction(dispatch, getBillNumbersList, null, (responseData: any) => {
+      setBillNumberOptions(responseData)
+    })
+  }
+
+  useEffect(() => {
+    if (CompanyId) {
+      getBillNumberOptionDropdown()
+      getUserOptionDropdown()
+      getLocationOptionDropdown()
+    }
+  }, [CompanyId])
 
   const fetchHistoryData = async (pageIndex?: number) => {
     if (pageIndex === 1) {

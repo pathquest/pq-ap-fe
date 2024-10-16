@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 import { AvatarSelect, Badge, BasicTooltip, CheckBox, DataTable, Loader, Select, Toast, Typography } from 'pq-ap-lib'
+import agent from '@/api/axios'
 
 import AttachIcon from '@/assets/Icons/billposting/AttachIcon'
 import CreateIcon from '@/assets/Icons/billposting/CreateIcon'
@@ -27,7 +28,7 @@ import Wrapper from '@/components/Common/Wrapper'
 import { attachfileheaders, moveToOptions } from '@/data/billPosting'
 import { AssignUserOption, BillPostingFilterFormFieldsProps, FileRecordType, IntermediateType, VisibilityMoveToDropDown } from '@/models/billPosting'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import { assignDocumentsToUser, deleteDocument, deleteOverviewDocument, documentBillsOverviewList, documentGetList, getAssigneeList, getColumnMappingList, getColumnMappingOverviewList, processTypeChangeByDocumentId, setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
+import { assignDocumentsToUser, deleteDocument, deleteOverviewDocument, documentBillsOverviewList, documentGetList, documentGetStatusList, getAssigneeList, getColumnMappingList, getColumnMappingOverviewList, processTypeChangeByDocumentId, setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar, setSelectedProcessTypeFromList } from '@/store/features/bills/billSlice'
 import { format, parseISO } from 'date-fns'
 
 import { getLocationDropdown, getVendorDropdown } from '@/api/server/common'
@@ -50,8 +51,9 @@ import { billStatusEditable, getPDFUrl, getTimeDifference, initialBillPostingFil
 import { useSession } from 'next-auth/react'
 import ColumnFilterOverview from '../ColumnFilterOverview'
 import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
+import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
 
-const ListBillPosting = ({ statusOptions }: any) => {
+const ListBillPosting = () => {
   const { data: session } = useSession()
   const CompanyId = session?.user?.CompanyId
   const router = useRouter()
@@ -152,6 +154,7 @@ const ListBillPosting = ({ statusOptions }: any) => {
   const [hoveredColumn, setHoveredColumn] = useState<string>("");
 
   const [billsOverviewParams, setBillsOverviewParams] = useState<any>([])
+  const [statusOptions, setStatusOptions] = useState<any>([])
 
   const [isRestoreFields, setIsRestoreFields] = useState<any>({
     id: 0,
@@ -240,8 +243,8 @@ const ListBillPosting = ({ statusOptions }: any) => {
   let nextPageIndexOverview: number = 1
   const billOverviewStatus = ['Posted']
 
-  const lazyRows = 12
-  const lazyRowsOverview = 12
+  const lazyRows = 15
+  const lazyRowsOverview = 15
   const tableBottomRef = useRef<HTMLDivElement>(null)
   const tableBottomRefOverview = useRef<HTMLDivElement>(null)
   const userId = localStorage.getItem('UserId')
@@ -2157,6 +2160,18 @@ const ListBillPosting = ({ statusOptions }: any) => {
   } else {
     overviewNoDataContent = ''
   }
+
+  const getStatusOptionDropdown = async () => {
+    performApiAction(dispatch, documentGetStatusList, null, (responseData: any) => {
+      setStatusOptions(responseData)
+    })
+  }
+
+  useEffect(() => {
+    if (CompanyId) {
+      getStatusOptionDropdown()
+    }
+  }, [CompanyId])
 
   return (
     <>
