@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect } from "react"
 import jwt from 'jsonwebtoken'
+import { decryptToken } from "@/utils/auth"
 
 export default function VerifyTokenPage() {
     const router = useRouter()
@@ -16,14 +17,16 @@ export default function VerifyTokenPage() {
 
     const checkUrlToken = async () => {
         if (urlToken) {
-            const decodedToken: any = jwt.decode(urlToken);
+            const urlDecodedToken = decryptToken(decryptToken(urlToken))
+            
+            const decodedToken: any = jwt.decode(urlDecodedToken);
 
             const expirationDate = new Date(decodedToken.exp * 1000);
 
             // Convert to ISO 8601 format
             const isoFormatDate = expirationDate.toISOString();
             await handleTokenSave({
-                token: urlToken,
+                token: urlDecodedToken,
                 expires_at:isoFormatDate,
                 refresh_token:urlRefreshToken,
                 isFirstConfig: isFirstConfig
