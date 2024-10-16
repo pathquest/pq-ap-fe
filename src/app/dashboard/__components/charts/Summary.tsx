@@ -73,7 +73,7 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
 
   const updatedCardData = [
     {
-      // amount: `$${summaryData.TotalAmount ?? 0}`,  
+      // amount: `$${summaryData.TotalAmount ?? 0}`,
       amount: `$${formatCurrency(summaryData.TotalAmount)}`,
       description: 'Total Posted Amount'
     },

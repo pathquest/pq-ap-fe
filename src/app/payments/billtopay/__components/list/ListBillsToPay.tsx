@@ -819,7 +819,7 @@ const ListBillsToPay: React.FC = () => {
         />
       ),
       DueDate: (
-        <div className='flex items-center w-full justify-between'>
+        <div className='flex items-center w-[105px] justify-between'>
           <span className='!text-sm font-proxima tracking-[0.02em] text-darkCharcoal'>{formatDate(d.DueDate)}</span>
           {isPastDueDate && <span className='h-2 w-2 rounded-full bg-[#DC3545]'></span>}
         </div>
