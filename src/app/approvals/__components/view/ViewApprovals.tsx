@@ -538,7 +538,7 @@ const ViewApprovals = ({ processtype }: any) => {
                               <div className='relative flex items-center'>
                                 {value !== null && (
                                   <>
-                                    <span className='absolute -top-3 left-2'>
+                                    <span className='absolute -top-[11px] left-[5px]'>
                                       <Badge badgetype='error' variant='dot' text={value.length.toString()} />
                                     </span>
                                     <span className='cursor-pointer' onClick={() => handleOpenAttachFile(value?.Id)}>
