@@ -151,7 +151,11 @@ const Page = ({ onData, isFormOpen }: any) => {
     localStorage.removeItem('OrgId')
     localStorage.removeItem('IsAdmin')
     localStorage.removeItem('IsOrgAdmin')
-
+    localStorage.removeItem('persist:root')
+    localStorage.removeItem('CompanyId')
+    localStorage.removeItem('qbcode')
+    localStorage.removeItem('realmId')
+    localStorage.removeItem('state')
     await handleSignOut()
   }
 
@@ -211,7 +215,7 @@ const Page = ({ onData, isFormOpen }: any) => {
               <CandyBox />
             </div>
             <div className='mx-2 flex flex-col items-start justify-center' onClick={() => handleToggleChange('Help')}>
-              <HelpIcon isActive={toggleHelpChange}/>
+              <HelpIcon isActive={toggleHelpChange} />
             </div>
             <div className='ml-2 flex flex-col items-start justify-center' onClick={() => handleToggleChange('ProfileMenu')}>
               {profileData && profileData?.first_name === '' ? (
