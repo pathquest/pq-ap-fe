@@ -72,14 +72,17 @@ const Filter: React.FC<any> = ({
 
     useEffect(() => {
         if (isFilterOpen) {
-            const isChanged = JSON.stringify(selectedStatus) !== JSON.stringify(filterFields.StatusIds) ||
+            const isChanged = 
+                JSON.stringify(selectedStatus) !== JSON.stringify(filterFields.StatusIds) ||
                 JSON.stringify(selectedVendor) !== JSON.stringify(filterFields.VendorIds) ||
                 JSON.stringify(selectedPaymentMethod) !== JSON.stringify(filterFields.PaymentMethod) ||
-                minPayables !== filterFields.MinPayables || maxPayables !== filterFields.MaxPayables
-            setIsFilterChanged(isChanged);
+                (minPayables && maxPayables && parseFloat(minPayables) < parseFloat(maxPayables) &&
+                (minPayables !== filterFields.MinPayables || maxPayables !== filterFields.MaxPayables));
+    
+            setIsFilterChanged(!!isChanged);
         }
     }, [isFilterOpen, selectedStatus, selectedVendor, selectedPaymentMethod, minPayables, maxPayables, filterFields]);
-
+    
     // Handel Outside Click
     useEffect(() => {
         function handleOutsideClick(event: MouseEvent) {
@@ -175,8 +178,14 @@ const Filter: React.FC<any> = ({
                             value={minPayables}
                             getValue={(value) => {
                                 setIsResetClicked(false);
-                                setIsFilterChanged(true);
-                                /^\d*$/.test(value) && setMinPayables(value)
+                                if (/^\d*$/.test(value)) {
+                                    setMinPayables(value);
+                                    if (parseFloat(value) < parseFloat(maxPayables)) {
+                                        setIsFilterChanged(true);
+                                    } else {
+                                        setIsFilterChanged(false);
+                                    }
+                                }
                             }}
                             getError={() => { }}
                         /><span className='mt-7 mx-3 text-slatyGrey'>{"->"}</span>
@@ -189,8 +198,14 @@ const Filter: React.FC<any> = ({
                             maxLength={11}
                             getValue={(value) => {
                                 setIsResetClicked(false);
-                                setIsFilterChanged(true);
-                                /^\d*$/.test(value) && setMaxPayables(value)
+                                if (/^\d*$/.test(value)) {
+                                    setMaxPayables(value);
+                                    if (parseFloat(minPayables) < parseFloat(value)) {
+                                        setIsFilterChanged(true);
+                                    } else {
+                                        setIsFilterChanged(false);
+                                    }
+                                }
                             }}
                             getError={() => { }}
                         />

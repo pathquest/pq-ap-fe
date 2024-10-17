@@ -16,7 +16,7 @@ import { setNotificationCount } from '@/store/features/auth/authSlice'
 import { getNotificationList } from '@/store/features/notification/notificationSlice'
 
 import { WebPubSubClient } from '@azure/web-pubsub-client'
-import { Avatar, Toast, Tooltip, Typography } from 'pq-ap-lib'
+import { Avatar, Radio, Toast, Tooltip, Typography } from 'pq-ap-lib'
 import SearchComponent from './GlobalSearch/SearchComponent'
 
 import { handleSignOut } from '@/actions/server/auth'
@@ -26,10 +26,13 @@ import { hasSpecificPermission, processPermissions } from './Functions/ProcessPe
 import { performApiAction } from './Functions/PerformApiAction'
 import { permissionGetList } from '@/store/features/role/roleSlice'
 import { setOrgPermissionsMatrix, setProcessPermissionsMatrix } from '@/store/features/profile/profileSlice'
+import agent from '@/api/axios'
+import { ProfileData } from '@/app/profile/__components/profile-form'
 
 const Navbar = ({ onData }: any) => {
   const { data: session } = useSession()
   const CompanyId = session?.user?.CompanyId
+  const UserId = session?.user?.user_id
 
   const { organizationName, RoleId } = useAppSelector((state) => state.profile)
 
@@ -53,7 +56,7 @@ const Navbar = ({ onData }: any) => {
   const isPaymentSetupView = hasSpecificPermission(processPermissionsMatrix, "Settings", "Setup", "Payment Setup", "View");
 
   const router = useRouter()
-  const userId = localStorage.getItem('UserId')
+  // const userId = localStorage.getItem('UserId')
   const IsFieldMappingSet = localStorage.getItem('IsFieldMappingSet') ?? 'true'
 
   const pathname = usePathname()
@@ -65,12 +68,29 @@ const Navbar = ({ onData }: any) => {
   const [isSettingOpen, setIsSettingOpen] = useState<boolean>(false)
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false)
   const [isHelpOpen, setIsHelpOpen] = useState<boolean>(false)
+  const [selectedProduct, setSelectedProduct] = useState<string | null>(null)
+  const [profileData, setProfileData] = useState<ProfileData | null>(null)
   const { isRefresh } = useAppSelector((state) => state.user)
   const { notificationCount } = useAppSelector((state) => state.auth)
 
   const [count, setCount] = useState(notificationCount)
 
   const dispatch = useAppDispatch()
+
+  const getProfileData = async () => {
+    try {
+      const response = await agent.APIs.getUserProfile()
+      const data = response.ResponseData
+      setProfileData(data)
+      onData(data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  useEffect(() => {
+    getProfileData()
+  }, [])
 
   const globalSetting = [
     {
@@ -278,6 +298,41 @@ const Navbar = ({ onData }: any) => {
     getRolePermissionData()
   }, [RoleId])
 
+  const handleRadioChange = async (productName: string, id: number) => {
+    setSelectedProduct(productName)
+    try {
+      const response = await agent.Auth.setDefaultProduct({
+        UserId: UserId?.toString(),
+        productId: parseInt(`${id}`)
+      })
+      console.log('response', response);
+    } catch (error) {
+      console.error(error)
+    }
+
+  }
+
+  const productRadioData = profileData?.products.map((product: any) => {
+    const productClassName = selectedProduct === product.name ? 'text-primary' : ''
+    return (
+      <div className='flex justify-center pt-3' key={product.id}
+      // onClick={() => handleRadioChange(product.name, product.id)}
+      >
+        <div className={`-ml-2 text-sm ${productClassName}`}>
+          <Radio
+            id={`${product.name}`}
+            name='products'
+            label={`${product.name}`}
+            onChange={() => {
+              handleRadioChange(product.name, product.id)
+            }}
+            defaultChecked={product.is_mapped}
+          />
+        </div>
+      </div>
+    )
+  })
+
   const settingsFocusedArr = ['/manage/users', '/manage/roles', '/manage/companies', '/practice-dashboard']
 
   return (
@@ -484,6 +539,14 @@ const Navbar = ({ onData }: any) => {
                       </div>
                     </li>
                   </Link>
+                  <li className='flex w-full border-b border-b-lightSilver px-3 pb-3  pt-2'>
+                    <div className='ml-2 flex flex-col items-start justify-center'>
+                      <Typography type='label' className='inline-block text-base font-semibold'>
+                        Default Settings
+                      </Typography>
+                      {productRadioData}
+                    </div>
+                  </li>
                   <li
                     className='flex h-12 w-full select-none rounded-b-md px-3 hover:bg-lightGray'
                     tabIndex={0}

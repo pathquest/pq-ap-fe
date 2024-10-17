@@ -308,6 +308,7 @@ const Auth = {
   validateOtp: (data: ValidateOtpOptions) => requests.post(`${API_SSO}/auth/validateotp`, data),
   setPassword: (data: SetPasswordOptions) => requests.post(`${API_SSO}/auth/setpassword`, data),
   reauthentication: (data: ReauthenticationProps) => requests.post(`${API_SSO}/auth/reauthentication`, data),
+  setDefaultProduct: (data: any) => requests.post(`${API_SSO}/user/setdefaultproduct`, data),
 }
 
 const Profile = {

@@ -1,109 +1,34 @@
 'use client'
 
-import { BillNumberProps, Column, HistoryFilterFormFieldsProps, LinkBillToExistingBillProps } from '@/models/files'
+import { BillNumberProps, HistoryFilterFormFieldsProps } from '@/models/files'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import { Badge, BasicTooltip, Breadcrumb, DataTable, Loader, Select, Toast, Typography } from 'pq-ap-lib'
+import { BasicTooltip, DataTable, Loader, Toast, Typography } from 'pq-ap-lib'
 import { lazy, useEffect, useRef, useState } from 'react'
 
-import agent from '@/api/axios'
 import Download from '@/components/Common/Custom/Download'
-import SpinnerIcon from '@/assets/Icons/spinnerIcon'
-import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
-import { formatFileSize } from '@/components/Common/Functions/FormatFileSize'
-import { attachfileheaders } from '@/data/billPosting'
-import { columns, createOptions } from '@/data/fileHistory'
-import { DocumentDropdownOptionsProps, FileRecordType } from '@/models/billPosting'
-import { setIsFormDocuments } from '@/store/features/bills/billSlice'
+import { columns } from '@/data/fileHistory'
 import { getBillNumbersList, historyGetList, setFilterFormFields } from '@/store/features/files/filesSlice'
-import { convertStringsDateToUTC } from '@/utils'
-import { convertUTCtoLocal, getPDFUrl, limitString } from '@/utils/billposting'
-import { format } from 'date-fns'
-import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import HistoryDetails from './HistoryDetails'
-import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
-import { locationListDropdown } from '@/store/features/master/dimensionSlice'
-import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
-import { manageCompanyAssignUser } from '@/store/features/company/companySlice'
 
-export const nestedColumns: Column[] = [
-  {
-    header: '',
-    accessor: 'arrowspace',
-    sortable: false,
-    colStyle: '!w-[55px] !tracking-[0.02em]',
-  },
-  {
-    header: 'File Name',
-    accessor: 'FileName',
-    sortable: false,
-    colStyle: '!w-[130px] !tracking-[0.02em]',
-  },
-  {
-    header: 'Bill No.',
-    accessor: 'BillNo',
-    sortable: false,
-    colStyle: '!w-[160px] !tracking-[0.02em]',
-  },
-  {
-    header: 'Process',
-    accessor: 'APProviderType',
-    sortable: false,
-    colStyle: '!w-[150px] !tracking-[0.02em]',
-  },
-  {
-    header: 'Amount',
-    accessor: 'Amount',
-    sortable: false,
-    colStyle: '!w-[125px] !pr-[30px] !tracking-[0.02em]',
-    colalign: 'right',
-  },
-  {
-    header: 'Uploaded Date & Time',
-    accessor: 'UploadedDate',
-    sortable: false,
-    colStyle: '!w-[200px] !tracking-[0.02em]',
-  },
-  {
-    header: 'Pages',
-    accessor: 'Pages',
-    sortable: false,
-    colStyle: '!w-[100px] !tracking-[0.02em]',
-    colalign: 'right'
-  },
-  {
-    header: 'Location',
-    accessor: 'LocationName',
-    sortable: false,
-    colStyle: '!w-[150px] !tracking-[0.02em]',
-  },
-  {
-    header: '',
-    accessor: 'Status',
-    sortable: false,
-    colStyle: '!w-[200px] !tracking-[0.02em]',
-  },
-  {
-    header: '',
-    accessor: 'actions',
-    sortable: false,
-    colStyle: '!w-[200px] !tracking-[0.02em]',
-  },
-]
+import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
+import { manageCompanyAssignUser } from '@/store/features/company/companySlice'
+import { locationListDropdown } from '@/store/features/master/dimensionSlice'
+import { convertStringsDateToUTC } from '@/utils'
+import { convertUTCtoLocal } from '@/utils/billposting'
+import { format } from 'date-fns'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import HistoryDetails from './HistoryDetails'
 
 const DropboxIcon = lazy(() => import('@/assets/Icons/DropboxIcon'))
 const EmailIcon = lazy(() => import('@/assets/Icons/EmailIcon'))
 const FileUploadIcon = lazy(() => import('@/assets/Icons/FileUploadIcon'))
-const FilesAddIcon = lazy(() => import('@/assets/Icons/FilesAddIcon'))
-const FilesRetryIcon = lazy(() => import('@/assets/Icons/FilesRetryIcon'))
 const HistorySystemUpdateIcon = lazy(() => import('@/assets/Icons/HistorySystemUpdate'))
-const AttachIcon = lazy(() => import('@/assets/Icons/billposting/AttachIcon'))
 const FilterIcon = lazy(() => import('@/assets/Icons/billposting/FilterIcon'))
 const ConfirmationModal = lazy(() => import('@/components/Common/Modals/ConfirmationModal'))
 const Wrapper = lazy(() => import('@/components/Common/Wrapper'))
 
 const FileModal = lazy(() => import('@/app/bills/__components/FileModal'))
-const GetFileIcon = lazy(() => import('@/app/bills/__components/GetFileIcon'))
 const HistoryFilter = lazy(() => import('@/app/history/__components/HistoryFilter'))
 const LinkToBillModal = lazy(() => import('@/app/history/__components/LinkToBillModal'))
 
@@ -122,22 +47,18 @@ export default function ListFileHistory() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const tableBottomRef = useRef<HTMLDivElement>(null)
   const createModalRef = useRef<HTMLDivElement>(null)
-  const exportOptionsRef = useRef<HTMLDivElement>(null)
 
   const dispatch = useAppDispatch()
   const router = useRouter()
   const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
   const isFilesPermission = getModulePermissions(processPermissionsMatrix, "Files") ?? {}
   const isFilesView = isFilesPermission?.View ?? false;
-  const isFilesImport = isFilesPermission?.Import ?? false;
 
   const { data: session } = useSession()
   const CompanyId = session?.user?.CompanyId
   const [isFilterVisible, setIsFilterVisible] = useState(false)
   const { filterFormFields } = useAppSelector((state) => state.files)
   const { isLeftSidebarCollapsed } = useAppSelector((state) => state.auth)
-  const { selectedCompany } = useAppSelector((state) => state.user)
-  const AccountingTool = selectedCompany?.accountingTool
 
   const [apiDataCount, setApiDataCount] = useState(0)
   const [userdetails, setUserDetails] = useState<any>({
@@ -147,44 +68,24 @@ export default function ListFileHistory() {
     providerType: 0
   })
 
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [isVendorDetails, setIsVendorDetails] = useState<boolean>(false)
-
   const [localFilterFormFields, setLocalFilterFormFields] = useState<HistoryFilterFormFieldsProps>(filterFormFields)
   const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
 
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
   const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false)
   const [isAttachmentVisible, setIsAttachmentVisible] = useState(false)
-  const [isLinkToBillModalVisible, setIsLinkToBillModalVisible] = useState(false)
-
-  const [historyLists, setHistoryLists] = useState<any>([])
-
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isVendorDetails, setIsVendorDetails] = useState<boolean>(false)
   const [isResetFilter, setIsResetFilter] = useState<boolean>(false)
   const [isApplyFilter, setIsApplyFilter] = useState<boolean>(false)
 
-  const [linkedBillObj, setLinkedBillObj] = useState<LinkBillToExistingBillProps>({
-    AccountPayableId: null,
-    DocumentId: null,
-    FilePath: '',
-    FileName: '',
-  })
+  const [historyLists, setHistoryLists] = useState<any>([])
+  const [updatedUserOptions, setUpdateUserOptions] = useState<any>([])
 
-  const [isPdfLoading, setIsPdfLoading] = useState<boolean>(false)
-  const [PDFUrl, setPDFUrl] = useState<string>('')
-  const [fileBlob, setFileBlob] = useState<string | Blob>('')
-  const [isFileModal, setFileModal] = useState<boolean>(false)
-  const [isFileRecord, setIsFileRecord] = useState<FileRecordType>({
-    FileName: '',
-    PageCount: '',
-    BillNumber: '',
-  })
-  const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false)
-  const [isRetryLoading, setIsRetryLoading] = useState<boolean>(false)
   const [shouldLoadMore, setShouldLoadMore] = useState(true)
   const [isLazyLoading, setIsLazyLoading] = useState<boolean>(false)
-
   const [itemsLoaded, setItemsLoaded] = useState(0)
+
   const [selectedBillNumber, setSelectedBillNumber] = useState<string>('')
 
   const [currentWindow, setCurrentWindow] = useState<any>(null)
@@ -294,11 +195,9 @@ export default function ListFileHistory() {
               setShouldLoadMore(false);
             }
           } else {
-            // responseFailure()
             Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
           }
         } else {
-          // responseFailure()
           Toast.error(`${payload?.status} : ${payload?.statusText}`)
         }
       } catch (error) {
@@ -312,16 +211,10 @@ export default function ListFileHistory() {
   }
 
   useEffect(() => {
-    if (CompanyId) {
+    if (isApplyFilter || CompanyId) {
       fetchHistoryData(1)
     }
-  }, [CompanyId])
-
-  useEffect(() => {
-    if (isApplyFilter) {
-      fetchHistoryData(1)
-    }
-  }, [isApplyFilter])
+  }, [isApplyFilter,CompanyId])
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
@@ -403,27 +296,6 @@ export default function ListFileHistory() {
     setIsConfirmModalVisible(false)
   }
 
-  const handleOnCloseLinkToBillModal = () => {
-    setIsLinkToBillModalVisible(false)
-  }
-
-  const handleApplyLinkToBill = async () => {
-    try {
-      const response = await agent.APIs.linkBillToExistingBill(linkedBillObj)
-
-      if (response?.ResponseStatus === 'Success') {
-        const responseData = response?.ResponseData
-        if (responseData.IsUploaded) {
-          fetchHistoryData(1)
-          setIsLinkToBillModalVisible(false)
-          Toast.success(`Attachment added to bill number: ${selectedBillNumber}`)
-        }
-      }
-    } catch (error) {
-      Toast.error('Something Went Wrong!')
-    }
-  }
-
   const handleApplyFilter = async () => {
     if (isResetFilter) {
       await dispatch(setFilterFormFields(initialFilterFormFields))
@@ -465,27 +337,6 @@ export default function ListFileHistory() {
     }
   }, [shouldLoadMore, itemsLoaded, tableBottomRef.current])
 
-  const openPDFInNewWindow = (pdfUrl: string | URL | undefined, fileName: string) => {
-    const newWindow: any = window.open(pdfUrl, '_blank', 'width=800,height=600')
-    setTimeout(function () {
-      newWindow.document.title = fileName
-    }, 1000)
-    setCurrentWindow(newWindow)
-  }
-
-  const openInNewWindow = (blob: Blob, fileName: string) => {
-    if (currentWindow && !currentWindow.closed) {
-      currentWindow.location.href = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }))
-      setTimeout(function () {
-        currentWindow.document.title = fileName
-      }, 1000)
-    } else {
-      openPDFInNewWindow(URL.createObjectURL(new Blob([blob], { type: 'application/pdf' })), fileName)
-    }
-  }
-
-  const fileExtensions = isFileRecord && isFileRecord?.FileName?.split('.')?.pop()?.toLowerCase()
-
   let noDataContent
 
   if (table_Data.length === 0) {
@@ -505,6 +356,17 @@ export default function ListFileHistory() {
   } else {
     noDataContent = ''
   }
+
+  useEffect(() => {
+    const updatedUserOptions = userOptions.map((e: any) => {
+      return {
+        isChecked: e.isChecked,
+        label: e.label,
+        value: e.value
+      };
+    });
+    setUpdateUserOptions(updatedUserOptions)
+  }, [userOptions])
 
   return (
     <Wrapper masterSettings={false}>
@@ -572,25 +434,6 @@ export default function ListFileHistory() {
         )
       }
 
-
-      {
-        isFileModal && ['pdf'].includes(fileExtensions ?? '') && (
-          <FileModal
-            isFileRecord={isFileRecord}
-            setIsFileRecord={setIsFileRecord}
-            PDFUrl={PDFUrl}
-            isFileNameVisible={true}
-            isOpenDrawer={isOpenDrawer}
-            setPDFUrl={(value: any) => setPDFUrl(value)}
-            setIsOpenDrawer={(value: boolean) => setIsOpenDrawer(value)}
-            setFileModal={(value: boolean) => setFileModal(value)}
-            fileBlob={fileBlob}
-            isPdfLoading={isPdfLoading}
-            openInNewWindow={openInNewWindow}
-          />
-        )
-      }
-
       <HistoryFilter
         isFilterVisible={isFilterVisible}
         onCancel={handleFilterClose}
@@ -599,38 +442,7 @@ export default function ListFileHistory() {
         filterFormFields={filterFormFields}
         localFilterFormFields={localFilterFormFields}
         setLocalFilterFormFields={setLocalFilterFormFields}
-        receivedUserOptions={userOptions}
-      />
-
-      <LinkToBillModal
-        isOpen={isLinkToBillModalVisible}
-        onClose={handleOnCloseLinkToBillModal}
-        modalTitle='Link to Bill'
-        onApply={handleApplyLinkToBill}
-        modalContent={
-          <div className='mb-12'>
-            <Select
-              id={'linked_bill_number'}
-              label='Bill Number'
-              placeholder={'Please Select'}
-              value={linkedBillObj?.AccountPayableId?.toString()}
-              defaultValue={linkedBillObj?.AccountPayableId?.toString()}
-              options={billNumberOptions ?? []}
-              search
-              getValue={(value) => {
-                setLinkedBillObj({
-                  ...linkedBillObj,
-                  AccountPayableId: parseInt(value),
-                })
-                const billLabel: DocumentDropdownOptionsProps = billNumberOptions.find(
-                  (item: DocumentDropdownOptionsProps) => item.value === value
-                ) ?? { label: '', value: '' }
-                setSelectedBillNumber(billLabel?.label ?? '')
-              }}
-              getError={() => ''}
-            />
-          </div>
-        }
+        receivedUserOptions={updatedUserOptions}
       />
 
       <ConfirmationModal

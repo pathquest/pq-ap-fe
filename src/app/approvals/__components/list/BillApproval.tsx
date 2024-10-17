@@ -143,7 +143,7 @@ const BillApproval: React.FC = () => {
       ),
       accessor: billApprovalFilterFields?.Assignee == "2" ? "" : 'check',
       sortable: false,
-      colStyle: '!w-[50px]',
+      colStyle: billApprovalFilterFields?.Assignee == "2" ? "!w-0" : '!w-[50px]',
       colalign: 'right',
     },
     {
@@ -200,7 +200,7 @@ const BillApproval: React.FC = () => {
       header: '',
       accessor: billApprovalFilterFields?.Assignee == "2" ? "" : 'action',
       sortable: false,
-      colStyle: '!w-[400px]',
+      colStyle: billApprovalFilterFields?.Assignee == "2" ? "!w-0" : '!w-[400px]',
       colalign: "right"
     }
   ]

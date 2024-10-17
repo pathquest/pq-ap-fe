@@ -366,18 +366,21 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
       setIsLazyLoading(true)
       const { payload, meta } = await dispatch(billAnalysis(params))
       const dataMessage = payload?.Message
-
+  
       if (meta?.requestStatus === 'fulfilled') {
         if (payload?.ResponseStatus === 'Success') {
           const responseData = payload?.ResponseData
           const List = responseData?.BillAnaSumm
           const newList = responseData?.BillAnaSumm || []
           const newTotalCount = responseData?.BillCount || 0
-          setApiDataCount(newTotalCount)
+  
+          if (pageIndex === 1) {
+            setApiDataCount(newTotalCount)
+          }
           setRunReport(true)
           setIsRunReportLoading(false)
           List.length > 0 && setIsExpanded(false)
-
+  
           let updatedData: any = []
           if (pageIndex === 1) {
             updatedData = [...newList]
@@ -390,10 +393,11 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
           setBillAnalysisData(updatedData)
           setItemsLoaded(updatedData.length)
           setIsLazyLoading(false)
-
           setIsLoading(false)
-
-          if (itemsLoaded >= newTotalCount) {
+  
+          if (itemsLoaded >= newTotalCount && pageIndex === 1) {
+            setShouldLoadMore(false);
+          } else if (itemsLoaded >= apiDataCount) {
             setShouldLoadMore(false);
           }
         } else {
@@ -431,7 +435,7 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
     return () => {
       observer.disconnect()
     }
-  }, [shouldLoadMore, itemsLoaded, tableBottomRef.current])
+  }, [shouldLoadMore, itemsLoaded, tableBottomRef])
 
   const handleSubmit = () => {
     setIsRunReportLoading(true)
@@ -480,23 +484,6 @@ function BillAnalysis({ vendorOptions, locationOptions, setBillAnalysisParams, s
           }
         )
       } else {
-        // performApiAction(
-        //   dispatch,
-        //   billAnalysis,
-        //   params,
-        //   (responseData: any) => {
-        //     const List = responseData.BillAnaSumm
-        //     setBillAnalysisData(List)
-        //     setRunReport(true)
-        //     setIsLoading(false)
-        //     setIsRunReportLoading(false)
-        //     List.length > 0 && setIsExpanded(false)
-        //   },
-        //   () => {
-        //     setIsLoading(false)
-        //     setIsRunReportLoading(false)
-        //   }
-        // )
         fetchBillAnalysisSummary(1)
       }
     } else {

@@ -299,28 +299,19 @@ const ListBillPosting = () => {
 
   const isRowSelected = (id: any) => selectedRows.indexOf(id) !== -1
 
-  useEffect(() => {
-    const fetchOptionsData = async () => {
-      try {
-        const vendorOptions: any = await getVendorDropdown(Number(CompanyId));
-        const locationOptions: any = await getLocationDropdown(Number(CompanyId));
+  const fetchOptionsData = async () => {
+    try {
+      const vendorOptions: any = await getVendorDropdown(Number(CompanyId));
+      const locationOptions: any = await getLocationDropdown(Number(CompanyId));
 
-        setVendorOptions(vendorOptions);
-        setLocationOptions(locationOptions);
-
-        setIsOptionsFetched(true);
-      } catch (error) {
-        console.error('Error fetching options data:', error);
-      }
-    };
-
-    fetchOptionsData();
-    // dispatch(
-    //   setFilterFormFields({
-    //     ...initialBillPostingFilterFormFields,
-    //   })
-    // );
-  }, [CompanyId]);
+      setVendorOptions(vendorOptions);
+      setLocationOptions(locationOptions);
+      fetchBillsData(1);
+      setIsOptionsFetched(true);
+    } catch (error) {
+      console.error('Error fetching options data:', error);
+    }
+  };
 
   useEffect(() => {
     const dateRangeVal = filterFormFields.ft_datepicker.split('to')
@@ -388,17 +379,22 @@ const ListBillPosting = () => {
   }, [])
 
   useEffect(() => {
-    setIsLoading(true)
-    if (isOptionsFetched) {
-      selectedProcessTypeInList === '4' ? fetchBillsOverviewData(1) : fetchBillsData(1);
-    }
-  }, [selectedProcessTypeInList, orderBy, CompanyId, isOptionsFetched]);
+    const fetchData = async () => {
+      if (selectedProcessTypeInList === '4') {
+        fetchBillsOverviewData(1);
+      } else {
+        fetchOptionsData();
+      }
+    };
+
+    fetchData();
+  }, [selectedProcessTypeInList, orderBy, CompanyId]);
 
   useEffect(() => {
     if (isApplyFilter) {
-      processSelection === '4' ? fetchBillsOverviewData(1) : fetchBillsData(1)
+      processSelection === '4' ? fetchBillsOverviewData(1) : fetchBillsData(1);
     }
-  }, [isApplyFilter, processSelection])
+  }, [isApplyFilter, processSelection]);
 
   useEffect(() => {
     if (isLeftSidebarCollapsed) {
@@ -551,7 +547,7 @@ const ListBillPosting = () => {
         UserId: UserId,
         Status: filterFormFields.ft_status.join(',') ?? null,
         LocationIds:
-          filterFormFields.ft_location && filterFormFields.ft_location.length > 0 ? filterFormFields.ft_location.join(',') : null,
+          filterFormFields.ft_location && filterFormFields.ft_location.length > 0 ? filterFormFields.ft_location.length === locationOptions.length ? null : filterFormFields.ft_location.join(',') : null,
         ProcessType: parseInt(`${selectedProcessTypeInList}`),
         VendorIds:
           filterFormFields.ft_vendor && filterFormFields.ft_vendor.length > 0 ? filterFormFields.ft_vendor.length === vendorOptions.length ? null : filterFormFields.ft_vendor.join(',') : null,
@@ -741,7 +737,6 @@ const ListBillPosting = () => {
       console.error(error)
     }
   }
-
 
   const fetchBillsOverviewData = async (pageIndex?: number) => {
     if (pageIndex === 1) {
@@ -1470,7 +1465,6 @@ const ListBillPosting = () => {
         )
       }
     })
-
 
   const OverviewTable_Data: Object[] =
     billsOverviewList &&

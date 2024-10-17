@@ -7,6 +7,8 @@ import { getPDFUrl } from '@/utils/billposting'
 import { format, parse, parseISO } from 'date-fns'
 import { CheckBox, Datepicker, Radio, Text, Typography, Uploader } from 'pq-ap-lib'
 import React, { useState } from 'react'
+import CustomAutocomplete from '../MUI/CustomAutocomplete'
+import CustomTextField from '../MUI/CustomTextField'
 
 const BillsControlFields = ({ formFields }: billsFormFieldsProps) => {
   const [PDFUrlModal, setPDFModalUrl] = useState<any>('')
@@ -55,7 +57,7 @@ const BillsControlFields = ({ formFields }: billsFormFieldsProps) => {
                   case 'text':
                     return (
                       <div className={item.classNames ?? ''}>
-                        <Text
+                        <CustomTextField
                           label={item.Label}
                           placeholder={item.placeholder}
                           validate={item?.isValidate}
@@ -63,9 +65,11 @@ const BillsControlFields = ({ formFields }: billsFormFieldsProps) => {
                           noNumeric={item.isNumeric}
                           noSpecialChar={item.isSpecialChar}
                           readOnly={item.readOnly}
-                          value={item.Value}
-                          getValue={(value) => item.getValue(item?.Name, value)}
-                          getError={(err) => item.getError(item?.Name, err)}
+                          defaultValue={item.Value}
+                          getValue={(value: any) => {
+                            item.getValue(item?.Name, value)
+                          }}
+                          getError={(err: any) => item.getError(item?.Name, err)}
                           hasError={item.hasError}
                           autoComplete={item.autoComplete ? 'on' : 'off'}
                           minChar={item.min}
@@ -88,7 +92,7 @@ const BillsControlFields = ({ formFields }: billsFormFieldsProps) => {
                       : item.Options
                     return (
                       <div className={item.classNames ?? ''}>
-                        <Select
+                        {/* <Select
                           id={item?.id ?? ''}
                           search
                           label={item.Label}
@@ -99,6 +103,20 @@ const BillsControlFields = ({ formFields }: billsFormFieldsProps) => {
                           getValue={(value: any) => item.getValue(item?.Name, value)}
                           getError={(err: any) => item.getError(item?.Name, err)}
                           hasError={item.hasError}
+                          autoComplete={item.autoComplete ? 'on' : 'off'}
+                          disabled={isPayOrReturn ? true : item.isDisabled}
+                        /> */}
+                        <CustomAutocomplete
+                          id={item?.id ?? ''}
+                          label={item.Label}
+                          validate={item.isValidate}
+                          options={selectedOptions ?? []}
+                          defaultValue={isPayOrReturn ? Number(item?.Value) : item?.Value ?? 0}
+                          getValue={(value: any) => {
+                            item.getValue(item?.Name, value)
+                          }}
+                          error={item.hasError}
+                          getError={(err: any) => item.getError(item?.Name, err)}
                           autoComplete={item.autoComplete ? 'on' : 'off'}
                           disabled={isPayOrReturn ? true : item.isDisabled}
                         />
