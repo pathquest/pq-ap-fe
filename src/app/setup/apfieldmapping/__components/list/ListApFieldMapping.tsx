@@ -326,7 +326,7 @@ const ListAPFieldMapping: React.FC = () => {
           FieldList: linedropFields
         },
       }
-      
+
       saveSecondaryFieldMapping()
       await performApiAction(
         dispatch,
@@ -741,7 +741,7 @@ const ListAPFieldMapping: React.FC = () => {
               )}
             </>
             <div
-              className={`absolute ${item.FieldType === 'checkbox' ? '-right-2 top-0' : item.FieldType === 'file' ? 'right-0 top-0.5' : 'right-0 bottom-[5px]'
+              className={`${isAPFieldMappingEdit ? "flex" : "hidden"} absolute ${item.FieldType === 'checkbox' ? '-right-2 top-0' : item.FieldType === 'file' ? 'right-0 top-0.5' : 'right-0 bottom-[5px]'
                 }
               ${hoveredItemId === `${item.Id}` ? 'flex' : 'hidden'}
               `}
@@ -760,7 +760,7 @@ const ListAPFieldMapping: React.FC = () => {
                   <DeleteIcon />
                 </div>
               </Tooltip>
-              {isAPFieldMappingEdit && <Tooltip content='Edit' position='left' className='!px-1.5 !py-0'>
+              <Tooltip content='Edit' position='left' className='!px-1.5 !py-0'>
                 <span
                   tabIndex={0}
                   onClick={() => handleEditField(item)}
@@ -772,7 +772,7 @@ const ListAPFieldMapping: React.FC = () => {
                 >
                   <EditIcon />
                 </span>
-              </Tooltip>}
+              </Tooltip>
             </div>
           </div>
         </div>
@@ -800,7 +800,7 @@ const ListAPFieldMapping: React.FC = () => {
         <div>
           <div className={`sticky top-0 z-[6] block`}>
             <div className='relative flex !h-[50px] justify-between  bg-whiteSmoke px-5'>
-              <div className='flex items-center selectMain w-[180px]'>
+              <div className={`${isAPFieldMappingEdit ? "cursor-pointer" : "pointer-events-none opacity-80"} flex items-center selectMain w-[180px]`}>
                 <Select
                   className='!font-proxima'
                   id='process_selection'
@@ -842,7 +842,7 @@ const ListAPFieldMapping: React.FC = () => {
                   </Typography>
                 </li>
                 <li
-                  className={`flex cursor-pointer items-center px-3 py-[11px] hover:bg-whiteSmoke ${isCustomView ? 'bg-whiteSmoke' : ''
+                  className={`${isAPFieldMappingEdit ? "flex" : "hidden"} cursor-pointer items-center px-3 py-[11px] hover:bg-whiteSmoke ${isCustomView ? 'bg-whiteSmoke' : ''
                     }`}
                   onClick={handleCustomView}
                   tabIndex={0}
@@ -946,7 +946,7 @@ const ListAPFieldMapping: React.FC = () => {
                 </div>
               </div>
               {/* All Below buttons */}
-              <div className='sticky bottom-0 flex w-full items-center justify-end border-t border-lightSilver bg-white'>
+              <div className={`sticky bottom-0 flex w-full items-center justify-end border-t border-lightSilver bg-white`}>
                 <div className='flex gap-5 laptop:p-4 laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5'>
 
                   {isCustomView && (<Button
@@ -967,7 +967,7 @@ const ListAPFieldMapping: React.FC = () => {
                   >
                     <label className="laptop:px-[12px] laptopMd:px-[12px] lg:px-[12px] xl:px-[12px] hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px] font-proxima font-semibold !py-1.5 h-full laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em] cursor-pointer">CANCEL</label>
                   </Button>
-                  <Button
+                  {isAPFieldMappingEdit && <Button
                     type='submit'
                     onClick={() => saveFieldMapping()}
                     tabIndex={0}
@@ -977,7 +977,7 @@ const ListAPFieldMapping: React.FC = () => {
                     <label className={`flex items-center justify-center laptop:px-[12px] laptopMd:px-[12px] lg:px-[12px] xl:px-[12px] hd:px-[15px] 2xl:px-[15px] 3xl:px-[15px] !py-1.5 cursor-pointer font-proxima font-semibold h-full laptop:text-sm laptopMd:text-sm lg:text-sm xl:text-sm hd:text-base 2xl:text-base 3xl:text-base tracking-[0.02em]`}>
                       SAVE
                     </label>
-                  </Button>
+                  </Button>}
                 </div>
               </div>
               <PreviewModal

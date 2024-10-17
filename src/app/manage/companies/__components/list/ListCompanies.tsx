@@ -37,6 +37,7 @@ interface List {
   AccountingTool: number | null
   IsActive: boolean
   IsFieldMappingSet: boolean
+  IsManageConfigurationSet: boolean
   // Add other properties as needed
 }
 
@@ -713,10 +714,16 @@ const ListCompanies = () => {
     await update({ ...session?.user, CompanyId: list?.Id, AccountingTool: list?.AccountingTool, CompanyName: list.Name })
 
     dispatch(setSelectedCompany({ label: list?.Name, value: list?.Id, accountingTool: list?.AccountingTool }))
-    if (list?.IsFieldMappingSet) {
-      localStorage.removeItem('IsFieldMappingSet')
+    if (list?.IsFieldMappingSet && list?.IsManageConfigurationSet) {
       getUserManageRights(list?.Id)
+    }
+    else if (list?.IsFieldMappingSet && (!list?.IsManageConfigurationSet)) {
+      localStorage.removeItem('IsFieldMappingSet')
       // router.push('/dashboard')
+      Toast.error('Please complete Manage Configuration setup')
+    } else if (list?.IsManageConfigurationSet && (!list?.IsFieldMappingSet)) {
+      getUserManageRights(list?.Id)
+      Toast.error('Please complete Field Mapping setup')
     } else {
       Toast.error('Please complete Manage Configuration and Field Mapping setup')
     }
@@ -1008,7 +1015,7 @@ const ListCompanies = () => {
   const handleDrawerClose = () => {
     setOpenDrawer(false)
     setSelectedRowId(0)
-    setIsRefresh(!isRefresh)
+    dispatch(setIsRefresh(!isRefresh))
     setShouldLoadMore(true)
     setIsNoAccountingToolCompany(false)
     setIsManageConfigurationDrawerOpen(false)

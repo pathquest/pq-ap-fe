@@ -194,7 +194,6 @@ const Navbar = ({ onData }: any) => {
     localStorage.removeItem('IsAdmin')
     localStorage.removeItem('IsOrgAdmin')
     localStorage.removeItem('qbotoken')
-        
     await handleSignOut()
   }
 
@@ -304,15 +303,15 @@ const Navbar = ({ onData }: any) => {
     } catch (error) {
       console.error(error)
     }
-    
+
   }
 
   const productRadioData = profileData?.products.map((product: any) => {
     const productClassName = selectedProduct === product.name ? 'text-primary' : ''
     return (
-      <div className='flex justify-center pt-3' key={product.id} 
-        // onClick={() => handleRadioChange(product.name, product.id)}
-        >
+      <div className='flex justify-center pt-3' key={product.id}
+      // onClick={() => handleRadioChange(product.name, product.id)}
+      >
         <div className={`-ml-2 text-sm ${productClassName}`}>
           <Radio
             id={`${product.name}`}
