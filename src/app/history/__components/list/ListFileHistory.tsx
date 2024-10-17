@@ -1,22 +1,24 @@
 'use client'
 
-import { lazy, useEffect, useRef, useState } from 'react'
-import { BasicTooltip, DataTable, Loader, Select, Toast, Typography } from 'pq-ap-lib'
-import { BillNumberProps, Column, HistoryFilterFormFieldsProps, LinkBillToExistingBillProps } from '@/models/files'
+import { BillNumberProps, HistoryFilterFormFieldsProps } from '@/models/files'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
+import { BasicTooltip, DataTable, Loader, Toast, Typography } from 'pq-ap-lib'
+import { lazy, useEffect, useRef, useState } from 'react'
 
-import agent from '@/api/axios'
-import { columns } from '@/data/fileHistory'
 import Download from '@/components/Common/Custom/Download'
-import { DocumentDropdownOptionsProps, FileRecordType } from '@/models/billPosting'
-import { historyGetList, setFilterFormFields } from '@/store/features/files/filesSlice'
+import { columns } from '@/data/fileHistory'
+import { getBillNumbersList, historyGetList, setFilterFormFields } from '@/store/features/files/filesSlice'
+
+import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
+import { manageCompanyAssignUser } from '@/store/features/company/companySlice'
+import { locationListDropdown } from '@/store/features/master/dimensionSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { convertUTCtoLocal } from '@/utils/billposting'
 import { format } from 'date-fns'
-import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import HistoryDetails from './HistoryDetails'
-import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
 
 const DropboxIcon = lazy(() => import('@/assets/Icons/DropboxIcon'))
 const EmailIcon = lazy(() => import('@/assets/Icons/EmailIcon'))
@@ -38,8 +40,8 @@ const initialFilterFormFields: HistoryFilterFormFieldsProps = {
   fh_process: [],
 }
 
-export default function ListFileHistory({ userOptions, billNumberOptions, locationOptions }: any) {
-  const lazyRows = 10
+export default function ListFileHistory() {
+  const lazyRows = 15
   let nextPageIndex: number = 1
 
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -84,11 +86,51 @@ export default function ListFileHistory({ userOptions, billNumberOptions, locati
   const [isLazyLoading, setIsLazyLoading] = useState<boolean>(false)
   const [itemsLoaded, setItemsLoaded] = useState(0)
 
+  const [selectedBillNumber, setSelectedBillNumber] = useState<string>('')
+
+  const [currentWindow, setCurrentWindow] = useState<any>(null)
+  const [userOptions, setUserOptions] = useState<any>([])
+  const [billNumberOptions, setBillNumberOptions] = useState<any>([])
+  const [locationOptions, setLocationOptions] = useState<any>([])
+
   useEffect(() => {
     if (!isFilesView) {
       router.push('/manage/companies');
     }
   }, [isFilesView]);
+
+  const getUserOptionDropdown = async () => {
+    const params = {
+      CompanyId: CompanyId,
+    }
+    performApiAction(dispatch, manageCompanyAssignUser, params, (response: any) => {
+      setUserOptions(response)
+    })
+  }
+
+  const getLocationOptionDropdown = () => {
+    const params = {
+      CompanyId: Number(CompanyId),
+      IsActive: true,
+    }
+    performApiAction(dispatch, locationListDropdown, params, (responseData: any) => {
+      setLocationOptions(responseData)
+    })
+  }
+
+  const getBillNumberOptionDropdown = async () => {
+    performApiAction(dispatch, getBillNumbersList, null, (responseData: any) => {
+      setBillNumberOptions(responseData)
+    })
+  }
+
+  useEffect(() => {
+    if (CompanyId) {
+      getBillNumberOptionDropdown()
+      getUserOptionDropdown()
+      getLocationOptionDropdown()
+    }
+  }, [CompanyId])
 
   const fetchHistoryData = async (pageIndex?: number) => {
     if (pageIndex === 1) {
