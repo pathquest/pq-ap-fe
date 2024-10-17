@@ -38,9 +38,9 @@ const AvatarWithText: React.FC<AvatarWithTextProps> = ({ toolId, isConnected }) 
     return (
       <>
         <div className='ml-0.5'>
-          <AnyIcon size={29} />
+          <AnyIcon size={28} />
         </div>
-        <Typography className='!p-0 text-black'>NA</Typography>
+        <Typography className='!p-0 text-black'>No Accounting Tool</Typography>
       </>
     )
   }
