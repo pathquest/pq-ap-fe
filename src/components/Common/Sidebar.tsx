@@ -175,12 +175,12 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
     {
       name: 'Approval',
       href: '/approvals',
-      icon: <ApprovalIcon isActive={pathname === "/approvals" ? true : false} />,
+      icon: <ApprovalIcon isActive={pathname.includes('approvals') ? true : false} />,
     },
     {
       name: 'Reports',
       href: '/reports',
-      icon: <ReportsIcon isActive={pathname === "/reports" ? true : false} />,
+      icon: <ReportsIcon isActive={pathname.includes('reports') ? true : false} />,
     },
     {
       name: 'Vendor',
@@ -259,7 +259,7 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
             key={item.name}
             tabIndex={0}
             className={`pl-[22px] h-[50px] outline-none focus:border-primary focus:bg-whiteSmoke flex cursor-pointer items-center whitespace-nowrap  border-l-[4px] hover:border-primary hover:bg-whiteSmoke
-                ${(pathname.includes('bills') && item.name === 'Bills') || (pathname.includes('payments') && item.name === 'Payments')
+                ${(pathname.includes('approvals') && item.name === 'Approval') || (pathname.includes('reports') && item.name === 'Reports') || (pathname.includes('bills') && item.name === 'Bills') || (pathname.includes('payments') && item.name === 'Payments')
                 ? 'border-primary bg-whiteSmoke text-primary'
                 : pathname === item.href
                   ? 'border-primary bg-whiteSmoke text-primary'
@@ -283,7 +283,7 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
             ) : (
               <div className='flex justify-center items-center'>
                 <span className='h-full w-6 mr-2'>{item.icon}</span>
-                <span className={`pt-1 h-full select-none flex justify-center items-center cursor-pointer text-sm tracking-[0.02em] font-proxima text-darkCharcoal ${pathname == item.href || (pathname.includes('payments') && item.name === 'Payments') ? "text-primary font-bold" : "font-medium"}`}>{item.name}</span>
+                <span className={`pt-1 h-full select-none flex justify-center items-center cursor-pointer text-sm tracking-[0.02em] font-proxima text-darkCharcoal ${pathname == item.href || (pathname.includes('approvals') && item.name === 'Approval') || (pathname.includes('reports') && item.name === 'Reports') || (pathname.includes('bills') && item.name === 'Bills') || (pathname.includes('payments') && item.name === 'Payments') ? "text-primary font-bold" : "font-medium"}`}>{item.name}</span>
               </div>
             )}
           </div>
@@ -296,7 +296,7 @@ const Sidebar = ({ isMasterSetting }: SidebarProps): JSX.Element => {
   const masterItems: SettingsSection[] = [
     {
       heading: 'MASTER',
-      isHeadingVisible: (isDimensionView || isGLAccountView || isAPTermView || true) ? true : false,
+      isHeadingVisible: (isDimensionView || isGLAccountView || isAPTermView) ? true : false,
       items: [
         {
           name: 'Dimensions',

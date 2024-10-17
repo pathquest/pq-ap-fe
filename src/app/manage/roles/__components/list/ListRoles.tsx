@@ -144,7 +144,33 @@ const ListRoles: React.FC = () => {
       RoleId: roleId,
     }
     performApiAction(dispatch, permissionGetList, params, (responseData: any) => {
-      setSubRolePermission(responseData.List)
+      const filteredList = responseData.List.map((item: any) => {
+        if (item.Key === "Settings") {
+          return {
+            ...item,
+            Children: item.Children.map((child: any) => {
+              if (child.Key === "Masters") {
+                return {
+                  ...child,
+                  Children: child.Children.filter((grandChild: any) =>
+                    !["Currency", "Tax Rate"].includes(grandChild.Key)
+                  )
+                };
+              }
+              if (child.Key === "Setup") {
+                return {
+                  ...child,
+                  Children: child.Children.filter((grandChild: any) => grandChild.Key !== "Cloud Configuration")
+                };
+              }
+              return child;
+            })
+          };
+        }
+        return item;
+      });
+      setSubRolePermission(filteredList)
+      // setSubRolePermission(responseData.List)
       setPermissionList(responseData.PermissionIds)
       setIsLoading(false)
     })

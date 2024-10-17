@@ -22,6 +22,7 @@ import SearchPayments from './Icons/SearchPayments'
 import SearchPurchaseOrder from './Icons/SearchPurchaseOrder'
 import SearchReports from './Icons/SearchReports'
 import SearchVendor from './Icons/SearchVendor'
+import { hasViewPermission } from '../Functions/ProcessPermission'
 
 interface SearchComponentProps {
   children?: ReactNode
@@ -40,6 +41,7 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
   const dispatch = useAppDispatch()
   const router = useRouter()
   const inputRef = useRef<any>(null)
+  const { processPermissionsMatrix } = useAppSelector((state) => state.profile)
 
   const dropdownRef = useRef<HTMLDivElement>(null)
   const searchHistoryRef = useRef<HTMLDivElement>(null)
@@ -98,7 +100,7 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
     },
     {
       value: '3',
-      label: 'Approvals',
+      label: 'Approval',
       icon: <ApprovalDelegation />,
     },
     {
@@ -111,7 +113,7 @@ const SearchComponent = ({ children }: SearchComponentProps): JSX.Element => {
       label: 'Vendor',
       icon: <FramePerson />,
     },
-  ]
+  ].filter(item => hasViewPermission(processPermissionsMatrix, item.label))
 
   const handleScroll = () => {
     const element = modalRef.current
