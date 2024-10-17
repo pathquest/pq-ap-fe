@@ -92,22 +92,22 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
   ];
 
   const handleSummaryClick = (description: string) => {
+    const startDate = format(convertStringsDateToUTC(formatDateByMonthYear(filterFields.Date)), 'MM/dd/yyyy');
+
+    const lastDayOfNextMonth = endOfMonth(convertStringsDateToUTC(formatDateByMonthYear(filterFields.Date)));
+    const formattedLastDayOfNextMonth = format(lastDayOfNextMonth, 'MM/dd/yyyy');
+
     switch (description) {
       case 'Total Posted Amount':
         dispatch(setSelectedProcessTypeFromList('4'))
         router.push(`/bills?module=BillsOverview?chart=Summary`)
-        const startDate = format(convertStringsDateToUTC(formatDateByMonthYear(filterFields.Date)), 'MM/dd/yyyy');
-
-        const lastDayOfNextMonth = endOfMonth(convertStringsDateToUTC(formatDateByMonthYear(filterFields.Date)));
-        const formattedLastDayOfNextMonth = format(lastDayOfNextMonth, 'MM/dd/yyyy');
-
         dispatch(setFilterFormFields({
           ft_status: ['1', '2', '6', '8'],
           ft_assignee: '1',
           ft_select_users: [],
           ft_vendor: null,
           ft_location: null,
-          ft_overview_status: ['2','3','4','5'],
+          ft_overview_status: ['2', '3', '4', '5'],
           ft_process: filterFields?.ProcessType,
           ft_datepicker: `${startDate} to ${formattedLastDayOfNextMonth}`
         }));
@@ -124,8 +124,8 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
           BillNumber: '',
           MinAmount: '',
           MaxAmount: '',
-          BillStartDate: filterFields.StartDate,
-          BillEndDate: filterFields.EndDate,
+          BillStartDate: startDate,
+          BillEndDate: formattedLastDayOfNextMonth,
           StartDueDate: '',
           EndDueDate: '',
           Assignee: '1',
@@ -179,24 +179,23 @@ const Summary: React.FC<any> = ({ LocationOption }) => {
       </div>
       <div className={`px-4 mb-5 grid grid-cols-4 sm:grid-cols-2 laptop:grid-cols-3 laptopMd:grid-cols-4 lg:grid-cols-4 gap-5`}>
         {updatedCardData.map((data, index) => (
-            <div
-              key={data.amount + index}
-              onClick={() => handleSummaryClick(data.description)}
-              className={`${data.amount == "0" || data.amount == "$0" ? "cursor-default pointer-events-none" : "cursor-pointer"} w-full cards_content laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 shadow-md border border-lightSilver rounded  bg-white"`}
-            >
-              {isLoading ? <div>
-                <Loader size='sm' />
-              </div> : <>
-                <div className="lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-proxima font-semibold tracking-[0.02em]">
-                  {data.amount}
-                </div>
-                <div className='text-base font-proxima laptopMd:mt-1.5 lg:mt-1.5 xl:mt-1.5 hd:mt-2.5 2xl:mt-2.5 3xl:mt-2.5 text-darkCharcoal tracking-[0.02em]'>
-                  {data.description}
-                </div>
-              </>}
-
-            </div>
-          ))}
+          <div
+            key={data.amount + index}
+            onClick={() => handleSummaryClick(data.description)}
+            className={`${data.amount == "0" || data.amount == "$0.00" || isLoading ? "cursor-default pointer-events-none" : "cursor-pointer"} w-full cards_content laptopMd:p-4 lg:p-4 xl:p-4 hd:p-5 2xl:p-5 3xl:p-5 shadow-md border border-lightSilver rounded  bg-white"`}
+          >
+            {isLoading ? <div className='w-full laptop:h-[54px] laptopMd:h-[54px] lg:h-[54px] xl:h-[54px] hd:h-[62px] 2xl:h-[62px] 3xl:h-[62px] flex justify-center items-center'>
+              <Loader size='sm' />
+            </div> : <>
+              <div className="lg:text-base xl:text-base hd:text-lg 2xl:text-lg 3xl:text-lg font-proxima font-semibold tracking-[0.02em]">
+                {data.amount}
+              </div>
+              <div className='text-base font-proxima laptopMd:mt-1.5 lg:mt-1.5 xl:mt-1.5 hd:mt-2.5 2xl:mt-2.5 3xl:mt-2.5 text-darkCharcoal tracking-[0.02em]'>
+                {data.description}
+              </div>
+            </>}
+          </div>
+        ))}
       </div>
     </>
   )

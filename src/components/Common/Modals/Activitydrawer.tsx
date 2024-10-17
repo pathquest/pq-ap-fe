@@ -164,7 +164,7 @@ const ActivityDrawer = ({ GUID, isOpen, onClose, noCommentBox, selectedPayableId
   useEffect(() => {
     if (isOpen) {
       fetchActivityList()
-      !noCommentBox && fetchWatcherList()
+      fetchWatcherList()
     }
   }, [isOpen])
 
