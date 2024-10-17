@@ -488,7 +488,7 @@ const BillApprovalStatus: React.FC<any> = ({ LocationOption }) => {
             <div key={chartType} className='place-content-center md:h-[75vh] laptop:h-[75vh] laptopMd:h-[75vh] lg:h-[75vh] xl:h-[75vh] hd:h-[80vh] 2xl:h-[66vh] overflow-x-auto overflow-y-hidden custom-scroll chartScrollbar'>
                 {isLoading
                     ? <div className='h-full w-full flex justify-center'>
-                        <Loader size='md' helperText/>
+                        <Loader size='md'/>
                     </div>
                     : <HighchartsReact highcharts={Highcharts} options={chartType == 'pie' ? getPieChartOptions(false) : getColumnChartOptions()} />}
             </div>

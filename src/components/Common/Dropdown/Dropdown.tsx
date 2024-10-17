@@ -138,8 +138,8 @@ const Dropdown: React.FC = () => {
   }
 
   useEffect(() => {
-  getUserManageRights()
-  },[CompanyId])
+    getUserManageRights()
+  }, [CompanyId])
 
   useEffect(() => {
     const index = newCompanyList.findIndex((item) => item.value == selectedCompanyValue)
@@ -281,7 +281,7 @@ const Dropdown: React.FC = () => {
           newCompanyList?.map((option, index) => (
             <li
               key={option.label}
-              className={` flex cursor-pointer items-center justify-between px-5 py-[10px] text-sm font-normal outline-none hover:bg-whiteSmoke focus:bg-whiteSmoke
+              className={`${option.label == selectedValue ? "bg-whiteSmoke" : "bg-pureWhite"} flex items-center justify-between px-5 py-[10px] text-sm font-normal outline-none hover:bg-whiteSmoke focus:bg-whiteSmoke
                                   ${!option.label.toLowerCase().startsWith(searchValue) ? 'hidden' : ''}`}
               onKeyDown={(e) => handleListItemKeyDown(e, option, index)}
               tabIndex={isOpen ? 0 : -1}
@@ -302,7 +302,7 @@ const Dropdown: React.FC = () => {
                 <Building />
               </div>
               <div
-                className={`flex flex-grow`}
+                className={`${option.label == selectedValue ? "pointer-events-none cursor-default" : "cursor-pointer"}  flex flex-grow`}
                 onClick={() => {
                   if (option.label !== searchValue) {
                     localStorage.removeItem('IsFieldMappingSet')
@@ -312,13 +312,13 @@ const Dropdown: React.FC = () => {
               >
                 <Typography type='h6'>{option.label}</Typography>
               </div>
-              <div className='ml-2 flex-shrink-0 items-center text-[1.5rem] text-darkCharcoal'>
+              <div className='cursor-pointer ml-2 flex-shrink-0 items-center text-[1.5rem] text-darkCharcoal'>
                 <Star data={option} />
               </div>
             </li>
           ))
         ) : (
-          <span className='font-proxima flex cursor-pointer items-center px-5 py-[15px] text-sm font-medium hover:bg-whiteSmoke focus:bg-whiteSmoke  '>
+          <span className='font-proxima flex items-center px-5 py-[15px] text-sm font-medium hover:bg-whiteSmoke focus:bg-whiteSmoke  '>
             No matching data found.
           </span>
         )}

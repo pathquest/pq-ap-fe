@@ -194,6 +194,12 @@ const Navbar = ({ onData }: any) => {
     localStorage.removeItem('IsAdmin')
     localStorage.removeItem('IsOrgAdmin')
     localStorage.removeItem('qbotoken')
+    localStorage.removeItem('persist:root')
+    localStorage.removeItem('CompanyId')
+    localStorage.removeItem('qbcode')
+    localStorage.removeItem('realmId')
+    localStorage.removeItem('state')
+    
     await handleSignOut()
   }
 
@@ -236,35 +242,35 @@ const Navbar = ({ onData }: any) => {
     }
   }, [CompanyId])
 
-  useEffect(() => {
-    let userId = localStorage.getItem('UserId')
-    const client = new WebPubSubClient({
-      getClientAccessUrl: async () =>
-        (await fetch(`${process.env.REALTIME_NOTIFICATION}/event-stream/get-access-token?userId=${userId}`)).text(),
-    })
+  // useEffect(() => {
+  //   let userId = localStorage.getItem('UserId')
+  //   const client = new WebPubSubClient({
+  //     getClientAccessUrl: async () =>
+  //       (await fetch(`${process.env.REALTIME_NOTIFICATION}/event-stream/get-access-token?userId=${userId}`)).text(),
+  //   })
 
-    const handleConnected = (e: any) => { }
+  //   const handleConnected = (e: any) => { }
 
-    const handleServerMessage = (data: any) => {
-      Toast.success(`${data?.message?.data?.message}`)
-      if (data?.message?.data?.company_id === parseInt(`${CompanyId}`)) {
-        setCount(() => notificationCount + 1)
-      }
-    }
+  //   const handleServerMessage = (data: any) => {
+  //     Toast.success(`${data?.message?.data?.message}`)
+  //     if (data?.message?.data?.company_id === parseInt(`${CompanyId}`)) {
+  //       setCount(() => notificationCount + 1)
+  //     }
+  //   }
 
-    async function connect() {
-      await client.start()
-      client.on('connected', handleConnected)
-      client.on('server-message', handleServerMessage)
-    }
-    connect()
+  //   async function connect() {
+  //     await client.start()
+  //     client.on('connected', handleConnected)
+  //     client.on('server-message', handleServerMessage)
+  //   }
+  //   connect()
 
-    return () => {
-      client.off('connected', handleConnected)
-      client.off('server-message', handleServerMessage)
-    }
+  //   return () => {
+  //     client.off('connected', handleConnected)
+  //     client.off('server-message', handleServerMessage)
+  //   }
 
-  }, [])
+  // }, [])
 
   useEffect(() => {
     dispatch(setNotificationCount(count))

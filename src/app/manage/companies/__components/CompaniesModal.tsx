@@ -81,9 +81,9 @@ const CompaniesModal = ({ onOpen, onClose, onConnectQb, onConnectXero, onConnect
 
           <div className='flex h-full w-full max-w-sm flex-col items-center overflow-hidden rounded border-[1px] border-lightSilver'>
             <span className='my-2 flex h-20 w-20 items-center justify-center'>
-              <AnyIcon size={60} />
+              <AnyIcon size={70} />
             </span>
-            <Typography className='mt-4 text-darkCharcoal text-sm tracking-[0.02em]'>NA</Typography>
+            <Typography className='mt-4 text-darkCharcoal text-sm tracking-[0.02em]'>No Accounting Tool</Typography>
             <Button
               className='btn-sm !h-8 font-bold px-[15px] my-5 rounded'
               variant='btn-outline-primary'
