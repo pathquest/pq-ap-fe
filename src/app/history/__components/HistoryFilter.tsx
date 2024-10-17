@@ -1,7 +1,7 @@
-import { processOptions, sourceOptions } from '@/data/fileHistory'
+import { sourceOptions } from '@/data/fileHistory'
 import { HistoryFilterFormFieldsProps } from '@/models/files'
 import { useAppSelector } from '@/store/configureStore'
-import { Button, CompanyList, DatepickerRange, MultiSelectChip, Typography } from 'pq-ap-lib'
+import { Button, CompanyList, DatepickerRange } from 'pq-ap-lib'
 import { useEffect, useRef, useState } from 'react'
 
 interface InboxFilterProps {
@@ -27,8 +27,6 @@ const HistoryFilter = ({
 }: InboxFilterProps) => {
   const filterModalRef = useRef<HTMLDivElement>(null)
   const [isFilterChanged, setIsFilterChanged] = useState<boolean>(false)
-  const { selectedCompany } = useAppSelector((state) => state.user)
-  const AccountingTool = selectedCompany?.accountingTool
 
   useEffect(() => {
     if (JSON.stringify(localFilterFormFields) !== JSON.stringify(filterFormFields)) {
