@@ -298,6 +298,7 @@ const BillApproval: React.FC = () => {
 
   // Vendor List API
   const getApprovalList = async (pageIndex?: number) => {
+    localStorage.removeItem('BatchId')
     if (pageIndex === 1) {
       setBillApprovalList([])
       setItemsLoaded(0)
@@ -430,7 +431,8 @@ const BillApproval: React.FC = () => {
   }
 
   // view mode row click
-  const handleView = (id: any) => {
+  const handleView = (id: any, batchId: string) => {
+    localStorage.setItem("BatchId", batchId)
     router.push(`/approvals/view/${id}`)
   }
 
@@ -473,7 +475,7 @@ const BillApproval: React.FC = () => {
       ),
       BillNumber:
         <div className='flex w-full justify-between'>
-          <label className='break-all font-medium cursor-pointer font-proxima !text-sm !tracking-[0.02em] text-darkCharcoal ' onClick={() => handleView(d.AccountPayableId)} >{d.BillNumber}</label>
+          <label className='break-all font-medium cursor-pointer font-proxima !text-sm !tracking-[0.02em] text-darkCharcoal ' onClick={() => handleView(d.AccountPayableId, d.BatchId)} >{d.BillNumber}</label>
           <div className='relative mr-4 w-1/5'>
             {d.Attachments?.length > 0 && (
               <div className='overflow-y-auto'>
