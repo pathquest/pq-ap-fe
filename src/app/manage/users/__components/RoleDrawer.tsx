@@ -182,12 +182,27 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
         if (item.Key === "Settings") {
           return {
             ...item,
-            Children: item.Children.filter((child: any) => child.Key !== "Global Setting")
+            Children: item.Children.filter((child: any) => child.Key !== "Global Setting").map((child: any) => {
+              if (child.Key === "Masters") {
+                return {
+                  ...child,
+                  Children: child.Children.filter((grandChild: any) =>
+                    !["Currency", "Tax Rate"].includes(grandChild.Key)
+                  )
+                };
+              }
+              if (child.Key === "Setup") {
+                return {
+                  ...child,
+                  Children: child.Children.filter((grandChild: any) => grandChild.Key !== "Cloud Configuration")
+                };
+              }
+              return child;
+            })
           };
         }
         return item;
       });
-
       setTableData(filteredList);
       setPermissionList(responseData.PermissionIds)
       const processedData = processPermissions(responseData);
@@ -255,7 +270,7 @@ const RoleDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, userId }) => {
         <div className='sticky top-0 flex w-full !h-[50px] justify-start bg-whiteSmoke p-5 gap-5'>
           <div className='flex items-center gap-3 h-full'>
             <span className='cursor-pointer' onClick={onClose}>
-            <ChevronLeftIcon bgColor='white' />
+              <ChevronLeftIcon bgColor='white' />
             </span>
             <Typography type='h5' className='flex items-center tracking-[0.02em] text-darkCharcoal justify-center text-center !font-bold'>
               Admin Manage Rights

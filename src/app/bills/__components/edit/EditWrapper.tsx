@@ -175,7 +175,7 @@ const EditWrapper = ({
   const CopyBillViewId = localStorage.getItem('CopyBillViewId')
   const billStatus = documentDetailByIdData?.Status
   const billStatusName = documentDetailByIdData?.StatusName
-  const vendorId = documentDetailByIdData.VendorId ?? formFields.vendor
+  const vendorId = formFields.vendor ?? documentDetailByIdData.VendorId
 
   const listRef = useRef<any>(null)
   const [searchValue, setSearchValue] = useState<string>('')

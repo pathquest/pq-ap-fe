@@ -267,9 +267,9 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
       CompanyId: EditCompanyId ?? 0,
     }
     performApiAction(dispatch, getManageConfiguration, params, (responseData: any) => {
-      const { IsOCR, IsIndexing, IsLineItem, DeleteFilesInDays, Tat, Sync } = responseData
+      const { IsOCR, IsIndexing, IsLineItem, DeleteFilesFromHistory, Tat, Sync } = responseData
       setAddTat(Tat + "")
-      setDeleteDocumentHistory(DeleteFilesInDays + "")
+      setDeleteDocumentHistory(DeleteFilesFromHistory + "")
 
       const syncData = JSON.parse(Sync);
       const { SyncType, SyncMethod, SyncData } = syncData;
@@ -353,7 +353,7 @@ const ManageConfigurationDrawer: React.FC<DrawerProps> = ({ onOpen, onClose, Edi
       IsOCR: false,
       IsIndexing: false,
       IsLineItem: false,
-      DeleteFilesInDays: Number(deleteDocumentHistory) ?? 30,
+      DeleteFilesFromHistory: Number(deleteDocumentHistory) ?? 30,
       Tat: Number(addTat) ?? 0,
       Sync: syncParam
     }
