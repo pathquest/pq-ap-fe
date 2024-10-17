@@ -38,16 +38,19 @@ const PasswordForm = ({ profileData, handleEdit }: any) => {
 
       if (response.ResponseStatus === 'Success') {
         Toast.success('Password updated successfully!')
-        
+        router.push(`${ssoUrl}/signin`)
+
         localStorage.removeItem('UserId')
         localStorage.removeItem('previousUrl')
         localStorage.removeItem('OrgId')
         localStorage.removeItem('IsAdmin')
         localStorage.removeItem('IsOrgAdmin')
+        localStorage.removeItem('persist:root')
+        localStorage.removeItem('CompanyId')
+        localStorage.removeItem('qbcode')
+        localStorage.removeItem('realmId')
+        localStorage.removeItem('state')
         localStorage.removeItem('qbotoken')
-
-        router.push(`${ssoUrl}/signin`)
-        
         await handleSignOut()
       }
       if (response.ResponseStatus === 'Failure') {

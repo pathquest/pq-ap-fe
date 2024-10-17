@@ -129,7 +129,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
     const [isLoading, setIsLoading] = useState<boolean>(false)
 
     const [localFilterFormFields, setLocalFilterFormFields] = useState<HistoryFilterFormFieldsProps>(filterFormFields)
-    const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-200px)]')
+    const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
 
     const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
     const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false)
@@ -260,9 +260,9 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
 
     useEffect(() => {
         if (isLeftSidebarCollapsed) {
-            setTableDynamicWidth('w-full laptop:w-[calc(100vw-85px)]')
+            setTableDynamicWidth('w-full laptop:w-[calc(100vw-78px)]')
         } else {
-            setTableDynamicWidth('w-full laptop:w-[calc(100vw-200px)]')
+            setTableDynamicWidth('w-full laptop:w-[calc(100vw-180px)]')
         }
     }, [isLeftSidebarCollapsed])
 
@@ -652,7 +652,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
 
     return (
         <div>
-            <div className='sticky top-0 z-[6] flex !h-[66px] items-center justify-between bg-whiteSmoke laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
+            <div className='sticky top-0 z-[6] flex !h-[50px] items-center justify-between bg-whiteSmoke laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
                 <Breadcrumb variant='/' items={[
                     { label: 'File History', goBack: () => onBack(false) },
                     { label: userDetails.userName, url: '#' },
