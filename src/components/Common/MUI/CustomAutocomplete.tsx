@@ -40,7 +40,7 @@ const CustomAutocomplete: React.FC<SelectProps> = ({
             onChange={(e, value: any) => {
                 if (value) {
                     getValue(value.value)
-                    getError(false);
+                    getError(true);
                 }
             }}
             disabled={disabled}
@@ -82,7 +82,7 @@ const CustomAutocomplete: React.FC<SelectProps> = ({
                     error={error}
                     onBlur={() => {
                         if (defaultValue > 0) {
-                            getError(false);
+                            getError(true);
                         }
                     }}
                     helperText={
