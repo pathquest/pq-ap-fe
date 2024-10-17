@@ -692,13 +692,13 @@ const CreateBillPosting = ({
       const newLineItemsObj = lineItemsFieldsData.map((items: any) => {
         return {
           ...items,
-          account: selectedVendorObj.GLAccount
+          account: selectedVendorObj.GLAccount ? selectedVendorObj.GLAccount : items.account
         }
       })
       const newLineItemsErrorObj = hasLineItemFieldLibraryErrors.map((items: any) => {
         return {
           ...items,
-          account: selectedVendorObj.GLAccount ? true : false
+          account: selectedVendorObj.GLAccount ? true : items.account? true : false
         }
       })
 
