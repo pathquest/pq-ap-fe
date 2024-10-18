@@ -614,33 +614,38 @@ const CreateBillPosting = ({
     return date ?? ''
   }
 
+  const calculateDueDate = (value: any, dueDate: any) => {
+    let formattedDueDateCalculated = ''
+
+    if (value) {
+      const dueDateCalculatedValue = addDays(new Date(value), parseInt(dueDate))
+      formattedDueDateCalculated =
+        dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
+    } else {
+      const dueDateCalculatedValue = addDays(new Date(), parseInt(dueDate))
+      formattedDueDateCalculated =
+        dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
+    }
+
+    return formattedDueDateCalculated
+  }
+
   const setFormValues = async (key: string, value: string | number) => {
     if (key === 'date') {
       if (formFields.hasOwnProperty('term') && formFields.term) {
         const filterTerm = defaultTermOptions?.find((t: any) => t.Id === formFields.term)
-        let formattedDueDateCalculated = ''
-
-        if (value) {
-          const dueDateCalculatedValue = addDays(new Date(value), parseInt(filterTerm?.DueDate))
-          formattedDueDateCalculated =
-            dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
-        } else {
-          const dueDateCalculatedValue = addDays(new Date(), parseInt(filterTerm?.DueDate))
-          formattedDueDateCalculated =
-            dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
-        }
 
         await setFormFields({
           ...formFields,
           [key]: value,
           ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
-          duedate: formattedDueDateCalculated,
+          duedate: calculateDueDate(value, filterTerm?.DueDate),
         })
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
           ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value ? true : false } : {}),
-          duedate: formattedDueDateCalculated ? true : false,
+          duedate: calculateDueDate(value, filterTerm?.DueDate) ? true : false,
         })
       } else {
         await setFormFields({
@@ -659,27 +664,16 @@ const CreateBillPosting = ({
 
     if (key === 'term') {
       const filterTerm = defaultTermOptions && defaultTermOptions?.find((t: any) => t.Id === value)
-      let formattedDueDateCalculated = ''
-
-      if (formFields.date) {
-        const dueDateCalculatedValue = addDays(new Date(formFields.date), parseInt(filterTerm?.DueDate))
-        formattedDueDateCalculated =
-          dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
-      } else {
-        const dueDateCalculatedValue = addDays(new Date(), parseInt(filterTerm?.DueDate))
-        formattedDueDateCalculated =
-          dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
-      }
 
       await setFormFields({
         ...formFields,
         [key]: value,
-        duedate: formattedDueDateCalculated,
+        duedate: calculateDueDate(formFields.date, filterTerm?.DueDate),
       })
       await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
         [key]: value ? true : false,
-        duedate: formattedDueDateCalculated ? true : false,
+        duedate: calculateDueDate(formFields.date, filterTerm?.DueDate) ? true : false,
       })
       return
     }
@@ -692,20 +686,23 @@ const CreateBillPosting = ({
       const newLineItemsObj = lineItemsFieldsData.map((items: any) => {
         return {
           ...items,
-          account: selectedVendorObj.GLAccount
+          account: selectedVendorObj.GLAccount ? selectedVendorObj.GLAccount : items.account
         }
       })
       const newLineItemsErrorObj = hasLineItemFieldLibraryErrors.map((items: any) => {
         return {
           ...items,
-          account: selectedVendorObj.GLAccount ? true : false
+          account: selectedVendorObj.GLAccount ? true : items.account ? true : false
         }
       })
+
+      const filterTerm = defaultTermOptions && defaultTermOptions?.find((t: any) => t?.Id === selectedVendorObj?.Term)
 
       await setFormFields({
         ...formFields,
         [key]: value,
-        ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
+        ...(formFields.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
+        ...(formFields.hasOwnProperty('duedate') && formFields.hasOwnProperty('term') && formFields.hasOwnProperty('date') && selectedVendorObj?.Term && formFields.date ? { duedate: calculateDueDate(formFields.date, filterTerm?.DueDate) } : {}),
         ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
         ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
       })
@@ -713,6 +710,7 @@ const CreateBillPosting = ({
         ...hasFormFieldLibraryErrors,
         [key]: value ? true : false,
         ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty('duedate') && checkFormFieldErrors.hasOwnProperty('term') && checkFormFieldErrors.hasOwnProperty('date') && selectedVendorObj?.Term && formFields.date ? { duedate: calculateDueDate(formFields.date, filterTerm?.DueDate) ? true : false } : {}),
         ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
         ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
       })
@@ -769,20 +767,20 @@ const CreateBillPosting = ({
       maxLength = undefined
     }
 
-      const hasError = hasFormFieldErrors[item.Name] && !formFields[item.Name]
+    const hasError = hasFormFieldErrors[item.Name] && !formFields[item.Name]
 
-      let optionsObj: any = []
-      switch (item?.Name) {
-        case 'vendor':
-          optionsObj = vendorOptions
-          break
-        case 'term':
-          optionsObj = termOptions
-          break
-        case 'pono':
-          optionsObj = []
-          break
-      }
+    let optionsObj: any = []
+    switch (item?.Name) {
+      case 'vendor':
+        optionsObj = vendorOptions
+        break
+      case 'term':
+        optionsObj = termOptions
+        break
+      case 'pono':
+        optionsObj = []
+        break
+    }
 
     if (item?.Value) {
       optionsObj = JSON.parse(item?.Value)

@@ -28,7 +28,6 @@ const HistoryFilterDetails = ({
   onCancel,
   onApply,
   onReset,
-  receivedUserOptions,
   billNumberOptions,
   locationOptions,
   isLoading

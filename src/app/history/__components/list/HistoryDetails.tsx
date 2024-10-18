@@ -1,84 +1,25 @@
 'use client'
 
+import { lazy, useEffect, useRef, useState } from 'react'
+import agent from '@/api/axios'
+import { format } from 'date-fns'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import { Badge, BasicTooltip, Breadcrumb, DataTable, Loader, Select, Toast, Typography } from 'pq-ap-lib'
 import { BillNumberProps, Column, HistoryFilterFormFieldsProps, LinkBillToExistingBillProps } from '@/models/files'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import { Badge, BasicTooltip, Breadcrumb, DataTable, Loader, Select, Toast, Typography } from 'pq-ap-lib'
-import { lazy, useEffect, useRef, useState } from 'react'
 
-import agent from '@/api/axios'
 import SpinnerIcon from '@/assets/Icons/spinnerIcon'
 import { formatFileSize } from '@/components/Common/Functions/FormatFileSize'
 import { attachfileheaders } from '@/data/billPosting'
-import { columns, createOptions, processOptions } from '@/data/fileHistory'
+import { createOptions, HistoryNestedColumns, processOptions } from '@/data/fileHistory'
 import { DocumentDropdownOptionsProps, FileRecordType } from '@/models/billPosting'
 import { setIsFormDocuments } from '@/store/features/bills/billSlice'
 import { historyGetList, setFilterFormFields } from '@/store/features/files/filesSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { convertUTCtoLocal, getPDFUrl, limitString } from '@/utils/billposting'
-import { format } from 'date-fns'
-import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import HistoryFilterDetails from '../HistoryFilterDetails'
+import HistoryFilterDetails from '@/app/history/__components/HistoryFilterDetails'
 import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
-
-export const nestedColumns: Column[] = [
-    {
-        header: 'FILE NAME',
-        accessor: 'FileName',
-        sortable: false,
-        colStyle: '!w-[160px] !tracking-[0.02em]',
-    },
-    {
-        header: 'BILL NO.',
-        accessor: 'BillNo',
-        sortable: false,
-        colStyle: '!w-[160px] !tracking-[0.02em]',
-    },
-    {
-        header: 'PROCESS',
-        accessor: 'APProviderType',
-        sortable: false,
-        colStyle: '!w-[150px] !tracking-[0.02em]',
-    },
-    {
-        header: 'AMOUNT',
-        accessor: 'Amount',
-        sortable: false,
-        colStyle: '!w-[125px] !pr-[30px] !tracking-[0.02em]',
-        colalign: 'right',
-    },
-    {
-        header: 'UPLOADED DATE & TIME',
-        accessor: 'UploadedDate',
-        sortable: false,
-        colStyle: '!w-[200px] !tracking-[0.02em]',
-    },
-    {
-        header: 'PAGES',
-        accessor: 'Pages',
-        sortable: false,
-        colStyle: '!w-[100px] !tracking-[0.02em]',
-        colalign: 'right'
-    },
-    {
-        header: 'LOCATION',
-        accessor: 'LocationName',
-        sortable: false,
-        colStyle: '!w-[150px] !tracking-[0.02em]',
-    },
-    {
-        header: '',
-        accessor: 'Status',
-        sortable: false,
-        colStyle: '!w-[200px] !tracking-[0.02em]',
-    },
-    {
-        header: '',
-        accessor: 'actions',
-        sortable: false,
-        colStyle: '!w-[200px] !tracking-[0.02em]',
-    },
-]
 
 const FilesAddIcon = lazy(() => import('@/assets/Icons/FilesAddIcon'))
 const FilesRetryIcon = lazy(() => import('@/assets/Icons/FilesRetryIcon'))
@@ -109,8 +50,6 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
     const isFilesPermission = getModulePermissions(processPermissionsMatrix, "Files") ?? {}
     const isFilesCreate = isFilesPermission?.Create ?? false;
 
-    const { data: session } = useSession()
-    const CompanyId = session?.user?.CompanyId
     const [currentWindow, setCurrentWindow] = useState<any>(null)
     const [isFilterVisible, setIsFilterVisible] = useState(false)
     const [selectedBillNumber, setSelectedBillNumber] = useState<string>('')
@@ -120,15 +59,16 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
     const [locationValue, setLocationValue] = useState<string[]>([])
     const AccountingTool = selectedCompany?.accountingTool
 
-    const [isLoading, setIsLoading] = useState<boolean>(false)
-
-    const [localFilterFormFields, setLocalFilterFormFields] = useState<HistoryFilterFormFieldsProps>(filterFormFields)
     const [tableDynamicWidth, setTableDynamicWidth] = useState<string>('w-full laptop:w-[calc(100vw-180px)]')
+    const [localFilterFormFields, setLocalFilterFormFields] = useState<HistoryFilterFormFieldsProps>(filterFormFields)
 
-    const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
-    const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false)
-    const [isAttachmentVisible, setIsAttachmentVisible] = useState(false)
-    const [isLinkToBillModalVisible, setIsLinkToBillModalVisible] = useState(false)
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [modalVisibility, setModalVisibility] = useState<any>({
+        isCreateModalVisible: false,
+        isConfirmModalVisible: false,
+        isAttachmentVisible: false,
+        isLinkToBillModalVisible: false,
+    });
 
     const [historyDetailsView, setHistoryDetailsView] = useState<any>([])
     const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false)
@@ -150,16 +90,23 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
     const [PDFUrl, setPDFUrl] = useState<string>('')
     const [fileBlob, setFileBlob] = useState<string | Blob>('')
     const [isFileModal, setFileModal] = useState<boolean>(false)
+    const [isRetryLoading, setIsRetryLoading] = useState<boolean>(false)
     const [isFileRecord, setIsFileRecord] = useState<FileRecordType>({
         FileName: '',
         PageCount: '',
         BillNumber: '',
     })
-    const [isRetryLoading, setIsRetryLoading] = useState<boolean>(false)
+
+    const toggleModalVisibility = (modalName: string, isVisible: boolean) => {
+        setModalVisibility((prevState:any) => ({
+            ...prevState,
+            [modalName]: isVisible,
+        }));
+    };
 
     const filteredNestedColumns: Column[] =
-        nestedColumns &&
-        nestedColumns
+        HistoryNestedColumns &&
+        HistoryNestedColumns
             .map((item) => {
                 if (AccountingTool === 3 && item?.accessor === 'LocationName') {
                     return undefined
@@ -239,7 +186,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
     }, [isLeftSidebarCollapsed])
 
     useEffect(() => {
-        if (isCreateModalVisible || isAttachmentVisible) {
+        if (modalVisibility.isCreateModalVisible || modalVisibility.isAttachmentVisible) {
             document.addEventListener('click', handleOutsideClick)
         } else {
             document.removeEventListener('click', handleOutsideClick)
@@ -248,20 +195,20 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
         return () => {
             document.removeEventListener('click', handleOutsideClick)
         }
-    }, [isCreateModalVisible, isAttachmentVisible])
+    }, [modalVisibility.isCreateModalVisible, modalVisibility.isAttachmentVisible])
 
     const handleOutsideClick = (event: MouseEvent) => {
         if (createModalRef.current && !createModalRef.current.contains(event.target as Node)) {
-            setIsCreateModalVisible(false)
+            toggleModalVisibility('isCreateModalVisible', false)
         }
 
         if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-            setIsAttachmentVisible(false)
+            toggleModalVisibility('isAttachmentVisible', false)
         }
     }
 
     const handleCreateFile = (selectedDocument: number) => {
-        setIsCreateModalVisible(true)
+        toggleModalVisibility('isCreateModalVisible', true)
         setSelectedDocument(selectedDocument)
     }
 
@@ -281,7 +228,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
 
     const handleOpenAttachFile = (documentsId: number) => {
         setAttachmentDocumentId(documentsId)
-        setIsAttachmentVisible(true)
+        toggleModalVisibility('isAttachmentVisible', true)
     }
 
     const handleSelectedModule = (
@@ -300,8 +247,8 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
             router.push(`/bills/create/2/${documentsId}`)
         }
         if (module === '3') {
-            setIsCreateModalVisible(false)
-            setIsLinkToBillModalVisible(true)
+            toggleModalVisibility('isCreateModalVisible', false)
+            toggleModalVisibility('isLinkToBillModalVisible', true)
 
             setLinkedBillObj({
                 ...linkedBillObj,
@@ -419,7 +366,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                                 </div>
                             </BasicTooltip>
                         )}
-                        {isAttachmentVisible && attachmentDocumentId === nestedData?.DocumentsId && (
+                        {modalVisibility.isAttachmentVisible && attachmentDocumentId === nestedData?.DocumentsId && (
                             <div
                                 ref={dropdownRef}
                                 className='absolute !z-[3] flex w-[443px] flex-col rounded-md border border-[#cccccc] bg-white p-5 shadow-md'
@@ -437,7 +384,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                                                         onClick={() => {
                                                             handleFileOpen(e.FilePath, e.FileName)
                                                             setIsFileRecord({ FileName: e.FileName, PageCount: e.PageCount, BillNumber: d.BillNumber })
-                                                            setIsAttachmentVisible(false)
+                                                            toggleModalVisibility('isAttachmentVisible',false)
                                                         }}
                                                     >
                                                         <GetFileIcon FileName={e.FileName} />
@@ -541,11 +488,11 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
     }
 
     const handleConfirmModalClose = () => {
-        setIsConfirmModalVisible(false)
+        toggleModalVisibility('isConfirmModalVisible',false)
     }
 
     const handleOnCloseLinkToBillModal = () => {
-        setIsLinkToBillModalVisible(false)
+        toggleModalVisibility('isLinkToBillModalVisible',false)
     }
 
     const handleApplyLinkToBill = async () => {
@@ -556,7 +503,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                 const responseData = response?.ResponseData
                 if (responseData.IsUploaded) {
                     fetchHistoryDetails()
-                    setIsLinkToBillModalVisible(false)
+                    toggleModalVisibility('isLinkToBillModalVisible',false)
                     Toast.success(`Attachment added to bill number: ${selectedBillNumber}`)
                 }
             }
@@ -630,7 +577,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
 
     return (
         <div>
-            <div className='sticky top-0 z-[6] flex !h-[66px] items-center justify-between bg-whiteSmoke laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
+            <div className='sticky top-0 z-[6] flex !h-[50px] items-center justify-between bg-whiteSmoke laptop:px-4 laptopMd:px-4 lg:px-4 xl:px-4 hd:px-5 2xl:px-5 3xl:px-5'>
                 <Breadcrumb variant='/' items={[
                     { label: 'File History', goBack: () => onBack(false) },
                     { label: userDetails.userName, url: '#' },
@@ -665,7 +612,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
                                         handleCreateFile,
                                         handleRetryFile,
                                         isRetryLoading,
-                                        isCreateModalVisible,
+                                        isCreateModalVisible: modalVisibility.isCreateModalVisible,
                                         createOptions,
                                         selectedDocument,
                                         createModalRef,
@@ -718,7 +665,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
             />
 
             <LinkToBillModal
-                isOpen={isLinkToBillModalVisible}
+                isOpen={modalVisibility.isLinkToBillModalVisible}
                 onClose={handleOnCloseLinkToBillModal}
                 modalTitle='Link to Bill'
                 onApply={handleApplyLinkToBill}
@@ -751,7 +698,7 @@ export default function HistoryDetails({ isDetailsOpen, onBack, userDetails, use
             <ConfirmationModal
                 title='Convert Mail Body'
                 content='Do you want to convert this mail body to PDF?'
-                isModalOpen={isConfirmModalVisible}
+                isModalOpen={modalVisibility.isConfirmModalVisible}
                 modalClose={handleConfirmModalClose}
                 colorVariantNo='btn-outline-primary'
                 colorVariantYes='btn-primary'

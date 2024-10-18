@@ -197,6 +197,12 @@ const Navbar = ({ onData }: any) => {
     localStorage.removeItem('IsAdmin')
     localStorage.removeItem('IsOrgAdmin')
     localStorage.removeItem('qbotoken')
+    localStorage.removeItem('persist:root')
+    localStorage.removeItem('CompanyId')
+    localStorage.removeItem('qbcode')
+    localStorage.removeItem('realmId')
+    localStorage.removeItem('state')
+    
     await handleSignOut()
   }
 

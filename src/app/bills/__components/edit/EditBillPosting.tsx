@@ -20,15 +20,14 @@ import { BillPostingFilterFormFieldsProps, EditBillPostingDataProps } from '@/mo
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar } from '@/store/features/bills/billSlice'
 import { convertStringsDateToUTC } from '@/utils'
-import { billStatusEditable, convertFractionToRoundValue, getPDFUrl, getRoundValue, getUpdatedDataFromDetailsResponse, initialBillPostingFilterFormFields, lineItemRemoveArr, returnKeyValueObjForFormFields, taxTotalAmountCalculate, totalAmountCalculate, validate, verifyAllFieldsValues } from '@/utils/billposting'
-import { format } from 'date-fns'
+import { billStatusEditable, calculateDueDate, convertFractionToRoundValue, getPDFUrl, getRoundValue, getUpdatedDataFromDetailsResponse, initialBillPostingFilterFormFields, lineItemRemoveArr, returnKeyValueObjForFormFields, taxTotalAmountCalculate, totalAmountCalculate, validate, verifyAllFieldsValues } from '@/utils/billposting'
 import { useSession } from 'next-auth/react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { BasicTooltip, DataTable, Loader, Toast } from 'pq-ap-lib'
 import { Resizable } from 're-resizable'
 import { RefObject, useEffect, useRef, useState } from 'react'
 
-const EditBillPosting = ({ processtype }: any) => {
+const EditBillPosting = () => {
   const { data: session } = useSession()
   const CompanyId = session?.user?.CompanyId
   const AccountingTool = session?.user?.AccountingTool
@@ -146,7 +145,7 @@ const EditBillPosting = ({ processtype }: any) => {
 
   const lazyRows = 10
 
-  const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any, mainFieldListOptions: any, generateLinetItemFieldsErrorObj: any, vendorOptions: any, lineItemsFieldsDataObj: any, lineItemFieldColumns: any) => {
+  const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any, mainFieldListOptions: any, generateLinetItemFieldsErrorObj: any, vendorOptions: any, lineItemsFieldsDataObj: any, lineItemFieldColumns: any, defaultTermOptions: any) => {
     setIsBillDataLoading(true)
     const IsFindLocation = keyValueLineItemFieldObj.find((item: any) => item.mappedWith === 11 || item.mappedWith === 23)
 
@@ -166,7 +165,8 @@ const EditBillPosting = ({ processtype }: any) => {
           keyValueLineItemFieldObj,
           mainFieldListOptions,
           generateLinetItemFieldsErrorObj,
-          vendorOptions
+          vendorOptions,
+          defaultTermOptions
         )
         setIsBillDataLoading(false)
 
@@ -245,8 +245,8 @@ const EditBillPosting = ({ processtype }: any) => {
               {
                 ...lineItemsFieldsDataObj,
                 Index: 1,
-                    amount: newData?.Amount ?? 0,
-                    ...((IsFindLocation && Object.keys(IsFindLocation)?.length > 0) ? { [IsFindLocation?.key]: newData?.LocationId?.toString() ?? 0 } : {}),
+                amount: newData?.Amount ?? 0,
+                ...((IsFindLocation && Object.keys(IsFindLocation)?.length > 0) ? { [IsFindLocation?.key]: newData?.LocationId?.toString() ?? 0 } : {}),
               },
             ])
             await setHasLineItemFieldLibraryErrors([
@@ -261,28 +261,28 @@ const EditBillPosting = ({ processtype }: any) => {
             await setHasLineItemFieldLibraryErrors(newCurrentLineItemsErrorObj)
           }
         } else {
-            if (newLineItems.length === 0) {
-                setMainFieldAmount(responseData?.Amount)
-                await setLineItemsFieldsData([
-                    {
-                        ...lineItemsFieldsDataObj,
-                        Index: 1,
-                        amount: responseData?.Amount ?? 0,
-                        ...((IsFindLocation && Object.keys(IsFindLocation)?.length > 0) ? { [IsFindLocation?.key]: responseData?.LocationId?.toString() ?? 0 } : {}),
-                    },
-                ])
-                await setHasLineItemFieldLibraryErrors([
-                    {
-                        ...generateLinetItemFieldsErrorObj,
-                        amount: responseData?.Amount ? true : false,
-                        ...((IsFindLocation && Object.keys(IsFindLocation)?.length > 0) ? { [IsFindLocation?.key]: responseData?.LocationId ? true : false } : {}),
-                    }
-                ])
-            } else {
-                await setLineItemsFieldsData(newLineItems)
-                await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
-            }
-            setIsBillDataLoading(false)
+          if (newLineItems.length === 0) {
+            setMainFieldAmount(responseData?.Amount)
+            await setLineItemsFieldsData([
+              {
+                ...lineItemsFieldsDataObj,
+                Index: 1,
+                amount: responseData?.Amount ?? 0,
+                ...((IsFindLocation && Object.keys(IsFindLocation)?.length > 0) ? { [IsFindLocation?.key]: responseData?.LocationId?.toString() ?? 0 } : {}),
+              },
+            ])
+            await setHasLineItemFieldLibraryErrors([
+              {
+                ...generateLinetItemFieldsErrorObj,
+                amount: responseData?.Amount ? true : false,
+                ...((IsFindLocation && Object.keys(IsFindLocation)?.length > 0) ? { [IsFindLocation?.key]: responseData?.LocationId ? true : false } : {}),
+              }
+            ])
+          } else {
+            await setLineItemsFieldsData(newLineItems)
+            await setHasLineItemFieldLibraryErrors(newLineItemsErrorObj)
+          }
+          setIsBillDataLoading(false)
 
           await setFormFields(updatedDataObj)
           setDocumentDetailByIdData(responseData)
@@ -327,7 +327,7 @@ const EditBillPosting = ({ processtype }: any) => {
         generateLinetItemFieldsErrorObj,
         lineItemFieldColumns,
         lineItemsFieldsDataObj,
-      } = await fetchAPIsData(processtype, AccountingTool as number, 'edit', CompanyId as number)
+      } = await fetchAPIsData(selectedProcessTypeInList, AccountingTool as number, 'edit', CompanyId as number)
 
       await setVendorOptions(vendorOptions.map((value: any) => ({
         value: value.value,
@@ -389,7 +389,16 @@ const EditBillPosting = ({ processtype }: any) => {
       await setLineItemFieldListOptions(lineItemConfiguration)
 
       if (activeBill) {
-        await getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldConfiguration, generateLinetItemFieldsErrorObj, vendorOptions, lineItemsFieldsDataObj, lineItemFieldColumns)
+        await getCurrentBillDetails(
+          keyValueMainFieldObj, 
+          keyValueLineItemFieldObj, 
+          mainFieldConfiguration, 
+          generateLinetItemFieldsErrorObj, 
+          vendorOptions, 
+          lineItemsFieldsDataObj, 
+          lineItemFieldColumns,
+          defaultTermOptions
+        )
       }
 
       setIsLoading(false)
@@ -405,7 +414,7 @@ const EditBillPosting = ({ processtype }: any) => {
         mainFieldListOptions,
         lineItemFieldListOptions
       )
-      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldListOptions, generateLinetItemFieldsErrorObj, vendorGLTermOptions, lineItemsFieldsDataObj, lineItemFieldColumns)
+      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldListOptions, generateLinetItemFieldsErrorObj, vendorGLTermOptions, lineItemsFieldsDataObj, lineItemFieldColumns, defaultTermOptions)
     }
   }, [activeBill])
 
@@ -945,46 +954,22 @@ const EditBillPosting = ({ processtype }: any) => {
     setIsOpenDrawer(true)
   }
 
-  const addDays = (date: any, days: any) => {
-    if (isNaN(parseInt(days))) {
-      date.setDate(date.getDate())
-    } else {
-      date.setDate(date.getDate() + parseInt(days))
-    }
-    if (date instanceof Date) {
-      return date
-    } else {
-      return new Date()
-    }
-  }
-
   const setFormValues = async (key: string, value: string | number) => {
     if (key === 'date') {
       if (formFields.hasOwnProperty('term') && formFields.term) {
         const filterTerm = defaultTermOptions?.find((t: any) => t.Id === formFields.term)
-        let formattedDueDateCalculated = ''
-
-        if (value) {
-          const dueDateCalculatedValue = addDays(new Date(value), parseInt(filterTerm?.DueDate))
-          formattedDueDateCalculated =
-          dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
-        } else {
-          const dueDateCalculatedValue = addDays(new Date(), parseInt(filterTerm?.DueDate))
-          formattedDueDateCalculated =
-            dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
-        }
 
         await setFormFields({
           ...formFields,
           [key]: value,
           ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value } : {}),
-          duedate: formattedDueDateCalculated,
+          duedate: calculateDueDate(value, filterTerm?.DueDate),
         })
         await setHasFormFieldLibraryErrors({
           ...hasFormFieldLibraryErrors,
           [key]: value ? true : false,
           ...(checkFormFieldErrors.hasOwnProperty('glPostingDate') ? { glPostingDate: value ? true : false } : {}),
-          duedate: formattedDueDateCalculated ? true : false,
+          duedate: calculateDueDate(value, filterTerm?.DueDate) ? true : false,
         })
       } else {
         await setFormFields({
@@ -1003,27 +988,16 @@ const EditBillPosting = ({ processtype }: any) => {
 
     if (key === 'term') {
       const filterTerm = defaultTermOptions && defaultTermOptions?.find((t: any) => t.Id === value)
-      let formattedDueDateCalculated = ''
-
-      if (formFields.date) {
-        const dueDateCalculatedValue = addDays(new Date(formFields.date), parseInt(filterTerm?.DueDate))
-        formattedDueDateCalculated =
-          dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
-      } else {
-        const dueDateCalculatedValue = addDays(new Date(), parseInt(filterTerm?.DueDate))
-        formattedDueDateCalculated =
-          dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
-      }
 
       await setFormFields({
         ...formFields,
         [key]: value,
-        duedate: formattedDueDateCalculated,
+        duedate: calculateDueDate(formFields.date, filterTerm?.DueDate),
       })
       await setHasFormFieldLibraryErrors({
         ...hasFormFieldLibraryErrors,
         [key]: value ? true : false,
-        duedate: formattedDueDateCalculated ? true : false,
+        duedate: calculateDueDate(formFields.date, filterTerm?.DueDate) ? true : false,
       })
       return
     }
@@ -1036,20 +1010,23 @@ const EditBillPosting = ({ processtype }: any) => {
       const newLineItemsObj = lineItemsFieldsData.map((items: any) => {
         return {
           ...items,
-          account: selectedVendorObj.GLAccount
+          account: selectedVendorObj.GLAccount ? selectedVendorObj.GLAccount : items.account
         }
       })
       const newLineItemsErrorObj = hasLineItemFieldLibraryErrors.map((items: any) => {
         return {
           ...items,
-          account: selectedVendorObj.GLAccount ? true : false
+          account: selectedVendorObj.GLAccount ? true : items.account ? true : false
         }
       })
+
+      const filterTerm = defaultTermOptions && defaultTermOptions?.find((t: any) => t?.Id === selectedVendorObj?.Term)
 
       await setFormFields({
         ...formFields,
         [key]: value,
-        ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
+        ...(formFields.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? selectedVendorObj?.Term : '' } : {}),
+        ...(formFields.hasOwnProperty('duedate') && formFields.hasOwnProperty('term') && formFields.hasOwnProperty('date') && selectedVendorObj?.Term && formFields.date ? { duedate: calculateDueDate(formFields.date, filterTerm?.DueDate) } : {}),
         ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value } : {}),
         ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value } : {})
       })
@@ -1057,6 +1034,7 @@ const EditBillPosting = ({ processtype }: any) => {
         ...hasFormFieldLibraryErrors,
         [key]: value ? true : false,
         ...(checkFormFieldErrors.hasOwnProperty('term') ? { term: selectedVendorObj?.Term ? true : false } : {}),
+        ...(checkFormFieldErrors.hasOwnProperty('duedate') && checkFormFieldErrors.hasOwnProperty('term') && checkFormFieldErrors.hasOwnProperty('date') && selectedVendorObj?.Term && formFields.date ? { duedate: calculateDueDate(formFields.date, filterTerm?.DueDate) ? true : false } : {}),
         ...(checkFormFieldErrors.hasOwnProperty(payToName) ? { [payToName]: value ? true : false } : {}),
         ...(checkFormFieldErrors.hasOwnProperty(returnToName) ? { [returnToName]: value ? true : false } : {})
       })
