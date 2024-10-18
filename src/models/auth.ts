@@ -10,6 +10,11 @@ export interface SignUpOptions {
   phone: string
 }
 
+export interface DefaultProductOptions {
+  UserId: string | undefined
+  productId: number
+}
+
 export interface SocialSignInOptions {
   SocialLoginType: number
   AccessToken: string
@@ -34,6 +39,6 @@ export interface SetPasswordOptions {
   password: string
 }
 
-export interface ReauthenticationProps  {
+export interface ReauthenticationProps {
   Password: string
 }

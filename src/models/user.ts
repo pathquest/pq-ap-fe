@@ -11,6 +11,11 @@ export interface UserUpdateStatusOptions {
   Status: boolean
 }
 
+export interface UserUpdateBIAccessOptions {
+  user_id: string
+  productId: number
+}
+
 export interface TimezoneListOptions {
   CountryId: number | null
 }

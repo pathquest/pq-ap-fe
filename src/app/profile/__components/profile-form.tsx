@@ -24,6 +24,7 @@ import { permissionGetList } from '@/store/features/role/roleSlice'
 import { processPermissions } from '@/components/Common/Functions/ProcessPermission'
 
 export interface ProfileData {
+  id:string
   first_name: string
   last_name: string
   phone: string

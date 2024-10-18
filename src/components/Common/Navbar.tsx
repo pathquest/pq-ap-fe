@@ -12,7 +12,7 @@ import CompaniesDropdown from './Dropdown/Dropdown'
 
 import BellIconComponent from '@/app/setup/notification/__components/BellIconComponent'
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
-import { setNotificationCount } from '@/store/features/auth/authSlice'
+import { setDefaultProduct, setNotificationCount } from '@/store/features/auth/authSlice'
 import { getNotificationList } from '@/store/features/notification/notificationSlice'
 
 import { WebPubSubClient } from '@azure/web-pubsub-client'
@@ -28,11 +28,14 @@ import { permissionGetList } from '@/store/features/role/roleSlice'
 import { setOrgPermissionsMatrix, setProcessPermissionsMatrix } from '@/store/features/profile/profileSlice'
 import agent from '@/api/axios'
 import { ProfileData } from '@/app/profile/__components/profile-form'
+import { ssoUrl } from '@/api/server/common'
+import { encryptToken } from '@/utils/auth'
 
 const Navbar = ({ onData }: any) => {
   const { data: session } = useSession()
   const CompanyId = session?.user?.CompanyId
   const UserId = session?.user?.user_id
+  const IsOrgAdmin = session?.user?.is_organization_admin
 
   const { organizationName, RoleId } = useAppSelector((state) => state.profile)
 
@@ -236,35 +239,35 @@ const Navbar = ({ onData }: any) => {
     }
   }, [CompanyId])
 
-  useEffect(() => {
-    let userId = localStorage.getItem('UserId')
-    const client = new WebPubSubClient({
-      getClientAccessUrl: async () =>
-        (await fetch(`${process.env.REALTIME_NOTIFICATION}/event-stream/get-access-token?userId=${userId}`)).text(),
-    })
+  // useEffect(() => {
+  //   let userId = localStorage.getItem('UserId')
+  //   const client = new WebPubSubClient({
+  //     getClientAccessUrl: async () =>
+  //       (await fetch(`${process.env.REALTIME_NOTIFICATION}/event-stream/get-access-token?userId=${userId}`)).text(),
+  //   })
 
-    const handleConnected = (e: any) => { }
+  //   const handleConnected = (e: any) => { }
 
-    const handleServerMessage = (data: any) => {
-      Toast.success(`${data?.message?.data?.message}`)
-      if (data?.message?.data?.company_id === parseInt(`${CompanyId}`)) {
-        setCount(() => notificationCount + 1)
-      }
-    }
+  //   const handleServerMessage = (data: any) => {
+  //     Toast.success(`${data?.message?.data?.message}`)
+  //     if (data?.message?.data?.company_id === parseInt(`${CompanyId}`)) {
+  //       setCount(() => notificationCount + 1)
+  //     }
+  //   }
 
-    async function connect() {
-      await client.start()
-      client.on('connected', handleConnected)
-      client.on('server-message', handleServerMessage)
-    }
-    connect()
+  //   async function connect() {
+  //     await client.start()
+  //     client.on('connected', handleConnected)
+  //     client.on('server-message', handleServerMessage)
+  //   }
+  //   connect()
 
-    return () => {
-      client.off('connected', handleConnected)
-      client.off('server-message', handleServerMessage)
-    }
+  //   return () => {
+  //     client.off('connected', handleConnected)
+  //     client.off('server-message', handleServerMessage)
+  //   }
 
-  }, [])
+  // }, [])
 
   useEffect(() => {
     dispatch(setNotificationCount(count))
@@ -294,24 +297,32 @@ const Navbar = ({ onData }: any) => {
 
   const handleRadioChange = async (productName: string, id: number) => {
     setSelectedProduct(productName)
+    const params = {
+      UserId: profileData?.id?.toString(),
+      productId: parseInt(`${id}`)
+    }
     try {
-      const response = await agent.Auth.setDefaultProduct({
-        UserId: UserId?.toString(),
-        productId: parseInt(`${id}`)
-      })
-      console.log('response', response);
+      const { payload, meta } = await dispatch(setDefaultProduct(params))
+      const dataMessage = payload?.Message
+
+      if (meta?.requestStatus === 'fulfilled') {
+        if (payload?.ResponseStatus === 'Success') {
+          Toast.success(`${id === 1 ? 'BI' : id === 2 && 'AP'} product selected. Default settings applied!`)
+        } else {
+          Toast.error('Error', `${!dataMessage ? 'Something went wrong!' : dataMessage}`)
+        }
+      }
     } catch (error) {
       console.error(error)
     }
 
   }
 
-  const productRadioData = profileData?.products.map((product: any) => {
+  const filterProfileData: any = profileData?.products.filter((product: any) => product.id !== 3)
+  const productRadioData = filterProfileData?.map((product: any) => {
     const productClassName = selectedProduct === product.name ? 'text-primary' : ''
     return (
-      <div className='flex justify-center pt-3' key={product.id}
-      // onClick={() => handleRadioChange(product.name, product.id)}
-      >
+      <div className='flex justify-center pt-3' key={product.id}>
         <div className={`-ml-2 text-sm ${productClassName}`}>
           <Radio
             id={`${product.name}`}
@@ -320,14 +331,32 @@ const Navbar = ({ onData }: any) => {
             onChange={() => {
               handleRadioChange(product.name, product.id)
             }}
-            defaultChecked={product.is_mapped}
+            defaultChecked={product.is_default}
           />
         </div>
       </div>
     )
   })
 
+  const handleBIRedirect = () => {
+    const isMapped = filterProfileData.some((product: any) => product.is_mapped && product.is_active && product.id === 1)
+    const token = session?.user?.access_token
+
+    const BIMapped = () => {
+      const objToken = { "token": `Bearer ${token}` }
+      const encodedToken = encryptToken(encryptToken(JSON.stringify(objToken)))
+      router.push(`https://uatbi.pathquest.com/manage-company?auth=${encodeURIComponent(encodedToken)}`)
+    }
+
+    if (isMapped) {
+      return BIMapped()
+    }else{
+      router.push(`${ssoUrl}/products?products=BI`)
+    }
+  }
+
   const settingsFocusedArr = ['/manage/users', '/manage/roles', '/manage/companies', '/practice-dashboard']
+  const mappedProductsCount: any = profileData?.products.filter((product: any) => product.is_mapped).length;
 
   return (
     <>
@@ -481,11 +510,14 @@ const Navbar = ({ onData }: any) => {
                 <SyncIcon />
               </Tooltip>
             </div> */}
-            {/* <div className='flex h-10 w-8 2xl:w-10 cursor-pointer items-center justify-center'>
-              <Tooltip content={`Switch to BI`} position='bottom' className='z-10'>
-                <BIIcon />
-              </Tooltip>
-            </div> */}
+    
+            {IsOrgAdmin && (
+              <div className='flex h-10 w-8 2xl:w-10 cursor-pointer items-center justify-center' onClick={handleBIRedirect}>
+                <Tooltip content={`Switch to BI`} position='bottom' className='z-10'>
+                  <BIIcon />
+                </Tooltip>
+              </div>
+            )}
             <div
               ref={profileRef}
               className={`relative z-10 flex h-full w-8 2xl:w-10 cursor-pointer items-center justify-center border-b-2  ${isProfileOpen ? 'border-primary bg-whiteSmoke' : 'border-transparent bg-transparent'
@@ -533,14 +565,16 @@ const Navbar = ({ onData }: any) => {
                       </div>
                     </li>
                   </Link>
-                  <li className='flex w-full border-b border-b-lightSilver px-3 pb-3  pt-2'>
-                    <div className='ml-2 flex flex-col items-start justify-center'>
-                      <Typography type='label' className='inline-block text-base font-semibold'>
-                        Default Settings
-                      </Typography>
-                      {productRadioData}
-                    </div>
-                  </li>
+                  {mappedProductsCount > 1 && (
+                    <li className='flex w-full border-b border-b-lightSilver px-3 pb-3  pt-2'>
+                      <div className='ml-2 flex flex-col items-start justify-center'>
+                        <Typography type='label' className='inline-block text-base font-semibold'>
+                          Default Settings
+                        </Typography>
+                        {productRadioData}
+                      </div>
+                    </li>
+                  )}
                   <li
                     className='flex h-12 w-full select-none rounded-b-md px-3 hover:bg-lightGray'
                     tabIndex={0}
