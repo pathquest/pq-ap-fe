@@ -20,7 +20,7 @@ import { BillPostingFilterFormFieldsProps, EditBillPostingDataProps } from '@/mo
 import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar } from '@/store/features/bills/billSlice'
 import { convertStringsDateToUTC } from '@/utils'
-import { billStatusEditable, convertFractionToRoundValue, getPDFUrl, getRoundValue, getUpdatedDataFromDetailsResponse, initialBillPostingFilterFormFields, lineItemRemoveArr, returnKeyValueObjForFormFields, taxTotalAmountCalculate, totalAmountCalculate, validate, verifyAllFieldsValues } from '@/utils/billposting'
+import { billStatusEditable, calculateDueDate, convertFractionToRoundValue, getPDFUrl, getRoundValue, getUpdatedDataFromDetailsResponse, initialBillPostingFilterFormFields, lineItemRemoveArr, returnKeyValueObjForFormFields, taxTotalAmountCalculate, totalAmountCalculate, validate, verifyAllFieldsValues } from '@/utils/billposting'
 import { format } from 'date-fns'
 import { useSession } from 'next-auth/react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
@@ -146,7 +146,7 @@ const EditBillPosting = ({ processtype }: any) => {
 
   const lazyRows = 10
 
-  const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any, mainFieldListOptions: any, generateLinetItemFieldsErrorObj: any, vendorOptions: any, lineItemsFieldsDataObj: any, lineItemFieldColumns: any) => {
+  const getCurrentBillDetails = async (keyValueMainFieldObj: any, keyValueLineItemFieldObj: any, mainFieldListOptions: any, generateLinetItemFieldsErrorObj: any, vendorOptions: any, lineItemsFieldsDataObj: any, lineItemFieldColumns: any, defaultTermOptions: any) => {
     setIsBillDataLoading(true)
     const IsFindLocation = keyValueLineItemFieldObj.find((item: any) => item.mappedWith === 11 || item.mappedWith === 23)
 
@@ -166,7 +166,8 @@ const EditBillPosting = ({ processtype }: any) => {
           keyValueLineItemFieldObj,
           mainFieldListOptions,
           generateLinetItemFieldsErrorObj,
-          vendorOptions
+          vendorOptions,
+          defaultTermOptions
         )
         setIsBillDataLoading(false)
 
@@ -389,7 +390,16 @@ const EditBillPosting = ({ processtype }: any) => {
       await setLineItemFieldListOptions(lineItemConfiguration)
 
       if (activeBill) {
-        await getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldConfiguration, generateLinetItemFieldsErrorObj, vendorOptions, lineItemsFieldsDataObj, lineItemFieldColumns)
+        await getCurrentBillDetails(
+          keyValueMainFieldObj, 
+          keyValueLineItemFieldObj, 
+          mainFieldConfiguration, 
+          generateLinetItemFieldsErrorObj, 
+          vendorOptions, 
+          lineItemsFieldsDataObj, 
+          lineItemFieldColumns,
+          defaultTermOptions
+        )
       }
 
       setIsLoading(false)
@@ -405,7 +415,7 @@ const EditBillPosting = ({ processtype }: any) => {
         mainFieldListOptions,
         lineItemFieldListOptions
       )
-      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldListOptions, generateLinetItemFieldsErrorObj, vendorGLTermOptions, lineItemsFieldsDataObj, lineItemFieldColumns)
+      getCurrentBillDetails(keyValueMainFieldObj, keyValueLineItemFieldObj, mainFieldListOptions, generateLinetItemFieldsErrorObj, vendorGLTermOptions, lineItemsFieldsDataObj, lineItemFieldColumns, defaultTermOptions)
     }
   }, [activeBill])
 
@@ -943,35 +953,6 @@ const EditBillPosting = ({ processtype }: any) => {
 
   const onOpenClick = () => {
     setIsOpenDrawer(true)
-  }
-
-  const addDays = (date: any, days: any) => {
-    if (isNaN(parseInt(days))) {
-      date.setDate(date.getDate())
-    } else {
-      date.setDate(date.getDate() + parseInt(days))
-    }
-    if (date instanceof Date) {
-      return date
-    } else {
-      return new Date()
-    }
-  }
-
-  const calculateDueDate = (value: any, dueDate: any) => {
-    let formattedDueDateCalculated = ''
-
-    if (value) {
-      const dueDateCalculatedValue = addDays(new Date(value), parseInt(dueDate))
-      formattedDueDateCalculated =
-        dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
-    } else {
-      const dueDateCalculatedValue = addDays(new Date(), parseInt(dueDate))
-      formattedDueDateCalculated =
-        dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
-    }
-
-    return formattedDueDateCalculated
   }
 
   const setFormValues = async (key: string, value: string | number) => {
