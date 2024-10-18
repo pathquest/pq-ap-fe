@@ -33,6 +33,7 @@ import Download from '../dropdown/Download'
 import RowDownload from '@/components/Common/Custom/Download'
 import { useRouter } from 'next/navigation'
 import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
+import { setSearchSelectedModule } from '@/store/features/globalSearch/globalSearchSlice'
 
 const ListPaymentStatus: React.FC = () => {
   // For Dynamic Company Id & AccountingTool
@@ -212,6 +213,7 @@ const ListPaymentStatus: React.FC = () => {
 
   useEffect(() => {
     getAllStatusList()
+    dispatch(setSearchSelectedModule('4'))
   }, [])
 
   //Location Dropdown List API

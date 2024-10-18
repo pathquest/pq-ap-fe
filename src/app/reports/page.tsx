@@ -1,9 +1,9 @@
 'use server'
 
+import { ssoUrl } from '@/api/server/common'
 import { auth } from '@/auth'
-import ListReports from './__components/list/ListReports'
 import { redirect } from 'next/navigation'
-import { getLocationDropdown, getTermDropdown, getVendorDropdown, ssoUrl } from '@/api/server/common'
+import ListReports from './__components/list/ListReports'
 
 export default async function ReportsPage() {
   const session = await auth()
@@ -11,10 +11,8 @@ export default async function ReportsPage() {
   if (!session) {
     return redirect(`${ssoUrl}/signin`)
   }
-  
+
   return (
-    <>
-      <ListReports />
-    </>
+    <ListReports />
   )
 }

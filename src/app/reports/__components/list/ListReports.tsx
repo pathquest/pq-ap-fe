@@ -20,6 +20,7 @@ import { getLocationList, termDropdown, vendorDropdown } from '@/store/features/
 import { useSession } from 'next-auth/react'
 import { getModulePermissions } from '@/components/Common/Functions/ProcessPermission'
 import { useRouter } from 'next/navigation'
+import { setSearchSelectedModule } from '@/store/features/globalSearch/globalSearchSlice'
 
 const ListReports = () => {
   const router = useRouter()
@@ -181,6 +182,10 @@ const ListReports = () => {
       setTermOption(newTermOptions)
     })
   }
+
+  useEffect(() => {
+    dispatch(setSearchSelectedModule('5'))
+  }, [])
 
   useEffect(() => {
     getAllVendorOptions()
