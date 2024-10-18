@@ -33,7 +33,7 @@ const TotalPostedBillsByMonth: React.FC<any> = ({ LocationOption }) => {
     const getPostedBillsDashboard = (newFilterFields: any) => {
         const startDate = new Date(newFilterFields?.StartDate);
         const endDate = new Date(newFilterFields?.EndDate);
-        const dayDifference = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
+        const dayDifference = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
         const isMonthWiseData = dayDifference > 31;
         setIsMonthWise(isMonthWiseData);
         setIsLoading(true)
@@ -64,8 +64,12 @@ const TotalPostedBillsByMonth: React.FC<any> = ({ LocationOption }) => {
     }, [CompanyId])
 
     const calculateAverage = (data: any[]) => {
+        const startDate = new Date(filterFields?.StartDate);
+        const endDate = new Date(filterFields?.EndDate);
+        const dayDifference = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
         const totalBills = data.reduce((sum, item) => sum + item.BillCount, 0);
-        return data.length > 0 ? Math.round(totalBills / data.length) : 0;
+        return data.length > 0 ? Math.round(totalBills / dayDifference) : 0;
     };
 
     const getChartOptions = () => {
@@ -275,7 +279,7 @@ const TotalPostedBillsByMonth: React.FC<any> = ({ LocationOption }) => {
             </div>
             {isLoading
                 ? <div className='h-[400px] w-full flex justify-center'>
-                    <Loader size='md'/>
+                    <Loader size='md' />
                 </div>
                 : <div className='main_chart w-full'>
                     <HighchartsReact highcharts={Highcharts} options={getChartOptions()} />

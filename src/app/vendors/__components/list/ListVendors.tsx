@@ -22,6 +22,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Actions } from '../DataTableActions'
 import Filter from '../Filter'
 import VendorAddScreen from '../VendorAddScreen'
+import { setSearchSelectedModule } from '@/store/features/globalSearch/globalSearchSlice'
 
 const ListVendors: React.FC = () => {
   const { data: session } = useSession()
@@ -537,6 +538,10 @@ const ListVendors: React.FC = () => {
   } else {
     noDataContent = ''
   }
+
+  useEffect(() => {
+    dispatch(setSearchSelectedModule('6'))
+  }, [])
 
   return (
     <Wrapper>
