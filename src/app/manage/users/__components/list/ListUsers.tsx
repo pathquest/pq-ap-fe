@@ -39,6 +39,7 @@ const ListUsers: React.FC = () => {
   // For Dynamic Company Id & AccountingTool
   const { data: session } = useSession()
   const UserId = Number(session?.user?.user_id) ?? 0
+  const biToken = session?.user?.access_token
   const dispatch = useAppDispatch()
   const router = useRouter();
 
@@ -61,6 +62,10 @@ const ListUsers: React.FC = () => {
   const [assignCompany, setAssignCompany] = useState([])
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([])
   const [rowId, setRowId] = useState<number>(0)
+  const [userBIData, setUserBIData] = useState<any>({
+    userId: '',
+    userName: ''
+  })
   const [orgId, setOrgId] = useState<number | null>(null)
   const [statusFilterValue, setStatusFilterValue] = useState<boolean | null>(null)
   const [shouldLoadMore, setShouldLoadMore] = useState(true)
@@ -74,6 +79,7 @@ const ListUsers: React.FC = () => {
     status: [],
   })
   const [isSwitchClicked, setIsSwitchClicked] = useState<boolean>(false)
+  const [isSwitchBIClicked, setIsSwitchBIClicked] = useState<boolean>(false)
 
   useEffect(() => {
     if (!isManageUserView) {
@@ -210,6 +216,37 @@ const ListUsers: React.FC = () => {
     })
   }
 
+  // Update BI Access API
+  const updateBiAccess = async (user_id: string, userName: string) => {
+    const params = {
+      user_id: user_id,
+      productId: 2,
+    };
+
+    try {
+      const response = await fetch(`${process.env.API_PQBI}/User/CreateUserForProduct`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${biToken}`,
+        },
+        body: JSON.stringify(params),
+      });
+
+      if (response.ok) {
+        Toast.success(`BI access granted to the ${userName}`);
+        setRefreshTable(!refreshTable);
+        setIsSwitchBIClicked(false);
+      } else {
+        setIsSwitchBIClicked(false);
+        console.error('Failed to update BI Access', response.status);
+      }
+    } catch (error) {
+      setIsSwitchBIClicked(false);
+      console.error('Error during API call', error);
+    }
+  };
+
   //Company List Dropdown API
   const getAssignCompany = () => {
     const params = {
@@ -275,6 +312,12 @@ const ListUsers: React.FC = () => {
     {
       header: 'Status',
       accessor: 'status',
+      sortable: false,
+      colStyle: '!w-[140px]',
+    },
+    {
+      header: 'BI Access',
+      accessor: 'bi_access',
       sortable: false,
       colStyle: '!w-[140px]',
     },
@@ -428,6 +471,21 @@ const ListUsers: React.FC = () => {
             <Switch checked={e.is_Active} disabled={isUserDisabled(e)} />
           </div>
         ),
+        bi_access: (
+          <div
+            className={`${isManageUserEdit ? "" : "pointer-events-none opacity-80"} ${isSwitchBIClicked ? "pointer-events-none cursor-default" : " cursor-pointer"} ${e?.id == UserId || e?.IsOrgAdmin === true ? 'pointer-events-none' : ''}`}
+            onClick={() => {
+              setRowId(e?.id)
+              setUserBIData({
+                userId: e?.user_id,
+                userName: e?.first_name + ' ' + e?.last_name
+              })
+              setIsSwitchBIClicked(true)
+            }}
+          >
+            <Switch checked={e.IsBIAccess ? true : false} disabled={isUserDisabled(e)} />
+          </div>
+        ),
         action: (
           <>
             {e?.IsOrgAdmin === false && (
@@ -450,6 +508,9 @@ const ListUsers: React.FC = () => {
   const modalClose = () => {
     setIsRemoveOpen(false)
     setRowId(0)
+    setUserBIData({ userId: '', userName: '' })
+    setIsSwitchBIClicked(false)
+    setRefreshTable(!refreshTable)
   }
 
   const handleToggleChange = () => {
@@ -594,6 +655,17 @@ const ListUsers: React.FC = () => {
           handleSubmit={handleUserDelete}
           colorVariantNo='btn-outline'
           colorVariantYes='btn-error'
+        />
+
+        {/* BI Access Modal */}
+        <ConfirmationModal
+          title='Access'
+          content='Are you sure you want to grant access to the BI Portal?'
+          isModalOpen={isSwitchBIClicked}
+          modalClose={modalClose}
+          handleSubmit={() => updateBiAccess(userBIData.userId, userBIData.userName)}
+          colorVariantNo='btn-outline-primary'
+          colorVariantYes='btn-primary'
         />
 
         {/*  Drawer */}

@@ -8,7 +8,8 @@ import {
   GenerateOtpOptions,
   ValidateOtpOptions,
   SetPasswordOptions,
-  ReauthenticationProps ,
+  ReauthenticationProps, 
+  DefaultProductOptions,
 } from '@/models/auth'
 
 interface AuthState {
@@ -34,6 +35,14 @@ export const signInUser = createAsyncThunk('auth/signInUser', async (data: SignI
 export const signUpUser = createAsyncThunk('auth/signUpUser', async (data: SignUpOptions, thunkAPI) => {
   try {
     return await agent.Auth.register(data)
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue({ error: error.data })
+  }
+})
+
+export const setDefaultProduct = createAsyncThunk('auth/setDefaultProduct', async (data: DefaultProductOptions, thunkAPI) => {
+  try {
+    return await agent.Auth.setDefaultProduct(data)
   } catch (error: any) {
     return thunkAPI.rejectWithValue({ error: error.data })
   }
