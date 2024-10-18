@@ -51,7 +51,7 @@ const SelectApprovalDropdown: React.FC = () => {
                 id={'process_selection'}
                 className='processTypeSelection !font-proxima'
                 options={approvalOptions}
-                defaultValue={approvalDropdownFields}
+                defaultValue={approvalDropdownFields+""}
                 value={approvalDropdownFields}
                 getValue={(value) => handleValue(value)}
                 getError={() => { }}

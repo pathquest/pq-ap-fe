@@ -53,6 +53,7 @@ import ColumnFilterOverview from '../ColumnFilterOverview'
 import { formatCurrency } from '@/components/Common/Functions/FormatCurrency'
 import CopyIcon from '@/assets/Icons/billposting/CopyIcon'
 import { performApiAction } from '@/components/Common/Functions/PerformApiAction'
+import CustomTooltip from '@/components/Common/MUI/CustomTooltip'
 
 const ListBillPosting = () => {
   const { data: session } = useSession()
@@ -1108,7 +1109,7 @@ const ListBillPosting = () => {
       accessor: 'actions',
       sortable: false,
       colalign: 'right',
-      colStyle: '!w-[250px]',
+      colStyle: '!w-[220px]',
     },
   ];
 
@@ -1161,19 +1162,17 @@ const ListBillPosting = () => {
       return {
         ...d,
         tat: (
-          <div className='!z-0 flex w-full justify-between'>
+          <div className='!z-0 flex !w-[70px] h-full justify-between items-center'>
             <Typography className='!text-sm text-darkCharcoal '>{timeDifference.value}&nbsp;</Typography>
             {timeDifference.TATStatus !== NORMAL && (
-              <BasicTooltip
-                position='right'
+              <CustomTooltip
                 content={`${timeDifference.TATStatus === TATOVER ? 'TAT Over' : 'TAT 25% remaining'}`}
-                className='!z-9 !font-proxima !text-sm'
               >
                 <span
                   className={`flex !h-[6px] !w-[6px] rounded-full ${timeDifference.TATStatus === TATOVER ? 'bg-[#FB2424]' : 'bg-[#FDB663]'
                     }`}
                 ></span>
-              </BasicTooltip>
+              </CustomTooltip>
             )}
           </div>
         ),
@@ -1188,11 +1187,11 @@ const ListBillPosting = () => {
               }}
             >
               {d.BillNumber?.length > 12 ?
-                <BasicTooltip position='right' content={d?.BillNumber} className='!m-0 !p-0 !z-[1]'>
+                <CustomTooltip position='right' content={d?.BillNumber}>
                   <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate break-words whitespace-nowrap">
                     {d?.BillNumber}
                   </label>
-                </BasicTooltip>
+                </CustomTooltip>
                 : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.BillNumber}</label>}
             </div>
             <div className={`${d.Attachments !== null ? "w-[23px]" : ""} relative flex items-center`}>
@@ -1248,31 +1247,31 @@ const ListBillPosting = () => {
         ),
         VendorName: d.VendorName?.length > 27
           ? <div className='w-[170px]'>
-            <BasicTooltip position='right' content={d?.VendorName} className='!m-0 !p-0 !z-[1]'>
+            <CustomTooltip position='right' content={d?.VendorName}>
               <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
                 {d?.VendorName}
               </label>
-            </BasicTooltip>
+            </CustomTooltip>
           </div>
           : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.VendorName}</label>,
         Source: <Typography className='!text-sm text-darkCharcoal'>{d.ProviderTypeName}</Typography>,
         UploadedDate: <Typography className='!text-sm text-darkCharcoal'>{formattedCreatedOn}</Typography>,
         StatusName: d.StatusName?.length > 12
           ? <div className='w-[90px]'>
-            <BasicTooltip position='right' content={d?.StatusName} className='!m-0 !p-0 !z-[1]'>
+            <CustomTooltip position='right' content={d?.StatusName}>
               <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
                 {d?.StatusName}
               </label>
-            </BasicTooltip>
+            </CustomTooltip>
           </div>
           : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.StatusName}</label>,
         Amount: d.Amount && String(d.Amount)?.length > 10
           ? <div className='w-[100px]'>
-            <BasicTooltip position='right' content={d?.Amount ? `$${formatCurrency(d?.Amount)}` : '$0.00'} className='!m-0 !p-0 !z-[1]'>
+            <CustomTooltip position='right' content={d?.Amount ? `$${formatCurrency(d?.Amount)}` : '$0.00'}>
               <label className="!pr-[10px] !font-bold block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate w-full">
                 {d?.Amount ? `$${formatCurrency(d?.Amount)}` : '$0.00'}
               </label>
-            </BasicTooltip>
+            </CustomTooltip>
           </div>
           : <label className={`!pr-[10px] !text-sm !font-bold text-darkCharcoal font-proxima w-full tracking-[0.02em] flex items-end justify-end`}>{d?.Amount ? `$${formatCurrency(d?.Amount)}` : '$0.00'} </label>,
         Assignee: (
@@ -1312,30 +1311,30 @@ const ListBillPosting = () => {
         ),
         DocumentName: d.FileName?.length > 12
           ? <div className='w-[140px]'>
-            <BasicTooltip position='right' content={d?.FileName} className='!m-0 !p-0 !z-[1]'>
+            <CustomTooltip position='right' content={d?.FileName}>
               <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
                 {d?.FileName}
               </label>
-            </BasicTooltip>
+            </CustomTooltip>
           </div>
           : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{d?.FileName}</label>,
         Pages: <Typography className='!text-sm text-darkCharcoal'>{d.PageCount ? d.PageCount : ''}</Typography>,
         LastUpdatedBy: updatedByName && updatedByName?.label?.length > 12
           ? <div className='w-[100px]'>
-            <BasicTooltip position='right' content={updatedByName && updatedByName?.label} className='!m-0 !p-0 !z-[1]'>
+            <CustomTooltip position='right' content={updatedByName && updatedByName?.label}>
               <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
                 {updatedByName && updatedByName?.label}
               </label>
-            </BasicTooltip>
+            </CustomTooltip>
           </div>
           : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{updatedByName && updatedByName?.label}</label>,
         Location: locationName && locationName?.label.length > 12
           ? <div className='w-[110px]'>
-            <BasicTooltip position='left' content={locationName && locationName?.label} className='!m-0 !p-0 !z-[1]'>
+            <CustomTooltip position='left' content={locationName && locationName?.label}>
               <label className="block cursor-pointer text-sm font-proxima tracking-[0.02em] text-darkCharcoal truncate">
                 {locationName && locationName?.label}
               </label>
-            </BasicTooltip>
+            </CustomTooltip>
           </div>
           : <label className={`font-proxima text-sm w-full text-darkCharcoal tracking-[0.02em]`}>{locationName && locationName?.label}</label>,
         actions: hoveredRow?.Id === d.Id && (
@@ -1347,7 +1346,7 @@ const ListBillPosting = () => {
                 onMouseEnter={() => setIsOverFlowVisible(true)}
                 onMouseLeave={() => setIsOverFlowVisible(false)}
               >
-                <BasicTooltip position='bottom' content='View bill' className='!z-10 !font-proxima !text-sm'>
+                <CustomTooltip content='View bill'>
                   <div
                     className='cursor-pointer'
                     onClick={() => {
@@ -1358,7 +1357,7 @@ const ListBillPosting = () => {
                   >
                     <ViewModeIcon height={'21'} width={'23'} />
                   </div>
-                </BasicTooltip>
+                </CustomTooltip>
               </div>
 
               {billStatusEditable.includes(d.Status) && (
@@ -1375,14 +1374,14 @@ const ListBillPosting = () => {
                       })
                     }}
                   >
-                    <BasicTooltip position='bottom' content='Move To' className='!z-10 !font-proxima !text-sm'>
+                    <CustomTooltip content='Move To'>
                       <div className='flex items-center'>
                         <TabMoveIcon />
                         <span className='!z-0 pl-1.5'>
                           <DropdownIcon />
                         </span>
                       </div>
-                    </BasicTooltip>
+                    </CustomTooltip>
                   </div>
                 </div>
               )}
@@ -1397,11 +1396,11 @@ const ListBillPosting = () => {
                   onMouseEnter={() => setIsOverFlowVisible(true)}
                   onMouseLeave={() => setIsOverFlowVisible(false)}
                 >
-                  <BasicTooltip position='bottom' content='Delete' className='!z-10 !font-proxima !text-sm'>
+                  <CustomTooltip content='Delete'>
                     <div>
                       <DeleteIcon />
                     </div>
-                  </BasicTooltip>
+                  </CustomTooltip>
                 </div>
               )}
 
@@ -1419,9 +1418,9 @@ const ListBillPosting = () => {
                     })
                   }}
                 >
-                  <BasicTooltip position='bottom' content='Restore' className='!z-10 !font-proxima !text-sm'>
+                  <CustomTooltip content='Restore'>
                     <RestoreIcon />
-                  </BasicTooltip>
+                  </CustomTooltip>
                 </div>
               )}
 
@@ -1430,7 +1429,7 @@ const ListBillPosting = () => {
                   onMouseEnter={() => setIsOverFlowVisible(true)}
                   onMouseLeave={() => setIsOverFlowVisible(false)}
                   ref={dropdownMoveToRef}
-                  className='absolute right-[88px] top-11 !z-10 flex h-auto w-[210px] flex-col rounded-md border border-[#cccccc] bg-white shadow-lg'
+                  className='absolute right-[60px] top-11 !z-10 flex h-auto w-[210px] flex-col rounded-md border border-[#cccccc] bg-white shadow-lg'
                 >
                   <div className='flex flex-col items-start justify-start'>
                     {moveToOptions &&
@@ -1574,7 +1573,7 @@ const ListBillPosting = () => {
                   className={`z-0 flex items-center border-l ${d.Status !== 3 && d.Status !== 4 && d.Status !== 7 ? 'border-r' : ''
                     } border-[#cccccc] px-4`}
                 >
-                  <BasicTooltip position='left' content='Edit bill' className='!z-10 !font-proxima !text-sm'>
+                  <BasicTooltip position='left' content='Edit bill'>
                     <div
                       className='cursor-pointer'
                       onClick={() => {
@@ -1596,7 +1595,7 @@ const ListBillPosting = () => {
                     setDeleteModal(true)
                   }}
                 >
-                  <BasicTooltip position='left' content='Delete' className='!z-10 !font-proxima !text-sm'>
+                  <BasicTooltip position='left' content='Delete'>
                     <div>
                       <DeleteIcon />
                     </div>
@@ -2234,18 +2233,18 @@ const ListBillPosting = () => {
                   {processSelection !== '3' && (<>
                     <li className={`flex items-center gap-3 ${((processSelection == "1" && isAccountPayableSync) || (processSelection == "2" && isAccountAdjustmentSync) || (processSelection == "4" && isBillsOverviewSync)) ? "flex" : "hidden"}`} tabIndex={0}>
                       <label className={`text-sm font-proxima tracking-[0.02em] text-darkCharcoal ${inProcessCount == 0 ? "hidden" : "block"}`}>{inProcessCount} File{inProcessCount > 1 ? '(s)' : ''} in automation.</label>
-                      <BasicTooltip position='bottom' content='Sync' className='!z-10 !font-proxima !text-sm !px-0'>
-                        <div className={`${inProcessCount > 0 && 'animate-spin'}`}>
+                      <CustomTooltip content='Sync'>
+                        <div className={`rounded-full ${inProcessCount > 0 && 'animate-spin'}`}>
                           <SyncIcon />
                         </div>
-                      </BasicTooltip>
+                      </CustomTooltip>
                     </li>
                   </>)}
 
                   <li className={`relative`} tabIndex={0} onClick={handlePossibleDuplication}>
-                    <BasicTooltip position='bottom' content='Possible Duplication' className='!z-10 !font-proxima !text-sm'>
+                    <CustomTooltip content='Possible Duplication'>
                       <BillDuplicationIcon />
-                    </BasicTooltip>
+                    </CustomTooltip>
                     {(duplicateBillCount && duplicateBillCount > 0) ? <div className='cursor-pointer absolute right-1 top-0 z-10' onClick={handlePossibleDuplication}>
                       <Badge badgetype='error' variant='dot' text={`${duplicateBillCount}`} effect={duplicateBillCount != 0 ? true : false} />
                     </div> : null}
@@ -2258,7 +2257,7 @@ const ListBillPosting = () => {
                           tabIndex={0}
                           onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setIsOpenAssignUserDropDown(true)}
                         >
-                          <BasicTooltip position='bottom' content='Assignee' className='!z-10 !font-proxima !text-sm !px-0'>
+                          <CustomTooltip content='Assignee'>
                             <AssignUser
                               width={60}
                               selectedStates={selectedStates}
@@ -2271,7 +2270,7 @@ const ListBillPosting = () => {
                               setIsOpenAssignUserDropDown={setIsOpenAssignUserDropDown}
                               right={0}
                             />
-                          </BasicTooltip>
+                          </CustomTooltip>
                         </li>
                       )}
 
@@ -2282,9 +2281,9 @@ const ListBillPosting = () => {
                           tabIndex={0}
                           onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClickMoveToDropdown()}
                         >
-                          <BasicTooltip position='bottom' content='Move To' className='!z-[6] !m-0 !font-proxima !text-sm'>
+                          <CustomTooltip content='Move To'>
                             <TabMoveIcon />
-                          </BasicTooltip>
+                          </CustomTooltip>
                           <span className='pl-2'>
                             <DropdownIcon />
                           </span>
@@ -2297,9 +2296,9 @@ const ListBillPosting = () => {
                         tabIndex={0}
                         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClickDeleteMultipleBills()}
                       >
-                        <BasicTooltip position='bottom' content='Delete' className='!z-[6] !m-0 !px-0 !font-proxima !text-sm'>
+                        <CustomTooltip content='Delete'>
                           <DeleteIcon />
-                        </BasicTooltip>
+                        </CustomTooltip>
                       </div>
 
                       {isOpenMoveToDropDown.isShow && isOpenMoveToDropDown.index === null && (
@@ -2345,9 +2344,9 @@ const ListBillPosting = () => {
                         tabIndex={0}
                         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleFilterIconOpen()}
                       >
-                        <BasicTooltip position='bottom' content='Filter' className='!z-[6] !font-proxima !text-sm !px-0'>
+                        <CustomTooltip content='Filter'>
                           <FilterIcon />
-                        </BasicTooltip>
+                        </CustomTooltip>
                       </li>
                       {(processSelection !== '3' && isFileUploadView) && (
                         <li
@@ -2355,9 +2354,9 @@ const ListBillPosting = () => {
                           tabIndex={0}
                           onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && router.push('/fileupload')}
                         >
-                          <BasicTooltip position='bottom' content='File Upload' className='!z-[6] !font-proxima !text-sm !px-0'>
+                          <CustomTooltip content='File Upload'>
                             <UploadIcon height={'24'} width={'24'} />
-                          </BasicTooltip>
+                          </CustomTooltip>
                         </li>
                       )}
                       <li
@@ -2366,9 +2365,9 @@ const ListBillPosting = () => {
                         tabIndex={0}
                         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleCreateIconOpen()}
                       >
-                        <BasicTooltip position='bottom' content='Create' className='!z-[6] !font-proxima !text-sm !px-0'>
+                        <CustomTooltip content='Create'>
                           <CreateIcon />
-                        </BasicTooltip>
+                        </CustomTooltip>
                         {isOpenCreate && (
                           <div
                             ref={dropdownCreateRef}
@@ -2384,9 +2383,9 @@ const ListBillPosting = () => {
                           tabIndex={0}
                           onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleViewIconOpen()}
                         >
-                          <BasicTooltip position='bottom' content='Mode' className='!z-[6] !font-proxima !text-sm !px-0'>
+                          <CustomTooltip content='Mode'>
                             <ViewIcon />
-                          </BasicTooltip>
+                          </CustomTooltip>
                           {isOpenView && (
                             <div
                               ref={dropdownViewRef}
@@ -2417,9 +2416,9 @@ const ListBillPosting = () => {
                     tabIndex={0}
                     onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleFilterIconOpen()}
                   >
-                    <BasicTooltip position='bottom' content='Filter' className='!z-[6] !font-proxima !text-sm !px-0'>
+                    <CustomTooltip content='Filter'>
                       <FilterIcon />
-                    </BasicTooltip>
+                    </CustomTooltip>
                   </li>
                   <li className={`mt-1.5 flex items-center gap-3`} tabIndex={0}>
                     <Download url={`${process.env.API_FILEUPLOAD}/billsoverview/getlist`} params={billsOverviewParams} fileName={'BillsOverview'} isPdfDownload={false} />

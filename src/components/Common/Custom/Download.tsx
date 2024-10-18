@@ -9,6 +9,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { useSession } from 'next-auth/react'
 import { Toast, Tooltip } from 'pq-ap-lib'
 import React, { useState } from 'react'
+import CustomTooltip from '../MUI/CustomTooltip'
 
 interface ActionsProps {
   url: string
@@ -82,7 +83,7 @@ const Download: React.FC<ActionsProps> = ({ url, params, fileName, isPdfDownload
   return (
     <Dropdown>
       <MenuButton
-        className={`!m-0 flex !items-center !rounded-[0.5px] !h-5 !w-5 !border-none !outline-black !bg-transparent !p-0 ${isExportLoading?"pointer-events-none":""} ${isOpen ? '!text-primary' : ''}`}
+        className={`!m-0 flex !items-center !rounded-[0.5px] !h-5 !w-5 !border-none !outline-black !bg-transparent !p-0 ${isExportLoading ? "pointer-events-none" : ""} ${isOpen ? '!text-primary' : ''}`}
         onClick={handleDropdownToggle}>
         {isExportLoading ? (
           <div className='pointer-events-none cursor-default pl-2.5 pr-2 pb-1'>
@@ -92,12 +93,10 @@ const Download: React.FC<ActionsProps> = ({ url, params, fileName, isPdfDownload
           </div>
         ) : (
           isOpen
-            ? <span>
+            ? <span><ExportIcon /></span>
+            : <CustomTooltip content='Export'>
               <ExportIcon />
-            </span>
-            : <Tooltip position='bottom' content='Export' className='!z-[4] !font-normal !cursor-pointer'>
-              <ExportIcon />
-            </Tooltip>
+            </CustomTooltip>
         )}
       </MenuButton>
       <Menu placement="bottom-start" className="!z-[6] !w-[200px]">
