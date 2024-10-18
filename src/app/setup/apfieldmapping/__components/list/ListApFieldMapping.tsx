@@ -648,7 +648,7 @@ const ListAPFieldMapping: React.FC = () => {
       <li
         ref={(node) => ref(drop(node))}
         style={{ backgroundColor: isOver ? 'lightblue' : 'transparent' }}
-        className={`flex justify-between p-2.5 ${item?.Type === 1 && (item?.FieldType === 'file' || item?.FieldType === 'checkbox' || item?.FieldType === 'radio') ? 'w-full' : (item?.Type === 2 && item?.FieldType === 'checkbox') || item?.Type === 1 ? 'w-1/2' : 'w-1/4'}`}
+        className={`flex justify-between p-2.5 ${item?.Type === 1 && (item?.FieldType === 'file' || item?.FieldType === 'radio') ? 'w-full' : (item?.Type === 2 && item?.FieldType === 'checkbox') || item?.Type === 1 ? 'w-1/2' : 'w-1/4'}`}
       >
         <div className='w-full' onMouseEnter={() => setHoveredItemId(`${item?.Id}`)} onMouseLeave={() => setHoveredItemId(null)}>
           <div className='relative'>
@@ -920,7 +920,7 @@ const ListAPFieldMapping: React.FC = () => {
                       </Typography>
 
                       {/* Main Drop fields*/}
-                      <ul className={`flex h-[97%] flex-wrap items-end overflow-y-scroll`}>
+                      <ul className={`flex h-[97%] flex-wrap items-start overflow-y-scroll`}>
                         {maindropFields.map((item: any, index: number) => (
                           <DropableField key={item?.Id} item={item} index={index} moveField={moveMainField} />
                         ))}

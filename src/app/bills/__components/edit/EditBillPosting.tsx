@@ -21,14 +21,13 @@ import { useAppDispatch, useAppSelector } from '@/store/configureStore'
 import { setFilterFormFields, setIsFormDocuments, setIsVisibleSidebar } from '@/store/features/bills/billSlice'
 import { convertStringsDateToUTC } from '@/utils'
 import { billStatusEditable, calculateDueDate, convertFractionToRoundValue, getPDFUrl, getRoundValue, getUpdatedDataFromDetailsResponse, initialBillPostingFilterFormFields, lineItemRemoveArr, returnKeyValueObjForFormFields, taxTotalAmountCalculate, totalAmountCalculate, validate, verifyAllFieldsValues } from '@/utils/billposting'
-import { format } from 'date-fns'
 import { useSession } from 'next-auth/react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { BasicTooltip, DataTable, Loader, Toast } from 'pq-ap-lib'
 import { Resizable } from 're-resizable'
 import { RefObject, useEffect, useRef, useState } from 'react'
 
-const EditBillPosting = ({ processtype }: any) => {
+const EditBillPosting = () => {
   const { data: session } = useSession()
   const CompanyId = session?.user?.CompanyId
   const AccountingTool = session?.user?.AccountingTool
@@ -328,7 +327,7 @@ const EditBillPosting = ({ processtype }: any) => {
         generateLinetItemFieldsErrorObj,
         lineItemFieldColumns,
         lineItemsFieldsDataObj,
-      } = await fetchAPIsData(processtype, AccountingTool as number, 'edit', CompanyId as number)
+      } = await fetchAPIsData(selectedProcessTypeInList, AccountingTool as number, 'edit', CompanyId as number)
 
       await setVendorOptions(vendorOptions.map((value: any) => ({
         value: value.value,
