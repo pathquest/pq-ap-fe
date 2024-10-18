@@ -47,6 +47,8 @@ function AccountantDashboard({ organizationOptions, sessionData }: any) {
   const { data: session } = useSession()
   const filterMenuRef = useRef<HTMLUListElement>(null)
   const token = session?.user?.access_token
+  const org_id = session?.user?.org_id
+  const org_name = session?.user?.org_name
 
   const CompanyId = Number(session?.user?.CompanyId) ?? 0
   const { filterFormFields } = useAppSelector((state) => state.accountantDashboard)
@@ -90,7 +92,7 @@ function AccountantDashboard({ organizationOptions, sessionData }: any) {
   const [selectedAssignUser, setSelectedAssignUser] = useState<any>([])
 
   const initialFilterFormFields: any = {
-    ft_organizationName: 23,
+    ft_organizationName: org_id,
     ft_companyName: companyDropdownbyOrganization.map((option: any) => String(option.value)),
     ft_viewByMonth: formattedCurrentMonth,
   }
@@ -141,7 +143,7 @@ function AccountantDashboard({ organizationOptions, sessionData }: any) {
   const getBillingInfo = () => {
     setIsLoading(true)
     const params = {
-      Orgnization: [23],
+      Orgnization: [org_id],
       Company: filterFormFields.ft_companyName.map(Number),
       ViewByMonth: convertStringsDateToUTC(formatDateByMonthYear(filterFormFields.ft_viewByMonth)),
     }
@@ -175,7 +177,7 @@ function AccountantDashboard({ organizationOptions, sessionData }: any) {
   const getAccountingDashboard = () => {
     setIsLoading(true)
     const params = {
-      Orgnization: [23],
+      Orgnization: [org_id],
       Company: localFilterFormFields.ft_companyName.map(Number),
       ViewByMonth: convertStringsDateToUTC(formatDateByMonthYear(localFilterFormFields.ft_viewByMonth)),
     }
@@ -197,7 +199,7 @@ function AccountantDashboard({ organizationOptions, sessionData }: any) {
 
   const fetchCompanybyOrg = () => {
     const params = {
-      OrgIds: [23],
+      OrgIds: [org_id],
     }
     performApiAction(dispatch, companyDropdownbyOrg, params, (responseData: any) => {
       const mappedList = responseData.map((item: any) => ({ label: item.label, value: String(item.value) }))
@@ -214,13 +216,13 @@ function AccountantDashboard({ organizationOptions, sessionData }: any) {
       dispatch(
         setFilterFormFields({
           ft_companyName: companyDropdownbyOrganization.map((option: any) => String(option.value)),
-          ft_organizationName: 23,
+          ft_organizationName: org_id,
           ft_viewByMonth: formattedCurrentMonth,
         })
       )
       const params = {
         Company: companyDropdownbyOrganization.map((option: any) => parseInt(option.value)),
-        Orgnization: [23],
+        Orgnization: [org_id],
         ViewByMonth: convertStringsDateToUTC(formatDateByMonthYear(formattedCurrentMonth)),
       }
       performApiAction(
@@ -354,7 +356,7 @@ function AccountantDashboard({ organizationOptions, sessionData }: any) {
   const handleExport = async () => {
     setIsExportLoading(true)
     const params = {
-      Orgnization: [23],
+      Orgnization: [org_id],
       Company: filterFormFields.ft_companyName.map(Number),
       ViewByMonth: convertStringsDateToUTC(formatDateByMonthYear(filterFormFields.ft_viewByMonth)),
       IsDownload: true,

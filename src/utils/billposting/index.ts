@@ -120,7 +120,8 @@ const getUpdatedDataFromDetailsResponse = (
   keyValueLineItemFieldObj: any,
   mainFieldListOptions: any,
   generateLinetItemFieldsErrorObj: any,
-  vendorGLTermOptions?: any
+  vendorGLTermOptions?: any,
+  defaultTermOptions?: any
 ) => {
   let updatedDataObj: any = {}
   let updatedDataErrorObj: any = {}
@@ -137,6 +138,8 @@ const getUpdatedDataFromDetailsResponse = (
         continue
       }
 
+      const filterTerm = defaultTermOptions && selectedVendor?.Term && defaultTermOptions?.find((t: any) => t.Id === selectedVendor?.Term)
+
       const currentDate = new Date()
       if (filterObject) {
         updatedDataObj = {
@@ -149,12 +152,12 @@ const getUpdatedDataFromDetailsResponse = (
               : filterObject?.key === 'duedate'
                 ? data?.DueDate
                   ? format(data?.DueDate, 'MM/dd/yyyy')
-                  : format(currentDate, 'MM/dd/yyyy')
+                  : (selectedVendor?.Term && data?.BillDate) ? calculateDueDate(data?.BillDate, filterTerm?.DueDate) : format(currentDate, 'MM/dd/yyyy')
                 : filterObject?.key === 'glPostingDate'
                   ? data?.GLPostingDate
                     ? format(data?.GLPostingDate, 'MM/dd/yyyy')
                     : (filterObject?.key === 'glPostingDate' && data['BillDate'])
-                      ? format(data['BillDate'], 'MM/dd/yyyy') 
+                      ? format(data['BillDate'], 'MM/dd/yyyy')
                       : format(currentDate, 'MM/dd/yyyy')
                   : (filterObject.mappedWith === 2 || filterObject.mappedWith === 3 || filterObject.mappedWith === 14 || filterObject.mappedWith === 15) && data['VendorId']
                     ? data['VendorId']
@@ -1417,6 +1420,35 @@ function prepareAccountPayableParams(
   return params
 }
 
+const addDays = (date: any, days: any) => {
+  if (isNaN(parseInt(days))) {
+    date.setDate(date.getDate())
+  } else {
+    date.setDate(date.getDate() + parseInt(days))
+  }
+  if (date instanceof Date) {
+    return date
+  } else {
+    return new Date()
+  }
+}
+
+const calculateDueDate = (value: any, dueDate: any) => {
+  let formattedDueDateCalculated = ''
+
+  if (value) {
+    const dueDateCalculatedValue = addDays(new Date(value), parseInt(dueDate))
+    formattedDueDateCalculated =
+      dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
+  } else {
+    const dueDateCalculatedValue = addDays(new Date(), parseInt(dueDate))
+    formattedDueDateCalculated =
+      dueDateCalculatedValue && dueDateCalculatedValue instanceof Date ? format(dueDateCalculatedValue, 'MM/dd/yyyy') : ''
+  }
+
+  return formattedDueDateCalculated
+}
+
 export {
   billStatusEditable,
   convertFractionToRoundValue,
@@ -1439,4 +1471,5 @@ export {
   totalAmountCalculate,
   validateAttachments,
   validateTotals,
+  calculateDueDate
 }
